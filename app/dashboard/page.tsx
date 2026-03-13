@@ -1,7 +1,8 @@
 import { supabase } from '@/lib/supabaseClient';
-import SubjectCard from './SubjectCard';
 import PerformanceMetrics from './PerformanceMetrics';
 import LogoutButton from './LogoutButton';
+import StreakBadge from './StreakBadge';
+import SubjectsWithDomain from './SubjectsWithDomain';
 
 type Subject = {
   id: string;
@@ -44,7 +45,10 @@ export default async function DashboardPage() {
           <p className="text-emerald-400 text-sm font-semibold tracking-widest uppercase">
             FlashAprova
           </p>
-          <LogoutButton />
+          <div className="flex items-center gap-3">
+            <StreakBadge />
+            <LogoutButton />
+          </div>
         </div>
         <h1 className="text-4xl font-bold text-white leading-tight">
           E aí! Bora moer esses cards? 🚀
@@ -57,23 +61,16 @@ export default async function DashboardPage() {
       {/* Métricas de Performance */}
       <PerformanceMetrics />
 
-      {/* Grid de matérias */}
-      <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {subjects.length === 0 ? (
-          <p className="text-slate-500 col-span-3 text-center py-20">
-            Nenhuma matéria encontrada.
-          </p>
-        ) : (
-          subjects.map((subject) => (
-            <SubjectCard
-              key={subject.id}
-              id={subject.id}
-              title={subject.title}
-              icon={iconMap[subject.icon_url ?? ''] ?? '📖'}
-              color={subject.color ?? '#7C3AED'}
-            />
-          ))
-        )}
+      {/* Grid de matérias com Nível de Domínio */}
+      <div className="max-w-5xl mx-auto">
+        <SubjectsWithDomain
+          subjects={subjects.map((s) => ({
+            id:    s.id,
+            title: s.title,
+            icon:  iconMap[s.icon_url ?? ''] ?? '📖',
+            color: s.color ?? '#7C3AED',
+          }))}
+        />
       </div>
     </main>
   );

@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import katex from 'katex';
+import { updateStreak } from '@/lib/streak';
 
 // ─── LaTeX renderer ──────────────────────────────────────────────────────────
 // Supports: $$...$$  $...$  \[...\]  \(...\)
@@ -136,6 +137,11 @@ export default function StudyPage() {
   const [userId,       setUserId]       = useState<string | null>(null);
   const [deckTitle,    setDeckTitle]    = useState('');
   const [done,         setDone]         = useState(false);
+
+  // ── Update streak once when session finishes ───────────────────────────────
+  useEffect(() => {
+    if (done && userId) updateStreak(userId);
+  }, [done, userId]);
 
   // ── Fetch data ─────────────────────────────────────────────────────────────
   useEffect(() => {

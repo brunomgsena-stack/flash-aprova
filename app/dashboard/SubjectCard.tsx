@@ -2,15 +2,17 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import type { DomainLevel } from '@/lib/domain';
 
 type Props = {
-  id: string;
-  title: string;
-  icon: string;
-  color: string;
+  id:      string;
+  title:   string;
+  icon:    string;
+  color:   string;
+  domain?: DomainLevel;
 };
 
-export default function SubjectCard({ id, title, icon, color }: Props) {
+export default function SubjectCard({ id, title, icon, color, domain }: Props) {
   const [hovered, setHovered] = useState(false);
 
   return (
@@ -54,9 +56,38 @@ export default function SubjectCard({ id, title, icon, color }: Props) {
         {title}
       </h2>
 
+      {/* Domain level badge */}
+      {domain && domain.level > 0 ? (
+        <div className="flex items-center justify-between mt-3 relative z-10">
+          <div className="flex items-center gap-1.5">
+            {/* Level dots */}
+            <div className="flex gap-0.5">
+              {[1, 2, 3, 4, 5].map((n) => (
+                <div
+                  key={n}
+                  className="w-1.5 h-1.5 rounded-full transition-all duration-300"
+                  style={{
+                    background:  n <= domain.level ? domain.color : 'rgba(255,255,255,0.1)',
+                    boxShadow:   n <= domain.level ? `0 0 4px ${domain.color}` : 'none',
+                  }}
+                />
+              ))}
+            </div>
+            <span className="text-xs font-medium" style={{ color: domain.color }}>
+              {domain.label}
+            </span>
+          </div>
+          <span className="text-xs text-slate-600">
+            {Math.round(domain.coverage * 100)}%
+          </span>
+        </div>
+      ) : (
+        <p className="text-xs text-slate-600 mt-3 relative z-10">Nenhum card estudado</p>
+      )}
+
       {/* CTA */}
       <p
-        className="text-sm font-medium relative z-10"
+        className="text-sm font-medium relative z-10 mt-2"
         style={{ color }}
       >
         Ver decks →

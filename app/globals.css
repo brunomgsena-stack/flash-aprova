@@ -15,8 +15,13 @@
   0%, 100% { box-shadow: 0 0 14px rgba(0,255,128,0.18), 0 0 4px rgba(0,255,128,0.08); }
   50%       { box-shadow: 0 0 28px rgba(0,255,128,0.40), 0 0 8px rgba(0,255,128,0.18); }
 }
-.pulse-glow-cyan  { animation: pulse-cyan  4s ease-in-out infinite; }
-.pulse-glow-green { animation: pulse-green 4s ease-in-out infinite 0.8s; }
+.pulse-glow-cyan  { animation: pulse-cyan   4s ease-in-out infinite; }
+.pulse-glow-green { animation: pulse-green  4s ease-in-out infinite 0.8s; }
+
+@keyframes pulse-streak {
+  0%, 100% { box-shadow: 0 0 10px rgba(251,146,60,0.2); }
+  50%       { box-shadow: 0 0 22px rgba(251,146,60,0.5); }
+}
 
 body {
   background-color: var(--bg-deep);
