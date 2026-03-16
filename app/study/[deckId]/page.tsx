@@ -136,6 +136,8 @@ export default function StudyPage() {
   const [saving,       setSaving]       = useState(false);
   const [userId,       setUserId]       = useState<string | null>(null);
   const [deckTitle,    setDeckTitle]    = useState('');
+  const [subjectTitle, setSubjectTitle] = useState('');
+  const [subjectId,    setSubjectId]    = useState('');
   const [done,         setDone]         = useState(false);
 
   // ── Update streak once when session finishes ───────────────────────────────
@@ -153,13 +155,16 @@ export default function StudyPage() {
       const uid = user?.id ?? null;
       setUserId(uid);
 
-      // 2. Deck title
+      // 2. Deck + subject info (for breadcrumbs)
       const { data: deck } = await supabase
         .from('decks')
-        .select('title')
+        .select('title, subjects(id, title)')
         .eq('id', deckId)
         .single();
-      setDeckTitle(deck?.title ?? '');
+      const deckData = deck as { title: string; subjects: { id: string; title: string } | null } | null;
+      setDeckTitle(deckData?.title ?? '');
+      setSubjectTitle(deckData?.subjects?.title ?? '');
+      setSubjectId(deckData?.subjects?.id ?? '');
 
       // 3. All cards in this deck
       const { data: cards } = await supabase
@@ -336,6 +341,24 @@ export default function StudyPage() {
 
   return (
     <main className="min-h-screen flex flex-col items-center px-4 py-10 gap-8">
+
+      {/* Breadcrumbs */}
+      <nav className="w-full max-w-2xl flex items-center gap-1.5 text-xs text-slate-600 flex-wrap">
+        <a href="/dashboard" className="hover:text-slate-400 transition-colors">Dashboard</a>
+        {subjectTitle && (
+          <>
+            <span className="opacity-40">›</span>
+            <a
+              href={`/dashboard/subject/${subjectId}`}
+              className="hover:text-slate-400 transition-colors"
+            >
+              {subjectTitle}
+            </a>
+          </>
+        )}
+        <span className="opacity-40">›</span>
+        <span className="text-slate-400">{deckTitle}</span>
+      </nav>
 
       {/* Header */}
       <div className="w-full max-w-2xl flex items-center justify-between">

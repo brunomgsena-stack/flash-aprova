@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabaseClient';
+import { getSubjectIcon } from '@/lib/iconMap';
 import PerformanceMetrics from './PerformanceMetrics';
 import LogoutButton from './LogoutButton';
 import StreakBadge from './StreakBadge';
@@ -11,10 +12,6 @@ type Subject = {
   icon_url: string | null;
   color:    string | null;
   category: string | null;
-};
-
-const iconMap: Record<string, string> = {
-  zap: '⚡', book: '📚', flask: '🧪', globe: '🌍', calculator: '🧮', pen: '✏️',
 };
 
 async function getSubjects(): Promise<Subject[]> {
@@ -33,7 +30,7 @@ export default async function DashboardPage() {
   const mapped = subjects.map(s => ({
     id:       s.id,
     title:    s.title,
-    icon:     iconMap[s.icon_url ?? ''] ?? '📖',
+    icon:     getSubjectIcon(s.title, s.icon_url, s.category),
     color:    s.color ?? '#7C3AED',
     category: s.category ?? null,
   }));
