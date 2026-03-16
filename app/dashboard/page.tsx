@@ -2,45 +2,47 @@ import { supabase } from '@/lib/supabaseClient';
 import PerformanceMetrics from './PerformanceMetrics';
 import LogoutButton from './LogoutButton';
 import StreakBadge from './StreakBadge';
+import ChartsRow from './ChartsRow';
 import SubjectsWithDomain from './SubjectsWithDomain';
 
 type Subject = {
-  id: string;
-  title: string;
+  id:       string;
+  title:    string;
   icon_url: string | null;
-  color: string | null;
+  color:    string | null;
+  category: string | null;
 };
 
 const iconMap: Record<string, string> = {
-  zap: '⚡',
-  book: '📚',
-  flask: '🧪',
-  globe: '🌍',
-  calculator: '🧮',
-  pen: '✏️',
+  zap: '⚡', book: '📚', flask: '🧪', globe: '🌍', calculator: '🧮', pen: '✏️',
 };
 
 async function getSubjects(): Promise<Subject[]> {
   const { data, error } = await supabase
     .from('subjects')
-    .select('id, title, icon_url, color')
+    .select('id, title, icon_url, color, category')
     .order('title');
 
-  if (error) {
-    console.error('Erro ao buscar matérias:', error.message);
-    return [];
-  }
-
+  if (error) { console.error('Erro ao buscar matérias:', error.message); return []; }
   return data ?? [];
 }
 
 export default async function DashboardPage() {
   const subjects = await getSubjects();
 
+  const mapped = subjects.map(s => ({
+    id:       s.id,
+    title:    s.title,
+    icon:     iconMap[s.icon_url ?? ''] ?? '📖',
+    color:    s.color ?? '#7C3AED',
+    category: s.category ?? null,
+  }));
+
   return (
     <main className="min-h-screen px-4 py-12 sm:px-8">
-      {/* Header */}
-      <div className="max-w-5xl mx-auto mb-12">
+
+      {/* ── Header ──────────────────────────────────────────────────────── */}
+      <div className="max-w-5xl mx-auto mb-8">
         <div className="flex items-center justify-between mb-2">
           <p className="text-emerald-400 text-sm font-semibold tracking-widest uppercase">
             FlashAprova
@@ -58,20 +60,17 @@ export default async function DashboardPage() {
         </p>
       </div>
 
-      {/* Métricas de Performance */}
+      {/* ── Charts: Radar ENEM + Retenção ────────────────────────────────── */}
+      <ChartsRow subjects={mapped.map(s => ({ id: s.id, category: s.category }))} />
+
+      {/* ── Métricas de Performance ───────────────────────────────────────── */}
       <PerformanceMetrics />
 
-      {/* Grid de matérias com Nível de Domínio */}
+      {/* ── Matérias agrupadas por categoria ─────────────────────────────── */}
       <div className="max-w-5xl mx-auto">
-        <SubjectsWithDomain
-          subjects={subjects.map((s) => ({
-            id:    s.id,
-            title: s.title,
-            icon:  iconMap[s.icon_url ?? ''] ?? '📖',
-            color: s.color ?? '#7C3AED',
-          }))}
-        />
+        <SubjectsWithDomain subjects={mapped} />
       </div>
+
     </main>
   );
 }

@@ -17,7 +17,7 @@ export default function SubjectCard({ id, title, icon, color, domain }: Props) {
 
   return (
     <Link
-      href={`/dashboard/subject/${id}`}
+      href={`/dashboard/subject/${id}/pre-study`}
       className="group relative block rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02]"
       style={{
         background: 'rgba(255,255,255,0.04)',
