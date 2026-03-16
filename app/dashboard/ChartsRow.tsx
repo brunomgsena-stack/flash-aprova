@@ -3,17 +3,9 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { buildDomainMap } from '@/lib/domain';
+import { getCategoryInfo, ENEM_AREAS } from '@/lib/categories';
 import MasteryRadarChart, { type RadarPoint }      from './charts/MasteryRadarChart';
 import RetentionAreaChart, { type RetentionPoint } from './charts/RetentionAreaChart';
-
-// ── ENEM category config ───────────────────────────────────────────────────────
-
-const ENEM_AREAS: { key: string; short: string }[] = [
-  { key: 'Ciências da Natureza', short: 'Natureza'   },
-  { key: 'Ciências Humanas',     short: 'Humanas'    },
-  { key: 'Linguagens e Códigos', short: 'Linguagens' },
-  { key: 'Matemática',           short: 'Matemática' },
-];
 
 // ── Day label helper ───────────────────────────────────────────────────────────
 
@@ -82,24 +74,26 @@ export default function ChartsRow({ subjects }: { subjects: SubjectRow[] }) {
       const domainMap = buildDomainMap(normalised, progress);
 
       // ── 4. Mastery per ENEM area ────────────────────────────────────────────
-      const areaScore = new Map<string, { sum: number; count: number }>();
-      for (const { key } of ENEM_AREAS) areaScore.set(key, { sum: 0, count: 0 });
+      // Map: canonical short name → { sum, count }
+      const shortScore = new Map<string, { sum: number; count: number }>();
 
       for (const subj of subjects) {
         const cat = subj.category;
-        if (!cat || !areaScore.has(cat)) continue;
+        if (!cat) continue;
+        const short = getCategoryInfo(cat).short;
+        if (!shortScore.has(short)) shortScore.set(short, { sum: 0, count: 0 });
         const dom = domainMap.get(subj.id);
         if (dom) {
-          const s = areaScore.get(cat)!;
+          const s = shortScore.get(short)!;
           s.sum   += dom.level;
           s.count += 1;
         }
       }
 
-      const radar: RadarPoint[] = ENEM_AREAS.map(({ key, short }) => {
-        const s = areaScore.get(key)!;
-        const mastery = s.count > 0 ? Math.round((s.sum / s.count / 5) * 100) : 0;
-        return { area: short, mastery, fullMark: 100 };
+      const radar: RadarPoint[] = ENEM_AREAS.map(info => {
+        const s = shortScore.get(info.short);
+        const mastery = s && s.count > 0 ? Math.round((s.sum / s.count / 5) * 100) : 0;
+        return { area: info.short, mastery, fullMark: 100 };
       });
 
       // ── 5. Retention curve (next 7 days) ────────────────────────────────────

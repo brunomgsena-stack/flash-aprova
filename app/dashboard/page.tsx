@@ -1,8 +1,9 @@
 import { supabase } from '@/lib/supabaseClient';
 import { getSubjectIcon } from '@/lib/iconMap';
 import PerformanceMetrics from './PerformanceMetrics';
-import LogoutButton from './LogoutButton';
+import UserMenu from './UserMenu';
 import StreakBadge from './StreakBadge';
+import AccountStatusCard from './AccountStatusCard';
 import ChartsRow from './ChartsRow';
 import SubjectsWithDomain from './SubjectsWithDomain';
 
@@ -46,14 +47,15 @@ export default async function DashboardPage() {
           </p>
           <div className="flex items-center gap-3">
             <StreakBadge />
-            <LogoutButton />
+            <UserMenu />
           </div>
         </div>
         <h1 className="text-4xl font-bold text-white leading-tight">
-          E aí! Bora moer esses cards? 🚀
+          Central de Operações
         </h1>
-        <p className="text-slate-400 mt-2 text-lg">
-          Escolha uma matéria e comece a revisar agora.
+        <p className="text-slate-400 mt-2 text-base font-mono">
+          <span style={{ color: '#00ff80' }}>●</span>{' '}
+          Status: Operacional · Analisando lacunas de memória
         </p>
       </div>
 
@@ -62,6 +64,11 @@ export default async function DashboardPage() {
 
       {/* ── Métricas de Performance ───────────────────────────────────────── */}
       <PerformanceMetrics />
+
+      {/* ── Status da Conta ───────────────────────────────────────────────── */}
+      <div className="max-w-5xl mx-auto mb-6">
+        <AccountStatusCard />
+      </div>
 
       {/* ── Matérias agrupadas por categoria ─────────────────────────────── */}
       <div className="max-w-5xl mx-auto">
