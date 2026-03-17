@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { type SubjectId, SUBJECT_META } from '../onboarding/flashcardData';
 
@@ -267,140 +267,6 @@ function InsightsPanel({ health }: { health: number }) {
   );
 }
 
-// ─── App Mockup (Tutor IA) ────────────────────────────────────────────────────
-function AppMockup({ subjectMeta }: { subjectMeta: typeof SUBJECT_META[SubjectId] }) {
-  const [typingDone, setTypingDone] = useState(false);
-  useEffect(() => {
-    const t = setTimeout(() => setTypingDone(true), 2200);
-    return () => clearTimeout(t);
-  }, []);
-
-  return (
-    <div className="relative rounded-2xl p-5 sm:p-6 mb-6 overflow-hidden"
-      style={{
-        background: 'rgba(10,5,20,0.88)',
-        border: `1px solid rgba(6,182,212,0.22)`,
-        backdropFilter: 'blur(20px)',
-        boxShadow: `0 0 60px rgba(6,182,212,0.08)`,
-      }}>
-      <div className="absolute inset-x-0 top-0 h-px"
-        style={{ background: `linear-gradient(90deg, transparent, ${CYAN}60, transparent)` }} />
-
-      <p className="text-xs font-bold tracking-widest uppercase mb-4" style={{ color: CYAN }}>
-        // TUTOR IA · PRÉVIA DO PLANO PROAI+
-      </p>
-
-      {/* Phone frame */}
-      <div className="mx-auto max-w-xs">
-        <div className="rounded-3xl overflow-hidden"
-          style={{
-            background: 'rgba(5,3,12,0.95)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            boxShadow: '0 0 0 6px rgba(255,255,255,0.03), 0 20px 60px rgba(0,0,0,0.60)',
-          }}>
-          {/* Status bar */}
-          <div className="flex items-center justify-between px-5 pt-3 pb-2"
-            style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-full flex items-center justify-center text-sm"
-                style={{ background: `linear-gradient(135deg, ${VIOLET}, ${CYAN})` }}>
-                🤖
-              </div>
-              <div>
-                <p className="text-white text-xs font-bold leading-none">Tutor IA</p>
-                <p className="text-xs leading-none mt-0.5" style={{ color: GREEN }}>● online</p>
-              </div>
-            </div>
-            <div className="flex gap-1">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="w-1 rounded-full" style={{ height: 6 + i * 3, background: 'rgba(255,255,255,0.30)' }} />
-              ))}
-            </div>
-          </div>
-
-          {/* Chat */}
-          <div className="px-4 py-4 flex flex-col gap-3" style={{ minHeight: 180 }}>
-            {/* Bot message */}
-            <div className="flex gap-2 items-end">
-              <div className="w-6 h-6 rounded-full shrink-0 flex items-center justify-center text-xs"
-                style={{ background: `linear-gradient(135deg, ${VIOLET}, ${CYAN})` }}>🤖</div>
-              <div className="max-w-[85%] rounded-2xl rounded-bl-sm px-3.5 py-2.5 text-xs leading-relaxed text-white"
-                style={{ background: 'rgba(124,58,237,0.28)', border: '1px solid rgba(124,58,237,0.35)' }}>
-                Preparei um mnemônico para você nunca mais esquecer{' '}
-                <span className="font-bold" style={{ color: subjectMeta.color }}>
-                  {subjectMeta.name === 'Biologia' ? 'as fases da Meiose'
-                    : subjectMeta.name === 'Química' ? 'Ligação Iônica vs Covalente'
-                    : subjectMeta.name === 'História' ? 'as causas da Revolução Francesa'
-                    : 'o Cerrado e El Niño'}
-                </span>.{' '}
-                Quer ver? 🧠
-              </div>
-            </div>
-
-            {/* User message */}
-            <div className="flex justify-end">
-              <div className="max-w-[70%] rounded-2xl rounded-br-sm px-3.5 py-2.5 text-xs text-white"
-                style={{ background: `linear-gradient(135deg, ${GREEN}90, #16a34a90)` }}>
-                Sim! Me mostra 🙏
-              </div>
-            </div>
-
-            {/* Typing / response */}
-            {!typingDone ? (
-              <div className="flex gap-2 items-end">
-                <div className="w-6 h-6 rounded-full shrink-0 flex items-center justify-center text-xs"
-                  style={{ background: `linear-gradient(135deg, ${VIOLET}, ${CYAN})` }}>🤖</div>
-                <div className="rounded-2xl rounded-bl-sm px-4 py-3 flex gap-1.5 items-center"
-                  style={{ background: 'rgba(124,58,237,0.20)', border: '1px solid rgba(124,58,237,0.30)' }}>
-                  {[0, 0.3, 0.6].map(d => (
-                    <div key={d} className="w-1.5 h-1.5 rounded-full"
-                      style={{ background: '#a78bfa', animation: `bounce 1s ease-in-out ${d}s infinite` }} />
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <div className="flex gap-2 items-end fade-up">
-                <div className="w-6 h-6 rounded-full shrink-0 flex items-center justify-center text-xs"
-                  style={{ background: `linear-gradient(135deg, ${VIOLET}, ${CYAN})` }}>🤖</div>
-                <div className="max-w-[85%] rounded-2xl rounded-bl-sm px-3.5 py-2.5 text-xs leading-relaxed"
-                  style={{ background: 'rgba(124,58,237,0.28)', border: '1px solid rgba(124,58,237,0.35)', color: '#e2e8f0' }}>
-                  <span className="font-black" style={{ color: CYAN }}>MACETE: </span>
-                  {subjectMeta.name === 'Biologia'
-                    ? '"Prof. IL-ME-DIA" → Profase, Intercinese, Leptóteno, Meiose II, Diplóteno, Anafase I'
-                    : subjectMeta.name === 'Química'
-                    ? '"Metal doa, não-metal recebe" → ligação iônica = transferência de e⁻'
-                    : subjectMeta.name === 'História'
-                    ? '"LITE" → Liberdade, Igualdade, Tributação excessiva, Estamentos'
-                    : '"CEM" → Cerrado=savana, El Niño=Pacífico quente, Mercator=distorção polar'}
-                  {' '}💡
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Input bar */}
-          <div className="px-4 pb-4">
-            <div className="flex items-center gap-2 rounded-xl px-3 py-2"
-              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
-              <span className="text-xs text-slate-700 flex-1">Pergunte ao Tutor IA...</span>
-              <div className="w-6 h-6 rounded-lg flex items-center justify-center"
-                style={{ background: `linear-gradient(135deg, ${VIOLET}, ${CYAN})` }}>
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
-                  <path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z" />
-                </svg>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <p className="text-center text-xs text-slate-700 mt-3">
-          🔒 Disponível apenas no Plano ProAI+
-        </p>
-      </div>
-    </div>
-  );
-}
-
 // ─── Expiry Timer ────────────────────────────────────────────────────────────
 function ExpiryTimer() {
   const [secs, setSecs] = useState(600);
@@ -567,8 +433,6 @@ export default function CheckoutPage() {
         {/* ── Visual Insights ── */}
         <InsightsPanel health={health} />
 
-        {/* ── App Mockup ── */}
-        <AppMockup subjectMeta={subjectMeta} />
 
         {/* ── Urgency ── */}
         <ExpiryTimer />
@@ -585,12 +449,11 @@ export default function CheckoutPage() {
             <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg mb-4"
               style={{ background:'rgba(124,58,237,0.12)',border:'1px solid rgba(124,58,237,0.25)' }}>⚡</div>
             <p className="text-xs font-bold tracking-widest uppercase mb-1" style={{ color:'#6d519e' }}>Plano Flash</p>
-            <div className="flex items-baseline gap-1 mb-1">
+            <div className="flex items-baseline gap-1 mb-6">
               <span className="text-slate-600 text-xs">12x de</span>
-              <span className="text-4xl font-black text-slate-300 ml-1">R$&nbsp;21</span>
+              <span className="text-4xl font-black text-slate-300 ml-1">R$&nbsp;46</span>
               <span className="text-2xl font-black text-slate-300">,90</span>
             </div>
-            <p className="text-slate-700 text-xs mb-5">R$ 262,80/ano · sem juros</p>
             <div className="h-px mb-5" style={{ background:'rgba(255,255,255,0.05)' }} />
             <div className="flex flex-col gap-2 mb-6 text-sm text-slate-500">
               {['Flashcards ilimitados', 'Algoritmo SRS avançado', 'Dashboard & heatmap'].map(f => (
@@ -611,7 +474,7 @@ export default function CheckoutPage() {
             </Link>
           </div>
 
-          {/* ProAI+ — the obvious choice */}
+          {/* AiPro+ — the obvious choice */}
           <div className="shimmer-card relative rounded-2xl p-6 overflow-hidden"
             style={{
               background:'rgba(8,4,18,0.95)',
@@ -631,7 +494,7 @@ export default function CheckoutPage() {
             {/* Badge */}
             <div className="absolute top-4 right-4 text-xs font-black px-2.5 py-1.5 rounded-full text-white"
               style={{ background:'linear-gradient(135deg,#7C3AED,#06b6d4)', boxShadow:'0 0 16px rgba(124,58,237,0.55)' }}>
-              💎 Recomendado para {subjectMeta.area.split(' ').pop()}
+              💎 Plano Recomendado para Medicina
             </div>
 
             <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg mb-4 relative"
@@ -642,20 +505,19 @@ export default function CheckoutPage() {
             <p className="text-xs font-bold tracking-widest uppercase mb-1 relative"
               style={{ background:'linear-gradient(90deg,#a78bfa,#67e8f9)',
                 WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>
-              Plano ProAI+
+              Plano AiPro+
             </p>
-            <div className="flex items-baseline gap-1 mb-1 relative">
+            <div className="flex items-baseline gap-1 mb-6 relative">
               <span className="text-slate-400 text-xs">12x de</span>
-              <span className="text-4xl font-black text-white ml-1">R$&nbsp;29</span>
+              <span className="text-4xl font-black text-white ml-1">R$&nbsp;67</span>
               <span className="text-2xl font-black text-white">,90</span>
             </div>
-            <p className="text-slate-600 text-xs mb-5 relative">R$ 358,80/ano · sem juros</p>
             <div className="h-px mb-5 relative"
               style={{ background:'linear-gradient(90deg,rgba(124,58,237,0.45),rgba(6,182,212,0.45))' }} />
 
             <div className="flex flex-col gap-2 mb-6 text-sm relative">
               {[
-                { t:'Tudo do Plano Flash',              c:'#67e8f9' },
+                { t:'Tudo do Plano Flash incluído',      c:'#67e8f9' },
                 { t:'Resumos Storytelling por deck',     c:'#67e8f9' },
                 { t:'Tabelas + Macetes & Mnemonics',     c:'#67e8f9' },
                 { t:'Áudio-Resumos narrados por IA',     c:'#67e8f9' },
@@ -675,7 +537,7 @@ export default function CheckoutPage() {
                 background:'linear-gradient(135deg,#7C3AED 0%,#06b6d4 60%,#ec4899 100%)',
                 boxShadow:'0 0 36px rgba(124,58,237,0.60),0 4px 20px rgba(0,0,0,0.50)',
               }}>
-              Garantir minha Aprovação (12x sem juros)
+              Garantir minha Aprovação →
             </Link>
           </div>
         </div>
@@ -712,7 +574,7 @@ export default function CheckoutPage() {
             <span className="text-xs font-semibold text-center uppercase tracking-wider" style={{ color:'#6d519e' }}>Flash</span>
             <span className="text-xs font-semibold text-center uppercase tracking-widest"
               style={{ background:'linear-gradient(90deg,#a78bfa,#67e8f9)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent' }}>
-              ProAI+
+              AiPro+
             </span>
           </div>
           {[
@@ -738,12 +600,6 @@ export default function CheckoutPage() {
         </p>
       </div>
 
-      <style>{`
-        @keyframes bounce {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-4px); }
-        }
-      `}</style>
     </div>
   );
 }
