@@ -62,7 +62,7 @@ function Feature({ text, color, dim = false }: { text: string; color: string; di
 
 function ActiveBanner({ info, plan }: { info: PlanInfo; plan: Plan }) {
   const color  = plan === 'proai_plus' ? '#06b6d4' : '#7C3AED';
-  const label  = plan === 'proai_plus' ? 'ProAI+' : 'Flash';
+  const label  = plan === 'proai_plus' ? 'AiPro+' : 'Flash';
   const days   = info.expiresAt
     ? `${info.daysLeft} dia${info.daysLeft !== 1 ? 's' : ''} restante${info.daysLeft !== 1 ? 's' : ''}`
     : 'Plano ativo';
@@ -105,7 +105,7 @@ export default function SubscriptionPage() {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      setUserPlan(await fetchUserPlan(user.id));
+      setUserPlan(await fetchUserPlan(user.id, user.email ?? undefined));
     }
     load();
   }, []);
@@ -215,7 +215,7 @@ export default function SubscriptionPage() {
             )}
           </div>
 
-          {/* ── ProAI+ card (hero) ───────────────────────────────────────── */}
+          {/* ── AiPro+ card (hero) ───────────────────────────────────────── */}
           <div
             className="relative rounded-3xl p-7 overflow-hidden"
             style={{
@@ -279,7 +279,7 @@ export default function SubscriptionPage() {
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
               }}>
-              Plano ProAI+
+              Plano AiPro+
             </p>
 
             {/* Price */}
@@ -351,7 +351,7 @@ export default function SubscriptionPage() {
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
               }}>
-              ProAI+
+              AiPro+
             </span>
           </div>
 

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
 import { fetchUserPlan, type PlanInfo } from '@/lib/plan';
 
-// ─── ProAI+ upgrade banner ────────────────────────────────────────────────────
+// ─── AiPro+ upgrade banner ────────────────────────────────────────────────────
 
 function UpgradeBanner() {
   return (
@@ -56,7 +56,7 @@ function UpgradeBanner() {
             className="font-black text-base leading-tight mb-1"
             style={{ color: '#0f172a' }}
           >
-            Evolua para o Próximo Nível: ProAI+ 🤖
+            Evolua para o Próximo Nível: AiPro+ 🤖
           </p>
           <p
             className="text-xs leading-relaxed"
@@ -86,7 +86,7 @@ function UpgradeBanner() {
   );
 }
 
-// ─── ProAI+ active status strip ───────────────────────────────────────────────
+// ─── AiPro+ active status strip ───────────────────────────────────────────────
 
 function ActivePlanStrip({ info }: { info: PlanInfo }) {
   const renewalText = info.expiresAt
@@ -114,7 +114,7 @@ function ActivePlanStrip({ info }: { info: PlanInfo }) {
           ⚡
         </div>
         <div>
-          <span className="text-white font-bold text-sm">Plano ProAI+</span>
+          <span className="text-white font-bold text-sm">Plano AiPro+</span>
           <span
             className="ml-2 text-xs px-1.5 py-0.5 rounded-full font-semibold"
             style={{ background: 'linear-gradient(135deg,#7C3AED,#06b6d4)', color: '#fff' }}
@@ -145,7 +145,7 @@ export default function AccountStatusCard() {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      setInfo(await fetchUserPlan(user.id));
+      setInfo(await fetchUserPlan(user.id, user.email ?? undefined));
     }
     load();
   }, []);

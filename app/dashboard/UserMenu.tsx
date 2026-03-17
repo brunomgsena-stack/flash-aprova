@@ -20,7 +20,7 @@ function PlanBadge({ plan }: { plan: Plan }) {
           letterSpacing: '0.02em',
         }}
       >
-        ProAI+
+        AiPro+
       </span>
     );
   }
@@ -52,7 +52,7 @@ export default function UserMenu() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       setEmail(user.email ?? '');
-      const info = await fetchUserPlan(user.id);
+      const info = await fetchUserPlan(user.id, user.email ?? undefined);
       setPlan(info.plan);
     }
     load();
