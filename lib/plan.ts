@@ -19,6 +19,13 @@ export function planLabel(plan: Plan): string {
 }
 
 export async function fetchUserPlan(userId: string): Promise<PlanInfo> {
+  // ── Dev bypass ───────────────────────────────────────────────────────────
+  const { data: { user: authUser } } = await supabase.auth.getUser();
+  if (authUser?.email === 'brunomgsena@gmail.com') {
+    return { plan: 'proai_plus', expiresAt: null, daysLeft: null };
+  }
+  // ────────────────────────────────────────────────────────────────────────
+
   const { data } = await supabase
     .from('user_stats')
     .select('plan, plan_expires_at')
