@@ -1,4 +1,3 @@
-export type CardData = { q: string; a: string };
 export type SubjectId = 'historia' | 'biologia' | 'quimica' | 'geografia';
 
 export const SUBJECT_META: Record<SubjectId, {
@@ -10,56 +9,123 @@ export const SUBJECT_META: Record<SubjectId, {
   geografia: { name: 'Geografia', icon: '🌐', color: '#10b981', area: 'Ciências Humanas' },
 };
 
-export const CARDS: Record<SubjectId, CardData[]> = {
-  historia: [
-    { q: 'Em que ano ocorreu a Proclamação da República no Brasil?', a: '1889 — com a participação do Marechal Deodoro da Fonseca, que depôs o Imperador Dom Pedro II.' },
-    { q: 'Qual o principal símbolo do início da Revolução Francesa?', a: 'A queda da Bastilha (14/07/1789), fortaleza-prisão que simbolizava o absolutismo de Luís XVI.' },
-    { q: 'O que foi o Estado Novo de Getúlio Vargas?', a: 'Regime ditatorial (1937–1945): Vargas fechou o Congresso, suspendeu a Constituição e governou por decreto.' },
-    { q: 'O que caracterizou a Guerra Fria (1947–1991)?', a: 'Disputa político-ideológica entre EUA (capitalismo) e URSS (socialismo) sem confronto militar direto.' },
-    { q: 'Qual foi a causa imediata da 1ª Guerra Mundial?', a: 'Assassinato do Arquiduque Francisco Fernando (1914), combinado com o sistema de alianças e imperialismo.' },
-    { q: 'O que foi o AI-5 (1968) durante a Ditadura Militar?', a: 'Ato Institucional que fechou o Congresso, suspendeu habeas corpus e censurou a imprensa. O ápice do autoritarismo.' },
-    { q: 'O que é imperialismo?', a: 'Expansão política e econômica de países poderosos sobre nações mais fracas — base do colonialismo do séc. XIX–XX.' },
-    { q: 'O que foi o Iluminismo?', a: 'Movimento intelectual do séc. XVIII que defendia razão, ciência e liberdade individual, contra o absolutismo.' },
-    { q: 'O que é nazismo?', a: 'Ideologia totalitária de Adolf Hitler (1933–1945): ultranacionalismo, antissemitismo e racismo que levou ao Holocausto.' },
-    { q: 'O que foi a Abolição da Escravidão no Brasil?', a: 'Lei Áurea (1888), assinada pela Princesa Isabel, libertou aproximadamente 700 mil escravizados — última nação das Américas.' },
-  ],
-  biologia: [
-    { q: 'Qual a diferença entre célula procarionte e eucarionte?', a: 'Procarionte: sem núcleo definido (ex: bactérias). Eucarionte: núcleo organizado por membrana (ex: animais, plantas).' },
-    { q: 'Escreva a equação simplificada da fotossíntese.', a: '6CO₂ + 6H₂O + luz → C₆H₁₂O₆ + 6O₂. Plantas convertem energia solar em glicose no cloroplasto.' },
-    { q: 'O que é meiose e para que serve?', a: 'Divisão celular que gera 4 células haploides (metade do DNA). Essencial para a reprodução sexuada.' },
-    { q: 'O que é mutualismo? Dê um exemplo.', a: 'Relação entre espécies onde ambas se beneficiam. Ex: abelhas (polinização) e flores (néctar).' },
-    { q: 'Qual a diferença entre vírus e bactéria?', a: 'Vírus: acelular, replica apenas dentro de hospedeiro. Bactéria: unicelular procarionte, pode viver de forma independente.' },
-    { q: 'O que é seleção natural (Darwin)?', a: 'Organismos mais adaptados ao ambiente sobrevivem e se reproduzem mais, transmitindo seus genes às gerações seguintes.' },
-    { q: 'O que é a 1ª Lei de Mendel?', a: 'Lei da Segregação: cada indivíduo possui 2 alelos por gene; eles se separam na formação dos gametas.' },
-    { q: 'O que é homeostase?', a: 'Capacidade do organismo de manter equilíbrio interno (temperatura, pH, glicemia) mesmo com variações do ambiente externo.' },
-    { q: 'O que é DNA e qual sua função?', a: 'Molécula dupla hélice que carrega toda informação genética. Cada gene codifica uma proteína específica.' },
-    { q: 'Defina cadeia alimentar e seus componentes.', a: 'Sequência de transferência de energia: Produtores (plantas) → Consumidores (animais) → Decompositores (fungos, bactérias).' },
-  ],
-  quimica: [
-    { q: 'O que é estequiometria?', a: 'Cálculo das proporções entre reagentes e produtos usando os coeficientes da equação química balanceada (regra de 3).' },
-    { q: 'Qual a diferença entre ácido e base (Arrhenius)?', a: 'Ácido: libera H⁺ em água. Base: libera OH⁻ em água. Ex: HCl (ácido) vs NaOH (base).' },
-    { q: 'Como interpretar o pH?', a: 'Escala 0–14. pH < 7 = ácido. pH = 7 = neutro. pH > 7 = básico. Quanto menor o pH, mais ácido.' },
-    { q: 'O que é ligação iônica?', a: 'Transferência de elétrons entre metal e não-metal, gerando íons de cargas opostas que se atraem. Ex: NaCl.' },
-    { q: 'Defina oxidação e redução. Qual o macete?', a: 'Oxidação: perde elétrons (LEO). Redução: ganha elétrons (GER). Reações redox ocorrem sempre em par.' },
-    { q: 'O que são isômeros?', a: 'Compostos com mesma fórmula molecular mas estruturas diferentes. Ex: butano e isobutano (ambos C₄H₁₀).' },
-    { q: 'O que é entalpia? Como identificar reação exo/endotérmica?', a: 'ΔH < 0: exotérmica (libera calor). ΔH > 0: endotérmica (absorve calor).' },
-    { q: 'Como identificar uma reação de combustão?', a: 'Composto orgânico + O₂ → CO₂ + H₂O. Ex: CH₄ + 2O₂ → CO₂ + 2H₂O.' },
-    { q: 'O que é o número de Avogadro?', a: '6,02 × 10²³ partículas por mol. Permite relacionar gramas com quantidade de átomos e moléculas.' },
-    { q: 'O que é eletrólise?', a: 'Processo que usa corrente elétrica para forçar reações não-espontâneas. Ex: eletrólise da água → H₂ + O₂.' },
-  ],
-  geografia: [
-    { q: 'O que é globalização?', a: 'Integração econômica, cultural e tecnológica mundial, acelerada após anos 1990. Gera interdependência entre países.' },
-    { q: 'O que mede o IDH?', a: 'Índice de Desenvolvimento Humano: combina renda per capita, escolaridade e expectativa de vida (escala 0–1).' },
-    { q: 'Quais as causas do aquecimento global?', a: 'Emissão de gases do efeito estufa (CO₂, CH₄) por combustíveis fósseis, desmatamento e agropecuária intensiva.' },
-    { q: 'O que é êxodo rural?', a: 'Migração campo → cidade em busca de emprego/serviços. Causa principal: mecanização e modernização do campo.' },
-    { q: 'O que é transição demográfica?', a: 'Mudança de alta natalidade/mortalidade para baixa natalidade/mortalidade, associada ao desenvolvimento econômico.' },
-    { q: 'O que são placas tectônicas?', a: 'Blocos rígidos da litosfera em movimento. Seu encontro causa terremotos, vulcões e formação de cadeias montanhosas.' },
-    { q: 'O que é bioma? Cite exemplos brasileiros.', a: 'Grande ecossistema com clima, flora e fauna específicos. Ex: Amazônia, Cerrado, Caatinga, Mata Atlântica, Pampa.' },
-    { q: 'Como a latitude influencia o clima?', a: 'Maior latitude = mais frio. Define zonas climáticas: tropical (0–23°), temperada (23–66°), polar (>66°).' },
-    { q: 'O que é intemperismo?', a: 'Degradação das rochas por agentes físicos, químicos e biológicos. Processo responsável pela formação do solo.' },
-    { q: 'O que é a ZCIT (Zona de Convergência Intertropical)?', a: 'Faixa de baixa pressão próxima ao Equador onde massas de ar convergem → chuvas intensas no Norte do Brasil.' },
-  ],
+// ─── ENEM area mapping (for Radar) ──────────────────────────────────────────
+export const AREA_MAP: Record<SubjectId, 'natureza' | 'humanas'> = {
+  biologia:  'natureza',
+  quimica:   'natureza',
+  historia:  'humanas',
+  geografia: 'humanas',
 };
+
+// ─── Diagnostic Deck — 15 Elite Cards ───────────────────────────────────────
+export interface DiagnosticCard {
+  id: string;
+  subject: SubjectId;
+  q: string;
+  a: string;
+}
+
+export const DIAGNOSTIC_DECK: DiagnosticCard[] = [
+  // ── Biologia (4) ──
+  {
+    id: 'bio1', subject: 'biologia',
+    q: 'Na cadeia respiratória, qual é o aceptor final de elétrons e onde ocorre a maior produção de ATP?',
+    a: 'O O₂ é o aceptor final. A maior produção de ATP (~32 ATPs) ocorre na fosforilação oxidativa — na cadeia transportadora de elétrons da membrana interna mitocondrial.',
+  },
+  {
+    id: 'bio2', subject: 'biologia',
+    q: 'Qual é a função dos lisossomos e por que são chamados de "estômagos da célula"?',
+    a: 'Lisossomos contêm enzimas digestivas (hidrolases ácidas) que degradam resíduos celulares, organelas danificadas e agentes externos. Funcionam em pH ~5, agindo como o sistema digestório intracelular.',
+  },
+  {
+    id: 'bio3', subject: 'biologia',
+    q: 'Diferencie mitose e meiose quanto ao objetivo e ao número de células-filhas produzidas.',
+    a: 'Mitose: 1 divisão → 2 células 2n idênticas (crescimento/regeneração). Meiose: 2 divisões → 4 células n (haploides) com variabilidade genética — base da reprodução sexual.',
+  },
+  {
+    id: 'bio4', subject: 'biologia',
+    q: 'O que ocorre na fase clara e na fase escura da fotossíntese?',
+    a: 'Fase clara (tilacóide): captação de luz, fotólise da água, geração de ATP e NADPH. Fase escura/Ciclo de Calvin (estroma): fixação do CO₂ usando ATP e NADPH para sintetizar glicose.',
+  },
+
+  // ── Química (4) ──
+  {
+    id: 'qui1', subject: 'quimica',
+    q: 'O que é ligação iônica e em que tipo de substâncias ela ocorre predominantemente?',
+    a: 'Transferência de elétrons de um metal para um não-metal, formando íons de cargas opostas que se atraem eletrostaticamente. Ocorre em sais e bases iônicas — ex: NaCl, KOH.',
+  },
+  {
+    id: 'qui2', subject: 'quimica',
+    q: 'O que é eletronegatividade e qual elemento apresenta o maior valor na tabela periódica?',
+    a: 'Tendência de um átomo de atrair elétrons de uma ligação. Aumenta da esquerda→direita e de baixo→cima na tabela. O Flúor (F) é o mais eletronegativo (4,0 na escala de Pauling).',
+  },
+  {
+    id: 'qui3', subject: 'quimica',
+    q: 'Qual a diferença entre isomeria plana e isomeria espacial (estereoisomeria)?',
+    a: 'Isomeria plana: mesma fórmula molecular, diferente estrutura de cadeia, função ou posição. Estereoisomeria: mesma sequência de ligações, diferente arranjo espacial (cis-trans ou óptica/quiral).',
+  },
+  {
+    id: 'qui4', subject: 'quimica',
+    q: 'Como se calcula o pH de uma solução? O que significa pH=7, pH<7 e pH>7?',
+    a: 'pH = -log[H⁺]. pH 7 = neutro; pH < 7 = ácido (excesso de H⁺); pH > 7 = básico/alcalino (excesso de OH⁻). Escala de 0 (superácido) a 14 (superbase).',
+  },
+
+  // ── História (4) ──
+  {
+    id: 'his1', subject: 'historia',
+    q: 'Quais são as características essenciais do Mercantilismo e seu papel na formação do capitalismo?',
+    a: 'Política econômica estatal (séc. XV–XVIII): acúmulo de metais preciosos (metalismo), superávit comercial (protecionismo), exploração colonial. Base do capital mercantil que financiou a Revolução Industrial.',
+  },
+  {
+    id: 'his2', subject: 'historia',
+    q: 'O que foi a Diáspora Africana e quais foram seus impactos culturais no Brasil?',
+    a: 'Dispersão forçada de africanos pelo tráfico negreiro (séc. XVI–XIX). No Brasil, gerou sincretismo religioso (candomblé, umbanda), contribuições linguísticas, culinárias e musicais centrais à identidade nacional.',
+  },
+  {
+    id: 'his3', subject: 'historia',
+    q: 'Quais foram as principais causas e consequências sociais da 1ª Revolução Industrial?',
+    a: 'Causas: carvão/ferro britânicos, capital mercantil, revolução agrícola, liberalismo. Consequências: urbanização acelerada, surgimento do proletariado, condições insalubres, desigualdade e o início do movimento operário.',
+  },
+  {
+    id: 'his4', subject: 'historia',
+    q: 'O que foi a Guerra Fria? Quais blocos se opunham e qual foi seu desfecho?',
+    a: 'Conflito geopolítico (1947–1991) entre EUA (capitalismo/OTAN) × URSS (socialismo/Pacto de Varsóvia) sem confronto direto. Marcado por corrida armamentista, espacial e ideológica. Terminou com a dissolução da URSS em 1991.',
+  },
+
+  // ── Geografia (3) ──
+  {
+    id: 'geo1', subject: 'geografia',
+    q: 'Quais são as características do Cerrado e por que é considerado um hotspot ameaçado?',
+    a: 'Savana tropical com raízes profundas, vegetação adaptada ao fogo e estação seca marcada. 2º maior bioma do Brasil, com enorme biodiversidade endêmica. Já perdeu ~50% da área original por causa do agronegócio.',
+  },
+  {
+    id: 'geo2', subject: 'geografia',
+    q: 'O que é a Projeção de Mercator e qual é sua principal distorção crítica?',
+    a: 'Projeção cilíndrica conforme (séc. XVI) que preserva ângulos para navegação. Distorção: exagera o tamanho das regiões polares — a Groenlândia parece maior que a África, quando é ~14× menor.',
+  },
+  {
+    id: 'geo3', subject: 'geografia',
+    q: 'Diferencie urbanização de metropolização e cite problemas da urbanização acelerada no Brasil.',
+    a: 'Urbanização: crescimento da população urbana. Metropolização: concentração em mega-cidades com área de influência regional. Problemas no Brasil (~87% urbano): favelização, déficit habitacional, violência, saneamento precário.',
+  },
+];
+
+// ─── Build 10-card test deck ─────────────────────────────────────────────────
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+export function buildTestDeck(chosenSubject: SubjectId): DiagnosticCard[] {
+  const chosen = DIAGNOSTIC_DECK.filter(c => c.subject === chosenSubject);
+  const others  = shuffle(DIAGNOSTIC_DECK.filter(c => c.subject !== chosenSubject));
+  const needed  = 10 - chosen.length;
+  return shuffle([...chosen, ...others.slice(0, needed)]);
+}
 
 export const UNIVERSITIES = [
   'USP – Medicina', 'USP – Engenharia', 'USP – Direito',
