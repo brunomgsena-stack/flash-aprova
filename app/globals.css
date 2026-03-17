@@ -71,6 +71,33 @@
 .overlay-in { animation: overlay-in 0.30s ease both; }
 .card-in    { animation: card-in    0.45s cubic-bezier(0.22,1,0.36,1) both; }
 
+/* ── Shimmer slide (checkout ProAI+ card) ────────────────────────────────── */
+@keyframes shimmer-slide {
+  0%   { transform: translateX(-120%) skewX(-18deg); }
+  100% { transform: translateX(320%)  skewX(-18deg); }
+}
+.shimmer-card { position: relative; overflow: hidden; }
+.shimmer-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.14) 50%, transparent 70%);
+  animation: shimmer-slide 2.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ── Lacuna alert pulse ───────────────────────────────────────────────────── */
+@keyframes lacuna-in {
+  from { opacity: 0; transform: translateY(-12px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.lacuna-alert { animation: lacuna-in 0.25s cubic-bezier(0.22,1,0.36,1) both; }
+
+/* ── Health bar fill ─────────────────────────────────────────────────────── */
+@keyframes health-init {
+  from { width: 0; }
+}
+
 body {
   background-color: var(--bg-deep);
   background-image:
