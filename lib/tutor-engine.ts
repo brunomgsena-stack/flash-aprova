@@ -93,3 +93,18 @@ export function getTutor(subjectTitle: string | null): Tutor | null {
 export function getAllTutors(): Tutor[] {
   return TUTORS;
 }
+
+// ─── Contextual opening message ──────────────────────────────────────────────
+
+export function getOpeningMessage(tutor: Tutor, deckTitle: string): string {
+  const greetings: Record<string, string> = {
+    'dr-bio':          `Olá! Sou o Dr. Bio, seu mentor em Ciências da Vida. Você está estudando **"${deckTitle}"** — um tema que aparece bastante nas provas do ENEM. Me diga: qual parte está te gerando mais dúvidas? Pode ser conceito, nomenclatura, qualquer coisa. Estou aqui para desbloquear você.`,
+    'prof-carbono':    `E aí! Prof. Carbono aqui. Vejo que você está com **"${deckTitle}"** na frente. Química pode parecer abstrata, mas quando você entende a lógica por trás, tudo se conecta. Qual é a sua maior travada nesse tema?`,
+    'mestre-newton':   `Olá! Mestre Newton no comando. **"${deckTitle}"** é um tema rico — e a Física adora aparecer em contextos do cotidiano no ENEM. O que você já entende sobre isso? Me conta, e eu te ajudo a avançar daqui.`,
+    'prof-logica':     `Fala aí! Prof. Lógica aqui. Você está em **"${deckTitle}"** — ótimo ponto de partida. Na Matemática, o segredo é identificar o padrão certo. Me conta: está com dificuldade no conceito, nos cálculos, ou na hora de resolver questões?`,
+    'dra-clio':        `Olá! Sou a Dra. Clio, sua especialista em História. **"${deckTitle}"** é um capítulo fascinante — e o ENEM adora cobrar interpretação de contexto, não só datas. O que você quer entender melhor sobre esse tema?`,
+    'mestre-atlas':    `Olá! Mestre Atlas aqui. **"${deckTitle}"** faz parte de um panorama geográfico muito cobrado no ENEM. Pode ser meio-ambiente, geopolítica, clima... Me diz o que tá travando e a gente desvenda juntos.`,
+    'mentora-agora':   `Oi! Mentora Ágora aqui. Você está com **"${deckTitle}"** — seja texto, redação ou gramática, a chave é sempre a interpretação. Me conta: o que está te confundindo? Posso ajudar a clarear os conceitos e montar uma estratégia de resposta.`,
+  };
+  return greetings[tutor.id] ?? `Olá! Sou ${tutor.name}. Estou aqui para te ajudar com **"${deckTitle}"**. Qual é a sua dúvida?`;
+}

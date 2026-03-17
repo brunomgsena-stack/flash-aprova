@@ -180,6 +180,7 @@ export default async function DeckPreStudyPage({ params }: Props) {
           color={color}
           plan={plan}
           subjectTitle={subject.title}
+          deckTitle={deck.title}
           summary_markdown={deck.summary_markdown}
           comparative_table_json={deck.comparative_table_json}
           mnemonics={deck.mnemonics}

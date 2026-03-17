@@ -1,9 +1,9 @@
 'use client';
 
 import Image from 'next/image';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import ReactMarkdown, { type Components } from 'react-markdown';
-import { getTutor, type Tutor } from '@/lib/tutor-engine';
+import { getTutor, getOpeningMessage, type Tutor } from '@/lib/tutor-engine';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -22,9 +22,16 @@ type Props = {
   color:                  string;
   plan:                   'flash' | 'proai_plus';
   subjectTitle:           string | null;
+  deckTitle:              string;
   summary_markdown:       string | null;
   comparative_table_json: unknown;
   mnemonics:              string | null;
+};
+
+type ChatMessage = {
+  id:     string;
+  role:   'tutor' | 'user';
+  text:   string;
 };
 
 // ─── Markdown renderers ───────────────────────────────────────────────────────
@@ -62,7 +69,7 @@ function parseTable(raw: unknown): ComparativeTable | null {
 
 // ─── Tutor card ───────────────────────────────────────────────────────────────
 
-function TutorCard({ tutor, plan, subjectTitle }: { tutor: Tutor; plan: 'flash' | 'proai_plus'; subjectTitle: string | null }) {
+function TutorCard({ tutor, plan, subjectTitle, onStartChat }: { tutor: Tutor; plan: 'flash' | 'proai_plus'; subjectTitle: string | null; onStartChat: () => void }) {
   const isPro = plan === 'proai_plus';
   const VIOLET = '#7C3AED';
   const CYAN   = '#06b6d4';
@@ -137,7 +144,7 @@ function TutorCard({ tutor, plan, subjectTitle }: { tutor: Tutor; plan: 'flash' 
               background: `linear-gradient(135deg, ${VIOLET}, ${CYAN})`,
               boxShadow: `0 0 20px ${VIOLET}50`,
             }}
-            onClick={() => {/* chat handler — future */}}
+            onClick={onStartChat}
           >
             Iniciar Consultoria
           </button>
@@ -370,10 +377,300 @@ function AccordionRow({
   );
 }
 
+// ─── Chat view ────────────────────────────────────────────────────────────────
+
+function ChatView({
+  tutor, deckTitle, color, onBack,
+}: {
+  tutor:     Tutor;
+  deckTitle: string;
+  color:     string;
+  onBack:    () => void;
+}) {
+  const VIOLET = '#7C3AED';
+  const CYAN   = '#06b6d4';
+
+  const opening = getOpeningMessage(tutor, deckTitle);
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    { id: 'open', role: 'tutor', text: opening },
+  ]);
+  const [input, setInput]       = useState('');
+  const [typing, setTyping]     = useState(false);
+  const bottomRef               = useRef<HTMLDivElement>(null);
+  const inputRef                = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, typing]);
+
+  function handleSend() {
+    const text = input.trim();
+    if (!text || typing) return;
+    const userMsg: ChatMessage = { id: Date.now().toString(), role: 'user', text };
+    setMessages(prev => [...prev, userMsg]);
+    setInput('');
+    setTyping(true);
+
+    // Mock reply after 1.4s
+    setTimeout(() => {
+      const replies = [
+        `Ótima pergunta! No contexto de **"${deckTitle}"**, esse ponto é especialmente importante no ENEM. Vamos destrinchar: o conceito central aqui é que...`,
+        `Entendo sua dúvida. Muitos alunos travam exatamente aí. A chave para resolver questões sobre esse tema é identificar o mecanismo por trás — não decorar, entender. Me diz mais sobre o que te confunde.`,
+        `Perfeito! Isso conecta diretamente com o que o ENEM costuma cobrar. Pensa assim: imagine o processo como uma cadeia de eventos — cada etapa depende da anterior. Ficou mais claro?`,
+        `Boa! Esse é um detalhe que a maioria ignora. No ENEM ${new Date().getFullYear()}, questões assim aparecem disfarçadas em contexto aplicado. Vou te dar um exemplo prático...`,
+      ];
+      const reply = replies[Math.floor(Math.random() * replies.length)];
+      setMessages(prev => [...prev, { id: Date.now().toString(), role: 'tutor', text: reply }]);
+      setTyping(false);
+    }, 1400 + Math.random() * 600);
+  }
+
+  function handleKey(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  }
+
+  return (
+    <div className="flex flex-col h-screen max-h-screen overflow-hidden -mx-4 sm:-mx-8 -my-12">
+
+      {/* ── Header ── */}
+      <div
+        className="shrink-0 flex items-center gap-4 px-4 sm:px-8 py-4"
+        style={{
+          background:   'rgba(5,3,15,0.95)',
+          borderBottom: '1px solid rgba(255,255,255,0.07)',
+          backdropFilter: 'blur(20px)',
+        }}
+      >
+        {/* Back button */}
+        <button
+          onClick={onBack}
+          className="shrink-0 flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-white transition-colors group"
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="group-hover:-translate-x-0.5 transition-transform">
+            <path d="M10 3L5 8l5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          Base de Conhecimento
+        </button>
+
+        <div className="w-px h-6 bg-white/10 shrink-0" />
+
+        {/* Tutor info */}
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <div className="relative shrink-0">
+            <div
+              className="w-10 h-10 rounded-xl overflow-hidden"
+              style={{
+                border:    `1px solid ${CYAN}40`,
+                boxShadow: `0 0 16px ${CYAN}30`,
+              }}
+            >
+              <Image
+                src={tutor.avatar_url}
+                alt={tutor.name}
+                width={40}
+                height={40}
+                className="w-full h-full object-cover"
+                unoptimized
+              />
+            </div>
+            {/* Online dot */}
+            <div
+              className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-[#05030f]"
+              style={{ background: '#22c55e', boxShadow: '0 0 6px #22c55e80' }}
+            />
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="text-white font-bold text-sm">{tutor.name}</p>
+              <span
+                className="text-xs font-bold px-2 py-0.5 rounded-full"
+                style={{
+                  background: `linear-gradient(135deg, ${VIOLET}, ${CYAN})`,
+                  color: '#fff',
+                  boxShadow: `0 0 8px ${VIOLET}50`,
+                }}
+              >
+                Consultoria AiPro+
+              </span>
+            </div>
+            <p className="text-xs" style={{ color: CYAN }}>
+              <span className="mr-1.5 text-green-400">●</span>
+              Online agora · {tutor.tagline.split('·')[0].trim()}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Deck context pill ── */}
+      <div
+        className="shrink-0 flex items-center gap-2 px-4 sm:px-8 py-2.5"
+        style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.04)' }}
+      >
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+          <rect x="2" y="3" width="12" height="10" rx="2" stroke={color} strokeWidth="1.5"/>
+          <path d="M5 7h6M5 10h4" stroke={color} strokeWidth="1.5" strokeLinecap="round"/>
+        </svg>
+        <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
+          Consultoria sobre: <span className="font-semibold" style={{ color: `${color}cc` }}>{deckTitle}</span>
+        </p>
+      </div>
+
+      {/* ── Messages ── */}
+      <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-5 space-y-4">
+        {messages.map(msg => (
+          <div key={msg.id} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+
+            {/* Tutor avatar */}
+            {msg.role === 'tutor' && (
+              <div className="shrink-0 w-8 h-8 rounded-lg overflow-hidden mt-0.5"
+                style={{ border: `1px solid ${CYAN}30` }}>
+                <Image src={tutor.avatar_url} alt={tutor.name} width={32} height={32}
+                  className="w-full h-full object-cover" unoptimized />
+              </div>
+            )}
+
+            {/* Bubble */}
+            <div
+              className="max-w-[75%] rounded-2xl px-4 py-3 text-sm leading-relaxed"
+              style={
+                msg.role === 'tutor'
+                  ? {
+                      background:   'rgba(255,255,255,0.05)',
+                      border:       '1px solid rgba(255,255,255,0.09)',
+                      color:        'rgba(255,255,255,0.90)',
+                      borderRadius: '4px 18px 18px 18px',
+                    }
+                  : {
+                      background:   `linear-gradient(135deg, ${VIOLET}cc, ${CYAN}99)`,
+                      color:        '#fff',
+                      borderRadius: '18px 4px 18px 18px',
+                      boxShadow:    `0 4px 16px ${VIOLET}40`,
+                    }
+              }
+            >
+              {msg.role === 'tutor' ? (
+                <ReactMarkdown
+                  components={{
+                    p:      ({ children }) => <span>{children}</span>,
+                    strong: ({ children }) => <strong className="font-bold text-white">{children}</strong>,
+                    em:     ({ children }) => <em className="italic text-slate-300">{children}</em>,
+                  }}
+                >
+                  {msg.text}
+                </ReactMarkdown>
+              ) : (
+                msg.text
+              )}
+            </div>
+          </div>
+        ))}
+
+        {/* Typing indicator */}
+        {typing && (
+          <div className="flex gap-3 justify-start">
+            <div className="shrink-0 w-8 h-8 rounded-lg overflow-hidden mt-0.5"
+              style={{ border: `1px solid ${CYAN}30` }}>
+              <Image src={tutor.avatar_url} alt={tutor.name} width={32} height={32}
+                className="w-full h-full object-cover" unoptimized />
+            </div>
+            <div
+              className="flex items-center gap-1.5 px-4 py-3 rounded-2xl"
+              style={{
+                background:   'rgba(255,255,255,0.05)',
+                border:       '1px solid rgba(255,255,255,0.09)',
+                borderRadius: '4px 18px 18px 18px',
+              }}
+            >
+              {[0, 1, 2].map(i => (
+                <div
+                  key={i}
+                  className="w-2 h-2 rounded-full"
+                  style={{
+                    background: CYAN,
+                    animation:  `typing-dot 1.2s ease-in-out ${i * 0.2}s infinite`,
+                    opacity:    0.5,
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div ref={bottomRef} />
+      </div>
+
+      {/* ── Input bar ── */}
+      <div
+        className="shrink-0 px-4 sm:px-8 py-4"
+        style={{
+          background:   'rgba(5,3,15,0.95)',
+          borderTop:    '1px solid rgba(255,255,255,0.07)',
+          backdropFilter: 'blur(20px)',
+        }}
+      >
+        <div
+          className="flex items-end gap-3 rounded-2xl px-4 py-3"
+          style={{
+            background: 'rgba(255,255,255,0.05)',
+            border:     '1px solid rgba(255,255,255,0.10)',
+          }}
+        >
+          <textarea
+            ref={inputRef}
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={handleKey}
+            placeholder={`Pergunte ao ${tutor.name}...`}
+            rows={1}
+            className="flex-1 bg-transparent text-white text-sm resize-none outline-none placeholder:text-slate-600 leading-relaxed"
+            style={{ maxHeight: '120px' }}
+            onInput={e => {
+              const t = e.currentTarget;
+              t.style.height = 'auto';
+              t.style.height = t.scrollHeight + 'px';
+            }}
+            disabled={typing}
+          />
+          <button
+            onClick={handleSend}
+            disabled={!input.trim() || typing}
+            className="shrink-0 w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200 hover:scale-105 disabled:opacity-30"
+            style={{
+              background: input.trim() && !typing
+                ? `linear-gradient(135deg, ${VIOLET}, ${CYAN})`
+                : 'rgba(255,255,255,0.08)',
+              boxShadow: input.trim() && !typing ? `0 0 16px ${VIOLET}60` : 'none',
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M14 2L7 9M14 2L10 14l-3-5-5-3 12-4z" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+        </div>
+        <p className="text-center text-xs text-slate-700 mt-2">
+          {tutor.name} pode cometer erros. Verifique informações importantes.
+        </p>
+      </div>
+
+      {/* Typing dot keyframe injection */}
+      <style>{`
+        @keyframes typing-dot {
+          0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+          30% { transform: translateY(-4px); opacity: 1; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export default function DeckContent({ color, plan, subjectTitle, summary_markdown, comparative_table_json, mnemonics }: Props) {
+export default function DeckContent({ color, plan, subjectTitle, deckTitle, summary_markdown, comparative_table_json, mnemonics }: Props) {
   const [showModal, setShowModal] = useState(false);
+  const [view, setView]           = useState<'knowledge' | 'chat'>('knowledge');
   const table   = parseTable(comparative_table_json);
   const isFlash = plan === 'flash';
   const tutor   = getTutor(subjectTitle);
@@ -444,12 +741,28 @@ export default function DeckContent({ color, plan, subjectTitle, summary_markdow
     }] : []),
   ];
 
+  if (view === 'chat' && tutor) {
+    return (
+      <ChatView
+        tutor={tutor}
+        deckTitle={deckTitle}
+        color={color}
+        onBack={() => setView('knowledge')}
+      />
+    );
+  }
+
   return (
     <>
       {showModal && <UpgradeModal onClose={() => setShowModal(false)} />}
 
       {tutor && (
-        <TutorCard tutor={tutor} plan={plan} subjectTitle={subjectTitle} />
+        <TutorCard
+          tutor={tutor}
+          plan={plan}
+          subjectTitle={subjectTitle}
+          onStartChat={() => setView('chat')}
+        />
       )}
 
       <div className="flex flex-col gap-3">
