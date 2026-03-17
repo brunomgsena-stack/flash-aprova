@@ -1,22 +1,11 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabaseClient';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const GREEN  = '#22c55e';
 const VIOLET = '#7C3AED';
 const CYAN   = '#06b6d4';
-
-// ─── Phone mask ───────────────────────────────────────────────────────────────
-function maskPhone(v: string): string {
-  const d = v.replace(/\D/g, '').slice(0, 11);
-  if (d.length <=  2) return `(${d}`;
-  if (d.length <=  7) return `(${d.slice(0,2)}) ${d.slice(2)}`;
-  if (d.length <= 10) return `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`;
-  return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`;
-}
 
 // ─── Subjects data ────────────────────────────────────────────────────────────
 const SUBJECTS = [
@@ -201,11 +190,11 @@ function ForgettingCurve() {
 }
 
 // ─── CTA button ───────────────────────────────────────────────────────────────
-function CTAButton({ onClick, size = 'lg' }: { onClick: () => void; size?: 'sm' | 'lg' }) {
+function CTAButton({ size = 'lg' }: { size?: 'sm' | 'lg' }) {
   const big = size === 'lg';
   return (
-    <button
-      onClick={onClick}
+    <Link
+      href="/onboarding"
       className={`cta-pulse inline-flex items-center gap-3 rounded-2xl font-black text-black transition-all duration-200 hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.99] ${big ? 'px-8 py-5 text-lg' : 'px-6 py-4 text-base'}`}
       style={{
         background:    `linear-gradient(135deg, ${GREEN} 0%, #16a34a 100%)`,
@@ -217,139 +206,12 @@ function CTAButton({ onClick, size = 'lg' }: { onClick: () => void; size?: 'sm' 
         <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
       </svg>
       Iniciar Diagnóstico por IA agora
-    </button>
-  );
-}
-
-// ─── Onboarding overlay ───────────────────────────────────────────────────────
-type OnboardingState = 'idle' | 'saving' | 'done' | 'error';
-
-function OnboardingOverlay({ onClose }: { onClose: () => void }) {
-  const [name,     setName]     = useState('');
-  const [email,    setEmail]    = useState('');
-  const [whatsapp, setWhatsapp] = useState('');
-  const [state,    setState]    = useState<OnboardingState>('idle');
-  const [errMsg,   setErrMsg]   = useState('');
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!name.trim() || !email.trim() || whatsapp.replace(/\D/g,'').length < 10) {
-      setErrMsg('Preencha todos os campos corretamente.'); return;
-    }
-    setState('saving'); setErrMsg('');
-    const { error } = await supabase.from('leads').insert({
-      name: name.trim(), email: email.trim().toLowerCase(), whatsapp: whatsapp.replace(/\D/g,''),
-    });
-    if (error) { setState('error'); setErrMsg('Erro ao salvar. Tente novamente.'); return; }
-    setState('done');
-  }
-
-  const inputStyle = {
-    background: 'rgba(255,255,255,0.05)',
-    border: '1px solid rgba(255,255,255,0.10)',
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overlay-in"
-      style={{ background: 'rgba(0,0,0,0.82)', backdropFilter: 'blur(10px)' }}
-      onClick={onClose}>
-      <div className="relative w-full max-w-md rounded-3xl overflow-hidden card-in"
-        style={{
-          background: 'rgba(5,5,5,0.96)',
-          border: `1px solid ${GREEN}55`,
-          boxShadow: `0 0 0 1px ${GREEN}22, 0 0 60px ${GREEN}18, 0 24px 48px rgba(0,0,0,0.70)`,
-        }}
-        onClick={e => e.stopPropagation()}>
-
-        <div className="absolute inset-x-0 top-0 h-px"
-          style={{ background: `linear-gradient(90deg, transparent, ${GREEN}, transparent)` }} />
-        <div className="absolute top-0 left-0 w-48 h-48 pointer-events-none rounded-full"
-          style={{ background: `radial-gradient(circle, ${GREEN}15 0%, transparent 70%)`, transform: 'translate(-30%,-30%)' }} />
-
-        <div className="relative p-7">
-          {state === 'done' ? (
-            <div className="flex flex-col items-center text-center gap-5 py-4">
-              <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl"
-                style={{ background: `${GREEN}18`, border: `1px solid ${GREEN}40`, boxShadow: `0 0 24px ${GREEN}30` }}>
-                ✅
-              </div>
-              <div>
-                <p className="text-white font-black text-xl mb-2">Diagnóstico enviado!</p>
-                <p className="text-slate-400 text-sm leading-relaxed">
-                  Crie sua conta gratuita para acessar os 10 cards de diagnóstico da IA e descobrir suas lacunas de memória.
-                </p>
-              </div>
-              <Link href="/login"
-                className="w-full py-4 rounded-xl font-black text-black text-base text-center transition-all duration-200 hover:-translate-y-0.5 cta-pulse"
-                style={{ background: `linear-gradient(135deg, ${GREEN}, #16a34a)` }}>
-                Criar conta e Iniciar Diagnóstico →
-              </Link>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} noValidate>
-              <div className="flex gap-1.5 mb-6">
-                {[1,2,3].map(n => (
-                  <div key={n} className="h-1 rounded-full"
-                    style={{ width: n === 1 ? '28px' : '10px', background: n === 1 ? GREEN : 'rgba(255,255,255,0.10)' }} />
-                ))}
-                <span className="text-slate-600 text-xs ml-1">Passo 1 de 3</span>
-              </div>
-
-              <div className="flex items-center gap-4 mb-6">
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 text-2xl"
-                  style={{ background: `${GREEN}18`, border: `1px solid ${GREEN}40`, boxShadow: `0 0 20px ${GREEN}25` }}>
-                  🎯
-                </div>
-                <div>
-                  <p className="text-white font-black text-base leading-tight">Identificação de Combate</p>
-                  <p className="text-slate-500 text-xs mt-0.5">Para onde a IA envia seu Diagnóstico?</p>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-3 mb-5">
-                {[
-                  { label: 'Nome completo', type: 'text',  placeholder: 'Seu nome', val: name,     set: setName,     ac: 'name' },
-                  { label: 'E-mail',        type: 'email', placeholder: 'seu@email.com', val: email, set: setEmail, ac: 'email' },
-                ].map(({ label, type, placeholder, val, set, ac }) => (
-                  <div key={label}>
-                    <label className="text-xs text-slate-500 font-medium mb-1.5 block">{label}</label>
-                    <input type={type} placeholder={placeholder} value={val}
-                      onChange={e => set(e.target.value)}
-                      className="w-full rounded-xl px-4 py-3 text-sm text-white outline-none transition-all duration-200 placeholder-slate-700"
-                      style={inputStyle} autoComplete={ac} required />
-                  </div>
-                ))}
-                <div>
-                  <label className="text-xs text-slate-500 font-medium mb-1.5 block">WhatsApp</label>
-                  <input type="tel" placeholder="(11) 99999-9999" value={whatsapp}
-                    onChange={e => setWhatsapp(maskPhone(e.target.value))}
-                    className="w-full rounded-xl px-4 py-3 text-sm text-white outline-none transition-all duration-200 placeholder-slate-700"
-                    style={inputStyle} autoComplete="tel" required />
-                </div>
-              </div>
-
-              {errMsg && <p className="text-red-400 text-xs mb-4 text-center">{errMsg}</p>}
-
-              <button type="submit" disabled={state === 'saving'}
-                className="w-full py-4 rounded-xl font-black text-black text-base transition-all duration-200 hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed"
-                style={{ background: `linear-gradient(135deg, ${GREEN}, #16a34a)`,
-                  boxShadow: `0 0 28px ${GREEN}40, 0 4px 20px rgba(0,0,0,0.40)` }}>
-                {state === 'saving' ? 'Salvando...' : 'Iniciar meu Diagnóstico por IA →'}
-              </button>
-              <p className="text-center text-slate-700 text-xs mt-4">🔒 Seus dados são privados.</p>
-            </form>
-          )}
-        </div>
-      </div>
-    </div>
+    </Link>
   );
 }
 
 // ─── Main component ───────────────────────────────────────────────────────────
 export default function LandingPage() {
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  const open = () => setShowOnboarding(true);
-
   return (
     <div
       className="relative overflow-x-hidden"
@@ -390,11 +252,11 @@ export default function LandingPage() {
             <Link href="/login" className="text-sm text-slate-400 hover:text-white transition-colors font-medium hidden sm:block">
               Entrar
             </Link>
-            <button onClick={open}
+            <Link href="/onboarding"
               className="text-sm px-4 py-2 rounded-xl font-bold text-black transition-all duration-200 hover:-translate-y-0.5"
               style={{ background: GREEN }}>
               Começar grátis
-            </button>
+            </Link>
           </div>
         </nav>
 
@@ -427,7 +289,7 @@ export default function LandingPage() {
           </p>
 
           <div className="fade-up-d3 flex flex-col items-center gap-3">
-            <CTAButton onClick={open} />
+            <CTAButton />
             <p className="text-slate-700 text-xs">Sem cartão · Diagnóstico por IA em 3 min · Acesso imediato</p>
           </div>
 
@@ -776,7 +638,7 @@ export default function LandingPage() {
                 Cada dia sem o método certo é memória perdida que não volta. Inicie seu Diagnóstico por IA agora e entre para a lista de aprovados.
               </p>
               <div className="flex justify-center">
-                <CTAButton onClick={open} />
+                <CTAButton />
               </div>
             </div>
           </div>
@@ -798,7 +660,6 @@ export default function LandingPage() {
 
       </div>
 
-      {showOnboarding && <OnboardingOverlay onClose={() => setShowOnboarding(false)} />}
     </div>
   );
 }
