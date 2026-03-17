@@ -67,7 +67,7 @@ export default async function DeckPreStudyPage({ params }: Props) {
   // Fetch user plan server-side
   const serverClient = await createClient();
   const { data: { user } } = await serverClient.auth.getUser();
-  const planInfo = user ? await fetchUserPlan(user.id) : null;
+  const planInfo = user ? await fetchUserPlan(user.id, user.email ?? undefined) : null;
   const plan = planInfo?.plan ?? 'flash';
 
   return (

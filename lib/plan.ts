@@ -11,17 +11,16 @@ export type PlanInfo = {
 
 const PLAN_LABEL: Record<Plan, string> = {
   flash:      'Flash',
-  proai_plus: 'ProAI+',
+  proai_plus: 'AiPro+',
 };
 
 export function planLabel(plan: Plan): string {
   return PLAN_LABEL[plan];
 }
 
-export async function fetchUserPlan(userId: string): Promise<PlanInfo> {
+export async function fetchUserPlan(userId: string, email?: string): Promise<PlanInfo> {
   // ── Dev bypass ───────────────────────────────────────────────────────────
-  const { data: { user: authUser } } = await supabase.auth.getUser();
-  if (authUser?.email === 'brunomgsena@gmail.com') {
+  if (email === 'brunomgsena@gmail.com') {
     return { plan: 'proai_plus', expiresAt: null, daysLeft: null };
   }
   // ────────────────────────────────────────────────────────────────────────

@@ -118,10 +118,10 @@ function UpgradeModal({ onClose }: { onClose: () => void }) {
 
           <div>
             <p className="font-black text-lg leading-tight mb-1" style={{ color: '#0f172a' }}>
-              Conteúdo exclusivo ProAI+ 🤖
+              Conteúdo exclusivo AiPro+ 🤖
             </p>
             <p className="text-sm leading-relaxed" style={{ color: 'rgba(15,23,42,0.65)' }}>
-              Resumos, Tabelas e Áudio-Resumos são exclusivos do ProAI+. Desbloqueie acesso completo à Base de Conhecimento e acelere sua aprovação.
+              Resumos, Tabelas e Áudio-Resumos são exclusivos do AiPro+. Desbloqueie acesso completo à Base de Conhecimento e acelere sua aprovação.
             </p>
           </div>
 
@@ -137,7 +137,7 @@ function UpgradeModal({ onClose }: { onClose: () => void }) {
               letterSpacing: '0.01em',
             }}
           >
-            Fazer Upgrade para ProAI+ →
+            Fazer Upgrade para AiPro+ →
           </a>
 
           {/* Dismiss */}
@@ -215,7 +215,7 @@ function AccordionRow({
                 className="text-xs font-semibold"
                 style={{ color: 'rgba(212,175,55,0.85)' }}
               >
-                ProAI+
+                AiPro+
               </span>
             </span>
           )}
