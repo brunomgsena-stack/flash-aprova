@@ -23,6 +23,50 @@
   50%       { box-shadow: 0 0 22px rgba(251,146,60,0.5); }
 }
 
+/* ── Landing page CTA pulse ──────────────────────────────────────────────── */
+@keyframes cta-pulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(124,58,237,0.50), 0 0 60px rgba(6,182,212,0.20), 0 4px 24px rgba(0,0,0,0.50); }
+  50%       { box-shadow: 0 0 44px rgba(124,58,237,0.85), 0 0 90px rgba(6,182,212,0.45), 0 4px 24px rgba(0,0,0,0.50); }
+}
+.cta-pulse { animation: cta-pulse 2.4s ease-in-out infinite; }
+
+/* ── Floating orbs ───────────────────────────────────────────────────────── */
+@keyframes orb-drift-a {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  40%       { transform: translate(40px, -30px) scale(1.06); }
+  70%       { transform: translate(-20px, 18px) scale(0.96); }
+}
+@keyframes orb-drift-b {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  35%       { transform: translate(-35px, 25px) scale(1.04); }
+  65%       { transform: translate(22px, -16px) scale(0.97); }
+}
+.orb-a { animation: orb-drift-a 14s ease-in-out infinite; }
+.orb-b { animation: orb-drift-b 17s ease-in-out infinite; }
+
+/* ── Fade-slide in ───────────────────────────────────────────────────────── */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up        { animation: fade-up 0.6s cubic-bezier(0.22,1,0.36,1) both; }
+.fade-up-d1     { animation: fade-up 0.6s cubic-bezier(0.22,1,0.36,1) 0.10s both; }
+.fade-up-d2     { animation: fade-up 0.6s cubic-bezier(0.22,1,0.36,1) 0.22s both; }
+.fade-up-d3     { animation: fade-up 0.6s cubic-bezier(0.22,1,0.36,1) 0.36s both; }
+.fade-up-d4     { animation: fade-up 0.6s cubic-bezier(0.22,1,0.36,1) 0.50s both; }
+
+/* ── Overlay fade ────────────────────────────────────────────────────────── */
+@keyframes overlay-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(32px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.overlay-in { animation: overlay-in 0.30s ease both; }
+.card-in    { animation: card-in    0.45s cubic-bezier(0.22,1,0.36,1) both; }
+
 body {
   background-color: var(--bg-deep);
   background-image:

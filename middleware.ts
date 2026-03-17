@@ -34,8 +34,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  // Already logged in → skip login page
-  if (pathname === '/login' && user) {
+  // Already logged in → skip login page / landing page
+  if ((pathname === '/login' || pathname === '/') && user) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
