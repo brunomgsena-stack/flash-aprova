@@ -1,7 +1,9 @@
 'use client';
 
+import Image from 'next/image';
 import { useRef, useState } from 'react';
 import ReactMarkdown, { type Components } from 'react-markdown';
+import { getTutor, type Tutor } from '@/lib/tutor-engine';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -19,6 +21,7 @@ type AccordionItem = {
 type Props = {
   color:                  string;
   plan:                   'flash' | 'proai_plus';
+  subjectTitle:           string | null;
   summary_markdown:       string | null;
   comparative_table_json: unknown;
   mnemonics:              string | null;
@@ -55,6 +58,104 @@ function parseTable(raw: unknown): ComparativeTable | null {
     if (p && Array.isArray(p.headers) && Array.isArray(p.rows)) return p as ComparativeTable;
   } catch { /* malformed */ }
   return null;
+}
+
+// ─── Tutor card ───────────────────────────────────────────────────────────────
+
+function TutorCard({ tutor, plan, subjectTitle }: { tutor: Tutor; plan: 'flash' | 'proai_plus'; subjectTitle: string | null }) {
+  const isPro = plan === 'proai_plus';
+  const VIOLET = '#7C3AED';
+  const CYAN   = '#06b6d4';
+
+  return (
+    <div
+      className="relative rounded-2xl p-5 mb-6 overflow-hidden flex items-center gap-5"
+      style={{
+        background:   'rgba(10,5,20,0.85)',
+        border:       `1px solid ${isPro ? `rgba(6,182,212,0.30)` : 'rgba(124,58,237,0.20)'}`,
+        backdropFilter: 'blur(20px)',
+        boxShadow:    isPro ? `0 0 40px rgba(6,182,212,0.10)` : 'none',
+      }}
+    >
+      {/* Top shimmer */}
+      <div className="absolute inset-x-0 top-0 h-px"
+        style={{ background: `linear-gradient(90deg, transparent, ${isPro ? CYAN : VIOLET}50, transparent)` }} />
+
+      {/* Avatar */}
+      <div className="relative shrink-0">
+        <div
+          className="w-16 h-16 rounded-2xl overflow-hidden flex items-center justify-center"
+          style={{
+            background: `linear-gradient(135deg, ${VIOLET}30, ${CYAN}20)`,
+            border: `1px solid ${isPro ? CYAN : VIOLET}40`,
+            boxShadow: isPro ? `0 0 20px ${CYAN}30` : `0 0 16px ${VIOLET}25`,
+          }}
+        >
+          <Image
+            src={tutor.avatar_url}
+            alt={tutor.name}
+            width={64}
+            height={64}
+            className="w-full h-full object-cover"
+            unoptimized
+          />
+        </div>
+        {/* Online dot */}
+        {isPro && (
+          <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-[#050b14]"
+            style={{ background: '#22c55e', boxShadow: '0 0 8px #22c55e80' }} />
+        )}
+      </div>
+
+      {/* Text */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+          <p className="text-white font-black text-base">{tutor.name}</p>
+          <span className="text-xs font-bold px-2 py-0.5 rounded-full"
+            style={{
+              background: `linear-gradient(135deg, ${VIOLET}, ${CYAN})`,
+              color: '#fff',
+              boxShadow: `0 0 8px ${VIOLET}50`,
+            }}>
+            AiPro+
+          </span>
+        </div>
+        <p className="text-xs mb-2" style={{ color: CYAN }}>{tutor.tagline}</p>
+        <p className="text-slate-400 text-xs leading-relaxed">
+          {isPro
+            ? `Trava em ${subjectTitle ?? tutor.specialty}? Fale com o ${tutor.name}, seu especialista AiPro+.`
+            : `Desbloqueie o ${tutor.name} com o plano AiPro+ e tenha um especialista 24h.`}
+        </p>
+      </div>
+
+      {/* CTA */}
+      <div className="shrink-0">
+        {isPro ? (
+          <button
+            className="px-4 py-2.5 rounded-xl text-xs font-black text-white transition-all duration-200 hover:-translate-y-0.5 whitespace-nowrap"
+            style={{
+              background: `linear-gradient(135deg, ${VIOLET}, ${CYAN})`,
+              boxShadow: `0 0 20px ${VIOLET}50`,
+            }}
+            onClick={() => {/* chat handler — future */}}
+          >
+            Iniciar Consultoria
+          </button>
+        ) : (
+          <a
+            href="/subscription"
+            className="px-4 py-2.5 rounded-xl text-xs font-bold text-white transition-all duration-200 hover:-translate-y-0.5 whitespace-nowrap block text-center"
+            style={{
+              background: 'rgba(124,58,237,0.15)',
+              border: `1px solid ${VIOLET}40`,
+            }}
+          >
+            Desbloquear →
+          </a>
+        )}
+      </div>
+    </div>
+  );
 }
 
 // ─── Lock icon ────────────────────────────────────────────────────────────────
@@ -271,10 +372,11 @@ function AccordionRow({
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export default function DeckContent({ color, plan, summary_markdown, comparative_table_json, mnemonics }: Props) {
+export default function DeckContent({ color, plan, subjectTitle, summary_markdown, comparative_table_json, mnemonics }: Props) {
   const [showModal, setShowModal] = useState(false);
   const table   = parseTable(comparative_table_json);
   const isFlash = plan === 'flash';
+  const tutor   = getTutor(subjectTitle);
 
   const items: AccordionItem[] = [
     {
@@ -345,6 +447,10 @@ export default function DeckContent({ color, plan, summary_markdown, comparative
   return (
     <>
       {showModal && <UpgradeModal onClose={() => setShowModal(false)} />}
+
+      {tutor && (
+        <TutorCard tutor={tutor} plan={plan} subjectTitle={subjectTitle} />
+      )}
 
       <div className="flex flex-col gap-3">
         {items.map((item, idx) => (
