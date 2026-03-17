@@ -351,25 +351,28 @@ export default function LandingPage() {
   const open = () => setShowOnboarding(true);
 
   return (
-    <div style={{ background: '#050505' }} className="relative overflow-x-hidden">
+    <div
+      className="relative overflow-x-hidden"
+      style={{ background: 'radial-gradient(ellipse at 30% 0%, #0a0514 0%, #050505 60%)' }}
+    >
 
-      {/* ── Ambient orbs ── */}
+      {/* ── Ambient orbs — violet/blue dominant ── */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
         <div className="orb-a absolute rounded-full"
-          style={{ width: 600, height: 600, top: '-15%', left: '-10%',
-            background: `radial-gradient(circle, ${VIOLET}14 0%, transparent 70%)` }} />
+          style={{ width: 700, height: 700, top: '-20%', left: '-15%',
+            background: `radial-gradient(circle, rgba(124,58,237,0.18) 0%, transparent 70%)` }} />
         <div className="orb-b absolute rounded-full"
-          style={{ width: 500, height: 500, top: '25%', right: '-12%',
-            background: `radial-gradient(circle, ${GREEN}10 0%, transparent 70%)` }} />
+          style={{ width: 550, height: 550, top: '30%', right: '-18%',
+            background: `radial-gradient(circle, rgba(99,102,241,0.14) 0%, transparent 70%)` }} />
         <div className="orb-a absolute rounded-full"
-          style={{ width: 400, height: 400, bottom: '10%', left: '25%',
-            background: `radial-gradient(circle, ${CYAN}0a 0%, transparent 70%)`, animationDelay: '-5s' }} />
+          style={{ width: 450, height: 450, bottom: '5%', left: '20%',
+            background: `radial-gradient(circle, rgba(6,182,212,0.08) 0%, transparent 70%)`, animationDelay: '-5s' }} />
       </div>
 
-      {/* ── Grid overlay ── */}
+      {/* ── Grid overlay — subtle violet tint ── */}
       <div className="fixed inset-0 pointer-events-none" style={{
         zIndex: 0,
-        backgroundImage: `linear-gradient(rgba(34,197,94,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(34,197,94,0.04) 1px, transparent 1px)`,
+        backgroundImage: `linear-gradient(rgba(124,58,237,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(124,58,237,0.05) 1px, transparent 1px)`,
         backgroundSize: '48px 48px',
       }} />
 
@@ -431,15 +434,14 @@ export default function LandingPage() {
           {/* Stats */}
           <div className="fade-up-d4 flex flex-wrap justify-center gap-8 mt-14">
             {[
-              { n: '97%',     label: 'retenção média com IA' },
-              { n: '5.800+',  label: 'cards no banco' },
-              { n: '48h',     label: 'para sentir a diferença' },
-              { n: '6',       label: 'matérias do ENEM cobertas' },
-            ].map(({ n, label }) => (
+              { n: '97%',     label: 'retenção média com IA',    color: GREEN },
+              { n: '8.400+',  label: 'flashcards táticos',       color: VIOLET },
+              { n: '48h',     label: 'para sentir a diferença',  color: CYAN },
+            ].map(({ n, label, color }) => (
               <div key={n} className="text-center">
                 <p className="text-3xl font-black" style={{
-                  color: GREEN,
-                  textShadow: `0 0 16px ${GREEN}60`,
+                  color,
+                  textShadow: `0 0 18px ${color}70`,
                 }}>{n}</p>
                 <p className="text-slate-600 text-xs mt-0.5">{label}</p>
               </div>
@@ -466,13 +468,17 @@ export default function LandingPage() {
               <div key={s.name}
                 className="relative rounded-2xl p-5 overflow-hidden transition-all duration-300 hover:-translate-y-1"
                 style={{
-                  background: 'rgba(255,255,255,0.03)',
-                  backdropFilter: 'blur(16px)',
-                  WebkitBackdropFilter: 'blur(16px)',
-                  border: `1px solid ${s.color}25`,
+                  background: 'rgba(10,5,20,0.70)',
+                  backdropFilter: 'blur(20px)',
+                  WebkitBackdropFilter: 'blur(20px)',
+                  border: `1px solid rgba(124,58,237,0.20)`,
+                  boxShadow: `0 0 40px rgba(124,58,237,0.06)`,
                 }}>
+                {/* violet ambient glow per card */}
+                <div className="absolute inset-0 pointer-events-none"
+                  style={{ background: `radial-gradient(ellipse at top left, rgba(124,58,237,0.08) 0%, transparent 65%)` }} />
                 <div className="absolute inset-x-0 top-0 h-px"
-                  style={{ background: `linear-gradient(90deg, transparent, ${s.color}70, transparent)` }} />
+                  style={{ background: `linear-gradient(90deg, transparent, ${s.color}60, rgba(124,58,237,0.40), transparent)` }} />
 
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
@@ -534,10 +540,13 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {/* Radar */}
             <div className="relative rounded-2xl p-5 overflow-hidden"
-              style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${VIOLET}25`,
-                backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}>
+              style={{ background: 'rgba(10,5,20,0.80)', border: `1px solid rgba(124,58,237,0.28)`,
+                backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+                boxShadow: '0 0 50px rgba(124,58,237,0.10)' }}>
+              <div className="absolute inset-0 pointer-events-none"
+                style={{ background: 'radial-gradient(ellipse at top right, rgba(124,58,237,0.13) 0%, transparent 65%)' }} />
               <div className="absolute inset-x-0 top-0 h-px"
-                style={{ background: `linear-gradient(90deg, transparent, ${VIOLET}70, transparent)` }} />
+                style={{ background: `linear-gradient(90deg, transparent, ${VIOLET}80, transparent)` }} />
               <p className="text-xs font-bold tracking-widest uppercase mb-1" style={{ color: VIOLET }}>Radar ENEM</p>
               <p className="text-slate-600 text-xs mb-4">Equilíbrio de domínio</p>
               <RadarMockup />
@@ -548,10 +557,13 @@ export default function LandingPage() {
 
             {/* Heatmap */}
             <div className="relative rounded-2xl p-5 overflow-hidden"
-              style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${GREEN}20`,
-                backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}>
+              style={{ background: 'rgba(10,5,20,0.80)', border: `1px solid rgba(99,102,241,0.25)`,
+                backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+                boxShadow: '0 0 50px rgba(99,102,241,0.08)' }}>
+              <div className="absolute inset-0 pointer-events-none"
+                style={{ background: 'radial-gradient(ellipse at top left, rgba(99,102,241,0.10) 0%, transparent 65%)' }} />
               <div className="absolute inset-x-0 top-0 h-px"
-                style={{ background: `linear-gradient(90deg, transparent, ${GREEN}60, transparent)` }} />
+                style={{ background: `linear-gradient(90deg, transparent, rgba(99,102,241,0.70), ${GREEN}40, transparent)` }} />
               <p className="text-xs font-bold tracking-widest uppercase mb-1" style={{ color: GREEN }}>Consistência</p>
               <p className="text-slate-600 text-xs mb-4">Heatmap de revisões · últimos 3 meses</p>
               <div className="overflow-x-auto">
@@ -569,10 +581,13 @@ export default function LandingPage() {
 
             {/* Line chart */}
             <div className="relative rounded-2xl p-5 overflow-hidden"
-              style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${CYAN}20`,
-                backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}>
+              style={{ background: 'rgba(10,5,20,0.80)', border: `1px solid rgba(6,182,212,0.22)`,
+                backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+                boxShadow: '0 0 50px rgba(6,182,212,0.07)' }}>
+              <div className="absolute inset-0 pointer-events-none"
+                style={{ background: 'radial-gradient(ellipse at bottom right, rgba(6,182,212,0.09) 0%, transparent 65%)' }} />
               <div className="absolute inset-x-0 top-0 h-px"
-                style={{ background: `linear-gradient(90deg, transparent, ${CYAN}60, transparent)` }} />
+                style={{ background: `linear-gradient(90deg, transparent, ${CYAN}70, transparent)` }} />
               <p className="text-xs font-bold tracking-widest uppercase mb-1" style={{ color: CYAN }}>Previsão de Revisão</p>
               <p className="text-slate-600 text-xs mb-4">Evolução do domínio por semana</p>
               <LineMockup />
@@ -699,13 +714,16 @@ export default function LandingPage() {
         <section className="max-w-4xl mx-auto px-5 sm:px-10 pb-24">
           <div className="relative rounded-3xl p-7 sm:p-10 overflow-hidden"
             style={{
-              background: 'rgba(255,255,255,0.025)',
+              background: 'rgba(10,5,20,0.80)',
               backdropFilter: 'blur(20px)',
               WebkitBackdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255,255,255,0.06)',
+              border: '1px solid rgba(124,58,237,0.20)',
+              boxShadow: '0 0 60px rgba(124,58,237,0.08)',
             }}>
+            <div className="absolute inset-0 pointer-events-none"
+              style={{ background: 'radial-gradient(ellipse at bottom left, rgba(124,58,237,0.10) 0%, transparent 60%)' }} />
             <div className="absolute inset-x-0 top-0 h-px"
-              style={{ background: 'linear-gradient(90deg, transparent, rgba(249,115,22,0.55), transparent)' }} />
+              style={{ background: 'linear-gradient(90deg, transparent, rgba(249,115,22,0.50), rgba(124,58,237,0.30), transparent)' }} />
             <div className="max-w-xl mb-6">
               <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: '#f97316' }}>A Ciência por Trás do Método</p>
               <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight mb-3">
@@ -735,16 +753,16 @@ export default function LandingPage() {
         <section className="max-w-4xl mx-auto px-5 sm:px-10 pb-24">
           <div className="relative rounded-3xl p-10 sm:p-16 overflow-hidden text-center"
             style={{
-              background: 'rgba(5,5,5,0.92)',
-              border: `1px solid ${GREEN}30`,
-              boxShadow: `0 0 0 1px ${GREEN}12, 0 0 80px ${GREEN}0e`,
+              background: 'rgba(10,5,20,0.92)',
+              border: `1px solid rgba(124,58,237,0.35)`,
+              boxShadow: `0 0 0 1px rgba(124,58,237,0.12), 0 0 100px rgba(124,58,237,0.16), 0 0 200px rgba(99,102,241,0.08)`,
             }}>
             <div className="absolute inset-x-0 top-0 h-px"
-              style={{ background: `linear-gradient(90deg, transparent, ${GREEN}, transparent)` }} />
-            <div className="absolute top-0 left-0 w-64 h-64 pointer-events-none"
-              style={{ background: `radial-gradient(circle, ${GREEN}12 0%, transparent 70%)`, transform: 'translate(-30%,-30%)' }} />
-            <div className="absolute bottom-0 right-0 w-56 h-56 pointer-events-none"
-              style={{ background: `radial-gradient(circle, ${VIOLET}0f 0%, transparent 70%)`, transform: 'translate(30%,30%)' }} />
+              style={{ background: `linear-gradient(90deg, transparent, ${VIOLET}, ${CYAN}80, transparent)` }} />
+            <div className="absolute top-0 left-0 w-80 h-80 pointer-events-none"
+              style={{ background: `radial-gradient(circle, rgba(124,58,237,0.18) 0%, transparent 70%)`, transform: 'translate(-30%,-30%)' }} />
+            <div className="absolute bottom-0 right-0 w-72 h-72 pointer-events-none"
+              style={{ background: `radial-gradient(circle, rgba(99,102,241,0.14) 0%, transparent 70%)`, transform: 'translate(30%,30%)' }} />
 
             <div className="relative">
               <p className="text-slate-600 text-sm mb-2">Não deixe para depois</p>
