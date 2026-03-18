@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import AnkiComparison from '@/components/AnkiComparison';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const GREEN  = '#22c55e';
@@ -42,7 +43,6 @@ const SUBJECTS = [
 ] as const;
 
 // ─── Radar chart mockup ───────────────────────────────────────────────────────
-// Hexagon with 6 axes: Biologia(top), Química(TR), Física(BR), História(B), Geo(BL), Mat(TL)
 function RadarMockup() {
   const cx = 100, cy = 100, R = 78;
   const angles = [-90, -30, 30, 90, 150, 210].map(d => (d * Math.PI) / 180);
@@ -55,29 +55,24 @@ function RadarMockup() {
 
   return (
     <svg viewBox="0 0 200 200" className="w-full" style={{ maxHeight: 180 }}>
-      {/* Grid rings */}
       {[0.25, 0.50, 0.75, 1.0].map((pct) => (
         <polygon key={pct}
           points={angles.map((_, i) => pt(pct * R, i)).join(' ')}
           fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
       ))}
-      {/* Axes */}
       {angles.map((_, i) => (
         <line key={i} x1={cx} y1={cy} x2={cx + R * Math.cos(angles[i])} y2={cy + R * Math.sin(angles[i])}
           stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
       ))}
-      {/* Data fill */}
       <polygon
         points={dataR.map((r, i) => pt(r, i)).join(' ')}
-        fill={`${GREEN}22`} stroke={GREEN} strokeWidth="1.5"
+        fill={`${CYAN}22`} stroke={CYAN} strokeWidth="1.5"
       />
-      {/* Data dots */}
       {dataR.map((r, i) => (
         <circle key={i}
           cx={cx + r * Math.cos(angles[i])} cy={cy + r * Math.sin(angles[i])}
-          r="3" fill={GREEN} />
+          r="3" fill={CYAN} />
       ))}
-      {/* Labels */}
       {angles.map((_, i) => {
         const lx = cx + (R + 14) * Math.cos(angles[i]);
         const ly = cy + (R + 14) * Math.sin(angles[i]);
@@ -108,8 +103,8 @@ function HeatmapMockup() {
           {week.map((v, di) => (
             <div key={di} style={{
               width: 10, height: 10, borderRadius: 2,
-              background: v === 0 ? 'rgba(255,255,255,0.05)' : `rgba(34,197,94,${HEAT_ALPHA[v]})`,
-              boxShadow: v >= 4 ? `0 0 4px rgba(34,197,94,0.5)` : 'none',
+              background: v === 0 ? 'rgba(255,255,255,0.05)' : `rgba(6,182,212,${HEAT_ALPHA[v]})`,
+              boxShadow: v >= 4 ? `0 0 4px rgba(6,182,212,0.5)` : 'none',
             }} />
           ))}
         </div>
@@ -126,26 +121,22 @@ function LineMockup() {
     <svg viewBox="0 0 200 90" className="w-full" style={{ maxHeight: 90 }}>
       <defs>
         <linearGradient id="line-fill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={GREEN} stopOpacity="0.25" />
-          <stop offset="100%" stopColor={GREEN} stopOpacity="0" />
+          <stop offset="0%" stopColor={CYAN} stopOpacity="0.25" />
+          <stop offset="100%" stopColor={CYAN} stopOpacity="0" />
         </linearGradient>
         <filter id="line-glow">
           <feGaussianBlur stdDeviation="2" result="blur"/>
           <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
         </filter>
       </defs>
-      {/* Grid */}
       {[20,40,60,80].map(y => (
         <line key={y} x1="10" y1={y} x2="190" y2={y} stroke="rgba(255,255,255,0.05)" strokeWidth="1"/>
       ))}
-      {/* Area */}
       <path d={area} fill="url(#line-fill)" />
-      {/* Line */}
-      <path d={path} fill="none" stroke={GREEN} strokeWidth="2" strokeLinecap="round"
+      <path d={path} fill="none" stroke={CYAN} strokeWidth="2" strokeLinecap="round"
         filter="url(#line-glow)" />
-      {/* End dot */}
-      <circle cx="190" cy="8" r="4" fill={GREEN} />
-      <circle cx="190" cy="8" r="7" fill={`${GREEN}33`} />
+      <circle cx="190" cy="8" r="4" fill={CYAN} />
+      <circle cx="190" cy="8" r="7" fill={`${CYAN}33`} />
     </svg>
   );
 }
@@ -166,7 +157,7 @@ function ForgettingCurve() {
           <stop offset="0%" stopColor="#f97316" stopOpacity="0.15"/><stop offset="100%" stopColor="#f97316" stopOpacity="0"/>
         </linearGradient>
         <linearGradient id="area-srs2" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={GREEN} stopOpacity="0.20"/><stop offset="100%" stopColor={GREEN} stopOpacity="0"/>
+          <stop offset="0%" stopColor={CYAN} stopOpacity="0.20"/><stop offset="100%" stopColor={CYAN} stopOpacity="0"/>
         </linearGradient>
       </defs>
       {[10,50,90,130,170].map(y => (
@@ -183,30 +174,50 @@ function ForgettingCurve() {
       <path d="M40,10 C52,10 58,44 72,40 C86,36 92,18 112,16 C132,14 138,46 152,42 C166,38 172,18 194,16 C216,14 222,46 242,42 C262,38 268,18 292,16 C312,14 320,46 342,42 C356,38 364,20 380,18 L380,170 L40,170 Z" fill="url(#area-srs2)"/>
       <path d="M40,10 C52,10 58,44 72,40 C86,36 92,18 112,16 C132,14 138,46 152,42 C166,38 172,18 194,16 C216,14 222,46 242,42 C262,38 268,18 292,16 C312,14 320,46 342,42 C356,38 364,20 380,18" fill="none" stroke="url(#grad-srs2)" strokeWidth="2.5" strokeLinecap="round" filter="url(#glow-srs2)"/>
       {([112,194,292] as const).map(cx => (
-        <circle key={cx} cx={cx} cy={16} r="4" fill="#050505" stroke={GREEN} strokeWidth="1.8"/>
+        <circle key={cx} cx={cx} cy={16} r="4" fill="#050505" stroke={CYAN} strokeWidth="1.8"/>
       ))}
     </svg>
   );
 }
 
-// ─── CTA button ───────────────────────────────────────────────────────────────
-function CTAButton({ size = 'lg' }: { size?: 'sm' | 'lg' }) {
+// ─── CTA button (cyan, shimmer) ───────────────────────────────────────────────
+function CTAButton({ size = 'lg', label }: { size?: 'sm' | 'lg'; label?: string }) {
   const big = size === 'lg';
+  const text = label ?? 'Quero reter meu estudo agora';
   return (
     <Link
       href="/onboarding"
-      className={`cta-pulse inline-flex items-center gap-3 rounded-2xl font-black text-black transition-all duration-200 hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.99] ${big ? 'px-8 py-5 text-lg' : 'px-6 py-4 text-base'}`}
+      className={`cta-pulse relative inline-flex items-center gap-3 rounded-2xl font-black text-black overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.99] ${big ? 'px-8 py-5 text-lg' : 'px-6 py-4 text-base'}`}
       style={{
-        background:    `linear-gradient(135deg, ${GREEN} 0%, #16a34a 100%)`,
+        background:    `linear-gradient(135deg, ${CYAN} 0%, #0891b2 100%)`,
         letterSpacing: '-0.01em',
+        boxShadow:     `0 0 40px ${CYAN}50, 0 4px 24px ${CYAN}30`,
       }}
     >
+      {/* shimmer sweep */}
+      <span
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.25) 50%, transparent 70%)',
+          animation: 'shimmer 2.4s infinite',
+        }}
+      />
       <svg width={big ? 22 : 18} height={big ? 22 : 18} viewBox="0 0 24 24" fill="none"
-        stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+        className="relative">
         <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
       </svg>
-      Iniciar Diagnóstico por IA agora
+      <span className="relative">{text}</span>
     </Link>
+  );
+}
+
+// ─── Neon number highlight ────────────────────────────────────────────────────
+function Neon({ children }: { children: React.ReactNode }) {
+  return (
+    <span style={{ color: CYAN, textShadow: `0 0 20px ${CYAN}80, 0 0 40px ${CYAN}40` }}>
+      {children}
+    </span>
   );
 }
 
@@ -218,7 +229,15 @@ export default function LandingPage() {
       style={{ background: 'radial-gradient(ellipse at 30% 0%, #0a0514 0%, #050505 60%)' }}
     >
 
-      {/* ── Ambient orbs — violet/blue dominant ── */}
+      {/* shimmer keyframe */}
+      <style>{`
+        @keyframes shimmer {
+          0%   { transform: translateX(-100%); }
+          100% { transform: translateX(200%);  }
+        }
+      `}</style>
+
+      {/* ── Ambient orbs ── */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
         <div className="orb-a absolute rounded-full"
           style={{ width: 700, height: 700, top: '-20%', left: '-15%',
@@ -231,7 +250,7 @@ export default function LandingPage() {
             background: `radial-gradient(circle, rgba(6,182,212,0.08) 0%, transparent 70%)`, animationDelay: '-5s' }} />
       </div>
 
-      {/* ── Grid overlay — subtle violet tint ── */}
+      {/* ── Grid overlay ── */}
       <div className="fixed inset-0 pointer-events-none" style={{
         zIndex: 0,
         backgroundImage: `linear-gradient(rgba(124,58,237,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(124,58,237,0.05) 1px, transparent 1px)`,
@@ -240,11 +259,11 @@ export default function LandingPage() {
 
       <div className="relative" style={{ zIndex: 1 }}>
 
-        {/* ══════════════════════════════════════════ NAVBAR ══ */}
+        {/* ════════════════════════════════════ NAVBAR ══ */}
         <nav className="flex items-center justify-between px-5 sm:px-10 py-5 max-w-6xl mx-auto">
           <span className="font-black text-white text-xl tracking-tight">
             Flash<span style={{
-              background: `linear-gradient(90deg, ${GREEN}, ${CYAN})`,
+              background: `linear-gradient(90deg, ${CYAN}, ${VIOLET})`,
               WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
             }}>Aprova</span>
           </span>
@@ -254,38 +273,44 @@ export default function LandingPage() {
             </Link>
             <Link href="/onboarding"
               className="text-sm px-4 py-2 rounded-xl font-bold text-black transition-all duration-200 hover:-translate-y-0.5"
-              style={{ background: GREEN }}>
+              style={{ background: CYAN, boxShadow: `0 0 16px ${CYAN}40` }}>
               Começar grátis
             </Link>
           </div>
         </nav>
 
-        {/* ══════════════════════════════════════════ HERO ══ */}
+        {/* ════════════════════════════════════ HERO ══
+            PAS — Problem: você estuda mas esquece                             */}
         <section className="max-w-4xl mx-auto px-5 sm:px-10 pt-10 pb-20 text-center">
 
           <div className="fade-up inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-8 text-xs font-bold tracking-widest uppercase"
-            style={{ background: `${GREEN}14`, border: `1px solid ${GREEN}35`, color: GREEN }}>
-            <span className="inline-block w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: GREEN }} />
-            Algoritmo de Revisão Inteligente · IA Especialista
+            style={{ background: `${CYAN}14`, border: `1px solid ${CYAN}35`, color: CYAN }}>
+            <span className="inline-block w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: CYAN }} />
+            Retenção Cognitiva · IA Especialista · SRS Automático
           </div>
 
           <h1 className="fade-up-d1 text-4xl sm:text-5xl md:text-6xl font-black leading-tight text-white mb-6">
-            Lembre-se de{' '}
+            Pare de estudar<br/>
+            para{' '}
+            <span style={{ color: '#f87171', textShadow: '0 0 20px rgba(248,113,113,0.60)' }}>
+              esquecer.
+            </span>
+            <br/>
+            Garanta{' '}
+            <Neon>97%</Neon>{' '}
+            de retenção{' '}
             <span style={{
-              background: `linear-gradient(90deg, ${GREEN}, ${CYAN})`,
+              background: `linear-gradient(90deg, ${CYAN}, ${VIOLET})`,
               WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-            }}>97%</span>{' '}do que estudou e seja Aprovado no{' '}
-            <span style={{
-              color: GREEN,
-              textShadow: `0 0 20px ${GREEN}90, 0 0 40px ${GREEN}50`,
-            }}>ENEM.</span>
+            }}>
+              até o dia do ENEM.
+            </span>
           </h1>
 
           <p className="fade-up-d2 text-slate-400 text-lg sm:text-xl leading-relaxed max-w-2xl mx-auto mb-10">
-            O <span className="text-white font-semibold">"branco" na hora da prova</span> é o sintoma de um método quebrado.
-            Use o sistema de repetição espaçada com{' '}
-            <span className="text-white font-semibold">Análise de Lacunas por IA</span>{' '}
-            que blinda sua memória e garante seu nome na lista.
+            A ciência prova: sem revisão espaçada, você esquece{' '}
+            <span className="text-white font-semibold">70% do conteúdo em menos de 24h.</span>{' '}
+            O FlashAprova usa IA + SRS para blindar sua memória — e seu nome na lista de aprovados.
           </p>
 
           <div className="fade-up-d3 flex flex-col items-center gap-3">
@@ -296,9 +321,9 @@ export default function LandingPage() {
           {/* Stats */}
           <div className="fade-up-d4 flex flex-wrap justify-center gap-8 mt-14">
             {[
-              { n: '97%',     label: 'retenção média com IA',    color: GREEN },
-              { n: '8.400+',  label: 'flashcards táticos',       color: VIOLET },
-              { n: '48h',     label: 'para sentir a diferença',  color: CYAN },
+              { n: '97%',    label: 'retenção com SRS + IA',    color: CYAN },
+              { n: '5.700+', label: 'flashcards táticos ENEM',  color: VIOLET },
+              { n: '24h',    label: 'para sentir a diferença',  color: GREEN },
             ].map(({ n, label, color }) => (
               <div key={n} className="text-center">
                 <p className="text-3xl font-black" style={{
@@ -311,17 +336,276 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* ══════════════════════════════ SUBJECT SHOWCASE ══ */}
+        {/* ════════════════════════════════ A DOR — Ebbinghaus ══
+            PAS — Agitation: mostrar a dor do esquecimento com ciência         */}
+        <section className="max-w-4xl mx-auto px-5 sm:px-10 pb-24">
+          <div className="relative rounded-3xl p-7 sm:p-10 overflow-hidden"
+            style={{
+              background: 'rgba(10,5,20,0.80)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              border: '1px solid rgba(249,115,22,0.20)',
+              boxShadow: '0 0 60px rgba(249,115,22,0.06)',
+            }}>
+            <div className="absolute inset-0 pointer-events-none"
+              style={{ background: 'radial-gradient(ellipse at bottom left, rgba(124,58,237,0.10) 0%, transparent 60%)' }} />
+            <div className="absolute inset-x-0 top-0 h-px"
+              style={{ background: 'linear-gradient(90deg, transparent, rgba(249,115,22,0.50), rgba(124,58,237,0.30), transparent)' }} />
+
+            <div className="max-w-xl mb-6">
+              <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: '#f97316' }}>
+                A Dor Real do Estudante
+              </p>
+              <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight mb-3">
+                Você estuda horas. Amanhã,{' '}
+                <span style={{ color: '#f87171' }}>esqueceu quase tudo.</span>
+              </h2>
+              <p className="text-slate-400 text-base leading-relaxed">
+                A Curva de Ebbinghaus é implacável:{' '}
+                <span className="text-white font-semibold">sem revisão, você perde 70% do conteúdo em menos de{' '}
+                  <Neon>24h</Neon>.</span>{' '}
+                Não é falta de inteligência — é falta do método certo.
+              </p>
+            </div>
+
+            <ForgettingCurve />
+
+            <div className="flex flex-wrap gap-5 mt-4">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-0.5 rounded-full" style={{ background: '#f97316' }} />
+                <span className="text-slate-500 text-xs">Sem revisão (método tradicional)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-0.5 rounded-full" style={{ background: `linear-gradient(90deg, ${VIOLET}, ${CYAN})` }} />
+                <span className="text-slate-500 text-xs">Com IA + SRS (FlashAprova)</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ════════════════════════════ ANKI COMPARISON ══
+            PAS — Agitation: comparar com o que o aluno já conhece             */}
+        <section className="max-w-5xl mx-auto px-5 sm:px-10 pb-24">
+          <div className="text-center mb-10">
+            <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: '#f87171' }}>
+              Por que o Anki não é suficiente
+            </p>
+            <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">
+              Você já tentou o Anki.{' '}
+              <span style={{ color: '#f87171' }}>Abandonou em 2 semanas.</span>
+            </h2>
+            <p className="text-slate-500 text-base max-w-xl mx-auto">
+              O problema não é você. É a ferramenta genérica que não foi feita para o ENEM — e nem para o seu cérebro.
+            </p>
+          </div>
+
+          <AnkiComparison />
+        </section>
+
+        {/* ════════════════════════ A SOLUÇÃO — Dashboard ══
+            PAS — Solution: revelar o FlashAprova como resposta               */}
         <section className="max-w-6xl mx-auto px-5 sm:px-10 pb-24">
           <div className="text-center mb-10">
-            <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: GREEN }}>
+            <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: CYAN }}>
+              A Solução
+            </p>
+            <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">
+              A IA mapeia seu cérebro{' '}
+              <span style={{
+                background: `linear-gradient(90deg, ${CYAN}, ${VIOLET})`,
+                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+              }}>em tempo real</span>
+            </h2>
+            <p className="text-slate-500 text-base max-w-xl mx-auto">
+              Visualize exatamente o que você domina, o que está esquecendo e quando revisar cada tópico — sem esforço manual.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {/* Radar */}
+            <div className="relative rounded-2xl p-5 overflow-hidden"
+              style={{ background: 'rgba(10,5,20,0.80)', border: `1px solid ${CYAN}28`,
+                backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+                boxShadow: `0 0 50px ${CYAN}0a` }}>
+              <div className="absolute inset-0 pointer-events-none"
+                style={{ background: `radial-gradient(ellipse at top right, ${CYAN}0d 0%, transparent 65%)` }} />
+              <div className="absolute inset-x-0 top-0 h-px"
+                style={{ background: `linear-gradient(90deg, transparent, ${CYAN}70, transparent)` }} />
+              <p className="text-xs font-bold tracking-widest uppercase mb-1" style={{ color: CYAN }}>Radar ENEM</p>
+              <p className="text-slate-600 text-xs mb-4">Equilíbrio de domínio por disciplina</p>
+              <RadarMockup />
+              <p className="text-slate-600 text-xs mt-3 text-center">
+                ● Domínio atual &nbsp;&nbsp;○ Meta
+              </p>
+            </div>
+
+            {/* Heatmap */}
+            <div className="relative rounded-2xl p-5 overflow-hidden"
+              style={{ background: 'rgba(10,5,20,0.80)', border: `1px solid rgba(99,102,241,0.25)`,
+                backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+                boxShadow: '0 0 50px rgba(99,102,241,0.08)' }}>
+              <div className="absolute inset-0 pointer-events-none"
+                style={{ background: 'radial-gradient(ellipse at top left, rgba(99,102,241,0.10) 0%, transparent 65%)' }} />
+              <div className="absolute inset-x-0 top-0 h-px"
+                style={{ background: `linear-gradient(90deg, transparent, ${CYAN}50, ${VIOLET}40, transparent)` }} />
+              <p className="text-xs font-bold tracking-widest uppercase mb-1" style={{ color: CYAN }}>Consistência</p>
+              <p className="text-slate-600 text-xs mb-4">Heatmap de revisões · últimos 3 meses</p>
+              <div className="overflow-x-auto">
+                <HeatmapMockup />
+              </div>
+              <div className="flex items-center gap-2 mt-4">
+                <span className="text-slate-700 text-xs">Menos</span>
+                {[0.05, 0.25, 0.50, 0.75, 1.0].map(a => (
+                  <div key={a} style={{ width:10, height:10, borderRadius:2,
+                    background: `rgba(6,182,212,${a})` }} />
+                ))}
+                <span className="text-slate-700 text-xs">Mais</span>
+              </div>
+            </div>
+
+            {/* Line chart */}
+            <div className="relative rounded-2xl p-5 overflow-hidden"
+              style={{ background: 'rgba(10,5,20,0.80)', border: `1px solid ${VIOLET}25`,
+                backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+                boxShadow: `0 0 50px ${VIOLET}08` }}>
+              <div className="absolute inset-0 pointer-events-none"
+                style={{ background: `radial-gradient(ellipse at bottom right, ${VIOLET}09 0%, transparent 65%)` }} />
+              <div className="absolute inset-x-0 top-0 h-px"
+                style={{ background: `linear-gradient(90deg, transparent, ${VIOLET}60, transparent)` }} />
+              <p className="text-xs font-bold tracking-widest uppercase mb-1" style={{ color: CYAN }}>Previsão de Revisão</p>
+              <p className="text-slate-600 text-xs mb-4">Evolução do domínio por semana</p>
+              <LineMockup />
+              <div className="flex justify-between text-slate-700 text-xs mt-2">
+                <span>Semana 1</span><span>→</span><span>Hoje</span>
+              </div>
+              <div className="mt-3 flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full" style={{ background: CYAN }} />
+                <span className="text-slate-500 text-xs">% Domínio acumulado (IA)</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ════════════════════════════ TUTOR IA ══ */}
+        <section className="max-w-4xl mx-auto px-5 sm:px-10 pb-24">
+          <div className="text-center mb-10">
+            <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: VIOLET }}>
+              7 Tutores IA Especialistas
+            </p>
+            <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">
+              Travou numa questão?{' '}
+              <span style={{
+                background: `linear-gradient(90deg, ${CYAN}, ${VIOLET})`,
+                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+              }}>
+                A IA resolve em segundos.
+              </span>
+            </h2>
+            <p className="text-slate-500 text-base max-w-xl mx-auto">
+              Treinado exclusivamente nas provas do ENEM, cada Tutor IA explica conceitos de forma tática — disponível{' '}
+              <Neon>24h</Neon> por dia, sem julgamento.
+            </p>
+          </div>
+
+          <div className="relative rounded-3xl overflow-hidden"
+            style={{
+              background: 'rgba(5,5,5,0.90)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              border: `1px solid ${CYAN}25`,
+              boxShadow: `0 0 60px ${CYAN}0c`,
+            }}>
+            <div className="absolute inset-x-0 top-0 h-px"
+              style={{ background: `linear-gradient(90deg, transparent, ${CYAN}50, transparent)` }} />
+
+            {/* Chat header */}
+            <div className="flex items-center gap-3 px-5 py-4 border-b border-white/5">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center text-base"
+                style={{ background: `${CYAN}20`, border: `1px solid ${CYAN}40` }}>
+                🤖
+              </div>
+              <div>
+                <p className="text-white font-bold text-sm">Tutor IA · Química Especialista</p>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: CYAN }} />
+                  <span className="text-slate-600 text-xs">Online · Analisando lacunas</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Messages */}
+            <div className="px-5 py-6 flex flex-col gap-4">
+
+              <div className="flex justify-end">
+                <div className="max-w-xs sm:max-w-sm rounded-2xl rounded-tr-sm px-4 py-3"
+                  style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.09)' }}>
+                  <p className="text-slate-300 text-sm leading-relaxed">
+                    Não consigo entender Estequiometria. Como calculo a proporção entre reagentes sem travar na prova?
+                  </p>
+                  <p className="text-slate-700 text-xs mt-1 text-right">Você · agora</p>
+                </div>
+              </div>
+
+              <div className="flex justify-start gap-3">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0 mt-1"
+                  style={{ background: `${CYAN}20`, border: `1px solid ${CYAN}40` }}>
+                  🤖
+                </div>
+                <div className="max-w-xs sm:max-w-md rounded-2xl rounded-tl-sm px-4 py-3"
+                  style={{ background: `${CYAN}0e`, border: `1px solid ${CYAN}25` }}>
+                  <p className="text-white text-sm font-semibold mb-2">
+                    Técnica dos 3 passos — memorize isso:
+                  </p>
+                  <div className="flex flex-col gap-2 text-sm text-slate-300 leading-relaxed">
+                    {[
+                      ['①', 'Escreva a equação balanceada.', 'Os coeficientes são as proporções. Ex: 2H₂ + O₂ → 2H₂O significa 2 mol de H₂ para 1 mol de O₂.'],
+                      ['②', 'Monte a regra de 3', 'usando massas molares (H=1, O=16, C=12...).'],
+                      ['③', 'Confira as unidades.', 'Se der mol → converta pra gramas multiplicando pela massa molar. Pronto.'],
+                    ].map(([num, bold, rest]) => (
+                      <div key={num} className="flex gap-2">
+                        <span style={{ color: CYAN }} className="font-bold shrink-0">{num}</span>
+                        <span><span className="text-white font-semibold">{bold}</span>{' '}{rest}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-3 px-3 py-2 rounded-xl text-xs"
+                    style={{ background: 'rgba(255,255,255,0.04)', border: 'rgba(255,255,255,0.06)' }}>
+                    <span style={{ color: CYAN }} className="font-bold">💡 Macete ENEM:</span>
+                    <span className="text-slate-400 ml-1">Coeficiente = proporção = regra de 3. Nunca mude isso.</span>
+                  </div>
+                  <p className="text-slate-700 text-xs mt-2">Tutor IA · agora</p>
+                </div>
+              </div>
+
+              <div className="flex justify-start gap-3">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0"
+                  style={{ background: `${CYAN}20`, border: `1px solid ${CYAN}40` }}>
+                  🤖
+                </div>
+                <div className="px-4 py-3 rounded-2xl rounded-tl-sm flex items-center gap-1"
+                  style={{ background: `${CYAN}0a`, border: `1px solid ${CYAN}18` }}>
+                  {[0,0.2,0.4].map(delay => (
+                    <div key={delay} className="w-1.5 h-1.5 rounded-full animate-pulse"
+                      style={{ background: CYAN, animationDelay: `${delay}s` }} />
+                  ))}
+                  <span className="text-slate-600 text-xs ml-2">Preparando seu próximo card...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ═══════════════════════════ BIBLIOTECA ══ */}
+        <section className="max-w-6xl mx-auto px-5 sm:px-10 pb-24">
+          <div className="text-center mb-10">
+            <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: VIOLET }}>
               Banco de Questões
             </p>
             <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">
-              Conteúdos do FlashAprova
+              +<Neon>5.700</Neon> flashcards táticos ENEM
             </h2>
             <p className="text-slate-500 text-base max-w-xl mx-auto">
-              Cada card foi gerado e validado por IA Especialista com base nas provas anteriores do ENEM.
+              Cada card foi gerado e validado por IA Especialista com base nas provas anteriores do ENEM — zero tempo perdido criando material.
             </p>
           </div>
 
@@ -336,7 +620,6 @@ export default function LandingPage() {
                   border: `1px solid rgba(124,58,237,0.20)`,
                   boxShadow: `0 0 40px rgba(124,58,237,0.06)`,
                 }}>
-                {/* violet ambient glow per card */}
                 <div className="absolute inset-0 pointer-events-none"
                   style={{ background: `radial-gradient(ellipse at top left, rgba(124,58,237,0.08) 0%, transparent 65%)` }} />
                 <div className="absolute inset-x-0 top-0 h-px"
@@ -359,7 +642,6 @@ export default function LandingPage() {
                   </div>
                 </div>
 
-                {/* Topics */}
                 <div className="flex flex-col gap-1.5">
                   {s.topics.map(t => (
                     <div key={t} className="flex items-center gap-2">
@@ -369,7 +651,6 @@ export default function LandingPage() {
                   ))}
                 </div>
 
-                {/* Lock badge */}
                 <div className="mt-4 flex items-center gap-1.5">
                   <span className="text-xs px-2 py-0.5 rounded-full font-medium"
                     style={{ background: `${s.color}15`, color: s.color, border: `1px solid ${s.color}25` }}>
@@ -381,274 +662,59 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* ══════════════════════════ DASHBOARD MOCKUPS ══ */}
-        <section className="max-w-6xl mx-auto px-5 sm:px-10 pb-24">
-          <div className="text-center mb-10">
-            <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: VIOLET }}>
-              Seu Painel de Controle
-            </p>
-            <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">
-              A IA mapeia seu cérebro{' '}
-              <span style={{
-                background: `linear-gradient(90deg, ${VIOLET}, ${CYAN})`,
-                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-              }}>em tempo real</span>
-            </h2>
-            <p className="text-slate-500 text-base max-w-xl mx-auto">
-              Visualize exatamente o que você domina, o que está esquecendo e quando revisar cada tópico.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {/* Radar */}
-            <div className="relative rounded-2xl p-5 overflow-hidden"
-              style={{ background: 'rgba(10,5,20,0.80)', border: `1px solid rgba(124,58,237,0.28)`,
-                backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-                boxShadow: '0 0 50px rgba(124,58,237,0.10)' }}>
-              <div className="absolute inset-0 pointer-events-none"
-                style={{ background: 'radial-gradient(ellipse at top right, rgba(124,58,237,0.13) 0%, transparent 65%)' }} />
-              <div className="absolute inset-x-0 top-0 h-px"
-                style={{ background: `linear-gradient(90deg, transparent, ${VIOLET}80, transparent)` }} />
-              <p className="text-xs font-bold tracking-widest uppercase mb-1" style={{ color: VIOLET }}>Radar ENEM</p>
-              <p className="text-slate-600 text-xs mb-4">Equilíbrio de domínio</p>
-              <RadarMockup />
-              <p className="text-slate-600 text-xs mt-3 text-center">
-                ● Domínio atual &nbsp;&nbsp;○ Meta
-              </p>
-            </div>
-
-            {/* Heatmap */}
-            <div className="relative rounded-2xl p-5 overflow-hidden"
-              style={{ background: 'rgba(10,5,20,0.80)', border: `1px solid rgba(99,102,241,0.25)`,
-                backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-                boxShadow: '0 0 50px rgba(99,102,241,0.08)' }}>
-              <div className="absolute inset-0 pointer-events-none"
-                style={{ background: 'radial-gradient(ellipse at top left, rgba(99,102,241,0.10) 0%, transparent 65%)' }} />
-              <div className="absolute inset-x-0 top-0 h-px"
-                style={{ background: `linear-gradient(90deg, transparent, rgba(99,102,241,0.70), ${GREEN}40, transparent)` }} />
-              <p className="text-xs font-bold tracking-widest uppercase mb-1" style={{ color: GREEN }}>Consistência</p>
-              <p className="text-slate-600 text-xs mb-4">Heatmap de revisões · últimos 3 meses</p>
-              <div className="overflow-x-auto">
-                <HeatmapMockup />
-              </div>
-              <div className="flex items-center gap-2 mt-4">
-                <span className="text-slate-700 text-xs">Menos</span>
-                {[0.05, 0.25, 0.50, 0.75, 1.0].map(a => (
-                  <div key={a} style={{ width:10, height:10, borderRadius:2,
-                    background: `rgba(34,197,94,${a})` }} />
-                ))}
-                <span className="text-slate-700 text-xs">Mais</span>
-              </div>
-            </div>
-
-            {/* Line chart */}
-            <div className="relative rounded-2xl p-5 overflow-hidden"
-              style={{ background: 'rgba(10,5,20,0.80)', border: `1px solid rgba(6,182,212,0.22)`,
-                backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-                boxShadow: '0 0 50px rgba(6,182,212,0.07)' }}>
-              <div className="absolute inset-0 pointer-events-none"
-                style={{ background: 'radial-gradient(ellipse at bottom right, rgba(6,182,212,0.09) 0%, transparent 65%)' }} />
-              <div className="absolute inset-x-0 top-0 h-px"
-                style={{ background: `linear-gradient(90deg, transparent, ${CYAN}70, transparent)` }} />
-              <p className="text-xs font-bold tracking-widest uppercase mb-1" style={{ color: CYAN }}>Previsão de Revisão</p>
-              <p className="text-slate-600 text-xs mb-4">Evolução do domínio por semana</p>
-              <LineMockup />
-              <div className="flex justify-between text-slate-700 text-xs mt-2">
-                <span>Semana 1</span><span>→</span><span>Hoje</span>
-              </div>
-              <div className="mt-3 flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full" style={{ background: GREEN }} />
-                <span className="text-slate-500 text-xs">% Domínio acumulado (IA)</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ════════════════════════════ AI TUTOR MOCKUP ══ */}
-        <section className="max-w-4xl mx-auto px-5 sm:px-10 pb-24">
-          <div className="text-center mb-10">
-            <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: GREEN }}>
-              Tutor IA Especialista
-            </p>
-            <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">
-              Dúvida? A IA resolve{' '}
-              <span style={{ color: GREEN, textShadow: `0 0 20px ${GREEN}70` }}>em segundos</span>
-            </h2>
-            <p className="text-slate-500 text-base max-w-xl mx-auto">
-              Treinado nas provas do ENEM, o Tutor IA explica conceitos complexos de forma simples e tática — como um professor particular disponível 24h.
-            </p>
-          </div>
-
-          <div className="relative rounded-3xl overflow-hidden"
-            style={{
-              background: 'rgba(5,5,5,0.90)',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              border: `1px solid ${GREEN}25`,
-              boxShadow: `0 0 60px ${GREEN}0c`,
-            }}>
-            <div className="absolute inset-x-0 top-0 h-px"
-              style={{ background: `linear-gradient(90deg, transparent, ${GREEN}50, transparent)` }} />
-
-            {/* Chat header */}
-            <div className="flex items-center gap-3 px-5 py-4 border-b border-white/5">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center text-base"
-                style={{ background: `${GREEN}20`, border: `1px solid ${GREEN}40` }}>
-                🤖
-              </div>
-              <div>
-                <p className="text-white font-bold text-sm">Tutor IA · Química Especialista</p>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: GREEN }} />
-                  <span className="text-slate-600 text-xs">Online · Analisando lacunas</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Messages */}
-            <div className="px-5 py-6 flex flex-col gap-4">
-
-              {/* Student message */}
-              <div className="flex justify-end">
-                <div className="max-w-xs sm:max-w-sm rounded-2xl rounded-tr-sm px-4 py-3"
-                  style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.09)' }}>
-                  <p className="text-slate-300 text-sm leading-relaxed">
-                    Não consigo entender Estequiometria. Como calculo a proporção entre reagentes sem travar na prova?
-                  </p>
-                  <p className="text-slate-700 text-xs mt-1 text-right">Você · agora</p>
-                </div>
-              </div>
-
-              {/* AI response */}
-              <div className="flex justify-start gap-3">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0 mt-1"
-                  style={{ background: `${GREEN}20`, border: `1px solid ${GREEN}40` }}>
-                  🤖
-                </div>
-                <div className="max-w-xs sm:max-w-md rounded-2xl rounded-tl-sm px-4 py-3"
-                  style={{ background: `${GREEN}0e`, border: `1px solid ${GREEN}25` }}>
-                  <p className="text-white text-sm font-semibold mb-2">
-                    Técnica dos 3 passos — memorize isso:
-                  </p>
-                  <div className="flex flex-col gap-2 text-sm text-slate-300 leading-relaxed">
-                    <div className="flex gap-2">
-                      <span style={{ color: GREEN }} className="font-bold shrink-0">①</span>
-                      <span><span className="text-white font-semibold">Escreva a equação balanceada.</span> Os coeficientes são as proporções. Ex: 2H₂ + O₂ → 2H₂O significa 2 mol de H₂ para 1 mol de O₂.</span>
-                    </div>
-                    <div className="flex gap-2">
-                      <span style={{ color: GREEN }} className="font-bold shrink-0">②</span>
-                      <span><span className="text-white font-semibold">Monte a regra de 3</span> usando massas molares (H=1, O=16, C=12...).</span>
-                    </div>
-                    <div className="flex gap-2">
-                      <span style={{ color: GREEN }} className="font-bold shrink-0">③</span>
-                      <span><span className="text-white font-semibold">Confira as unidades.</span> Se der mol → converta pra gramas multiplicando pela massa molar. Pronto.</span>
-                    </div>
-                  </div>
-                  <div className="mt-3 px-3 py-2 rounded-xl text-xs"
-                    style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                    <span style={{ color: GREEN }} className="font-bold">💡 Macete ENEM:</span>
-                    <span className="text-slate-400 ml-1">Coeficiente = proporção = regra de 3. Nunca mude isso.</span>
-                  </div>
-                  <p className="text-slate-700 text-xs mt-2">Tutor IA · agora</p>
-                </div>
-              </div>
-
-              {/* Typing indicator */}
-              <div className="flex justify-start gap-3">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0"
-                  style={{ background: `${GREEN}20`, border: `1px solid ${GREEN}40` }}>
-                  🤖
-                </div>
-                <div className="px-4 py-3 rounded-2xl rounded-tl-sm flex items-center gap-1"
-                  style={{ background: `${GREEN}0a`, border: `1px solid ${GREEN}18` }}>
-                  {[0,0.2,0.4].map(delay => (
-                    <div key={delay} className="w-1.5 h-1.5 rounded-full animate-pulse"
-                      style={{ background: GREEN, animationDelay: `${delay}s` }} />
-                  ))}
-                  <span className="text-slate-600 text-xs ml-2">Preparando seu próximo card...</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ═══════════════════════════════ EBBINGHAUS ══ */}
-        <section className="max-w-4xl mx-auto px-5 sm:px-10 pb-24">
-          <div className="relative rounded-3xl p-7 sm:p-10 overflow-hidden"
-            style={{
-              background: 'rgba(10,5,20,0.80)',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              border: '1px solid rgba(124,58,237,0.20)',
-              boxShadow: '0 0 60px rgba(124,58,237,0.08)',
-            }}>
-            <div className="absolute inset-0 pointer-events-none"
-              style={{ background: 'radial-gradient(ellipse at bottom left, rgba(124,58,237,0.10) 0%, transparent 60%)' }} />
-            <div className="absolute inset-x-0 top-0 h-px"
-              style={{ background: 'linear-gradient(90deg, transparent, rgba(249,115,22,0.50), rgba(124,58,237,0.30), transparent)' }} />
-            <div className="max-w-xl mb-6">
-              <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: '#f97316' }}>A Ciência por Trás do Método</p>
-              <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight mb-3">
-                A Curva do Esquecimento de Ebbinghaus
-              </h2>
-              <p className="text-slate-400 text-base leading-relaxed">
-                A ciência é clara:{' '}
-                <span className="text-white font-semibold">sem a revisão certa, você esquece 70% do que estudou em 48h.</span>
-                {' '}Nossa IA hackeia esse processo para você reter quase tudo.
-              </p>
-            </div>
-            <ForgettingCurve />
-            <div className="flex flex-wrap gap-5 mt-4">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-0.5 rounded-full" style={{ background: '#f97316' }} />
-                <span className="text-slate-500 text-xs">Sem revisão</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-0.5 rounded-full" style={{ background: `linear-gradient(90deg, ${VIOLET}, ${GREEN})` }} />
-                <span className="text-slate-500 text-xs">Com IA + SRS (FlashAprova)</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ══════════════════════════════ FINAL CTA ══ */}
+        {/* ════════════════════════════ FINAL CTA ══
+            PAS — Solution: call to action impossível de ignorar               */}
         <section className="max-w-4xl mx-auto px-5 sm:px-10 pb-24">
           <div className="relative rounded-3xl p-10 sm:p-16 overflow-hidden text-center"
             style={{
-              background: 'rgba(10,5,20,0.92)',
-              border: `1px solid rgba(124,58,237,0.35)`,
-              boxShadow: `0 0 0 1px rgba(124,58,237,0.12), 0 0 100px rgba(124,58,237,0.16), 0 0 200px rgba(99,102,241,0.08)`,
+              background: 'rgba(5,8,20,0.95)',
+              border: `1px solid ${CYAN}30`,
+              boxShadow: `0 0 0 1px ${CYAN}10, 0 0 80px ${CYAN}14, 0 0 160px ${VIOLET}08`,
             }}>
             <div className="absolute inset-x-0 top-0 h-px"
-              style={{ background: `linear-gradient(90deg, transparent, ${VIOLET}, ${CYAN}80, transparent)` }} />
+              style={{ background: `linear-gradient(90deg, transparent, ${CYAN}80, ${VIOLET}60, transparent)` }} />
             <div className="absolute top-0 left-0 w-80 h-80 pointer-events-none"
-              style={{ background: `radial-gradient(circle, rgba(124,58,237,0.18) 0%, transparent 70%)`, transform: 'translate(-30%,-30%)' }} />
+              style={{ background: `radial-gradient(circle, ${CYAN}12 0%, transparent 70%)`, transform: 'translate(-30%,-30%)' }} />
             <div className="absolute bottom-0 right-0 w-72 h-72 pointer-events-none"
-              style={{ background: `radial-gradient(circle, rgba(99,102,241,0.14) 0%, transparent 70%)`, transform: 'translate(30%,30%)' }} />
+              style={{ background: `radial-gradient(circle, rgba(124,58,237,0.14) 0%, transparent 70%)`, transform: 'translate(30%,30%)' }} />
 
             <div className="relative">
-              <p className="text-slate-600 text-sm mb-2">Não deixe para depois</p>
+              <div
+                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-6 text-xs font-bold tracking-widest uppercase"
+                style={{ background: `${CYAN}14`, border: `1px solid ${CYAN}35`, color: CYAN }}
+              >
+                <span className="inline-block w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: CYAN }} />
+                Seu concorrente já está usando
+              </div>
+
               <h2 className="text-3xl sm:text-4xl font-black text-white leading-tight mb-4">
-                Seu concorrente já está<br/>
-                <span style={{ color: GREEN, textShadow: `0 0 24px ${GREEN}80` }}>
-                  blindando a memória com IA.
-                </span>
+                Cada dia sem o método certo<br/>
+                é memória perdida{' '}
+                <span style={{ color: '#f87171' }}>que não volta.</span>
               </h2>
-              <p className="text-slate-400 text-base mb-8 max-w-lg mx-auto">
-                Cada dia sem o método certo é memória perdida que não volta. Inicie seu Diagnóstico por IA agora e entre para a lista de aprovados.
+              <p className="text-slate-400 text-base mb-10 max-w-lg mx-auto">
+                Inicie seu Diagnóstico por IA agora, descubra suas lacunas em 3 minutos e comece a reter{' '}
+                <Neon>97%</Neon> do que estuda — a partir de hoje.
               </p>
-              <div className="flex justify-center">
-                <CTAButton />
+              <div className="flex flex-col items-center gap-4">
+                <CTAButton size="lg" />
+                <div className="flex flex-wrap justify-center gap-6 text-xs text-slate-600">
+                  {['Sem cartão de crédito', 'Acesso imediato', 'Cancele quando quiser'].map(t => (
+                    <span key={t} className="flex items-center gap-1.5">
+                      <span style={{ color: CYAN }}>✓</span> {t}
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* ══════════════════════════════════ FOOTER ══ */}
+        {/* ════════════════════════════════ FOOTER ══ */}
         <footer className="border-t border-white/5 py-8 px-5 sm:px-10 text-center">
           <p className="text-white font-black mb-2">
             Flash<span style={{
-              background: `linear-gradient(90deg, ${GREEN}, ${CYAN})`,
+              background: `linear-gradient(90deg, ${CYAN}, ${VIOLET})`,
               WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
             }}>Aprova</span>
           </p>
