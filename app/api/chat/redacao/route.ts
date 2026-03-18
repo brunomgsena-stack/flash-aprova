@@ -53,20 +53,20 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // ── Persiste no Supabase (best-effort) ─────────────────────────────────────
-  try {
-    await serverClient
-      .from('essay_submissions')
-      .insert({
-        user_id:       user.id,
-        tema,
-        texto,
-        nota_total:    result.nota_total,
-        feedback_json: result,
-        created_at:    new Date().toISOString(),
-      });
-  } catch {
-    // Tabela pode não existir ainda — não bloqueia o retorno
+  // ── Persiste histórico no Supabase ─────────────────────────────────────────
+  const { error: dbError } = await serverClient
+    .from('essay_submissions')
+    .insert({
+      user_id:          user.id,
+      tema,
+      texto,
+      nota_total:       result.nota_total,
+      analise_completa: result,        // JSON completo: C1-C5, veredito, repertório
+    });
+
+  if (dbError) {
+    // Loga mas não bloqueia: o aluno recebe o resultado mesmo se o histórico falhar
+    console.error('[/api/chat/redacao] erro ao salvar histórico:', dbError.message);
   }
 
   return NextResponse.json(result);

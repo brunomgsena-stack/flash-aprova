@@ -1,6 +1,9 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { supabase } from '@/lib/supabaseClient';
+import EvolucaoChart, { type ChartPoint } from '@/components/redacao/EvolucaoChart';
+import HistoricoList, { type EssayRecord } from '@/components/redacao/HistoricoList';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -375,7 +378,13 @@ function totalGrade(nota: number) {
   return                  { label: 'Precisa Melhorar',            color: '#f87171' };
 }
 
-function GradeResults({ result, onReset }: { result: NormaResult; onReset: () => void }) {
+function GradeResults({
+  result, onReset, resetLabel = 'Nova Correção',
+}: {
+  result:      NormaResult;
+  onReset:     () => void;
+  resetLabel?: string;
+}) {
   const nota  = result.nota_total;
   const grade = totalGrade(nota);
 
@@ -540,7 +549,7 @@ function GradeResults({ result, onReset }: { result: NormaResult; onReset: () =>
           className="w-full py-2.5 rounded-xl text-sm font-semibold text-slate-400 transition-all hover:text-white"
           style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}
         >
-          Nova Correção
+          {resetLabel}
         </button>
       </div>
     </div>
@@ -779,15 +788,58 @@ function TableContent({ color }: { color: string }) {
 
 // ─── Main export ──────────────────────────────────────────────────────────────
 
+type ActiveTab = 'correcao' | 'evolucao';
+
 export default function RedacaoClient({ plan }: { plan: Plan }) {
   const [modalOpen,   setModalOpen]   = useState(false);
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [loading,     setLoading]     = useState(false);
-  const [result,      setResult]      = useState<NormaResult | null>(null);
-  const [error,       setError]       = useState<string | null>(null);
+  const [result,             setResult]             = useState<NormaResult | null>(null);
+  const [viewingSubmission, setViewingSubmission]  = useState<EssayRecord | null>(null);
+  const [error,              setError]             = useState<string | null>(null);
+  const [activeTab,   setActiveTab]   = useState<ActiveTab>('correcao');
+  const [historico,   setHistorico]   = useState<EssayRecord[]>([]);
+  const [loadingHist, setLoadingHist] = useState(false);
 
-  const isPro  = plan === 'proai_plus';
-  const color  = CYAN;
+  const isPro = plan === 'proai_plus';
+  const color = CYAN;
+
+  // ── Fetch histórico do Supabase ───────────────────────────────────────────
+  useEffect(() => {
+    if (!isPro) return;
+    setLoadingHist(true);
+    supabase
+      .from('essay_submissions')
+      .select('id, tema, texto, nota_total, analise_completa, created_at')
+      .order('created_at', { ascending: true })
+      .limit(50)
+      .then(({ data }) => {
+        setHistorico((data as EssayRecord[]) ?? []);
+        setLoadingHist(false);
+      });
+  }, [isPro]);
+
+  // ── Chart data derivado do histórico ──────────────────────────────────────
+  const chartData: ChartPoint[] = historico.map(r => ({
+    id:   r.id,
+    data: new Date(r.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }),
+    nota: r.nota_total,
+    tema: r.tema,
+  }));
+
+  // ── Selecionar redação do histórico → modo revisão ────────────────────────
+  function handleSelectHistorico(record: EssayRecord) {
+    setViewingSubmission(record);
+    setResult(record.analise_completa as NormaResult);
+    setError(null);
+    setActiveTab('correcao');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function exitReviewMode() {
+    setViewingSubmission(null);
+    setResult(null);
+  }
 
   async function handleSubmit(tema: string, texto: string) {
     setModalOpen(false);
@@ -806,6 +858,14 @@ export default function RedacaoClient({ plan }: { plan: Plan }) {
       }
       const data: NormaResult = await res.json();
       setResult(data);
+      setViewingSubmission(null); // nova correção, não é revisão de histórico
+      // Refresh histórico para incluir a nova entrada
+      supabase
+        .from('essay_submissions')
+        .select('id, tema, texto, nota_total, analise_completa, created_at')
+        .order('created_at', { ascending: true })
+        .limit(50)
+        .then(({ data: rows }) => setHistorico((rows as EssayRecord[]) ?? []));
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Erro desconhecido. Tente novamente.');
     } finally {
@@ -842,46 +902,254 @@ export default function RedacaoClient({ plan }: { plan: Plan }) {
       {modalOpen   && <EssayModal   plan={plan} onClose={() => setModalOpen(false)} onSubmit={handleSubmit} />}
       {showUpgrade && <UpgradeModal onClose={() => setShowUpgrade(false)} />}
 
-      {/* Hero card */}
+      {/* ── Hero card ─────────────────────────────────────────────────────── */}
       <NormaHeroCard plan={plan} onOpenModal={() => setModalOpen(true)} />
 
-      {/* Loading */}
-      {loading && <LoadingCard />}
+      {/* ── Tab bar ───────────────────────────────────────────────────────── */}
+      <div
+        className="flex gap-1 p-1 rounded-2xl mb-7"
+        style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
+      >
+        {([
+          { id: 'correcao', label: 'Correção',  icon: '✒️' },
+          { id: 'evolucao', label: 'Evolução',  icon: '📈', pro: true },
+        ] as { id: ActiveTab; label: string; icon: string; pro?: boolean }[]).map(tab => {
+          const isActive  = activeTab === tab.id;
+          const isLocked  = tab.pro && !isPro;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => isLocked ? setShowUpgrade(true) : setActiveTab(tab.id)}
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200"
+              style={{
+                background: isActive
+                  ? `linear-gradient(135deg, ${VIOLET}40, ${CYAN}25)`
+                  : 'transparent',
+                color: isActive ? '#fff' : 'rgba(255,255,255,0.40)',
+                border: isActive ? `1px solid ${CYAN}30` : '1px solid transparent',
+                boxShadow: isActive ? `0 0 16px ${CYAN}15` : 'none',
+              }}
+            >
+              <span>{tab.icon}</span>
+              <span>{tab.label}</span>
+              {isLocked && (
+                <span className="text-[10px] font-black px-1.5 py-0.5 rounded-full"
+                  style={{ background: 'rgba(212,175,55,0.15)', color: 'rgba(212,175,55,0.9)' }}>
+                  PRO
+                </span>
+              )}
+              {tab.id === 'evolucao' && isPro && historico.length > 0 && (
+                <span
+                  className="text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center"
+                  style={{ background: `${CYAN}20`, color: CYAN }}
+                >
+                  {historico.length}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
 
-      {/* Error */}
-      {error && (
-        <div
-          className="rounded-2xl px-5 py-4 mb-8 flex items-start gap-3"
-          style={{ background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.25)' }}
-        >
-          <span className="text-red-400 text-lg shrink-0">⚠</span>
-          <div>
-            <p className="text-sm font-semibold text-red-400">Erro na análise</p>
-            <p className="text-xs text-slate-500 mt-0.5">{error}</p>
+      {/* ════════════════════════════════════════════════════════════════════
+          ABA: CORREÇÃO
+         ════════════════════════════════════════════════════════════════════ */}
+      {activeTab === 'correcao' && (
+        <>
+          {/* ── MODO REVISÃO: redação do histórico ─────────────────────── */}
+          {viewingSubmission ? (
+            <div>
+              {/* Botão Voltar */}
+              <button
+                onClick={exitReviewMode}
+                className="flex items-center gap-2 mb-6 text-sm font-semibold transition-all duration-200 hover:-translate-x-0.5 group"
+                style={{ color: CYAN }}
+              >
+                <svg
+                  width="16" height="16" viewBox="0 0 16 16" fill="none"
+                  className="group-hover:-translate-x-0.5 transition-transform"
+                  style={{ filter: `drop-shadow(0 0 4px ${CYAN}80)` }}
+                >
+                  <path d="M10 3L5 8l5 5" stroke="currentColor" strokeWidth="1.8"
+                    strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                Voltar para Nova Correção
+              </button>
+
+              {/* Card de revisão: tema + texto */}
+              <div
+                className="relative rounded-2xl overflow-hidden mb-6"
+                style={{
+                  background: 'rgba(6,182,212,0.04)',
+                  border:     `1px solid ${CYAN}22`,
+                }}
+              >
+                <div className="absolute inset-x-0 top-0 h-px"
+                  style={{ background: `linear-gradient(90deg, transparent, ${CYAN}50, transparent)` }} />
+
+                {/* Tema */}
+                <div className="px-6 pt-6 pb-4 border-b border-white/5">
+                  <p className="text-xs font-semibold tracking-widest uppercase text-slate-500 mb-2">
+                    Tema
+                  </p>
+                  <p className="text-xl font-bold text-white leading-snug">
+                    {viewingSubmission.tema}
+                  </p>
+                  <p className="text-xs text-slate-600 mt-2">
+                    {new Date(viewingSubmission.created_at).toLocaleDateString('pt-BR', {
+                      day: '2-digit', month: 'long', year: 'numeric',
+                    })}
+                  </p>
+                </div>
+
+                {/* Texto original */}
+                <div className="px-6 py-5">
+                  <p className="text-xs font-semibold tracking-widest uppercase text-slate-500 mb-3">
+                    Texto Enviado
+                  </p>
+                  <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">
+                    {viewingSubmission.texto}
+                  </p>
+                </div>
+              </div>
+
+              {/* Análise completa da Norma */}
+              {result && (
+                <GradeResults
+                  result={result}
+                  onReset={exitReviewMode}
+                  resetLabel="← Fechar Revisão"
+                />
+              )}
+            </div>
+
+          ) : (
+            /* ── MODO NORMAL: nova correção ──────────────────────────────── */
+            <>
+              {/* Loading */}
+              {loading && <LoadingCard />}
+
+              {/* Error */}
+              {error && (
+                <div
+                  className="rounded-2xl px-5 py-4 mb-8 flex items-start gap-3"
+                  style={{ background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.25)' }}
+                >
+                  <span className="text-red-400 text-lg shrink-0">⚠</span>
+                  <div>
+                    <p className="text-sm font-semibold text-red-400">Erro na análise</p>
+                    <p className="text-xs text-slate-500 mt-0.5">{error}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Grade result */}
+              {result && (
+                <GradeResults
+                  result={result}
+                  onReset={() => setResult(null)}
+                />
+              )}
+
+              {/* Knowledge base — oculta durante revisão e loading */}
+              {!loading && (
+                <>
+                  <p className="text-xs font-semibold tracking-widest uppercase text-slate-500 mb-4">
+                    Base de Conhecimento
+                  </p>
+                  <div className="flex flex-col gap-3">
+                    {accordionItems.map((item, idx) => (
+                      <AccordionRow
+                        key={item.id}
+                        item={item}
+                        color={color}
+                        defaultOpen={idx === 0 && isPro}
+                        locked={!isPro}
+                        onLockedClick={() => setShowUpgrade(true)}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+            </>
+          )}
+        </>
+      )}
+
+      {/* ════════════════════════════════════════════════════════════════════
+          ABA: EVOLUÇÃO
+         ════════════════════════════════════════════════════════════════════ */}
+      {activeTab === 'evolucao' && isPro && (
+        <div className="space-y-6">
+
+          {/* Gráfico de evolução */}
+          <div
+            className="relative rounded-2xl p-6 overflow-hidden"
+            style={{
+              background: 'rgba(255,255,255,0.02)',
+              border:     '1px solid rgba(255,255,255,0.07)',
+            }}
+          >
+            <div className="absolute inset-x-0 top-0 h-px"
+              style={{ background: `linear-gradient(90deg, transparent, ${CYAN}40, transparent)` }} />
+
+            <p className="text-xs font-semibold tracking-widest uppercase text-slate-500 mb-5">
+              Curva de Evolução
+            </p>
+
+            {loadingHist ? (
+              <div className="flex items-center justify-center py-16 gap-3 text-slate-600 text-sm">
+                <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" opacity=".25"/>
+                  <path fill="currentColor" opacity=".75" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                </svg>
+                Carregando histórico…
+              </div>
+            ) : (
+              <EvolucaoChart data={chartData} />
+            )}
+          </div>
+
+          {/* Lista de histórico */}
+          <div
+            className="relative rounded-2xl overflow-hidden"
+            style={{
+              background: 'rgba(255,255,255,0.02)',
+              border:     '1px solid rgba(255,255,255,0.07)',
+            }}
+          >
+            <div className="absolute inset-x-0 top-0 h-px"
+              style={{ background: `linear-gradient(90deg, transparent, ${VIOLET}40, transparent)` }} />
+
+            <div className="px-5 pt-5 pb-2">
+              <p className="text-xs font-semibold tracking-widest uppercase text-slate-500">
+                Histórico de Redações
+              </p>
+              <p className="text-xs text-slate-600 mt-0.5">
+                Clique em qualquer redação para revisar a correção completa
+              </p>
+            </div>
+
+            <div className="px-4 pb-4 pt-2">
+              {loadingHist ? (
+                <div className="flex items-center justify-center py-10 gap-3 text-slate-600 text-sm">
+                  <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" opacity=".25"/>
+                    <path fill="currentColor" opacity=".75" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  </svg>
+                  Carregando…
+                </div>
+              ) : (
+                <HistoricoList
+                  records={historico}
+                  activeId={viewingSubmission?.id}
+                  onSelect={handleSelectHistorico}
+                />
+              )}
+            </div>
           </div>
         </div>
       )}
-
-      {/* Grade result */}
-      {result && <GradeResults result={result} onReset={() => setResult(null)} />}
-
-      {/* Knowledge base */}
-      <p className="text-xs font-semibold tracking-widest uppercase text-slate-500 mb-4">
-        Base de Conhecimento
-      </p>
-
-      <div className="flex flex-col gap-3">
-        {accordionItems.map((item, idx) => (
-          <AccordionRow
-            key={item.id}
-            item={item}
-            color={color}
-            defaultOpen={idx === 0 && isPro}
-            locked={!isPro}
-            onLockedClick={() => setShowUpgrade(true)}
-          />
-        ))}
-      </div>
     </>
   );
 }
