@@ -30,6 +30,7 @@ const TITLE_RULES: [RegExp, string][] = [
   [/geograf/i,                  '🗺️'],
   [/filosof/i,                  '🎭'],
   [/sociolog/i,                 '👥'],
+  [/reda[cç]/i,                 '✒️'],
   [/portugu/i,                  '📖'],
   [/literatur/i,                '📜'],
   [/artes|arte\b/i,             '🎨'],

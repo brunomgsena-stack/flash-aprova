@@ -11,14 +11,15 @@ export type CategoryInfo = {
 const BRAND = '#7C3AED';
 
 const CATEGORY_MAP: [RegExp, CategoryInfo][] = [
-  [/natureza/i,          { displayName: 'Ciências da Natureza e suas Tecnologias', short: 'Natureza',   color: BRAND, icon: '🔬' }],
-  [/humana/i,            { displayName: 'Ciências Humanas e Sociais Aplicadas',    short: 'Humanas',    color: BRAND, icon: '🌍' }],
-  [/linguagem|codigo/i, { displayName: 'Linguagens, Códigos e suas Tecnologias', short: 'Linguagens', color: BRAND, icon: '✍️' }],
-  [/matem/i,             { displayName: 'Matemática e suas Tecnologias',           short: 'Matemática', color: BRAND, icon: '📐' }],
+  [/natureza/i,         { displayName: 'Ciências da Natureza e suas Tecnologias', short: 'Natureza',   color: BRAND,      icon: '🔬' }],
+  [/humana/i,           { displayName: 'Ciências Humanas e Sociais Aplicadas',    short: 'Humanas',    color: BRAND,      icon: '🌍' }],
+  [/matem/i,            { displayName: 'Matemática e suas Tecnologias',           short: 'Matemática', color: BRAND,      icon: '📐' }],
+  [/reda[cç]/i,         { displayName: 'Redação Flash+',                          short: 'Redação',    color: '#06b6d4',  icon: '✒️' }],
+  [/linguagem|codigo/i, { displayName: 'Linguagens, Códigos e suas Tecnologias', short: 'Linguagens', color: BRAND,      icon: '✍️' }],
 ];
 
-// Ordered by ENEM convention (Natureza → Humanas → Linguagens → Matemática)
-export const ENEM_ORDER_PATTERNS: RegExp[] = [/natureza/i, /humana/i, /linguagem|codigo/i, /matem/i];
+// Ordered: Natureza → Humanas → Matemática → Redação → Linguagens
+export const ENEM_ORDER_PATTERNS: RegExp[] = [/natureza/i, /humana/i, /matem/i, /reda[cç]/i, /linguagem|codigo/i];
 
 export function getCategoryInfo(category: string | null): CategoryInfo {
   if (category) {

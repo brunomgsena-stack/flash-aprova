@@ -3,7 +3,6 @@ import { getSubjectIcon } from '@/lib/iconMap';
 import PerformanceMetrics from './PerformanceMetrics';
 import UserMenu from './UserMenu';
 import StreakBadge from './StreakBadge';
-import AccountStatusCard from './AccountStatusCard';
 import ChartsRow from './ChartsRow';
 import SubjectsWithDomain from './SubjectsWithDomain';
 
@@ -36,6 +35,12 @@ export default async function DashboardPage() {
     category: s.category ?? null,
   }));
 
+  // Synthetic subject injected on the frontend until DB entry is created
+  const allSubjects = [
+    ...mapped,
+    { id: 'redacao-flash', title: 'Redação Flash+', icon: '✒️', color: '#06b6d4', category: 'Redação' },
+  ];
+
   return (
     <main className="min-h-screen px-4 py-12 sm:px-8">
 
@@ -65,14 +70,9 @@ export default async function DashboardPage() {
       {/* ── Métricas de Performance ───────────────────────────────────────── */}
       <PerformanceMetrics />
 
-      {/* ── Status da Conta ───────────────────────────────────────────────── */}
-      <div className="max-w-5xl mx-auto mb-6">
-        <AccountStatusCard />
-      </div>
-
       {/* ── Matérias agrupadas por categoria ─────────────────────────────── */}
       <div className="max-w-5xl mx-auto">
-        <SubjectsWithDomain subjects={mapped} />
+        <SubjectsWithDomain subjects={allSubjects} />
       </div>
 
     </main>

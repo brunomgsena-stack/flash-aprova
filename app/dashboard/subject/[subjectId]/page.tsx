@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabaseClient';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { getSubjectIcon } from '@/lib/iconMap';
 import { getCategoryInfo } from '@/lib/categories';
@@ -73,6 +73,9 @@ async function getDecksWithoutModule(subjectId: string): Promise<DeckRow[]> {
 
 export default async function SubjectPage({ params }: Props) {
   const { subjectId } = await params;
+
+  // Synthetic subject — dedicated page
+  if (subjectId === 'redacao-flash') redirect('/dashboard/content/redacao');
 
   const [subject, modules, orphanDecks] = await Promise.all([
     getSubject(subjectId),
