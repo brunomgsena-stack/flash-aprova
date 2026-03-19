@@ -3,13 +3,29 @@
 // avatar_url uses DiceBear as placeholder — replace with final AI-generated images.
 
 export interface Tutor {
-  id:        string;
-  name:      string;
-  specialty: string;
-  avatar_url: string;
+  id:           string;
+  name:         string;
+  specialty:    string;
+  avatar_url:   string;
   /** Short tagline shown in the deck card */
-  tagline:   string;
+  tagline:      string;
+  /**
+   * OpenAI Responses API Workflow ID (wf_xxx).
+   * When set, the chat route invokes this pre-configured workflow instead of
+   * the generic agent, enabling full tool access and custom instructions
+   * defined in the OpenAI platform.
+   */
+  workflow_id?: string;
 }
+
+// ─── Category → Workflow ID map ──────────────────────────────────────────────
+// Add entries here as new subject workflow agents are configured in the platform.
+// Keys match the subject title patterns used by SUBJECT_PATTERNS below.
+
+export const CATEGORY_WORKFLOW_MAP: Record<string, string> = {
+  historia_geral:   'wf_69bc07918c1c8190babac70914475454023cf7b5063ab13c',
+  historia_brasil:  'wf_69bc07918c1c8190babac70914475454023cf7b5063ab13c',
+};
 
 // ─── Roster ──────────────────────────────────────────────────────────────────
 
@@ -46,11 +62,12 @@ const TUTORS: Tutor[] = [
     avatar_url: `${BASE}?seed=ProfLogica&${bg}&beard=variant01`,
   },
   {
-    id:        'dra-clio',
-    name:      'Dra. Clio',
-    specialty: 'História',
-    tagline:   'Historiadora · Especialista em Brasil e Mundo Contemporâneo',
-    avatar_url: `${BASE}?seed=DraClio&${bg}&hair=variant04`,
+    id:          'dra-clio',
+    name:        'Dra. Clio',
+    specialty:   'História',
+    tagline:     'Historiadora · Especialista em Brasil e Mundo Contemporâneo',
+    avatar_url:  `${BASE}?seed=DraClio&${bg}&hair=variant04`,
+    workflow_id: 'wf_69bc07918c1c8190babac70914475454023cf7b5063ab13c',
   },
   {
     id:        'mestre-atlas',

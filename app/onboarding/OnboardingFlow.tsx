@@ -593,33 +593,101 @@ export default function OnboardingFlow() {
                   </div>
                 </div>
 
-                {/* Blurred radar teaser */}
-                <div className="my-6 rounded-2xl overflow-hidden relative"
-                  style={{ background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.20)' }}>
-                  <div className="flex items-center justify-center py-8 blur-sm select-none pointer-events-none">
-                    <svg width="120" height="100" viewBox="0 0 120 100">
-                      <polygon points="60,10 110,40 110,70 60,90 10,70 10,40"
-                        fill="none" stroke={`${VIOLET}50`} strokeWidth="1" />
-                      <polygon points="60,28 90,46 90,64 60,76 30,64 30,46"
-                        fill="none" stroke={`${VIOLET}30`} strokeWidth="1" />
-                      <polygon points="60,55 75,62 75,68 60,72 45,68 45,62"
-                        fill={`${VIOLET}25`} stroke={CYAN} strokeWidth="1.5" />
-                    </svg>
-                  </div>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center px-4">
-                      <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold"
-                        style={{ background: 'rgba(124,58,237,0.30)', border: `1px solid ${VIOLET}50`, color: '#c4b5fd' }}>
-                        🔒 Radar bloqueado — libere abaixo
+                {/* Locked dashboard panels — blurred preview */}
+                <div className="my-6 rounded-2xl overflow-hidden relative select-none"
+                  style={{ border: '1px solid rgba(124,58,237,0.25)', minHeight: 210 }}>
+
+                  {/* ── Fake dashboard panels (visible as blurred shapes) ── */}
+                  <div className="pointer-events-none"
+                    style={{ filter: 'blur(7px)', transform: 'scale(1.04)', transformOrigin: 'center' }}>
+                    <div className="grid grid-cols-3 gap-0" style={{ background: 'rgba(5,2,15,0.95)' }}>
+
+                      {/* Radar panel */}
+                      <div className="p-3" style={{ borderRight: '1px solid rgba(124,58,237,0.15)' }}>
+                        <div className="text-xs font-bold mb-2" style={{ color: `${VIOLET}80` }}>RADAR ENEM</div>
+                        <svg width="100%" viewBox="0 0 100 90">
+                          <polygon points="50,6 92,30 92,64 50,84 8,64 8,30"
+                            fill="none" stroke={`${VIOLET}55`} strokeWidth="1" />
+                          <polygon points="50,22 76,36 76,58 50,68 24,58 24,36"
+                            fill="none" stroke={`${VIOLET}30`} strokeWidth="1" />
+                          <polygon points="50,38 64,46 64,56 50,61 36,56 36,46"
+                            fill={`${VIOLET}30`} stroke={CYAN} strokeWidth="2"
+                            style={{ filter: `drop-shadow(0 0 4px ${CYAN})` }} />
+                          <polygon points="50,14 85,34 80,60 50,75 20,60 15,34"
+                            fill={`${CYAN}20`} stroke={CYAN} strokeWidth="1.5"
+                            style={{ filter: `drop-shadow(0 0 6px ${CYAN})` }} />
+                        </svg>
                       </div>
+
+                      {/* Heatmap panel */}
+                      <div className="p-3" style={{ borderRight: '1px solid rgba(124,58,237,0.15)' }}>
+                        <div className="text-xs font-bold mb-2" style={{ color: `${CYAN}80` }}>HEATMAP</div>
+                        <div className="grid gap-0.5" style={{ gridTemplateColumns: 'repeat(7,1fr)' }}>
+                          {Array.from({ length: 35 }).map((_, i) => {
+                            const intensity = [0.9,0.3,0.7,0.1,0.8,0.4,0.6,0.2,1,0.5,0.3,0.8,0.1,0.9,
+                                              0.6,0.4,0.2,0.7,0.3,1,0.5,0.8,0.1,0.6,0.9,0.4,0.2,0.7,
+                                              0.3,0.5,0.8,0.1,0.9,0.6,0.4][i];
+                            const color = intensity > 0.65 ? CYAN : intensity > 0.35 ? VIOLET : '#1e1b2e';
+                            return <div key={i} className="rounded-sm aspect-square"
+                              style={{ background: color, opacity: 0.7 + intensity * 0.3 }} />;
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Line chart panel */}
+                      <div className="p-3">
+                        <div className="text-xs font-bold mb-2" style={{ color: `${GREEN}80` }}>EVOLUÇÃO</div>
+                        <svg width="100%" viewBox="0 0 90 70">
+                          <polyline points="5,55 18,42 30,48 42,28 55,35 68,18 80,22"
+                            fill="none" stroke={CYAN} strokeWidth="2.5"
+                            style={{ filter: `drop-shadow(0 0 5px ${CYAN})` }} />
+                          <polyline points="5,62 18,58 30,60 42,50 55,53 68,42 80,44"
+                            fill="none" stroke={VIOLET} strokeWidth="1.5" strokeDasharray="3,2"
+                            style={{ filter: `drop-shadow(0 0 3px ${VIOLET})` }} />
+                          {[5,18,30,42,55,68,80].map((x,i) => {
+                            const y = [55,42,48,28,35,18,22][i];
+                            return <circle key={i} cx={x} cy={y} r="2.5" fill={CYAN}
+                              style={{ filter: `drop-shadow(0 0 4px ${CYAN})` }} />;
+                          })}
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ── Translucent overlay — blur-md so neon shapes bleed through ── */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3"
+                    style={{
+                      backdropFilter: 'blur(8px)',
+                      WebkitBackdropFilter: 'blur(8px)',
+                      background: 'rgba(0,0,0,0.20)',
+                    }}>
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-black tracking-wide"
+                      style={{
+                        background: 'rgba(6,182,212,0.12)',
+                        border: `1px solid ${CYAN}60`,
+                        color: CYAN,
+                        boxShadow: `0 0 18px ${CYAN}30`,
+                      }}>
+                      🔐 CONTEÚDO EXCLUSIVO: Cadastre-se para Desbloquear.
+                    </div>
+                    {/* Bouncing arrow pointing down toward form */}
+                    <div className="animate-bounce text-xl" style={{ color: CYAN, textShadow: `0 0 12px ${CYAN}` }}>
+                      ↓
                     </div>
                   </div>
                 </div>
 
                 <p className="text-slate-400 text-sm leading-relaxed mb-6">
-                  Preencha abaixo para liberar seu{' '}
-                  <span className="text-white font-semibold">Radar ENEM</span>{' '}
-                  e descobrir como blindar sua memória até o dia da prova.
+                  Seu cérebro está vazando{' '}
+                  <span className="font-black text-white">58% do conteúdo estudado</span>{' '}
+                  <span className="font-black" style={{ color: '#ff00ff', textShadow: '0 0 10px #ff00ff80' }}>(ZONA DE RISCO)</span>.
+                  {' '}Preencha abaixo para receber seu{' '}
+                  <span className="font-black" style={{ color: CYAN }}>Raio-X</span>{' '}
+                  de Blindagem Cognitiva e o seu{' '}
+                  <span className="font-black" style={{ color: CYAN }}>Plano de Ataque</span>{' '}
+                  para o ENEM. Garanta a{' '}
+                  <span className="font-black" style={{ color: CYAN }}>Certeza</span>{' '}
+                  da sua aprovação.
                 </p>
 
                 <form onSubmit={handleLeadSubmit} noValidate className="flex flex-col gap-3">
@@ -647,12 +715,13 @@ export default function OnboardingFlow() {
                   {saveErr && <p className="text-red-400 text-xs text-center">{saveErr}</p>}
 
                   <button type="submit" disabled={saving}
-                    className="mt-2 w-full py-4 rounded-xl font-black text-black text-base transition-all duration-200 hover:-translate-y-0.5 disabled:opacity-60"
+                    className="mt-2 w-full py-4 rounded-xl font-black text-black text-base tracking-tight transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.01] disabled:opacity-60"
                     style={{
-                      background: `linear-gradient(135deg, ${GREEN}, #16a34a)`,
-                      boxShadow: `0 0 28px ${GREEN}40`,
+                      background: `linear-gradient(135deg, ${GREEN}, #15803d)`,
+                      boxShadow: `0 0 40px ${GREEN}60, 0 0 80px ${GREEN}25, inset 0 1px 0 rgba(255,255,255,0.15)`,
+                      textShadow: `0 1px 2px rgba(0,0,0,0.40)`,
                     }}>
-                    {saving ? 'Liberando...' : 'Liberar meu Radar e Plano de Ataque →'}
+                    {saving ? 'Liberando...' : 'Quero Blindar Minha Memória e Ver Meus Resultados →'}
                   </button>
 
                   <p className="text-center text-slate-700 text-xs mt-1">

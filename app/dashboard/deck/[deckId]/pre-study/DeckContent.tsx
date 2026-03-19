@@ -10,14 +10,6 @@ import { getTutor, getOpeningMessage, type Tutor } from '@/lib/tutor-engine';
 type TableRow = Record<string, string>;
 type ComparativeTable = { headers: string[]; rows: TableRow[] };
 
-type AccordionItem = {
-  id:         string;
-  icon:       string;
-  title:      string;
-  hasContent: boolean;
-  content:    React.ReactNode;
-};
-
 type Props = {
   color:                  string;
   plan:                   'flash' | 'proai_plus';
@@ -70,32 +62,31 @@ function parseTable(raw: unknown): ComparativeTable | null {
 // ─── Tutor card ───────────────────────────────────────────────────────────────
 
 function TutorCard({ tutor, plan, subjectTitle, onStartChat }: { tutor: Tutor; plan: 'flash' | 'proai_plus'; subjectTitle: string | null; onStartChat: () => void }) {
-  const isPro = plan === 'proai_plus';
-  const VIOLET = '#7C3AED';
-  const CYAN   = '#06b6d4';
+  const isPro   = plan === 'proai_plus';
+  const VIOLET  = '#a855f7';
 
   return (
     <div
-      className="relative rounded-2xl p-5 mb-6 overflow-hidden flex items-center gap-5"
+      className="relative rounded-2xl p-5 mb-4 overflow-hidden flex items-center gap-5"
       style={{
-        background:   'rgba(10,5,20,0.85)',
-        border:       `1px solid ${isPro ? `rgba(6,182,212,0.30)` : 'rgba(124,58,237,0.20)'}`,
-        backdropFilter: 'blur(20px)',
-        boxShadow:    isPro ? `0 0 40px rgba(6,182,212,0.10)` : 'none',
+        background:           'rgba(10,5,20,0.88)',
+        border:               `1px solid rgba(168,85,247,0.35)`,
+        backdropFilter:       'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        boxShadow:            `0 0 48px rgba(168,85,247,0.14)`,
       }}
     >
       {/* Top shimmer */}
       <div className="absolute inset-x-0 top-0 h-px"
-        style={{ background: `linear-gradient(90deg, transparent, ${isPro ? CYAN : VIOLET}50, transparent)` }} />
+        style={{ background: `linear-gradient(90deg, transparent, ${VIOLET}70, transparent)` }} />
 
       {/* Avatar */}
       <div className="relative shrink-0">
         <div
           className="w-16 h-16 rounded-2xl overflow-hidden flex items-center justify-center"
           style={{
-            background: `linear-gradient(135deg, ${VIOLET}30, ${CYAN}20)`,
-            border: `1px solid ${isPro ? CYAN : VIOLET}40`,
-            boxShadow: isPro ? `0 0 20px ${CYAN}30` : `0 0 16px ${VIOLET}25`,
+            border:    `1px solid ${VIOLET}50`,
+            boxShadow: `0 0 24px ${VIOLET}35`,
           }}
         >
           <Image
@@ -107,7 +98,6 @@ function TutorCard({ tutor, plan, subjectTitle, onStartChat }: { tutor: Tutor; p
             unoptimized
           />
         </div>
-        {/* Online dot */}
         {isPro && (
           <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-[#050b14]"
             style={{ background: '#22c55e', boxShadow: '0 0 8px #22c55e80' }} />
@@ -116,22 +106,15 @@ function TutorCard({ tutor, plan, subjectTitle, onStartChat }: { tutor: Tutor; p
 
       {/* Text */}
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-          <p className="text-white font-black text-base">{tutor.name}</p>
-          <span className="text-xs font-bold px-2 py-0.5 rounded-full"
-            style={{
-              background: `linear-gradient(135deg, ${VIOLET}, ${CYAN})`,
-              color: '#fff',
-              boxShadow: `0 0 8px ${VIOLET}50`,
-            }}>
-            AiPro+
-          </span>
+        <div className="flex items-center gap-2 mb-1 flex-wrap">
+          <p className="text-white font-black text-base leading-tight">
+            {tutor.name}: Sua Dúvida Resolvida AGORA.
+          </p>
         </div>
-        <p className="text-xs mb-2" style={{ color: CYAN }}>{tutor.tagline}</p>
         <p className="text-slate-400 text-xs leading-relaxed">
           {isPro
-            ? `Trava em ${subjectTitle ?? tutor.specialty}? Fale com o ${tutor.name}, seu especialista AiPro+.`
-            : `Desbloqueie o ${tutor.name} com o plano AiPro+ e tenha um especialista 24h.`}
+            ? `Trava em ${subjectTitle ?? tutor.specialty}? Pergunte agora e desbloqueie o caminho mais rápido.`
+            : `Desbloqueie o ${tutor.name} com o AiPro+ e tenha um especialista 24h ao seu lado.`}
         </p>
       </div>
 
@@ -141,20 +124,20 @@ function TutorCard({ tutor, plan, subjectTitle, onStartChat }: { tutor: Tutor; p
           <button
             className="px-4 py-2.5 rounded-xl text-xs font-black text-white transition-all duration-200 hover:-translate-y-0.5 whitespace-nowrap"
             style={{
-              background: `linear-gradient(135deg, ${VIOLET}, ${CYAN})`,
-              boxShadow: `0 0 20px ${VIOLET}50`,
+              background: `linear-gradient(135deg, #7c3aed, ${VIOLET})`,
+              boxShadow:  `0 0 22px ${VIOLET}55`,
             }}
             onClick={onStartChat}
           >
-            Iniciar Consultoria
+            Falar com {tutor.name}
           </button>
         ) : (
           <a
             href="/subscription"
             className="px-4 py-2.5 rounded-xl text-xs font-bold text-white transition-all duration-200 hover:-translate-y-0.5 whitespace-nowrap block text-center"
             style={{
-              background: 'rgba(124,58,237,0.15)',
-              border: `1px solid ${VIOLET}40`,
+              background: `rgba(168,85,247,0.15)`,
+              border:     `1px solid ${VIOLET}40`,
             }}
           >
             Desbloquear →
@@ -262,22 +245,27 @@ function UpgradeModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-// ─── Accordion item ───────────────────────────────────────────────────────────
+// ─── Arsenal Card ─────────────────────────────────────────────────────────────
 
-function AccordionRow({
-  item, color, defaultOpen, locked, onLockedClick,
+function ArsenalCard({
+  icon, title, description, color, locked, hasContent, content, onLockedClick, defaultOpen,
 }: {
-  item:          AccordionItem;
+  icon:          React.ReactNode;
+  title:         string;
+  description:   string;
   color:         string;
-  defaultOpen:   boolean;
   locked:        boolean;
+  hasContent:    boolean;
+  content:       React.ReactNode;
   onLockedClick: () => void;
+  defaultOpen?:  boolean;
 }) {
-  const [open, setOpen]   = useState(defaultOpen && !locked);
-  const bodyRef           = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(!!(defaultOpen && !locked && hasContent));
+  const bodyRef         = useRef<HTMLDivElement>(null);
 
   function handleToggle() {
     if (locked) { onLockedClick(); return; }
+    if (!hasContent) return;
     setOpen(o => !o);
   }
 
@@ -285,77 +273,87 @@ function AccordionRow({
     <div
       className="rounded-2xl overflow-hidden transition-all duration-200"
       style={{
-        background: open ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.03)',
-        border:     `1px solid ${open && !locked ? `${color}40` : 'rgba(255,255,255,0.08)'}`,
-        boxShadow:  open && !locked ? `0 0 20px ${color}10` : 'none',
+        background:           open ? 'rgba(10,5,25,0.92)' : 'rgba(10,5,20,0.80)',
+        backdropFilter:       'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        border:               `1px solid ${open && !locked ? `${color}50` : 'rgba(255,255,255,0.08)'}`,
+        boxShadow:            open && !locked ? `0 0 32px ${color}20, 0 4px 24px rgba(0,0,0,0.40)` : '0 2px 12px rgba(0,0,0,0.20)',
       }}
     >
-      {/* ── Header button ── */}
+      {/* Top shimmer */}
+      <div className="h-px transition-opacity duration-300"
+        style={{
+          background: `linear-gradient(90deg, transparent, ${color}${open && !locked ? '80' : '30'}, transparent)`,
+        }} />
+
+      {/* Header */}
       <button
         onClick={handleToggle}
         className="w-full flex items-center gap-4 px-5 py-4 text-left"
       >
-        {/* Icon */}
+        {/* Icon bubble */}
         <div
-          className="w-9 h-9 rounded-xl flex items-center justify-center text-lg shrink-0 transition-all duration-200"
+          className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all duration-200"
           style={{
-            background: open && !locked ? `${color}20` : 'rgba(255,255,255,0.06)',
-            border:     `1px solid ${open && !locked ? `${color}44` : 'rgba(255,255,255,0.10)'}`,
+            background: open && !locked ? `${color}22` : 'rgba(255,255,255,0.06)',
+            border:     `1px solid ${open && !locked ? `${color}55` : 'rgba(255,255,255,0.10)'}`,
+            boxShadow:  open && !locked ? `0 0 20px ${color}45` : 'none',
+            color:      open && !locked ? color : 'rgba(255,255,255,0.40)',
             opacity:    locked ? 0.5 : 1,
           }}
         >
-          {item.icon}
+          {icon}
         </div>
 
-        {/* Title + lock badge */}
-        <div className="flex items-center gap-2 flex-1 min-w-0">
-          <span
-            className="font-semibold text-sm transition-colors duration-200"
-            style={{ color: open && !locked ? 'rgba(255,255,255,1)' : 'rgba(255,255,255,0.55)' }}
-          >
-            {item.title}
-          </span>
-
-          {locked && (
-            <span className="flex items-center gap-1 shrink-0">
-              <LockIcon />
-              <span
-                className="text-xs font-semibold"
-                style={{ color: 'rgba(212,175,55,0.85)' }}
-              >
-                AiPro+
-              </span>
-            </span>
-          )}
-
-          {!locked && !item.hasContent && (
+        {/* Title + badges */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap mb-0.5">
             <span
-              className="text-xs px-2 py-0.5 rounded-full font-medium shrink-0"
-              style={{
-                color:      'rgba(255,255,255,0.35)',
-                background: 'rgba(255,255,255,0.06)',
-                border:     '1px solid rgba(255,255,255,0.10)',
-              }}
+              className="font-bold text-sm transition-colors duration-200"
+              style={{ color: open && !locked ? '#fff' : 'rgba(255,255,255,0.65)' }}
             >
-              Em breve
+              {title}
             </span>
-          )}
+
+            {locked && (
+              <span className="flex items-center gap-1 shrink-0">
+                <LockIcon />
+                <span className="text-xs font-semibold" style={{ color: 'rgba(212,175,55,0.85)' }}>AiPro+</span>
+              </span>
+            )}
+
+            {!locked && !hasContent && (
+              <span
+                className="text-xs px-2 py-0.5 rounded-full font-medium shrink-0"
+                style={{
+                  color:      'rgba(255,255,255,0.35)',
+                  background: 'rgba(255,255,255,0.06)',
+                  border:     '1px solid rgba(255,255,255,0.10)',
+                }}
+              >
+                Em breve
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-slate-600">{description}</p>
         </div>
 
         {/* Chevron */}
-        <svg
-          className="shrink-0 transition-transform duration-300"
-          style={{
-            transform: open && !locked ? 'rotate(180deg)' : 'rotate(0deg)',
-            color:     open && !locked ? color : 'rgba(255,255,255,0.20)',
-          }}
-          width="16" height="16" viewBox="0 0 16 16" fill="none"
-        >
-          <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
+        {!locked && hasContent && (
+          <svg
+            className="shrink-0 transition-transform duration-300"
+            style={{
+              transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
+              color:     open ? color : 'rgba(255,255,255,0.20)',
+            }}
+            width="16" height="16" viewBox="0 0 16 16" fill="none"
+          >
+            <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        )}
       </button>
 
-      {/* ── Collapsible body ── */}
+      {/* Body */}
       {!locked && (
         <div
           ref={bodyRef}
@@ -365,9 +363,9 @@ function AccordionRow({
             opacity:   open ? 1 : 0,
           }}
         >
-          <div className="mx-5 h-px" style={{ background: `${color}20` }} />
+          <div className="mx-5 h-px" style={{ background: `${color}25` }} />
           <div className="px-5 py-5">
-            {item.hasContent ? item.content : (
+            {hasContent ? content : (
               <p className="text-slate-500 text-sm">Conteúdo em preparação. Em breve por aqui!</p>
             )}
           </div>
@@ -391,38 +389,66 @@ function ChatView({
   const CYAN   = '#06b6d4';
 
   const opening = getOpeningMessage(tutor, deckTitle);
-  const [messages, setMessages] = useState<ChatMessage[]>([
+  const [messages, setMessages]           = useState<ChatMessage[]>([
     { id: 'open', role: 'tutor', text: opening },
   ]);
-  const [input, setInput]       = useState('');
-  const [typing, setTyping]     = useState(false);
-  const bottomRef               = useRef<HTMLDivElement>(null);
-  const inputRef                = useRef<HTMLTextAreaElement>(null);
+  const [input, setInput]                 = useState('');
+  const [typing, setTyping]               = useState(false);
+  const [apiError, setApiError]           = useState('');
+  // Stores the last OpenAI response ID for conversation continuity
+  const previousResponseIdRef             = useRef<string | undefined>(undefined);
+  const bottomRef                         = useRef<HTMLDivElement>(null);
+  const inputRef                          = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, typing]);
 
-  function handleSend() {
+  async function handleSend() {
     const text = input.trim();
     if (!text || typing) return;
+
     const userMsg: ChatMessage = { id: Date.now().toString(), role: 'user', text };
     setMessages(prev => [...prev, userMsg]);
     setInput('');
     setTyping(true);
+    setApiError('');
 
-    // Mock reply after 1.4s
-    setTimeout(() => {
-      const replies = [
-        `Ótima pergunta! No contexto de **"${deckTitle}"**, esse ponto é especialmente importante no ENEM. Vamos destrinchar: o conceito central aqui é que...`,
-        `Entendo sua dúvida. Muitos alunos travam exatamente aí. A chave para resolver questões sobre esse tema é identificar o mecanismo por trás — não decorar, entender. Me diz mais sobre o que te confunde.`,
-        `Perfeito! Isso conecta diretamente com o que o ENEM costuma cobrar. Pensa assim: imagine o processo como uma cadeia de eventos — cada etapa depende da anterior. Ficou mais claro?`,
-        `Boa! Esse é um detalhe que a maioria ignora. No ENEM ${new Date().getFullYear()}, questões assim aparecem disfarçadas em contexto aplicado. Vou te dar um exemplo prático...`,
-      ];
-      const reply = replies[Math.floor(Math.random() * replies.length)];
-      setMessages(prev => [...prev, { id: Date.now().toString(), role: 'tutor', text: reply }]);
+    try {
+      const res = await fetch('/api/chat/tutor', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tutor_id:             tutor.id,
+          message:              text,
+          deck_title:           deckTitle,
+          previous_response_id: previousResponseIdRef.current,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error ?? `HTTP ${res.status}`);
+      }
+
+      // Persist response ID so next turn continues the same conversation
+      if (data.previous_response_id) {
+        previousResponseIdRef.current = data.previous_response_id;
+      }
+
+      setMessages(prev => [
+        ...prev,
+        { id: Date.now().toString(), role: 'tutor', text: data.text ?? '' },
+      ]);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setApiError(msg);
+      // Remove the user message on hard failure so they can retry
+      setMessages(prev => prev.filter(m => m.id !== userMsg.id));
+    } finally {
       setTyping(false);
-    }, 1400 + Math.random() * 600);
+    }
   }
 
   function handleKey(e: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -650,6 +676,9 @@ function ChatView({
             </svg>
           </button>
         </div>
+        {apiError && (
+          <p className="text-center text-xs text-red-400 mt-1">{apiError}</p>
+        )}
         <p className="text-center text-xs text-slate-700 mt-2">
           {tutor.name} pode cometer erros. Verifique informações importantes.
         </p>
@@ -666,6 +695,37 @@ function ChatView({
   );
 }
 
+// ─── Inline SVG icons ─────────────────────────────────────────────────────────
+
+const IconZap = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+  </svg>
+);
+const IconFileText = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+    <polyline points="14 2 14 8 20 8"/>
+    <line x1="16" y1="13" x2="8" y2="13"/>
+    <line x1="16" y1="17" x2="8" y2="17"/>
+    <line x1="10" y1="9" x2="8" y2="9"/>
+  </svg>
+);
+const IconHeadphones = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
+    <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
+  </svg>
+);
+const IconLayoutDashboard = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="7" height="9"/>
+    <rect x="14" y="3" width="7" height="5"/>
+    <rect x="14" y="12" width="7" height="9"/>
+    <rect x="3" y="16" width="7" height="5"/>
+  </svg>
+);
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function DeckContent({ color, plan, subjectTitle, deckTitle, summary_markdown, comparative_table_json, mnemonics }: Props) {
@@ -674,72 +734,6 @@ export default function DeckContent({ color, plan, subjectTitle, deckTitle, summ
   const table   = parseTable(comparative_table_json);
   const isFlash = plan === 'flash';
   const tutor   = getTutor(subjectTitle);
-
-  const items: AccordionItem[] = [
-    {
-      id:         'summary',
-      icon:       '📖',
-      title:      'Resumo Teórico',
-      hasContent: !!summary_markdown,
-      content: summary_markdown ? (
-        <ReactMarkdown components={md}>{summary_markdown}</ReactMarkdown>
-      ) : null,
-    },
-    {
-      id:         'table',
-      icon:       '📊',
-      title:      'Tabelas Comparativas',
-      hasContent: !!table,
-      content: table ? (
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm border-collapse">
-            <thead>
-              <tr>
-                {table.headers.map((h, i) => (
-                  <th
-                    key={i}
-                    className="text-left py-2.5 px-3 font-semibold text-xs uppercase tracking-wider"
-                    style={{ background: `${color}18`, color, border: `1px solid ${color}22` }}
-                  >
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {table.rows.map((row, ri) => (
-                <tr key={ri} style={{ background: ri % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent' }}>
-                  {table.headers.map((h, ci) => (
-                    <td
-                      key={ci}
-                      className="py-2.5 px-3 text-slate-300 text-sm align-top"
-                      style={{ border: '1px solid rgba(255,255,255,0.05)' }}
-                    >
-                      {row[h] ?? '—'}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : null,
-    },
-    {
-      id:         'audio',
-      icon:       '🎧',
-      title:      'Áudio-Resumo',
-      hasContent: false,
-      content:    null,
-    },
-    ...(mnemonics ? [{
-      id:         'mnemonics',
-      icon:       '🧠',
-      title:      'Macetes & Mnemonics',
-      hasContent: true,
-      content:    <ReactMarkdown components={md}>{mnemonics}</ReactMarkdown>,
-    }] : []),
-  ];
 
   if (view === 'chat' && tutor) {
     return (
@@ -752,10 +746,17 @@ export default function DeckContent({ color, plan, subjectTitle, deckTitle, summ
     );
   }
 
+  // ── Fixed colors per arsenal card ──
+  const ORANGE = '#f97316';
+  const PINK   = '#ec4899';
+  const BLUE   = '#3b82f6';
+  const YELLOW = '#eab308';
+
   return (
     <>
       {showModal && <UpgradeModal onClose={() => setShowModal(false)} />}
 
+      {/* ── Pilar 1: Mentoria com Especialista ── */}
       {tutor && (
         <TutorCard
           tutor={tutor}
@@ -765,17 +766,101 @@ export default function DeckContent({ color, plan, subjectTitle, deckTitle, summ
         />
       )}
 
-      <div className="flex flex-col gap-3">
-        {items.map((item, idx) => (
-          <AccordionRow
-            key={item.id}
-            item={item}
-            color={color}
-            defaultOpen={idx === 0 && item.hasContent && !isFlash}
-            locked={isFlash}
-            onLockedClick={() => setShowModal(true)}
-          />
-        ))}
+      {/* ── Pilares 2-5: Grid 2x2 Ataque Tático ── */}
+      <div className="grid grid-cols-2 gap-3">
+
+        {/* Raio-X de Vulnerabilidades */}
+        <ArsenalCard
+          icon={<IconZap />}
+          title="Raio-X de Vulnerabilidades"
+          description="Onde seu cérebro está falhando?"
+          color={ORANGE}
+          locked={isFlash}
+          hasContent={!!table}
+          defaultOpen={false}
+          onLockedClick={() => setShowModal(true)}
+          content={
+            table ? (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm border-collapse">
+                  <thead>
+                    <tr>
+                      {table.headers.map((h, i) => (
+                        <th key={i}
+                          className="text-left py-2.5 px-3 font-semibold text-xs uppercase tracking-wider"
+                          style={{ background: `${ORANGE}18`, color: ORANGE, border: `1px solid ${ORANGE}22` }}
+                        >
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {table.rows.map((row, ri) => (
+                      <tr key={ri} style={{ background: ri % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent' }}>
+                        {table.headers.map((h, ci) => (
+                          <td key={ci}
+                            className="py-2.5 px-3 text-slate-300 text-sm align-top"
+                            style={{ border: '1px solid rgba(255,255,255,0.05)' }}
+                          >
+                            {row[h] ?? '—'}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : null
+          }
+        />
+
+        {/* Guia Tático de Elite */}
+        <ArsenalCard
+          icon={<IconFileText />}
+          title="Guia Tático de Elite"
+          description="Estude o que realmente cai."
+          color={PINK}
+          locked={isFlash}
+          hasContent={!!summary_markdown}
+          defaultOpen={!!summary_markdown && !isFlash}
+          onLockedClick={() => setShowModal(true)}
+          content={
+            summary_markdown ? (
+              <ReactMarkdown components={md}>{summary_markdown}</ReactMarkdown>
+            ) : null
+          }
+        />
+
+        {/* Imersão Auditiva */}
+        <ArsenalCard
+          icon={<IconHeadphones />}
+          title="Imersão Auditiva (Podcast)"
+          description="Estude enquanto faz outra coisa."
+          color={BLUE}
+          locked={isFlash}
+          hasContent={!!mnemonics}
+          defaultOpen={false}
+          onLockedClick={() => setShowModal(true)}
+          content={
+            mnemonics ? (
+              <ReactMarkdown components={md}>{mnemonics}</ReactMarkdown>
+            ) : null
+          }
+        />
+
+        {/* Radar Visual */}
+        <ArsenalCard
+          icon={<IconLayoutDashboard />}
+          title="Radar Visual de Conceitos"
+          description="Visualize e Memorize em segundos."
+          color={YELLOW}
+          locked={isFlash}
+          hasContent={false}
+          onLockedClick={() => setShowModal(true)}
+          content={null}
+        />
+
       </div>
     </>
   );
