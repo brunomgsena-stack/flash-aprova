@@ -378,12 +378,13 @@ function ArsenalCard({
 // ─── Chat view ────────────────────────────────────────────────────────────────
 
 function ChatView({
-  tutor, deckTitle, color, onBack,
+  tutor, deckTitle, subjectTitle, color, onBack,
 }: {
-  tutor:     Tutor;
-  deckTitle: string;
-  color:     string;
-  onBack:    () => void;
+  tutor:         Tutor;
+  deckTitle:     string;
+  subjectTitle:  string | null;
+  color:         string;
+  onBack:        () => void;
 }) {
   const VIOLET = '#7C3AED';
   const CYAN   = '#06b6d4';
@@ -404,13 +405,10 @@ function ChatView({
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, typing]);
 
-  async function handleSend() {
-    const text = input.trim();
+  async function sendMessage(text: string) {
     if (!text || typing) return;
-
     const userMsg: ChatMessage = { id: Date.now().toString(), role: 'user', text };
     setMessages(prev => [...prev, userMsg]);
-    setInput('');
     setTyping(true);
     setApiError('');
 
@@ -419,36 +417,35 @@ function ChatView({
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          tutor_id:             tutor.id,
           message:              text,
           deck_title:           deckTitle,
+          subject_title:        subjectTitle ?? tutor.specialty,
           previous_response_id: previousResponseIdRef.current,
         }),
       });
-
       const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error ?? `HTTP ${res.status}`);
-      }
-
+      if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`);
       // Persist response ID so next turn continues the same conversation
-      if (data.previous_response_id) {
-        previousResponseIdRef.current = data.previous_response_id;
-      }
-
-      setMessages(prev => [
-        ...prev,
-        { id: Date.now().toString(), role: 'tutor', text: data.text ?? '' },
-      ]);
+      if (data.previous_response_id) previousResponseIdRef.current = data.previous_response_id;
+      setMessages(prev => [...prev, { id: Date.now().toString(), role: 'tutor', text: data.text ?? '' }]);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
       setApiError(msg);
-      // Remove the user message on hard failure so they can retry
       setMessages(prev => prev.filter(m => m.id !== userMsg.id));
     } finally {
       setTyping(false);
     }
+  }
+
+  function handleSend() {
+    const text = input.trim();
+    if (!text) return;
+    setInput('');
+    sendMessage(text);
+  }
+
+  function handleSendText(text: string) {
+    sendMessage(text);
   }
 
   function handleKey(e: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -457,6 +454,12 @@ function ChatView({
       handleSend();
     }
   }
+
+  const SUGGESTIONS = [
+    { label: 'Como isso cai no ENEM? 🎯', text: 'Como esse tema cai no ENEM? Quais são os tipos de questão mais comuns?' },
+    { label: 'Qual a pegadinha? ⚠️',      text: 'Qual é a principal pegadinha desse tema que derruba os alunos na prova?' },
+    { label: 'Resumo em 3 engrenagens. ⚙️', text: 'Me dê um resumo desse tema em exatamente 3 engrenagens (pontos-chave).' },
+  ];
 
   return (
     <div className="flex flex-col h-screen max-h-screen overflow-hidden -mx-4 sm:-mx-8 -my-12">
@@ -580,7 +583,13 @@ function ChatView({
               {msg.role === 'tutor' ? (
                 <ReactMarkdown
                   components={{
-                    p:      ({ children }) => <span>{children}</span>,
+                    // Block-level — must stay as block so \n\n creates visible gaps
+                    p:  ({ children }) => <p className="mb-3 last:mb-0 leading-relaxed">{children}</p>,
+                    h3: ({ children }) => <h3 className="font-black text-white text-sm mb-3 mt-1 first:mt-0">{children}</h3>,
+                    h2: ({ children }) => <h2 className="font-black text-white text-sm mb-3 mt-1 first:mt-0">{children}</h2>,
+                    ul: ({ children }) => <ul className="list-none space-y-2 mb-3">{children}</ul>,
+                    li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+                    // Inline
                     strong: ({ children }) => <strong className="font-bold text-white">{children}</strong>,
                     em:     ({ children }) => <em className="italic text-slate-300">{children}</em>,
                   }}
@@ -637,6 +646,37 @@ function ChatView({
           backdropFilter: 'blur(20px)',
         }}
       >
+        {/* Suggestion chips */}
+        <div className="flex gap-2 mb-3 overflow-x-auto pb-1 scrollbar-hide" style={{ scrollbarWidth: 'none' }}>
+          {SUGGESTIONS.map(s => (
+            <button
+              key={s.label}
+              onClick={() => handleSendText(s.text)}
+              disabled={typing}
+              className="shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-150 hover:-translate-y-px disabled:opacity-30 whitespace-nowrap"
+              style={{
+                background:           'rgba(255,255,255,0.06)',
+                border:               '1px solid rgba(255,255,255,0.12)',
+                backdropFilter:       'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+                color:                'rgba(255,255,255,0.70)',
+              }}
+              onMouseEnter={e => {
+                (e.currentTarget as HTMLButtonElement).style.background = 'rgba(124,58,237,0.18)';
+                (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(124,58,237,0.45)';
+                (e.currentTarget as HTMLButtonElement).style.color = '#fff';
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.06)';
+                (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(255,255,255,0.12)';
+                (e.currentTarget as HTMLButtonElement).style.color = 'rgba(255,255,255,0.70)';
+              }}
+            >
+              {s.label}
+            </button>
+          ))}
+        </div>
+
         <div
           className="flex items-end gap-3 rounded-2xl px-4 py-3"
           style={{
@@ -740,6 +780,7 @@ export default function DeckContent({ color, plan, subjectTitle, deckTitle, summ
       <ChatView
         tutor={tutor}
         deckTitle={deckTitle}
+        subjectTitle={subjectTitle}
         color={color}
         onBack={() => setView('knowledge')}
       />
