@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import ReactMarkdown, { type Components } from 'react-markdown';
 import { getTutor, getOpeningMessage, type Tutor } from '@/lib/tutor-engine';
+import AiProUpgradeModal from '@/components/AiProUpgradeModal';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -61,7 +62,7 @@ function parseTable(raw: unknown): ComparativeTable | null {
 
 // ─── Tutor card ───────────────────────────────────────────────────────────────
 
-function TutorCard({ tutor, plan, subjectTitle, onStartChat }: { tutor: Tutor; plan: 'flash' | 'proai_plus'; subjectTitle: string | null; onStartChat: () => void }) {
+function TutorCard({ tutor, plan, subjectTitle, onStartChat, onUpgradeClick }: { tutor: Tutor; plan: 'flash' | 'proai_plus'; subjectTitle: string | null; onStartChat: () => void; onUpgradeClick: () => void }) {
   const isPro   = plan === 'proai_plus';
   const VIOLET  = '#a855f7';
 
@@ -132,16 +133,16 @@ function TutorCard({ tutor, plan, subjectTitle, onStartChat }: { tutor: Tutor; p
             Falar com {tutor.name}
           </button>
         ) : (
-          <a
-            href="/subscription"
-            className="px-4 py-2.5 rounded-xl text-xs font-bold text-white transition-all duration-200 hover:-translate-y-0.5 whitespace-nowrap block text-center"
+          <button
+            onClick={onUpgradeClick}
+            className="px-4 py-2.5 rounded-xl text-xs font-bold text-white transition-all duration-200 hover:-translate-y-0.5 whitespace-nowrap"
             style={{
               background: `rgba(168,85,247,0.15)`,
               border:     `1px solid ${VIOLET}40`,
             }}
           >
             Desbloquear →
-          </a>
+          </button>
         )}
       </div>
     </div>
@@ -769,8 +770,9 @@ const IconLayoutDashboard = () => (
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function DeckContent({ color, plan, subjectTitle, deckTitle, summary_markdown, comparative_table_json, mnemonics }: Props) {
-  const [showModal, setShowModal] = useState(false);
-  const [view, setView]           = useState<'knowledge' | 'chat'>('knowledge');
+  const [showModal,        setShowModal]        = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [view, setView]                         = useState<'knowledge' | 'chat'>('knowledge');
   const table   = parseTable(comparative_table_json);
   const isFlash = plan === 'flash';
   const tutor   = getTutor(subjectTitle);
@@ -795,7 +797,8 @@ export default function DeckContent({ color, plan, subjectTitle, deckTitle, summ
 
   return (
     <>
-      {showModal && <UpgradeModal onClose={() => setShowModal(false)} />}
+      {showModal        && <UpgradeModal        onClose={() => setShowModal(false)} />}
+      {showUpgradeModal && <AiProUpgradeModal   onClose={() => setShowUpgradeModal(false)} />}
 
       {/* ── Pilar 1: Mentoria com Especialista ── */}
       {tutor && (
@@ -804,6 +807,7 @@ export default function DeckContent({ color, plan, subjectTitle, deckTitle, summ
           plan={plan}
           subjectTitle={subjectTitle}
           onStartChat={() => setView('chat')}
+          onUpgradeClick={() => setShowUpgradeModal(true)}
         />
       )}
 

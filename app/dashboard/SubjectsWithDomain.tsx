@@ -4,7 +4,9 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { buildDomainMap, type DomainLevel } from '@/lib/domain';
 import { getCategoryInfo, ENEM_AREAS } from '@/lib/categories';
+import { fetchUserPlan } from '@/lib/plan';
 import SubjectCard from './SubjectCard';
+import AiProUpgradeModal from '@/components/AiProUpgradeModal';
 
 type Subject = {
   id:       string;
@@ -28,7 +30,8 @@ function SectionBlock({
   subjects: items,
   info,
   domainMap,
-}: SectionData & { domainMap: Map<string, DomainLevel> }) {
+  onLockedClickFor,
+}: SectionData & { domainMap: Map<string, DomainLevel>; onLockedClickFor?: (id: string) => (() => void) | undefined }) {
   return (
     <section>
       {/* Section header */}
@@ -56,6 +59,7 @@ function SectionBlock({
             icon={s.icon}
             color={s.color}
             domain={domainMap.get(s.id)}
+            onLockedClick={onLockedClickFor?.(s.id)}
           />
         ))}
       </div>
@@ -66,17 +70,22 @@ function SectionBlock({
 // ─── Main component ────────────────────────────────────────────────────────────
 
 export default function SubjectsWithDomain({ subjects }: Props) {
-  const [domainMap, setDomainMap] = useState<Map<string, DomainLevel>>(new Map());
+  const [domainMap,      setDomainMap]      = useState<Map<string, DomainLevel>>(new Map());
+  const [isFlash,        setIsFlash]        = useState(false);
+  const [upgradeVisible, setUpgradeVisible] = useState(false);
 
   useEffect(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user || subjects.length === 0) return;
 
-      const [{ data: allCards }, { data: progress }] = await Promise.all([
+      const [{ data: allCards }, { data: progress }, planInfo] = await Promise.all([
         supabase.from('cards').select('id, decks(subject_id)'),
         supabase.from('user_progress').select('card_id, interval_days').eq('user_id', user.id),
+        fetchUserPlan(user.id, user.email ?? undefined),
       ]);
+
+      setIsFlash(planInfo.plan === 'flash');
 
       if (!allCards || !progress) return;
 
@@ -148,8 +157,15 @@ export default function SubjectsWithDomain({ subjects }: Props) {
   }
   for (const s of pairBuffer) renderGroups.push({ type: 'solo', section: s });
 
+  // ── Helper: returns locked click handler for Flash + Redação ───────────────
+  function lockedClickFor(id: string): (() => void) | undefined {
+    return isFlash && id === 'redacao-flash' ? () => setUpgradeVisible(true) : undefined;
+  }
+
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
+    <>
+    {upgradeVisible && <AiProUpgradeModal onClose={() => setUpgradeVisible(false)} />}
     <div className="flex flex-col gap-12">
       {renderGroups.map((group) => {
         if (group.type === 'solo') {
@@ -158,6 +174,7 @@ export default function SubjectsWithDomain({ subjects }: Props) {
               key={group.section.short}
               {...group.section}
               domainMap={domainMap}
+              onLockedClickFor={lockedClickFor}
             />
           );
         }
@@ -192,6 +209,7 @@ export default function SubjectsWithDomain({ subjects }: Props) {
                   icon={s.icon}
                   color={s.color}
                   domain={domainMap.get(s.id)}
+                  onLockedClick={lockedClickFor(s.id)}
                 />
               ))}
             </div>
@@ -199,5 +217,6 @@ export default function SubjectsWithDomain({ subjects }: Props) {
         );
       })}
     </div>
+    </>
   );
 }
