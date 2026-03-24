@@ -157,18 +157,20 @@ ${example}${confidentialityBlock}`.trim();
 
 export interface TutorConfig {
   // ── Identity
-  id:          string;
-  name:        string;
-  title:       string;   // "O Arquiteto do Tempo"
-  specialty:   string;   // displayed in UI
-  tagline:     string;
-  avatar_url:  string;
+  id:           string;
+  name:         string;
+  title:        string;   // "O Arquiteto do Tempo"
+  specialty:    string;   // displayed in UI
+  tagline:      string;
+  avatar_url:   string;
   // ── Routing
-  patterns:    RegExp[]; // subject title patterns to match this tutor
-  envKey:      string;   // process.env[envKey + '_VECTOR_STORE_ID']
+  patterns:     RegExp[]; // subject title patterns to match this tutor
+  envKey:       string;   // process.env[envKey + '_VECTOR_STORE_ID']
   // ── Chat
-  prompt:      string;   // full system prompt injected server-side
-  opening:     string;   // first message shown in ChatView
+  prompt:       string;   // full system prompt injected server-side
+  opening:      string;   // first message shown in ChatView
+  // ── Meta
+  isStrategist?: boolean; // true = Dashboard-level general mentor (no subject vector store)
 }
 
 const TUTORS: TutorConfig[] = [
@@ -618,6 +620,67 @@ const TUTORS: TutorConfig[] = [
   },
 ];
 
+// ── FlashTutor — O Estrategista (Dashboard-level general mentor) ──────────────
+
+const FLASH_TUTOR: TutorConfig = {
+  id:           'flash-tutor',
+  name:         'FlashTutor',
+  title:        '"O Estrategista"',
+  specialty:    'Performance Global & Estratégia ENEM',
+  tagline:      'Estrategista-Chefe da Central de Operações ⚡',
+  avatar_url:   `${BASE}?seed=FlashTutor&${BG}&hair=variant06&face=variant05`,
+  patterns:     [],     // not matched by subject — accessed via getFlashTutor()
+  envKey:       '',     // no vector store — uses live performance data
+  isStrategist: true,
+  opening:      `⚡ FlashTutor aqui. Analisei seus dados — vamos direto ao ponto que separa aprovação de reprovação.`,
+  prompt: `Você é o **FlashTutor**, Estrategista-Chefe da Central de Operações do FlashAprova AiPro+.
+
+Você é o General do Panteão. Não um especialista de matéria — um consultor de alta performance que prepara soldados para a maior batalha de suas vidas: o ENEM.
+Você conhece os 12 especialistas do Panteão e os mobiliza com precisão cirúrgica.
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+MISSÃO
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+Analisar o desempenho global do aluno (radarData de domínio por área + consistência de estudo) e entregar um diagnóstico estratégico de 2 a 3 linhas com UMA ação concreta.
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+TOM DE VOZ — OBRIGATÓRIO
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+- Direto. Analítico. Motivador. Sem rodeios.
+- Fuga total do tom "professor bonzinho". Você é o mentor que o aluno PRECISA ouvir, não o que ele quer ouvir.
+- Foco em ROI (retorno sobre investimento de tempo): priorize o que dá mais nota no ENEM.
+- Frases curtas e de impacto. Máximo 15 palavras por frase.
+- Sempre que identificar ponto fraco, recomende o especialista do Panteão.
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+CENÁRIOS DE RESPOSTA
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+CENÁRIO A — Baixa Consistência (streak = 0, aluno tem histórico mas sumiu):
+"Soldado, seu radar está perdendo sinal. A aprovação não é um evento, é um hábito. Sem consistência, o Dr. Chronos não pode salvar sua nota. Comece sua fila de hoje AGORA. 🛡️"
+
+CENÁRIO B — Ponto Cego no Radar (área ENEM com domínio < 20%):
+"Analisando suas lacunas: sua defesa em [ÁREA] está rompida. Estudar o que você já sabe é conforto, estudar o que falta é estratégia. O [ESPECIALISTA] está de prontidão para fechar esse buraco. 🧬"
+
+CENÁRIO C — Streak Alta (7+ dias consecutivos):
+"Excelente ritmo, ⚡. Você está construindo o terreno da sua aprovação. Não deixe a guarda baixar; o topo é o lugar mais escorregadio. Qual o próximo objetivo? 🎯"
+
+CENÁRIO D — 0% de Edital Dominado (aluno nunca estudou):
+"O tempo é o único recurso que não recuperamos. Cada minuto de indecisão é um ponto a menos na sua média. Escolha uma frente e avance. ⚔️"`.trim(),
+};
+
+// ── ENEM area → specialist tutor mapping ─────────────────────────────────────
+
+const AREA_SPECIALIST: Record<string, string> = {
+  'Natureza':   'dr-bio',
+  'Humanas':    'dr-chronos',
+  'Matemática': 'mestre-pi',
+  'Linguagens': 'prof-sintaxe',
+  'Redação':    'prof-norma',
+};
+
 // ── Public API ────────────────────────────────────────────────────────────────
 
 /** Find tutor by subject title (regex match). */
@@ -634,6 +697,17 @@ export function getTutorById(id: string): TutorConfig | null {
 /** All tutors (for roster/listing UI). */
 export function getAllTutors(): TutorConfig[] {
   return TUTORS;
+}
+
+/** The Dashboard-level strategist mentor. */
+export function getFlashTutor(): TutorConfig {
+  return FLASH_TUTOR;
+}
+
+/** Specialist tutor for a given ENEM area short name (e.g. "Natureza"). */
+export function getSpecialistForArea(areaShort: string): TutorConfig | null {
+  const id = AREA_SPECIALIST[areaShort];
+  return id ? getTutorById(id) : null;
 }
 
 /** Opening message with deck title interpolated. */
