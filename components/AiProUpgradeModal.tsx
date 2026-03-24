@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+// TODO: substituir CHECKOUT_URL pelo link de cobrança AbacatePay quando gerado
+const CHECKOUT_URL = process.env.NEXT_PUBLIC_ABACATEPAY_CHECKOUT_URL ?? '';
 
 type Props = { onClose: () => void };
 
@@ -24,20 +25,12 @@ const BENEFITS = [
 ];
 
 export default function AiProUpgradeModal({ onClose }: Props) {
-  const [loading, setLoading] = useState(false);
-  const [error,   setError]   = useState<string | null>(null);
-
-  async function handleUpgrade() {
-    setLoading(true);
-    setError(null);
-    try {
-      const res  = await fetch('/api/stripe/checkout', { method: 'POST' });
-      const data = await res.json() as { url?: string; error?: string };
-      if (!res.ok || !data.url) throw new Error(data.error ?? 'Erro inesperado.');
-      window.location.href = data.url;
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Erro ao iniciar pagamento.');
-      setLoading(false);
+  function handleUpgrade() {
+    if (CHECKOUT_URL) {
+      window.location.href = CHECKOUT_URL;
+    } else {
+      // Link temporário enquanto o AbacatePay não está configurado
+      window.open('https://wa.me/5511999999999?text=Quero+assinar+o+AiPro%2B', '_blank');
     }
   }
 
@@ -138,16 +131,10 @@ export default function AiProUpgradeModal({ onClose }: Props) {
             ))}
           </div>
 
-          {/* Error */}
-          {error && (
-            <p className="text-xs text-red-400 text-center">{error}</p>
-          )}
-
           {/* CTA */}
           <button
             onClick={handleUpgrade}
-            disabled={loading}
-            className="relative w-full py-4 rounded-xl font-black text-white text-base transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:scale-100"
+            className="relative w-full py-4 rounded-xl font-black text-white text-base transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.99]"
             style={{
               background: 'linear-gradient(135deg, #7C3AED 0%, #06b6d4 60%, #ec4899 100%)',
               boxShadow:  '0 0 40px rgba(124,58,237,0.55), 0 4px 24px rgba(0,0,0,0.50)',
@@ -161,7 +148,7 @@ export default function AiProUpgradeModal({ onClose }: Props) {
                 style={{ background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.15) 50%, transparent 70%)' }}
               />
             </span>
-            {loading ? 'Redirecionando…' : 'Liberar Panteão Agora por R$ 67,90/mês'}
+            Liberar Panteão Agora por R$ 67,90/mês
           </button>
 
           {/* Dismiss */}
