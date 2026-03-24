@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import { fetchUserPlan, type Plan } from '@/lib/plan';
 import { buildDomainMap } from '@/lib/domain';
@@ -11,7 +11,6 @@ import { getSubjectIcon } from '@/lib/iconMap';
 import {
   getFlashTutor,
   getSpecialistForArea,
-  type TutorConfig,
 } from '@/lib/tutor-config';
 import AiProUpgradeModal from '@/components/AiProUpgradeModal';
 
@@ -83,12 +82,10 @@ function Heatmap({ dailyCounts }: { dailyCounts: Map<string, number> }) {
                   const count = dailyCounts.get(day.date) ?? 0;
                   const { bg, glow } = heatColor(count);
                   return (
-                    <div key={dow}
-                      title={`${day.date}: ${count} revisão${count !== 1 ? 'ões' : ''}`}
+                    <div key={dow} title={`${day.date}: ${count} revisão${count !== 1 ? 'ões' : ''}`}
                       style={{ width: CELL, height: CELL, borderRadius: '3px', background: bg,
                         boxShadow: day.date === todayISO ? `0 0 0 1.5px ${NEON_GREEN}` : glow,
-                        transition: 'background 0.2s' }}
-                    />
+                        transition: 'background 0.2s' }} />
                   );
                 })}
               </div>
@@ -107,32 +104,95 @@ function Heatmap({ dailyCounts }: { dailyCounts: Map<string, number> }) {
   );
 }
 
-// ─── Donut progress ring ──────────────────────────────────────────────────────
+// ─── Arsenal Status (two horizontal progress bars) ───────────────────────────
 
-function DonutDomain({ pct, size = 80 }: { pct: number; size?: number }) {
-  const r = 44, circ = 2 * Math.PI * r;
+function ProgressBar({ label, description, pct, gradFrom, gradTo, glowColor, delay = 0 }: {
+  label:       string;
+  description: string;
+  pct:         number;
+  gradFrom:    string;
+  gradTo:      string;
+  glowColor:   string;
+  delay?:      number;
+}) {
   const [anim, setAnim] = useState(0);
-  useEffect(() => { const t = setTimeout(() => setAnim(pct), 150); return () => clearTimeout(t); }, [pct]);
-  const offset = circ - (anim / 100) * circ;
+  useEffect(() => {
+    const t = setTimeout(() => setAnim(pct), 200 + delay);
+    return () => clearTimeout(t);
+  }, [pct, delay]);
+
   return (
-    <svg width={size} height={size} viewBox="0 0 100 100" className="shrink-0">
-      <defs>
-        <linearGradient id="dm-grad2" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%"   stopColor={NEON_GREEN} />
-          <stop offset="100%" stopColor={NEON_CYAN}  />
-        </linearGradient>
-      </defs>
-      <circle cx="50" cy="50" r={r} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="8" />
-      <circle cx="50" cy="50" r={r} fill="none" stroke="url(#dm-grad2)" strokeWidth="8"
-        strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={offset}
-        transform="rotate(-90 50 50)"
-        style={{ transition: 'stroke-dashoffset 1.4s cubic-bezier(0.4,0,0.2,1)',
-          filter: `drop-shadow(0 0 5px ${NEON_GREEN}66)` }}
+    <div className="flex flex-col gap-1.5">
+      {/* Label + percentage */}
+      <div className="flex items-baseline justify-between">
+        <span className="text-xs font-bold tracking-widest uppercase"
+          style={{ color: glowColor, fontFamily: 'ui-monospace, monospace', fontSize: '10px' }}>
+          {label}
+        </span>
+        <span className="font-black tabular-nums"
+          style={{ color: glowColor, fontFamily: 'ui-monospace, monospace', fontSize: '13px',
+            textShadow: `0 0 10px ${glowColor}88` }}>
+          {anim}<span className="text-xs font-semibold opacity-70">%</span>
+        </span>
+      </div>
+
+      {/* Bar track */}
+      <div className="relative h-1.5 rounded-full overflow-hidden"
+        style={{ background: 'rgba(255,255,255,0.06)' }}>
+        {/* Scanline texture on track */}
+        <div className="absolute inset-0"
+          style={{ backgroundImage: 'repeating-linear-gradient(90deg, transparent 0px, transparent 6px, rgba(0,0,0,0.15) 6px, rgba(0,0,0,0.15) 7px)' }} />
+        {/* Fill */}
+        <div className="absolute inset-y-0 left-0 rounded-full"
+          style={{
+            width:      `${anim}%`,
+            background: `linear-gradient(90deg, ${gradFrom}, ${gradTo})`,
+            boxShadow:  `0 0 8px ${glowColor}88, 0 0 2px ${glowColor}`,
+            transition: `width 1.2s cubic-bezier(0.4,0,0.2,1) ${delay}ms`,
+          }} />
+        {/* Leading edge pulse */}
+        {anim > 1 && (
+          <div className="absolute top-0 bottom-0 w-px rounded-full"
+            style={{
+              left:       `${anim}%`,
+              background: gradTo,
+              boxShadow:  `0 0 6px 2px ${glowColor}`,
+              transition: `left 1.2s cubic-bezier(0.4,0,0.2,1) ${delay}ms`,
+            }} />
+        )}
+      </div>
+
+      {/* Description */}
+      <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.25)', fontFamily: 'ui-monospace, monospace' }}>
+        {description}
+      </p>
+    </div>
+  );
+}
+
+function ArsenalStatus({ maturePct, reviewedPct }: { maturePct: number; reviewedPct: number }) {
+  return (
+    <div className="flex flex-col gap-4 pt-3"
+      style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+      <ProgressBar
+        label="DOMÍNIO DO EDITAL"
+        description="% de cards maduros · Memória de longo prazo"
+        pct={maturePct}
+        gradFrom={NEON_GREEN}
+        gradTo={NEON_CYAN}
+        glowColor={NEON_GREEN}
+        delay={0}
       />
-      <text x="50" y="45" textAnchor="middle" fill="white" fontSize="15" fontWeight="800" fontFamily="Inter,system-ui">{anim}%</text>
-      <text x="50" y="57" textAnchor="middle" fill="#475569" fontSize="5.8" letterSpacing="0.8" fontFamily="Inter,system-ui">DO EDITAL</text>
-      <text x="50" y="65" textAnchor="middle" fill="#475569" fontSize="5.8" letterSpacing="0.8" fontFamily="Inter,system-ui">DOMINADO</text>
-    </svg>
+      <ProgressBar
+        label="ALCANCE DA REVISÃO"
+        description="% do banco de dados total já processado"
+        pct={reviewedPct}
+        gradFrom={NEON_PURPLE}
+        gradTo={NEON_CYAN}
+        glowColor={NEON_PURPLE}
+        delay={180}
+      />
+    </div>
   );
 }
 
@@ -140,11 +200,9 @@ function DonutDomain({ pct, size = 80 }: { pct: number; size?: number }) {
 
 function calcStreak(dailyCounts: Map<string, number>): number {
   let s = 0;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const today = new Date(); today.setHours(0, 0, 0, 0);
   for (let i = 0; i < 365; i++) {
-    const d = new Date(today);
-    d.setDate(today.getDate() - i);
+    const d = new Date(today); d.setDate(today.getDate() - i);
     const iso = d.toISOString().split('T')[0];
     if ((dailyCounts.get(iso) ?? 0) > 0) s++;
     else break;
@@ -168,73 +226,14 @@ function calcMaxStreak(dailyCounts: Map<string, number>): number {
 
 // ─── Snippet types + generator ────────────────────────────────────────────────
 
-type SnippetType = 'good' | 'bad' | 'neutral';
-
-type Snippet = {
-  emoji: string;
-  label: string;
-  type:  SnippetType;
-};
-
-function generateSnippets(p: {
-  areaScores:   Map<string, number>;
-  streak:       number;
-  maturePct:    number;
-  totalDue:     number;
-  totalReviews: number;
-  topLapseDeck: { lapses: number } | null;
-}): Snippet[] {
-  const { areaScores, streak, maturePct, totalDue, totalReviews, topLapseDeck } = p;
-  const all: Snippet[] = [];
-
-  for (const area of ENEM_AREAS) {
-    const score = areaScores.get(area.short) ?? 0;
-    if (score > 0 && score < 25) {
-      all.push({ emoji: '⚠️', label: `Crise em ${area.short}`, type: 'bad' });
-    } else if (score >= 65) {
-      all.push({ emoji: '✅', label: `Domínio em ${area.short}`, type: 'good' });
-    }
-  }
-
-  if (streak >= 7)       all.push({ emoji: '🔥', label: `${streak} dias consecutivos`, type: 'good' });
-  else if (streak >= 2)  all.push({ emoji: '⚡', label: `Sequência de ${streak} dias`,  type: 'neutral' });
-  else if (streak === 0 && totalReviews > 0)
-                         all.push({ emoji: '💤', label: 'Sequência quebrada',           type: 'bad' });
-
-  if (totalDue > 100)                          all.push({ emoji: '🚨', label: `${totalDue} cards acumulados`, type: 'bad' });
-  else if (totalDue === 0 && totalReviews > 0) all.push({ emoji: '🛡️', label: 'Fila limpa hoje',             type: 'good' });
-
-  if      (maturePct >= 40)                        all.push({ emoji: '🧠', label: `${maturePct}% do edital sólido`,    type: 'good' });
-  else if (maturePct === 0 && totalReviews > 0)    all.push({ emoji: '🟡', label: 'Memória ainda fragmentada',         type: 'bad' });
-
-  if (topLapseDeck && topLapseDeck.lapses >= 5)    all.push({ emoji: '⚡', label: 'Lapsos críticos detectados',        type: 'bad' });
-
-  if (all.length === 0) return [{ emoji: '🚀', label: 'Comece a revisar para ver dados', type: 'neutral' }];
-
-  const bad     = all.filter(s => s.type === 'bad');
-  const neutral = all.filter(s => s.type === 'neutral');
-  const good    = all.filter(s => s.type === 'good');
-  return [...bad, ...neutral, ...good].slice(0, 3);
-}
-
 // ─── Intelligence Report types + generator ───────────────────────────────────
 
-type ReportItem = {
-  emoji:  string;
-  text:   string;
-  badge:  string;
-};
-
-type IntelReport = {
-  strengths:  ReportItem[];
-  weaknesses: ReportItem[];
-  attackPlan: ReportItem[];
-};
+type ReportItem = { emoji: string; text: string; badge: string };
+type IntelReport = { strengths: ReportItem[]; weaknesses: ReportItem[]; attackPlan: ReportItem[] };
 
 function generateReport(p: {
   areaScores:   Map<string, number>;
   streak:       number;
-  maxStreak:    number;
   maturePct:    number;
   totalDue:     number;
   totalReviews: number;
@@ -242,97 +241,32 @@ function generateReport(p: {
   topLapseDeck: { deckId: string; deckTitle: string; lapses: number } | null;
 }): IntelReport {
   const { areaScores, streak, maturePct, totalDue, totalReviews, topDecks, topLapseDeck } = p;
+  const strengths: ReportItem[] = [], weaknesses: ReportItem[] = [], attackPlan: ReportItem[] = [];
 
-  const strengths:  ReportItem[] = [];
-  const weaknesses: ReportItem[] = [];
-  const attackPlan: ReportItem[] = [];
-
-  // ── Fortalezas ────────────────────────────────────────────────────────────
   for (const area of ENEM_AREAS) {
     const score = areaScores.get(area.short) ?? 0;
-    if (score >= 60) {
-      strengths.push({
-        emoji: area.icon,
-        text:  `${area.short} com ${score}% de domínio. Acima da média — continue revisando para blindar essa frente.`,
-        badge: `${score}%`,
-      });
-    }
+    if (score >= 60) strengths.push({ emoji: area.icon, text: `${area.short} com ${score}% de domínio. Continue revisando para blindar essa frente.`, badge: `${score}%` });
   }
-  if (streak >= 5) {
-    strengths.push({
-      emoji: '🔥',
-      text:  `${streak} dias consecutivos de estudo. Você está entre os 10% mais disciplinados.`,
-      badge: `${streak} dias`,
-    });
-  }
-  if (maturePct >= 30) {
-    strengths.push({
-      emoji: '🧠',
-      text:  `${maturePct}% dos cards com intervalo maduro (>21 dias). Memória de longo prazo ativa.`,
-      badge: `${maturePct}%`,
-    });
-  }
-  if (totalDue === 0 && totalReviews > 0) {
-    strengths.push({ emoji: '🛡️', text: 'Fila limpa: todos os cards estão revisados e em dia.', badge: '100%' });
-  }
-  if (strengths.length === 0) {
-    strengths.push({ emoji: '🔍', text: 'Nenhuma fortaleza consolidada ainda. Você está na fase de construção de base.', badge: 'Em progresso' });
-  }
+  if (streak >= 5) strengths.push({ emoji: '🔥', text: `${streak} dias consecutivos. Você está entre os 10% mais disciplinados.`, badge: `${streak} dias` });
+  if (maturePct >= 30) strengths.push({ emoji: '🧠', text: `${maturePct}% dos cards com intervalo maduro. Memória de longo prazo ativa.`, badge: `${maturePct}%` });
+  if (totalDue === 0 && totalReviews > 0) strengths.push({ emoji: '🛡️', text: 'Fila limpa: todos os cards estão revisados.', badge: '100%' });
+  if (strengths.length === 0) strengths.push({ emoji: '🔍', text: 'Nenhuma fortaleza consolidada ainda. Você está na fase de construção de base.', badge: 'Em progresso' });
 
-  // ── Fraquezas ─────────────────────────────────────────────────────────────
   for (const area of ENEM_AREAS) {
     const score = areaScores.get(area.short) ?? 0;
     if (score > 0 && score < 25) {
       const spec = getSpecialistForArea(area.short);
-      weaknesses.push({
-        emoji: '⚠️',
-        text:  `${area.short}: apenas ${score}% de domínio.${spec ? ` Especialista indicado: ${spec.name}.` : ' Prioridade imediata.'}`,
-        badge: `${score}%`,
-      });
+      weaknesses.push({ emoji: '⚠️', text: `${area.short}: apenas ${score}% de domínio.${spec ? ` Especialista indicado: ${spec.name}.` : ''}`, badge: `${score}%` });
     }
   }
-  if (streak === 0 && totalReviews > 0) {
-    weaknesses.push({
-      emoji: '💤',
-      text:  'Sequência quebrada. Cada dia sem revisão acelera o esquecimento e reduz a eficiência do algoritmo.',
-      badge: 'Crítico',
-    });
-  }
-  if (topLapseDeck && topLapseDeck.lapses >= 3) {
-    weaknesses.push({
-      emoji: '🔁',
-      text:  `"${topLapseDeck.deckTitle}" acumulou ${topLapseDeck.lapses} lapsos — conteúdo com alta resistência ao SRS.`,
-      badge: `${topLapseDeck.lapses} lapsos`,
-    });
-  }
-  if (totalDue > 50) {
-    weaknesses.push({
-      emoji: '🚨',
-      text:  `${totalDue} cards acumulados. O atraso cria efeito bola de neve: cada dia sem revisar aumenta o débito.`,
-      badge: `${totalDue} cards`,
-    });
-  }
-  if (maturePct === 0 && totalReviews > 0) {
-    weaknesses.push({
-      emoji: '🔴',
-      text:  'Nenhum card com intervalo maduro ainda. Mais consistência é necessária para ativar a memória de longo prazo.',
-      badge: '0%',
-    });
-  }
-  if (weaknesses.length === 0 && totalReviews === 0) {
-    weaknesses.push({ emoji: '🔍', text: 'Sem dados suficientes. Comece a revisar para gerar sua análise completa.', badge: 'Sem dados' });
-  } else if (weaknesses.length === 0) {
-    weaknesses.push({ emoji: '✅', text: 'Nenhuma fraqueza crítica detectada. Mantenha o ritmo atual.', badge: 'Saudável' });
-  }
+  if (streak === 0 && totalReviews > 0) weaknesses.push({ emoji: '💤', text: 'Sequência quebrada. Cada dia sem revisão acelera o esquecimento.', badge: 'Crítico' });
+  if (topLapseDeck && topLapseDeck.lapses >= 3) weaknesses.push({ emoji: '🔁', text: `"${topLapseDeck.deckTitle}" acumulou ${topLapseDeck.lapses} lapsos — alta resistência ao SRS.`, badge: `${topLapseDeck.lapses} lapsos` });
+  if (totalDue > 50) weaknesses.push({ emoji: '🚨', text: `${totalDue} cards acumulados. Cada dia sem revisar aumenta o débito.`, badge: `${totalDue} cards` });
+  if (maturePct === 0 && totalReviews > 0) weaknesses.push({ emoji: '🔴', text: 'Nenhum card com intervalo maduro ainda. Consistência é necessária.', badge: '0%' });
+  if (weaknesses.length === 0 && totalReviews === 0) weaknesses.push({ emoji: '🔍', text: 'Sem dados suficientes. Comece a revisar para gerar análise.', badge: 'Sem dados' });
+  else if (weaknesses.length === 0) weaknesses.push({ emoji: '✅', text: 'Nenhuma fraqueza crítica detectada. Mantenha o ritmo.', badge: 'Saudável' });
 
-  // ── Plano de Ataque ───────────────────────────────────────────────────────
-  if (topDecks.length > 0) {
-    attackPlan.push({
-      emoji: '⚔️',
-      text:  `Ataque imediato: estude "${topDecks[0].deckTitle}" hoje — ${topDecks[0].dueCount} cards esperando.`,
-      badge: 'Prioridade 1',
-    });
-  }
+  if (topDecks.length > 0) attackPlan.push({ emoji: '⚔️', text: `Ataque imediato: "${topDecks[0].deckTitle}" — ${topDecks[0].dueCount} cards esperando.`, badge: 'Prioridade 1' });
   let weakestArea: string | null = null, weakestScore = 101;
   for (const area of ENEM_AREAS) {
     const score = areaScores.get(area.short) ?? 0;
@@ -340,33 +274,132 @@ function generateReport(p: {
   }
   if (weakestArea) {
     const spec = getSpecialistForArea(weakestArea);
-    attackPlan.push({
-      emoji: '🎯',
-      text:  spec
-        ? `Consulte ${spec.name} para atacar ${weakestArea} antes do próximo simulado.`
-        : `Concentre sessões em ${weakestArea} — é onde você perde mais pontos agora.`,
-      badge: weakestArea,
-    });
+    attackPlan.push({ emoji: '🎯', text: spec ? `Consulte ${spec.name} para atacar ${weakestArea} antes do próximo simulado.` : `Foque em ${weakestArea} nas próximas sessões.`, badge: weakestArea });
   }
-  if (topLapseDeck && topLapseDeck.lapses >= 3) {
-    attackPlan.push({
-      emoji: '🔁',
-      text:  `Revise "${topLapseDeck.deckTitle}" no pré-estudo para atacar os ${topLapseDeck.lapses} lapsos acumulados.`,
-      badge: 'Reforço',
-    });
-  }
-  if (streak < 3) {
-    attackPlan.push({
-      emoji: '📅',
-      text:  'Meta imediata: 7 dias consecutivos de revisão. Isso coloca o algoritmo SRS no modo ótimo.',
-      badge: 'Meta 7 dias',
-    });
-  }
-  if (attackPlan.length === 0) {
-    attackPlan.push({ emoji: '🚀', text: 'Continue revisando diariamente. O algoritmo SRS está trabalhando — confie no processo.', badge: 'Em dia' });
-  }
+  if (topLapseDeck && topLapseDeck.lapses >= 3) attackPlan.push({ emoji: '🔁', text: `Revise "${topLapseDeck.deckTitle}" no pré-estudo para atacar ${topLapseDeck.lapses} lapsos.`, badge: 'Reforço' });
+  if (streak < 3) attackPlan.push({ emoji: '📅', text: 'Meta imediata: 7 dias consecutivos. Isso ativa o SRS no modo ótimo.', badge: 'Meta 7 dias' });
+  if (attackPlan.length === 0) attackPlan.push({ emoji: '🚀', text: 'Continue revisando diariamente. O SRS está trabalhando — confie no processo.', badge: 'Em dia' });
 
   return { strengths, weaknesses, attackPlan };
+}
+
+// ─── Live Briefing ────────────────────────────────────────────────────────────
+
+type BriefingTone = 'alert' | 'victory' | 'calm';
+type Briefing = { lines: string[]; tone: BriefingTone };
+
+function getLiveBriefing(p: {
+  totalDue:     number;
+  streak:       number;
+  areaScores:   Map<string, number>;
+  totalReviews: number;
+}): Briefing {
+  const { totalDue, streak, areaScores, totalReviews } = p;
+  const hour         = new Date().getHours();
+  const isMorning    = hour >= 5  && hour < 12;
+  const isAfternoon  = hour >= 12 && hour < 18;
+
+  const scores      = [...areaScores.values()].filter(s => s > 0);
+  const avgScore    = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
+
+  let weakestArea: string | null = null, weakestScore = 101;
+  let strongestArea: string | null = null, strongestScore = -1;
+  for (const [area, score] of areaScores.entries()) {
+    if (score > 0 && score < weakestScore) { weakestArea = area; weakestScore = score; }
+    if (score > strongestScore)             { strongestArea = area; strongestScore = score; }
+  }
+
+  if (totalDue > 100) return {
+    tone: 'alert',
+    lines: [
+      `${totalDue} cards acumulados — situação de crise detectada.`,
+      'Ative o FlashTurbo para gestão de danos em múltiplas frentes.',
+      weakestArea ? `${weakestArea} é a brecha mais vulnerável agora.` : 'Priorize as áreas com menor domínio primeiro.',
+    ],
+  };
+
+  if (totalDue > 20) return {
+    tone: 'alert',
+    lines: [
+      `${totalDue} cards aguardando revisão — não deixe acumular.`,
+      isMorning ? 'Ataque o mais difícil enquanto a mente está fresca.' : 'Use o FlashTurbo para liquidar a fila de uma vez.',
+      weakestArea ? `Foco em ${weakestArea} — é onde você mais perde pontos.` : 'Distribua a sessão pelas áreas mais urgentes.',
+    ],
+  };
+
+  if (avgScore >= 60 && scores.length >= 2) return {
+    tone: 'victory',
+    lines: [
+      `Domínio médio de ${avgScore}% — operação em zona de excelência.`,
+      strongestArea ? `${strongestArea} está blindada. Hora de avançar para novas fronteiras.` : 'Suas fortalezas estão consolidadas.',
+      'Expanda o banco de cards para converter domínio em pontuação real.',
+    ],
+  };
+
+  if (streak >= 7) return {
+    tone: 'victory',
+    lines: [
+      `${streak} dias consecutivos — ritmo de aprovação confirmado.`,
+      'Consistência é o que separa os aprovados dos eliminados.',
+      totalDue > 0 ? `Mantenha o ritmo: ${totalDue} cards aguardam hoje.` : 'Fila limpa. Você está no controle.',
+    ],
+  };
+
+  if (isMorning && totalReviews > 0) return {
+    tone: 'calm',
+    lines: [
+      'Janela cognitiva de pico ativa. Bom momento para atacar.',
+      weakestArea ? `Priorize ${weakestArea} agora — dificuldade alta, recompensa máxima.` : 'Comece pelos cards mais difíceis.',
+      'A manhã é sua vantagem tática. Use-a antes da fadiga chegar.',
+    ],
+  };
+
+  if (totalReviews === 0) return {
+    tone: 'calm',
+    lines: [
+      'Operação iniciada. Aguardando primeiros dados de batalha.',
+      'Complete sua primeira sessão de revisão para ativar o diagnóstico.',
+      'O SRS começa a trabalhar a partir do primeiro card revisado.',
+    ],
+  };
+
+  return {
+    tone: 'calm',
+    lines: [
+      isAfternoon ? 'Período de consolidação. Revise o que foi aprendido.' : 'Missão noturna: grave o que mais pesou hoje.',
+      totalDue > 0 ? `${totalDue} cards na fila — liquide antes de encerrar o dia.` : 'Fila limpa. Bom trabalho hoje.',
+      streak > 1 ? `Sequência de ${streak} dias ativa. Não quebre agora.` : 'Uma nova sequência começa com a próxima sessão.',
+    ],
+  };
+}
+
+function computeMicroKPIs(p: {
+  totalDue:     number;
+  maturePct:    number;
+  areaScores:   Map<string, number>;
+}): { label: string; value: string; color: string }[] {
+  const scores   = [...p.areaScores.values()].filter(s => s > 0);
+  const avgScore = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null;
+
+  const carga = p.totalDue > 100 ? { v: 'Crítica', c: RED_ALERT }
+              : p.totalDue > 30  ? { v: 'Alta',    c: '#f97316' }
+              : p.totalDue > 10  ? { v: 'Média',   c: '#facc15' }
+              :                    { v: 'Baixa',   c: NEON_GREEN };
+
+  const domColor = avgScore === null ? 'rgba(255,255,255,0.30)'
+                 : avgScore >= 50    ? NEON_GREEN
+                 : avgScore < 30     ? RED_ALERT
+                 : NEON_CYAN;
+
+  const memColor = p.maturePct >= 30 ? NEON_GREEN
+                 : p.maturePct === 0 ? 'rgba(255,255,255,0.30)'
+                 : NEON_CYAN;
+
+  return [
+    { label: 'Domínio Médio',    value: avgScore !== null ? `${avgScore}%` : '—', color: domColor },
+    { label: 'Carga Cognitiva',  value: carga.v,                                   color: carga.c  },
+    { label: 'Memória Sólida',   value: `${p.maturePct}%`,                         color: memColor },
+  ];
 }
 
 // ─── Intelligence Report Modal ────────────────────────────────────────────────
@@ -385,9 +418,7 @@ function ReportCard({ item, badgeColor }: { item: ReportItem; badgeColor: string
     <div className="flex items-start gap-3 py-2.5 px-3 rounded-xl"
       style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
       <span className="shrink-0 text-base mt-0.5">{item.emoji}</span>
-      <p className="flex-1 text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.72)' }}>
-        {item.text}
-      </p>
+      <p className="flex-1 text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.72)' }}>{item.text}</p>
       <span className="shrink-0 text-xs font-bold px-2 py-0.5 rounded-full whitespace-nowrap"
         style={{ background: badgeColor + '22', color: badgeColor, border: `1px solid ${badgeColor}44` }}>
         {item.badge}
@@ -396,50 +427,29 @@ function ReportCard({ item, badgeColor }: { item: ReportItem; badgeColor: string
   );
 }
 
-function IntelReportModal({
-  report,
-  isPro,
-  flashTutorAvatar,
-  onClose,
-  onUpgrade,
-}: {
-  report:            IntelReport;
-  isPro:             boolean;
-  flashTutorAvatar:  string;
-  onClose:           () => void;
-  onUpgrade:         () => void;
+function IntelReportModal({ report, isPro, flashTutorAvatar, onClose, onUpgrade }: {
+  report: IntelReport; isPro: boolean; flashTutorAvatar: string;
+  onClose: () => void; onUpgrade: () => void;
 }) {
   const dateStr = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
       style={{ background: 'rgba(0,0,0,0.82)', backdropFilter: 'blur(14px)' }}
       onClick={onClose}>
       <div className="relative w-full max-w-lg rounded-3xl overflow-hidden flex flex-col"
-        style={{
-          maxHeight: '90vh',
-          background: 'linear-gradient(160deg, #0d0a1e 0%, #0f0c22 60%, #090614 100%)',
-          border:     '1px solid rgba(168,85,247,0.30)',
-          boxShadow:  '0 0 0 1px rgba(168,85,247,0.15), 0 0 80px rgba(168,85,247,0.18), 0 0 160px rgba(34,211,238,0.08)',
-        }}
+        style={{ maxHeight: '90vh', background: 'linear-gradient(160deg, #0d0a1e 0%, #0f0c22 60%, #090614 100%)',
+          border: '1px solid rgba(168,85,247,0.30)', boxShadow: '0 0 0 1px rgba(168,85,247,0.15), 0 0 80px rgba(168,85,247,0.18)' }}
         onClick={e => e.stopPropagation()}>
-
-        {/* Top shimmer line */}
         <div className="absolute inset-x-0 top-0 h-px pointer-events-none"
           style={{ background: 'linear-gradient(90deg, transparent, #a855f7, #22d3ee, transparent)' }} />
-
-        {/* Ambient glows */}
         <div className="absolute inset-0 pointer-events-none"
           style={{ background: 'radial-gradient(ellipse at top right, rgba(168,85,247,0.10) 0%, transparent 55%)' }} />
-        <div className="absolute inset-0 pointer-events-none"
-          style={{ background: 'radial-gradient(ellipse at bottom left, rgba(34,211,238,0.06) 0%, transparent 55%)' }} />
 
-        {/* ── Modal Header ── */}
+        {/* Header */}
         <div className="relative flex items-center gap-4 px-6 pt-6 pb-4"
           style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
           <div className="rounded-full overflow-hidden shrink-0"
-            style={{ width: 44, height: 44, border: `2px solid ${NEON_PURPLE}88`,
-              boxShadow: `0 0 16px ${NEON_PURPLE}44` }}>
+            style={{ width: 44, height: 44, border: `2px solid ${NEON_PURPLE}88`, boxShadow: `0 0 16px ${NEON_PURPLE}44` }}>
             <Image src={flashTutorAvatar} alt="FlashTutor" width={44} height={44} unoptimized />
           </div>
           <div className="flex-1">
@@ -456,85 +466,48 @@ function IntelReportModal({
           </div>
           <button onClick={onClose}
             className="w-8 h-8 rounded-full flex items-center justify-center transition-colors hover:text-white text-slate-500"
-            style={{ background: 'rgba(255,255,255,0.06)' }}>
-            ✕
-          </button>
+            style={{ background: 'rgba(255,255,255,0.06)' }}>✕</button>
         </div>
 
-        {/* ── Body ── */}
+        {/* Body */}
         {isPro ? (
           <div className="relative overflow-y-auto flex flex-col gap-5 p-6">
-            {/* Fortalezas */}
             <section>
               <SectionLabel color={NEON_GREEN}>Fortalezas</SectionLabel>
-              <div className="flex flex-col gap-2">
-                {report.strengths.map((item, i) => (
-                  <ReportCard key={i} item={item} badgeColor={NEON_GREEN} />
-                ))}
-              </div>
+              <div className="flex flex-col gap-2">{report.strengths.map((item, i) => <ReportCard key={i} item={item} badgeColor={NEON_GREEN} />)}</div>
             </section>
-
-            {/* Fraquezas */}
             <section>
               <SectionLabel color={RED_ALERT}>Fraquezas</SectionLabel>
-              <div className="flex flex-col gap-2">
-                {report.weaknesses.map((item, i) => (
-                  <ReportCard key={i} item={item} badgeColor={RED_ALERT} />
-                ))}
-              </div>
+              <div className="flex flex-col gap-2">{report.weaknesses.map((item, i) => <ReportCard key={i} item={item} badgeColor={RED_ALERT} />)}</div>
             </section>
-
-            {/* Plano de Ataque */}
             <section>
               <SectionLabel color={NEON_CYAN}>Plano de Ataque Imediato</SectionLabel>
-              <div className="flex flex-col gap-2">
-                {report.attackPlan.map((item, i) => (
-                  <ReportCard key={i} item={item} badgeColor={NEON_CYAN} />
-                ))}
-              </div>
+              <div className="flex flex-col gap-2">{report.attackPlan.map((item, i) => <ReportCard key={i} item={item} badgeColor={NEON_CYAN} />)}</div>
             </section>
-
             <p className="text-center text-xs pb-1" style={{ color: 'rgba(255,255,255,0.18)' }}>
-              Análise gerada pelo FlashTutor com base nos seus dados de revisão SRS.
+              Análise gerada com base nos dados de revisão SRS.
             </p>
           </div>
         ) : (
-          /* ── Flash lock screen ── */
           <div className="relative p-6 flex flex-col items-center gap-5">
-            {/* Blurred preview of sections */}
             <div style={{ filter: 'blur(5px)', opacity: 0.4, pointerEvents: 'none', userSelect: 'none' }}
               className="w-full flex flex-col gap-4">
               <div>
                 <div className="text-xs font-bold uppercase mb-2" style={{ color: NEON_GREEN }}>Fortalezas</div>
-                {[...Array(2)].map((_, i) => (
-                  <div key={i} className="h-12 rounded-xl mb-2"
-                    style={{ background: 'rgba(0,255,128,0.08)', border: '1px solid rgba(0,255,128,0.15)' }} />
-                ))}
+                {[...Array(2)].map((_, i) => <div key={i} className="h-12 rounded-xl mb-2" style={{ background: 'rgba(0,255,128,0.08)', border: '1px solid rgba(0,255,128,0.15)' }} />)}
               </div>
               <div>
                 <div className="text-xs font-bold uppercase mb-2" style={{ color: RED_ALERT }}>Fraquezas</div>
-                {[...Array(2)].map((_, i) => (
-                  <div key={i} className="h-12 rounded-xl mb-2"
-                    style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)' }} />
-                ))}
+                {[...Array(2)].map((_, i) => <div key={i} className="h-12 rounded-xl mb-2" style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)' }} />)}
               </div>
             </div>
-
-            {/* Lock overlay */}
             <div className="absolute inset-x-6 top-1/4 flex flex-col items-center gap-4 text-center p-6 rounded-2xl"
-              style={{
-                background: 'linear-gradient(160deg, rgba(13,10,30,0.96) 0%, rgba(15,12,34,0.98) 100%)',
-                border:     `1px solid ${NEON_PURPLE}44`,
-                boxShadow:  `0 0 40px rgba(0,0,0,0.80), 0 0 24px ${NEON_PURPLE}22`,
-              }}>
+              style={{ background: 'linear-gradient(160deg, rgba(13,10,30,0.96) 0%, rgba(15,12,34,0.98) 100%)',
+                border: `1px solid ${NEON_PURPLE}44`, boxShadow: `0 0 40px rgba(0,0,0,0.80), 0 0 24px ${NEON_PURPLE}22` }}>
               <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl"
-                style={{ background: `${NEON_PURPLE}20`, border: `1px solid ${NEON_PURPLE}40` }}>
-                🔒
-              </div>
+                style={{ background: `${NEON_PURPLE}20`, border: `1px solid ${NEON_PURPLE}40` }}>🔒</div>
               <div>
-                <p className="text-base font-black text-white leading-snug mb-2">
-                  Relatório de Inteligência Detalhado
-                </p>
+                <p className="text-base font-black text-white leading-snug mb-2">Relatório de Inteligência Detalhado</p>
                 <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>
                   Este recurso é exclusivo para assinantes{' '}
                   <span className="font-bold" style={{ color: NEON_PURPLE }}>AiPro+</span>.
@@ -543,20 +516,164 @@ function IntelReportModal({
               </div>
               <button onClick={onUpgrade}
                 className="w-full py-3.5 rounded-xl font-black text-white text-sm transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110 active:scale-[0.99]"
-                style={{
-                  background: `linear-gradient(135deg, ${NEON_PURPLE} 0%, ${NEON_CYAN}99 100%)`,
-                  boxShadow:  `0 0 28px ${NEON_PURPLE}55`,
-                }}>
+                style={{ background: `linear-gradient(135deg, ${NEON_PURPLE} 0%, ${NEON_CYAN}99 100%)`, boxShadow: `0 0 28px ${NEON_PURPLE}55` }}>
                 🚀 Assinar AiPro+ e Ver Relatório
               </button>
-              <button onClick={onClose}
-                className="text-xs transition-colors hover:text-slate-400"
-                style={{ color: 'rgba(255,255,255,0.25)' }}>
-                Agora não
-              </button>
+              <button onClick={onClose} className="text-xs transition-colors hover:text-slate-400"
+                style={{ color: 'rgba(255,255,255,0.25)' }}>Agora não</button>
             </div>
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+// ─── FlashTurbo Modal ─────────────────────────────────────────────────────────
+
+type TurboSuggestion = {
+  deckId:       string;
+  deckTitle:    string;
+  subjectTitle: string;
+  icon:         string;
+  dueCount:     number;
+  priority:     'urgent' | 'weak';
+  area:         string;
+};
+
+function FlashTurboModal({ suggestions, onClose }: {
+  suggestions: TurboSuggestion[];
+  onClose:     () => void;
+}) {
+  const router = useRouter();
+  const [selected, setSelected] = useState<Set<string>>(
+    new Set(suggestions.map(s => s.deckId))
+  );
+
+  const totalCards = suggestions
+    .filter(s => selected.has(s.deckId))
+    .reduce((sum, s) => sum + s.dueCount, 0);
+
+  function toggle(id: string) {
+    setSelected(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function handleStart() {
+    const ids = [...selected].join(',');
+    if (!ids) return;
+    router.push(`/study/turbo?decks=${ids}`);
+    onClose();
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: 'rgba(0,0,0,0.82)', backdropFilter: 'blur(14px)' }}
+      onClick={onClose}>
+      <div className="relative w-full max-w-md rounded-3xl overflow-hidden flex flex-col"
+        style={{ background: 'linear-gradient(160deg, #0c091e 0%, #0e0b20 100%)',
+          border: `1px solid ${NEON_PURPLE}40`,
+          boxShadow: `0 0 0 1px ${NEON_PURPLE}18, 0 0 60px ${NEON_PURPLE}18` }}
+        onClick={e => e.stopPropagation()}>
+
+        <div className="absolute inset-x-0 top-0 h-px pointer-events-none"
+          style={{ background: `linear-gradient(90deg, transparent, ${NEON_PURPLE}, ${NEON_CYAN}, transparent)` }} />
+        <div className="absolute inset-0 pointer-events-none"
+          style={{ background: `radial-gradient(ellipse at top right, ${NEON_PURPLE}0D 0%, transparent 60%)` }} />
+
+        {/* Header */}
+        <div className="relative flex items-center justify-between px-6 pt-6 pb-4"
+          style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+          <div>
+            <div className="flex items-center gap-2 mb-0.5">
+              <span className="text-lg font-black text-white">⚡ FlashTurbo</span>
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full"
+                style={{ background: `${NEON_PURPLE}22`, color: NEON_PURPLE, border: `1px solid ${NEON_PURPLE}44` }}>
+                AiPro+
+              </span>
+            </div>
+            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
+              Mix de Combate Sugerido pela IA
+            </p>
+          </div>
+          <button onClick={onClose}
+            className="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:text-white transition-colors"
+            style={{ background: 'rgba(255,255,255,0.06)' }}>✕</button>
+        </div>
+
+        {/* Suggestions list */}
+        <div className="relative flex flex-col gap-2 p-6 overflow-y-auto" style={{ maxHeight: '50vh' }}>
+          {suggestions.length === 0 ? (
+            <p className="text-center text-sm py-4" style={{ color: 'rgba(255,255,255,0.35)' }}>
+              Nenhum card pendente no momento. Volte quando tiver revisões acumuladas.
+            </p>
+          ) : suggestions.map((s) => {
+            const isChecked  = selected.has(s.deckId);
+            const isWeak     = s.priority === 'weak';
+            const badgeColor = isWeak ? RED_ALERT : '#f97316';
+            const badgeLabel = isWeak ? '⚠️ Área fraca' : '🚨 Urgente';
+
+            return (
+              <button key={s.deckId} onClick={() => toggle(s.deckId)}
+                className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all duration-150"
+                style={{
+                  background: isChecked ? `${NEON_PURPLE}12` : 'rgba(255,255,255,0.03)',
+                  border:     `1px solid ${isChecked ? NEON_PURPLE + '44' : 'rgba(255,255,255,0.08)'}`,
+                }}>
+                {/* Custom checkbox */}
+                <div className="w-5 h-5 rounded-md shrink-0 flex items-center justify-center transition-all"
+                  style={{
+                    background: isChecked ? NEON_PURPLE : 'rgba(255,255,255,0.08)',
+                    border:     `1.5px solid ${isChecked ? NEON_PURPLE : 'rgba(255,255,255,0.20)'}`,
+                  }}>
+                  {isChecked && <span style={{ fontSize: '11px', color: 'white', fontWeight: 800 }}>✓</span>}
+                </div>
+
+                {/* Deck icon */}
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center text-base shrink-0"
+                  style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.09)' }}>
+                  {s.icon}
+                </div>
+
+                {/* Labels */}
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-white truncate leading-tight">{s.subjectTitle}</p>
+                  <p className="text-xs truncate leading-tight" style={{ color: 'rgba(255,255,255,0.38)' }}>{s.deckTitle}</p>
+                </div>
+
+                {/* Priority + count */}
+                <div className="flex flex-col items-end gap-1 shrink-0">
+                  <span className="text-xs font-semibold px-1.5 py-0.5 rounded-full"
+                    style={{ background: badgeColor + '18', color: badgeColor, border: `1px solid ${badgeColor}35`, fontSize: '9px' }}>
+                    {badgeLabel}
+                  </span>
+                  <span className="text-xs font-bold tabular-nums" style={{ color: 'rgba(255,255,255,0.50)' }}>
+                    {s.dueCount} cards
+                  </span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* CTA */}
+        <div className="relative px-6 pb-6 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+          <button onClick={handleStart} disabled={selected.size === 0}
+            className="w-full py-3.5 rounded-xl font-black text-white text-sm transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+            style={{
+              background: `linear-gradient(135deg, ${NEON_PURPLE} 0%, ${NEON_CYAN}CC 100%)`,
+              boxShadow:  `0 0 28px ${NEON_PURPLE}44`,
+            }}>
+            ⚡ Iniciar Sequência Turbo
+            {totalCards > 0 && (
+              <span className="ml-2 text-xs font-semibold opacity-80">· {totalCards} cards</span>
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -593,16 +710,18 @@ type TopLapseDeck = {
 };
 
 type Metrics = {
-  totalDue:     number;
-  topDecks:     DeckPriority[];
-  maturePct:    number;
-  dailyCounts:  Map<string, number>;
-  streak:       number;
-  maxStreak:    number;
-  plan:         Plan;
-  areaScores:   Map<string, number>;
-  topLapseDeck: TopLapseDeck | null;
-  totalReviews: number;
+  totalDue:         number;
+  topDecks:         DeckPriority[];
+  maturePct:        number;
+  reviewedPct:      number;
+  dailyCounts:      Map<string, number>;
+  streak:           number;
+  maxStreak:        number;
+  plan:             Plan;
+  areaScores:       Map<string, number>;
+  topLapseDeck:     TopLapseDeck | null;
+  totalReviews:     number;
+  turboSuggestions: TurboSuggestion[];
 };
 
 // ─── Main component ───────────────────────────────────────────────────────────
@@ -612,6 +731,7 @@ export default function PerformanceMetrics() {
   const [loading,     setLoading]     = useState(true);
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [showReport,  setShowReport]  = useState(false);
+  const [showTurbo,   setShowTurbo]   = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -632,13 +752,8 @@ export default function PerformanceMetrics() {
 
       // ── Normalize cards ───────────────────────────────────────────────────
       type NormCard = {
-        id:              string;
-        deckId:          string;
-        deckTitle:       string;
-        subjectId:       string;
-        subjectTitle:    string;
-        subjectIconUrl:  string | null;
-        subjectCategory: string | null;
+        id: string; deckId: string; deckTitle: string;
+        subjectId: string; subjectTitle: string; subjectIconUrl: string | null; subjectCategory: string | null;
       };
 
       const normCards: NormCard[] = [];
@@ -662,22 +777,15 @@ export default function PerformanceMetrics() {
         if (!isDue) continue;
         const ex = deckDueMap.get(c.deckId);
         if (ex) { ex.dueCount++; }
-        else {
-          deckDueMap.set(c.deckId, {
-            dueCount:     1,
-            deckTitle:    c.deckTitle,
-            subjectTitle: c.subjectTitle,
-            icon:         getSubjectIcon(c.subjectTitle, c.subjectIconUrl, c.subjectCategory),
-          });
-        }
+        else deckDueMap.set(c.deckId, { dueCount: 1, deckTitle: c.deckTitle, subjectTitle: c.subjectTitle, icon: getSubjectIcon(c.subjectTitle, c.subjectIconUrl, c.subjectCategory) });
       }
 
       const topDecks: DeckPriority[] = Array.from(deckDueMap.entries())
         .map(([deckId, v]) => ({ deckId, ...v }))
-        .sort((a, b) => b.dueCount - a.dueCount)
-        .slice(0, 3);
-      const totalDue  = Array.from(deckDueMap.values()).reduce((s, v) => s + v.dueCount, 0);
-      const maturePct = total > 0 ? Math.round((rows.filter(r => (r.interval_days ?? 0) > 21).length / total) * 100) : 0;
+        .sort((a, b) => b.dueCount - a.dueCount).slice(0, 3);
+      const totalDue   = Array.from(deckDueMap.values()).reduce((s, v) => s + v.dueCount, 0);
+      const maturePct  = total > 0 ? Math.round((rows.filter(r => (r.interval_days ?? 0) > 21).length / total) * 100) : 0;
+      const reviewedPct = total > 0 ? Math.round((rows.length / total) * 100) : 0;
 
       // ── Heatmap + streak ──────────────────────────────────────────────────
       const dailyCounts = new Map<string, number>();
@@ -722,10 +830,26 @@ export default function PerformanceMetrics() {
         if (!topLapseDeck || agg.lapses > topLapseDeck.lapses) topLapseDeck = { deckId, ...agg };
       }
 
-      setMetrics({
-        totalDue, topDecks, maturePct, dailyCounts, streak, maxStreak,
-        plan: planInfo.plan, areaScores, topLapseDeck, totalReviews,
-      });
+      // ── FlashTurbo suggestions ────────────────────────────────────────────
+      const deckAreaMap = new Map<string, string>();
+      for (const c of normCards) {
+        if (!deckAreaMap.has(c.deckId)) deckAreaMap.set(c.deckId, getCategoryShort(c.subjectCategory));
+      }
+      const turboSuggestions: TurboSuggestion[] = Array.from(deckDueMap.entries())
+        .map(([deckId, v]) => {
+          const area     = deckAreaMap.get(deckId) ?? 'Outras';
+          const score    = areaScores.get(area) ?? 100;
+          const isWeak   = score > 0 && score < 40;
+          return { deckId, ...v, area, priority: (isWeak ? 'weak' : 'urgent') as 'urgent' | 'weak' };
+        })
+        .sort((a, b) => {
+          if (a.priority === 'weak' && b.priority !== 'weak') return -1;
+          if (a.priority !== 'weak' && b.priority === 'weak') return 1;
+          return b.dueCount - a.dueCount;
+        })
+        .slice(0, 6);
+
+      setMetrics({ totalDue, topDecks, maturePct, reviewedPct, dailyCounts, streak, maxStreak, plan: planInfo.plan, areaScores, topLapseDeck, totalReviews, turboSuggestions });
       setLoading(false);
     }
     load();
@@ -736,54 +860,38 @@ export default function PerformanceMetrics() {
 
   const flashTutor = getFlashTutor();
   const isPro      = metrics.plan === 'proai_plus';
-  const topDeckId  = metrics.topDecks[0]?.deckId ?? null;
-
-  const snippets = generateSnippets({
-    areaScores:   metrics.areaScores,
-    streak:       metrics.streak,
-    maturePct:    metrics.maturePct,
-    totalDue:     metrics.totalDue,
-    totalReviews: metrics.totalReviews,
-    topLapseDeck: metrics.topLapseDeck,
-  });
 
   const report = generateReport({
-    areaScores:   metrics.areaScores,
-    streak:       metrics.streak,
-    maxStreak:    metrics.maxStreak,
-    maturePct:    metrics.maturePct,
-    totalDue:     metrics.totalDue,
-    totalReviews: metrics.totalReviews,
-    topDecks:     metrics.topDecks,
-    topLapseDeck: metrics.topLapseDeck,
+    areaScores: metrics.areaScores, streak: metrics.streak, maturePct: metrics.maturePct,
+    totalDue: metrics.totalDue, totalReviews: metrics.totalReviews,
+    topDecks: metrics.topDecks, topLapseDeck: metrics.topLapseDeck,
   });
 
-  function handleReportClick() {
-    setShowReport(true);
-  }
+  const briefing  = getLiveBriefing({
+    totalDue: metrics.totalDue, streak: metrics.streak,
+    areaScores: metrics.areaScores, totalReviews: metrics.totalReviews,
+  });
 
-  function handleUpgrade() {
-    setShowReport(false);
-    setShowUpgrade(true);
-  }
+  const microKPIs = computeMicroKPIs({
+    totalDue: metrics.totalDue, maturePct: metrics.maturePct, areaScores: metrics.areaScores,
+  });
 
-  const snippetColors: Record<SnippetType, { bg: string; border: string; text: string }> = {
-    good:    { bg: 'rgba(0,255,128,0.10)',   border: 'rgba(0,255,128,0.30)',    text: NEON_GREEN  },
-    bad:     { bg: 'rgba(239,68,68,0.10)',   border: 'rgba(239,68,68,0.35)',    text: RED_ALERT   },
-    neutral: { bg: 'rgba(255,255,255,0.06)', border: 'rgba(255,255,255,0.12)', text: 'rgba(255,255,255,0.50)' },
+  const toneColor: Record<BriefingTone, string> = {
+    alert:   RED_ALERT,
+    victory: NEON_GREEN,
+    calm:    NEON_CYAN,
   };
 
   return (
     <>
       {showUpgrade && <AiProUpgradeModal onClose={() => setShowUpgrade(false)} />}
       {showReport  && (
-        <IntelReportModal
-          report={report}
-          isPro={isPro}
-          flashTutorAvatar={flashTutor.avatar_url}
+        <IntelReportModal report={report} isPro={isPro} flashTutorAvatar={flashTutor.avatar_url}
           onClose={() => setShowReport(false)}
-          onUpgrade={handleUpgrade}
-        />
+          onUpgrade={() => { setShowReport(false); setShowUpgrade(true); }} />
+      )}
+      {showTurbo && (
+        <FlashTurboModal suggestions={metrics.turboSuggestions} onClose={() => setShowTurbo(false)} />
       )}
 
       <div className="max-w-5xl mx-auto mb-10 grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -791,114 +899,87 @@ export default function PerformanceMetrics() {
         {/* ╔══════════════════════════════════════════════╗ */}
         {/* ║  CARD 3 — CENTRAL DE COMBATE ⚡             ║ */}
         {/* ╚══════════════════════════════════════════════╝ */}
-        <div className="relative rounded-2xl p-6 flex flex-col gap-5 overflow-hidden"
-          style={{
-            background:       'rgba(255,255,255,0.035)',
-            backdropFilter:   'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-            border:           '1px solid rgba(0,255,128,0.18)',
-            boxShadow:        '0 0 50px rgba(0,255,128,0.05)',
-          }}
-        >
+        <div className="relative rounded-2xl p-4 flex flex-col gap-3 overflow-hidden"
+          style={{ background: 'rgba(255,255,255,0.035)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+            border: `1px solid ${NEON_PURPLE}28`, boxShadow: `0 0 50px ${NEON_PURPLE}0A` }}>
           <div className="absolute inset-0 pointer-events-none"
-            style={{ background: 'radial-gradient(ellipse at top left, rgba(0,255,128,0.07) 0%, transparent 65%)' }} />
+            style={{ background: `radial-gradient(ellipse at top left, ${NEON_PURPLE}0D 0%, transparent 65%)` }} />
           <div className="absolute inset-x-0 top-0 h-px pointer-events-none"
-            style={{ background: 'linear-gradient(90deg, transparent, rgba(0,255,128,0.45), rgba(34,211,238,0.20), transparent)' }} />
+            style={{ background: `linear-gradient(90deg, transparent, ${NEON_PURPLE}55, ${NEON_CYAN}22, transparent)` }} />
 
+          {/* Header */}
           <p className="text-xs font-semibold tracking-widest uppercase relative z-10" style={{ color: NEON_GREEN }}>
             Central de Combate ⚡
           </p>
 
-          {/* ── Hero CTA Button ── */}
-          {topDeckId ? (
-            <Link href={`/study/${topDeckId}`}
-              className="relative flex items-center justify-between rounded-xl px-5 py-4 transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110 active:scale-[0.99] z-10"
-              style={{
-                background:     'linear-gradient(135deg, rgba(0,255,128,0.20) 0%, rgba(34,211,238,0.14) 100%)',
-                border:         '1px solid rgba(0,255,128,0.42)',
-                boxShadow:      '0 0 24px rgba(0,255,128,0.12), inset 0 1px 0 rgba(255,255,255,0.06)',
-                textDecoration: 'none',
-              }}>
-              <div>
-                <p className="text-xs font-semibold tracking-wide uppercase mb-0.5" style={{ color: NEON_GREEN }}>
-                  🗡 Retomar Revisão Prioritária
-                </p>
-                <p className="text-2xl font-black tabular-nums leading-none text-white"
-                  style={{ textShadow: `0 0 20px ${NEON_GREEN}66` }}>
-                  {metrics.totalDue}
-                  <span className="text-sm font-semibold ml-1.5" style={{ color: 'rgba(255,255,255,0.45)' }}>cards</span>
-                </p>
-              </div>
-              <span className="text-2xl" style={{ filter: `drop-shadow(0 0 8px ${NEON_GREEN}88)` }}>⚔️</span>
-            </Link>
-          ) : (
-            <div className="relative flex items-center gap-3 rounded-xl px-5 py-4 z-10"
-              style={{ background: 'rgba(0,255,128,0.06)', border: '1px solid rgba(0,255,128,0.15)' }}>
-              <span className="text-2xl">🛡️</span>
-              <div>
-                <p className="text-sm font-bold text-white">Fila limpa!</p>
-                <p className="text-xs" style={{ color: 'rgba(255,255,255,0.38)' }}>Nenhum card pendente agora.</p>
-              </div>
-            </div>
-          )}
-
-          {/* ── Streak badge + Heatmap ── */}
-          <div className="relative z-10 flex flex-col gap-2 flex-1">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1.5">
-                <span style={{ fontSize: '16px' }}>{metrics.streak >= 7 ? '🔥' : '⚡'}</span>
-                <span className="text-sm font-bold text-white">{metrics.streak}</span>
-                <span className="text-xs" style={{ color: 'rgba(255,255,255,0.40)' }}>
-                  dia{metrics.streak !== 1 ? 's' : ''}
-                </span>
-                <span className="text-xs" style={{ color: 'rgba(255,255,255,0.25)' }}>Sequência Atual</span>
-              </div>
-              <div className="w-px h-4" style={{ background: 'rgba(255,255,255,0.08)' }} />
-              <div className="flex items-center gap-1.5">
-                <span style={{ fontSize: '14px' }}>🏆</span>
-                <span className="text-sm font-bold text-white">{metrics.maxStreak}</span>
-                <span className="text-xs" style={{ color: 'rgba(255,255,255,0.25)' }}>Recorde</span>
-              </div>
-            </div>
-            <Heatmap dailyCounts={metrics.dailyCounts} />
-          </div>
-
-          {/* ── Bottom row: top deck icons + donut ring ── */}
-          <div className="relative z-10 flex items-center justify-between pt-1 mt-auto"
-            style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-            <div className="flex items-center gap-2">
-              {metrics.topDecks.map((deck) => (
-                <Link key={deck.deckId} href={`/study/${deck.deckId}`}
-                  title={`${deck.subjectTitle} · ${deck.deckTitle} (${deck.dueCount})`}
-                  className="flex flex-col items-center gap-1 transition-all duration-150 hover:scale-110 active:scale-95"
-                  style={{ textDecoration: 'none' }}>
-                  <div className="w-9 h-9 rounded-lg flex items-center justify-center text-lg"
-                    style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.09)' }}>
-                    {deck.icon}
+          {/* ── Top row: FlashTurbo (left) + Heatmap (right) ── */}
+          <div className="relative z-10 flex gap-3 items-stretch">
+            {/* FlashTurbo CTA — left col */}
+            <div className="shrink-0 w-[42%] flex flex-col justify-center">
+              {metrics.totalDue > 0 ? (
+                <button
+                  onClick={() => isPro ? setShowTurbo(true) : setShowUpgrade(true)}
+                  className="relative flex flex-col justify-between rounded-xl px-3 py-3 w-full h-full text-left transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110 active:scale-[0.99]"
+                  style={{
+                    background: `linear-gradient(135deg, ${NEON_PURPLE}28 0%, ${NEON_CYAN}18 100%)`,
+                    border:     `1px solid ${NEON_PURPLE}50`,
+                    boxShadow:  `0 0 24px ${NEON_PURPLE}18, inset 0 1px 0 rgba(255,255,255,0.06)`,
+                  }}>
+                  <p className="text-xs font-semibold tracking-wide uppercase mb-1" style={{ color: NEON_PURPLE }}>
+                    ⚡ FlashTurbo{!isPro && ' 🔒'}
+                  </p>
+                  <div className="flex items-end justify-between">
+                    <div>
+                      <p className="text-2xl font-black tabular-nums leading-none text-white"
+                        style={{ textShadow: `0 0 20px ${NEON_PURPLE}66` }}>
+                        {metrics.totalDue}
+                      </p>
+                      <p className="text-xs" style={{ color: 'rgba(255,255,255,0.38)' }}>cards</p>
+                    </div>
+                    <span className="text-2xl" style={{ filter: `drop-shadow(0 0 8px ${NEON_PURPLE}88)` }}>⚠️</span>
                   </div>
-                  <span className="text-xs font-bold tabular-nums" style={{ color: NEON_GREEN }}>{deck.dueCount}</span>
-                </Link>
-              ))}
-              {metrics.topDecks.length === 0 && (
-                <span className="text-xs" style={{ color: 'rgba(255,255,255,0.25)' }}>Sem decks pendentes</span>
+                  <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.28)' }}>
+                    {metrics.turboSuggestions.length} decks na fila
+                  </p>
+                </button>
+              ) : (
+                <div className="relative flex flex-col justify-center gap-1 rounded-xl px-3 py-3 h-full"
+                  style={{ background: 'rgba(0,255,128,0.06)', border: '1px solid rgba(0,255,128,0.18)' }}>
+                  <span className="text-xl">🛡️</span>
+                  <p className="text-xs font-bold text-white">Fila limpa!</p>
+                  <p className="text-xs" style={{ color: 'rgba(255,255,255,0.38)' }}>0 cards pendentes</p>
+                </div>
               )}
             </div>
-            <DonutDomain pct={metrics.maturePct} size={80} />
+
+            {/* Heatmap — right col */}
+            <div className="flex-1 flex flex-col justify-center">
+              {/* Streak inline */}
+              <div className="flex items-center gap-2 mb-2">
+                <span style={{ fontSize: '13px' }}>{metrics.streak >= 7 ? '🔥' : '⚡'}</span>
+                <span className="text-xs font-bold text-white">{metrics.streak}</span>
+                <span className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>dias</span>
+                <div className="w-px h-3 mx-0.5" style={{ background: 'rgba(255,255,255,0.08)' }} />
+                <span style={{ fontSize: '12px' }}>🏆</span>
+                <span className="text-xs font-bold text-white">{metrics.maxStreak}</span>
+                <span className="text-xs" style={{ color: 'rgba(255,255,255,0.22)' }}>recorde</span>
+              </div>
+              <Heatmap dailyCounts={metrics.dailyCounts} />
+            </div>
+          </div>
+
+          {/* ── Arsenal Status ── */}
+          <div className="relative z-10 pt-2" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+            <ArsenalStatus maturePct={metrics.maturePct} reviewedPct={metrics.reviewedPct} />
           </div>
         </div>
 
         {/* ╔══════════════════════════════════════════════╗ */}
         {/* ║  CARD 4 — O PANTEÃO 🏛️                     ║ */}
         {/* ╚══════════════════════════════════════════════╝ */}
-        <div className="relative rounded-2xl p-6 flex flex-col gap-5 overflow-hidden"
-          style={{
-            background:       'rgba(255,255,255,0.035)',
-            backdropFilter:   'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-            border:           '1px solid rgba(168,85,247,0.22)',
-            boxShadow:        '0 0 50px rgba(168,85,247,0.07)',
-          }}
-        >
+        <div className="relative rounded-2xl p-4 flex flex-col gap-3 overflow-hidden"
+          style={{ background: 'rgba(255,255,255,0.035)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+            border: '1px solid rgba(168,85,247,0.22)', boxShadow: '0 0 50px rgba(168,85,247,0.07)' }}>
           <div className="absolute inset-0 pointer-events-none"
             style={{ background: 'radial-gradient(ellipse at top right, rgba(168,85,247,0.10) 0%, transparent 65%)' }} />
           <div className="absolute inset-x-0 top-0 h-px pointer-events-none"
@@ -908,85 +989,78 @@ export default function PerformanceMetrics() {
             O Panteão 🏛️
           </p>
 
-          {/* ── FlashTutor identity ── */}
-          <div className="flex items-center gap-3 relative z-10">
+          {/* FlashTutor identity — compact row */}
+          <div className="flex items-center gap-2 relative z-10">
             <div className="rounded-full overflow-hidden shrink-0"
-              style={{
-                width: 40, height: 40,
-                border: `2px solid ${isPro ? NEON_PURPLE + 'AA' : NEON_PURPLE + '44'}`,
-                boxShadow: isPro ? `0 0 16px ${NEON_PURPLE}44` : 'none',
-              }}>
-              <Image src={flashTutor.avatar_url} alt="FlashTutor" width={40} height={40} unoptimized />
+              style={{ width: 32, height: 32, border: `2px solid ${isPro ? NEON_PURPLE + 'AA' : NEON_PURPLE + '44'}`,
+                boxShadow: isPro ? `0 0 12px ${NEON_PURPLE}44` : 'none' }}>
+              <Image src={flashTutor.avatar_url} alt="FlashTutor" width={32} height={32} unoptimized />
             </div>
-            <div className="flex-1">
-              <p className="text-sm font-bold text-white leading-tight">FlashTutor</p>
-              <p className="text-xs leading-tight"
-                style={{ color: isPro ? NEON_PURPLE : 'rgba(255,255,255,0.28)', letterSpacing: '0.05em' }}>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold text-white leading-tight">FlashTutor</p>
+              <p className="leading-tight truncate" style={{ color: isPro ? NEON_PURPLE : 'rgba(255,255,255,0.28)', letterSpacing: '0.04em', fontSize: '10px' }}>
                 {isPro ? '⚡ ESTRATEGISTA GERAL' : '🔒 AIPRO+ EXCLUSIVO'}
               </p>
             </div>
-            <div className="flex items-center gap-1.5 shrink-0">
-              <div className="w-2 h-2 rounded-full" style={{
-                background: isPro ? NEON_GREEN : 'rgba(255,255,255,0.15)',
-                boxShadow:  isPro ? `0 0 6px ${NEON_GREEN}` : 'none',
-              }} />
-              <span className="text-xs" style={{ color: 'rgba(255,255,255,0.25)' }}>
-                {isPro ? 'online' : 'bloqueado'}
-              </span>
+            <div className="flex items-center gap-1 shrink-0">
+              <div className="w-1.5 h-1.5 rounded-full"
+                style={{ background: isPro ? NEON_GREEN : 'rgba(255,255,255,0.15)', boxShadow: isPro ? `0 0 5px ${NEON_GREEN}` : 'none' }} />
+              <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.25)' }}>{isPro ? 'online' : 'bloqueado'}</span>
             </div>
           </div>
 
-          {/* ── 3 Snippets ── */}
-          <div className="relative z-10 flex flex-col gap-2">
-            <p className="text-xs font-medium" style={{ color: 'rgba(255,255,255,0.35)' }}>
-              Diagnóstico rápido
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {snippets.map((s, i) => {
-                const c = snippetColors[s.type];
-                return (
-                  <div key={i}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold"
-                    style={{ background: c.bg, border: `1px solid ${c.border}`, color: c.text }}>
-                    <span>{s.emoji}</span>
-                    <span>{s.label}</span>
-                  </div>
-                );
-              })}
+          {/* ── Live Briefing + Micro-KPIs ── */}
+          <div className="relative z-10 flex gap-3 pt-2.5" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+
+            {/* Briefing text — left */}
+            <div className="flex-1 flex flex-col gap-1.5">
+              <p style={{ fontSize: '9px', letterSpacing: '0.10em', fontFamily: 'ui-monospace,monospace',
+                color: toneColor[briefing.tone], textTransform: 'uppercase', fontWeight: 700 }}>
+                ▶ BRIEFING ATIVO
+              </p>
+              {briefing.lines.map((line, i) => (
+                <p key={i} style={{
+                  fontSize: '11px', lineHeight: '1.55',
+                  color: i === 0 ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.48)',
+                  fontWeight: i === 0 ? 600 : 400,
+                  fontStyle: i > 0 ? 'italic' : 'normal',
+                }}>
+                  {i === 0 && <span style={{ color: toneColor[briefing.tone], marginRight: '4px' }}>›</span>}
+                  {line}
+                </p>
+              ))}
+            </div>
+
+            {/* Micro-KPIs — right */}
+            <div className="shrink-0 flex flex-col gap-2" style={{ minWidth: '90px' }}>
+              {microKPIs.map((kpi, i) => (
+                <div key={i} className="rounded-lg px-2 py-1.5 flex flex-col"
+                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                  <span style={{ fontSize: '8px', color: 'rgba(255,255,255,0.30)', letterSpacing: '0.06em',
+                    textTransform: 'uppercase', fontFamily: 'ui-monospace,monospace' }}>
+                    {kpi.label}
+                  </span>
+                  <span className="font-black tabular-nums leading-tight"
+                    style={{ fontSize: '13px', color: kpi.color, fontFamily: 'ui-monospace,monospace',
+                      textShadow: `0 0 8px ${kpi.color}66` }}>
+                    {kpi.value}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* ── Descriptive line ── */}
-          <div className="relative z-10 flex-1 rounded-xl p-4"
-            style={{ background: 'rgba(168,85,247,0.07)', border: '1px solid rgba(168,85,247,0.15)' }}>
-            <p className="text-xs font-semibold mb-2" style={{ color: NEON_PURPLE }}>
-              📊 Relatório de Inteligência
-            </p>
-            <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>
-              {isPro
-                ? 'Análise completa de fortalezas, fraquezas e plano de ataque gerada com seus dados de revisão SRS.'
-                : 'Seu diagnóstico detalhado está pronto. Fortalezas, fraquezas e o plano de ataque exato para sua aprovação.'}
-            </p>
+          {/* ── Deep Dive footer ── */}
+          <div className="relative z-10 flex items-center justify-end pt-1"
+            style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+            <button onClick={() => setShowReport(true)}
+              className="flex items-center gap-1.5 transition-all duration-150 hover:brightness-125 active:scale-95"
+              style={{ fontSize: '10px', color: isPro ? NEON_PURPLE : 'rgba(255,255,255,0.30)',
+                fontFamily: 'ui-monospace,monospace', fontWeight: 700, letterSpacing: '0.04em' }}>
+              {isPro ? '📊' : '🔒'} Relatório Profundo (Deep Dive)
+              <span style={{ fontSize: '9px', opacity: 0.6 }}>→</span>
+            </button>
           </div>
-
-          {/* ── CTA button ── */}
-          <button
-            onClick={handleReportClick}
-            className="relative w-full py-3.5 rounded-xl font-black text-sm text-white transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110 active:scale-[0.99] z-10 overflow-hidden"
-            style={{
-              background: isPro
-                ? `linear-gradient(135deg, ${NEON_PURPLE} 0%, ${NEON_CYAN}CC 100%)`
-                : `linear-gradient(135deg, ${NEON_PURPLE}99 0%, ${NEON_CYAN}66 100%)`,
-              boxShadow: `0 0 28px ${NEON_PURPLE}${isPro ? '55' : '33'}`,
-            }}
-          >
-            {/* Shimmer */}
-            <span className="absolute inset-0 pointer-events-none overflow-hidden rounded-xl">
-              <span className="absolute inset-0"
-                style={{ background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.12) 50%, transparent 70%)' }} />
-            </span>
-            {isPro ? '📊 Gerar Relatório de Inteligência Completo' : '🔒 Ver Relatório de Inteligência'}
-          </button>
         </div>
 
       </div>

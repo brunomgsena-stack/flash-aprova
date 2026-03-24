@@ -5,6 +5,7 @@ import UserMenu from './UserMenu';
 import StreakBadge from './StreakBadge';
 import ChartsRow from './ChartsRow';
 import SubjectsWithDomain from './SubjectsWithDomain';
+import DynamicStatus from './DynamicStatus';
 
 type Subject = {
   id:       string;
@@ -58,10 +59,7 @@ export default async function DashboardPage() {
         <h1 className="text-4xl font-bold text-white leading-tight">
           Central de Operações
         </h1>
-        <p className="text-slate-400 mt-2 text-base font-mono">
-          <span style={{ color: '#00ff80' }}>●</span>{' '}
-          Status: Operacional · Analisando lacunas de memória
-        </p>
+        <DynamicStatus />
       </div>
 
       {/* ── Charts: Radar ENEM + Retenção ────────────────────────────────── */}
