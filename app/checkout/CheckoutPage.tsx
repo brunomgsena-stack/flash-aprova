@@ -320,6 +320,8 @@ interface OnboardingData {
   results: { rating: string; seconds: number }[];
   memoryHealth: number;
   radar?: Record<string, number>;
+  email?: string;
+  name?:  string;
 }
 
 const cardStyle = {
@@ -329,14 +331,51 @@ const cardStyle = {
 } as React.CSSProperties;
 
 export default function CheckoutPage() {
-  const [data, setData] = useState<OnboardingData | null>(null);
+  const [data,          setData]          = useState<OnboardingData | null>(null);
+  const [email,         setEmail]         = useState('');
+  const [name,          setName]          = useState('');
+  const [showEmailForm, setShowEmailForm] = useState(false);
+  const [buyLoading,    setBuyLoading]    = useState(false);
+  const [buyError,      setBuyError]      = useState<string | null>(null);
 
   useEffect(() => {
     try {
       const raw = localStorage.getItem('flashAprovaOnboarding');
-      if (raw) setData(JSON.parse(raw));
+      if (raw) {
+        const parsed = JSON.parse(raw) as OnboardingData;
+        setData(parsed);
+        if (parsed.email) setEmail(parsed.email);
+        if (parsed.name)  setName(parsed.name);
+      }
     } catch { /* ignore */ }
   }, []);
+
+  async function handleBuyPro(e: React.FormEvent) {
+    e.preventDefault();
+
+    // Se ainda não temos e-mail, mostra o formulário inline
+    if (!email) {
+      setShowEmailForm(true);
+      return;
+    }
+
+    setBuyLoading(true);
+    setBuyError(null);
+
+    try {
+      const res  = await fetch('/api/checkout', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ email, name: name || undefined }),
+      });
+      const json = await res.json() as { url?: string; error?: string };
+      if (!res.ok || !json.url) throw new Error(json.error ?? 'Erro ao gerar link de pagamento.');
+      window.location.href = json.url;
+    } catch (err: unknown) {
+      setBuyError(err instanceof Error ? err.message : 'Erro inesperado. Tente novamente.');
+      setBuyLoading(false);
+    }
+  }
 
   const health      = data?.memoryHealth ?? 62;
   const subjectId   = data?.subject ?? 'biologia';
@@ -531,14 +570,54 @@ export default function CheckoutPage() {
               ))}
             </div>
 
-            <Link href="/login"
-              className="relative block w-full py-4 rounded-xl text-center font-black text-white text-base transition-all duration-200 hover:-translate-y-0.5"
+            {/* ── Email form (aparece quando não há e-mail em localStorage) ── */}
+            {showEmailForm && (
+              <div className="flex flex-col gap-2 mb-4 relative">
+                <input
+                  type="text"
+                  placeholder="Seu nome"
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl text-sm text-white outline-none"
+                  style={{ background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)' }}
+                />
+                <input
+                  type="email"
+                  placeholder="Seu melhor e-mail *"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  required
+                  autoFocus
+                  className="w-full px-4 py-2.5 rounded-xl text-sm text-white outline-none"
+                  style={{ background:'rgba(255,255,255,0.06)', border:'1px solid rgba(124,58,237,0.45)' }}
+                />
+                <p className="text-xs" style={{ color:'rgba(255,255,255,0.30)' }}>
+                  Usamos seu e-mail para criar seu acesso após o pagamento.
+                </p>
+              </div>
+            )}
+
+            {/* ── Erro ── */}
+            {buyError && (
+              <p className="text-xs text-red-400 text-center mb-3">{buyError}</p>
+            )}
+
+            <button
+              onClick={handleBuyPro}
+              disabled={buyLoading}
+              className="relative block w-full py-4 rounded-xl text-center font-black text-white text-base transition-all duration-200 hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
               style={{
                 background:'linear-gradient(135deg,#7C3AED 0%,#06b6d4 60%,#ec4899 100%)',
                 boxShadow:'0 0 36px rgba(124,58,237,0.60),0 4px 20px rgba(0,0,0,0.50)',
               }}>
-              Garantir minha Aprovação →
-            </Link>
+              <span className="absolute inset-0 rounded-xl overflow-hidden pointer-events-none">
+                <span className="absolute inset-0"
+                  style={{ background:'linear-gradient(105deg,transparent 30%,rgba(255,255,255,0.12) 50%,transparent 70%)' }} />
+              </span>
+              {buyLoading ? 'Redirecionando para pagamento…'
+                : showEmailForm && !email ? 'Continuar →'
+                : 'Garantir minha Aprovação →'}
+            </button>
           </div>
         </div>
 
