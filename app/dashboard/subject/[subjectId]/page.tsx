@@ -192,14 +192,7 @@ export default async function SubjectPage({ params }: Props) {
           </>
         )}
 
-        {/* ── Orphan decks (sem módulo) ─────────────────────────────── */}
-        {orphanDecks.length > 0 && (
-          <div className={`grid grid-cols-1 sm:grid-cols-2 gap-5 ${hasModules ? 'mt-8' : 'mt-2'}`}>
-            {orphanDecks.map(deck => (
-              <DeckCard key={deck.id} id={deck.id} title={deck.title} color={color} />
-            ))}
-          </div>
-        )}
+        {/* Orphan decks removidos — todos os decks devem estar em módulos */}
 
         {/* ── Empty state ───────────────────────────────────────────── */}
         {!hasModules && orphanDecks.length === 0 && (

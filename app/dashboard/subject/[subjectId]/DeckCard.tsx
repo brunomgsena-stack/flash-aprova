@@ -165,8 +165,8 @@ export default function DeckCard({ id, title, color }: Props) {
       {/* ── CTA row ─────────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between relative z-10">
         <span
-          className="text-sm font-semibold transition-colors duration-200"
-          style={{ color: hovered ? NEON : VIOLET }}
+          className="text-sm font-semibold"
+          style={{ color: NEON }}
         >
           Estudar agora →
         </span>
