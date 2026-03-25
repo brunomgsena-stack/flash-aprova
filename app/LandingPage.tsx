@@ -189,7 +189,7 @@ function ForgettingCurve() {
 // ─── CTA button (verde neon, shimmer) ─────────────────────────────────────────
 function CTAButton({ size = 'lg', label }: { size?: 'sm' | 'lg'; label?: string }) {
   const big = size === 'lg';
-  const text = label ?? 'Quero reter meu estudo agora';
+  const text = label ?? 'Gerar meu Diagnóstico IA';
   return (
     <Link
       href="/onboarding"
@@ -490,7 +490,7 @@ function FAQAccordion() {
       </div>
 
       <div className="text-center mt-10">
-        <CTAButton size="sm" label="Começar gratuitamente agora" />
+        <CTAButton size="sm" />
       </div>
     </section>
   );
@@ -874,6 +874,11 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
+
+        {/* ═══════════════════ CTA mid-page ══ */}
+        <div className="flex justify-center pb-16">
+          <CTAButton />
+        </div>
 
         {/* ═══════════════════════════ BIBLIOTECA ══ */}
         <section className="max-w-6xl mx-auto px-5 sm:px-10 pb-24">
