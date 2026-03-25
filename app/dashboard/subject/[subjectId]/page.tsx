@@ -145,6 +145,43 @@ export default async function SubjectPage({ params }: Props) {
           style={{ background: `linear-gradient(90deg, ${color}55, transparent)` }}
         />
 
+        {/* ── Botão Decks Gerados por IA ────────────────────────────── */}
+        <Link
+          href={`/study/turbo?subjectId=${subject.id}`}
+          className="relative flex items-center gap-4 w-full rounded-2xl px-6 py-5 mb-8 overflow-hidden transition-all duration-300 hover:-translate-y-0.5 group"
+          style={{
+            background: `linear-gradient(135deg, ${color}18 0%, rgba(124,58,237,0.12) 100%)`,
+            border:     `1px solid ${color}50`,
+            boxShadow:  `0 0 30px ${color}18`,
+          }}
+        >
+          {/* shimmer */}
+          <div
+            className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+            style={{ background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.06) 50%, transparent 70%)' }}
+          />
+          <div
+            className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl shrink-0"
+            style={{ background: `${color}22`, border: `1px solid ${color}55` }}
+          >
+            🤖
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-white font-black text-base leading-tight">
+              Decks Gerados por IA
+            </p>
+            <p className="text-slate-400 text-sm mt-0.5">
+              Revise os cards mais urgentes de {subject.title} em modo turbo
+            </p>
+          </div>
+          <span
+            className="text-sm font-bold shrink-0 transition-colors duration-200"
+            style={{ color }}
+          >
+            Iniciar →
+          </span>
+        </Link>
+
         {/* ── Module accordion ──────────────────────────────────────── */}
         {hasModules && (
           <>
@@ -155,20 +192,13 @@ export default async function SubjectPage({ params }: Props) {
           </>
         )}
 
-        {/* ── Orphan decks (no module assigned) ────────────────────── */}
+        {/* ── Orphan decks (sem módulo) ─────────────────────────────── */}
         {orphanDecks.length > 0 && (
-          <>
-            {hasModules && (
-              <p className="text-xs font-semibold tracking-widest uppercase text-slate-500 mt-10 mb-4">
-                Outros Decks
-              </p>
-            )}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-2">
-              {orphanDecks.map(deck => (
-                <DeckCard key={deck.id} id={deck.id} title={deck.title} color={color} />
-              ))}
-            </div>
-          </>
+          <div className={`grid grid-cols-1 sm:grid-cols-2 gap-5 ${hasModules ? 'mt-8' : 'mt-2'}`}>
+            {orphanDecks.map(deck => (
+              <DeckCard key={deck.id} id={deck.id} title={deck.title} color={color} />
+            ))}
+          </div>
         )}
 
         {/* ── Empty state ───────────────────────────────────────────── */}
