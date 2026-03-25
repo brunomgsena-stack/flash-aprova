@@ -167,13 +167,25 @@ export default function LoginPage() {
               onChange={setEmail}
               placeholder="seu@email.com"
             />
-            <NeonInput
-              label="Senha"
-              type="password"
-              value={password}
-              onChange={setPassword}
-              placeholder={mode === 'signup' ? 'Mínimo 6 caracteres' : '••••••••'}
-            />
+            <div>
+              <NeonInput
+                label="Senha"
+                type="password"
+                value={password}
+                onChange={setPassword}
+                placeholder={mode === 'signup' ? 'Mínimo 6 caracteres' : '••••••••'}
+              />
+              {mode === 'login' && (
+                <div className="flex justify-end mt-1.5">
+                  <a
+                    href="/forgot-password"
+                    className="text-xs text-slate-500 hover:text-[#00FF73] transition-colors duration-200"
+                  >
+                    Esqueci minha senha
+                  </a>
+                </div>
+              )}
+            </div>
 
             {/* Error */}
             {error && (

@@ -42,7 +42,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  if ((pathname === '/login' || pathname === '/') && user) {
+  const authOnlyPages = ['/login', '/forgot-password', '/update-password'];
+  if (authOnlyPages.includes(pathname) && user && pathname !== '/update-password') {
+    // Não redireciona /update-password — o usuário precisa estar logado para updateUser()
+    return NextResponse.redirect(new URL('/dashboard', request.url));
+  }
+  if (pathname === '/' && user) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
