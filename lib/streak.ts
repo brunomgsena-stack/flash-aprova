@@ -28,7 +28,7 @@ export async function updateStreak(userId: string): Promise<UserStats> {
 
   const { data: existing } = await supabase
     .from('user_stats')
-    .select('*')
+    .select('current_streak, longest_streak, last_study_date')
     .eq('user_id', userId)
     .maybeSingle();
 

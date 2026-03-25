@@ -2,8 +2,12 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'FlashAprova',
-  description: 'Plataforma de memorização gamificada para ENEM e concursos',
+  title: {
+    default: 'FlashAprova',
+    template: '%s | FlashAprova',
+  },
+  description: 'Plataforma de memorização com IA + SRS para o ENEM. Retenha 97% do conteúdo.',
+  robots: { index: true, follow: true },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

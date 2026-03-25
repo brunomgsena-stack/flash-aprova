@@ -181,7 +181,7 @@ export default function StudyPage() {
       if (uid) {
         const { data: progressRows } = await supabase
           .from('user_progress')
-          .select('*')
+          .select('id, card_id, ease_factor, lapses, interval_days, next_review, history')
           .eq('user_id', uid)
           .in('card_id', cards.map((c) => c.id));
 
