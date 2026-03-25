@@ -9,7 +9,7 @@ function getResend(): Resend {
   return _resend;
 }
 
-const FROM = 'FlashAprova <noreply@flashaprova.com.br>';
+const FROM = 'FlashAprova <noreply@flashaprova.app>';
 
 // ─── Boas-vindas AiPro+ ───────────────────────────────────────────────────────
 export async function sendWelcomeEmail(to: string, name?: string) {
