@@ -84,20 +84,34 @@ async function findUserIdByEmail(
   return null;
 }
 
-// ── Upsert do plano em user_stats ─────────────────────────────────────────────
+// ── Upsert do plano — sincroniza user_stats + profiles ────────────────────────
 async function grantProPlan(
   adminClient: ReturnType<typeof makeAdminClient>,
   userId:      string,
 ): Promise<void> {
-  const { error } = await adminClient.from('user_stats').upsert(
+  const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+
+  // 1. user_stats — controla o plano ativo e a expiração
+  const { error: statsError } = await adminClient.from('user_stats').upsert(
     {
       user_id:         userId,
       plan:            'proai_plus',
-      plan_expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+      plan_expires_at: expiresAt,
     },
     { onConflict: 'user_id' },
   );
-  if (error) throw new Error(`Falha ao gravar plano: ${error.message}`);
+  if (statsError) throw new Error(`Falha ao gravar user_stats: ${statsError.message}`);
+
+  // 2. profiles — mantém plan + plan_name em sincronia para queries de perfil
+  const { error: profileError } = await adminClient.from('profiles').upsert(
+    {
+      id:        userId,
+      plan:      'proai_plus',
+      plan_name: 'AiPro+',
+    },
+    { onConflict: 'id' },
+  );
+  if (profileError) throw new Error(`Falha ao gravar profiles: ${profileError.message}`);
 }
 
 // ── Handler principal ─────────────────────────────────────────────────────────
