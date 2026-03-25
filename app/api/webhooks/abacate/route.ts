@@ -13,6 +13,7 @@
 import { NextRequest, NextResponse }   from 'next/server';
 import { createClient }                from '@supabase/supabase-js';
 import { timingSafeEqual }             from 'crypto';
+import { sendWelcomeEmail }            from '@/lib/mail';
 
 export const runtime = 'nodejs';
 
@@ -177,12 +178,17 @@ export async function POST(req: NextRequest) {
     if (existingId) {
       // ── Usuário já tem conta: atualiza plano ──────────────────────────────
       await grantProPlan(adminClient, existingId);
+      // Envia e-mail de boas-vindas via Resend (fire-and-forget — não bloqueia a resposta)
+      sendWelcomeEmail(email, name).catch((err) =>
+        console.error('[webhook/abacate] Falha ao enviar welcome email:', err),
+      );
       console.log(`[webhook/abacate] ✅ Plano atualizado para usuário existente ${existingId} (${email})`);
       return NextResponse.json({ received: true, action: 'plan_updated', userId: existingId });
     }
 
     // ── Usuário novo: cria conta + envia e-mail de acesso ─────────────────
-    // inviteUserByEmail cria o usuário e envia e-mail com link para definir senha
+    // inviteUserByEmail cria o usuário e envia o link de acesso via SMTP do Supabase
+    // (configure com Resend SMTP no dashboard do Supabase para rotar pelo Resend)
     const { data: inviteData, error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(
       email,
       {
@@ -193,11 +199,13 @@ export async function POST(req: NextRequest) {
 
     if (inviteError) {
       // Caso raro: usuário foi criado entre o listUsers e o invite
-      // Tenta encontrar e atualizar
       console.warn('[webhook/abacate] Invite falhou, tentando fallback:', inviteError.message);
       const fallbackId = await findUserIdByEmail(adminClient, email);
       if (fallbackId) {
         await grantProPlan(adminClient, fallbackId);
+        sendWelcomeEmail(email, name).catch((err) =>
+          console.error('[webhook/abacate] Falha ao enviar welcome email (fallback):', err),
+        );
         return NextResponse.json({ received: true, action: 'plan_updated_fallback', userId: fallbackId });
       }
       throw inviteError;
@@ -205,8 +213,12 @@ export async function POST(req: NextRequest) {
 
     const newUserId = inviteData.user.id;
     await grantProPlan(adminClient, newUserId);
+    // Envia boas-vindas além do invite do Supabase
+    sendWelcomeEmail(email, name).catch((err) =>
+      console.error('[webhook/abacate] Falha ao enviar welcome email (new user):', err),
+    );
 
-    console.log(`[webhook/abacate] ✅ Conta criada + convite enviado para ${email} (${newUserId})`);
+    console.log(`[webhook/abacate] ✅ Conta criada + convite + welcome email para ${email} (${newUserId})`);
     return NextResponse.json({ received: true, action: 'user_created', userId: newUserId });
 
   } catch (e: unknown) {
