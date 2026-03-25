@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
 import AnkiComparison from '@/components/AnkiComparison';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
@@ -226,6 +227,275 @@ function Neon({ children }: { children: React.ReactNode }) {
   );
 }
 
+// ─── Authority Banner ─────────────────────────────────────────────────────────
+function AuthorityBanner() {
+  const universities = [
+    { abbr: 'USP',     full: 'Universidade de São Paulo' },
+    { abbr: 'UNICAMP', full: 'Univ. Estadual de Campinas' },
+    { abbr: 'UFPE',    full: 'Univ. Federal de Pernambuco' },
+  ];
+  return (
+    <section className="max-w-6xl mx-auto px-5 sm:px-10 pb-16">
+      <div
+        className="relative rounded-2xl overflow-hidden"
+        style={{
+          background: 'rgba(255,255,255,0.03)',
+          border: '1px solid rgba(255,255,255,0.07)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+        }}
+      >
+        <div className="absolute inset-x-0 top-0 h-px"
+          style={{ background: `linear-gradient(90deg, transparent, ${NEON}50, transparent)` }} />
+
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-6 px-8 py-7">
+          <div className="text-center sm:text-left">
+            <p className="text-white font-black text-xl sm:text-2xl leading-snug">
+              +<span style={{ color: NEON }}>8.000</span> estudantes já blindaram<br className="hidden sm:block" /> sua memória com o FlashAprova
+            </p>
+            <p className="text-slate-600 text-xs mt-1 tracking-widest uppercase">
+              Aprovados nas maiores universidades do país
+            </p>
+          </div>
+
+          <div className="hidden sm:block w-px h-12 bg-white/10" />
+
+          <div className="flex items-center gap-10">
+            {universities.map(({ abbr, full }) => (
+              <div key={abbr} className="flex flex-col items-center gap-1 opacity-40 hover:opacity-70 transition-opacity duration-200">
+                <span className="text-white font-black text-xl tracking-tight">{abbr}</span>
+                <span className="text-white/50 text-[8px] tracking-[0.12em] uppercase text-center leading-tight" style={{ maxWidth: 80 }}>
+                  {full}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Testimonials data ────────────────────────────────────────────────────────
+const TESTIMONIALS = [
+  {
+    avatar: '👩‍⚕️',
+    name: 'Ana Lima',
+    course: 'Medicina na UFPE',
+    score: '940/1000',
+    text: 'Tentei o ENEM três vezes com métodos tradicionais. No quarto ano, com o FlashAprova, tirei 940 e entrei em Medicina. A revisão espaçada mudou minha retenção em Biologia e Química.',
+  },
+  {
+    avatar: '👨‍💻',
+    name: 'Carlos Mendes',
+    course: 'Engenharia na USP',
+    score: '920/1000',
+    text: 'Estudava 8h por dia e travava nas provas. Com o FlashAprova, reduzi para 4h e meu domínio em Matemática e Física foi de 40% para 89% em dois meses. Aprovado na Poli.',
+  },
+  {
+    avatar: '👩‍⚖️',
+    name: 'Beatriz Santos',
+    course: 'Direito na Unicamp',
+    score: '910/1000',
+    text: 'O Tutor IA de Redação foi decisivo. Tinha terror de dissertação. Após 30 feedbacks personalizados, tirei 880 na redação. Entrei no Direito da Unicamp no primeiro ano.',
+  },
+] as const;
+
+// ─── Testimonials Mural ────────────────────────────────────────────────────────
+function TestimonialsMural() {
+  return (
+    <section className="max-w-6xl mx-auto px-5 sm:px-10 pb-24">
+      <div className="text-center mb-10">
+        <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: NEON }}>
+          Resultados Reais
+        </p>
+        <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">
+          Quem usou, passou.{' '}
+          <span style={{
+            background: `linear-gradient(90deg, ${NEON}, ${VIOLET})`,
+            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+          }}>
+            Veja o que eles dizem:
+          </span>
+        </h2>
+      </div>
+
+      {/* Video container */}
+      <div
+        className="relative rounded-2xl overflow-hidden mb-12 mx-auto cursor-pointer group"
+        style={{
+          maxWidth: 640,
+          aspectRatio: '16/9',
+          background: 'linear-gradient(135deg, rgba(124,58,237,0.15) 0%, rgba(0,255,115,0.05) 100%)',
+          border: `1px solid ${NEON}30`,
+          boxShadow: `0 0 60px rgba(0,255,115,0.10)`,
+        }}
+      >
+        <div className="absolute inset-0"
+          style={{ background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.01) 2px, rgba(255,255,255,0.01) 4px)' }} />
+
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div
+            className="relative z-10 flex items-center justify-center w-20 h-20 rounded-full transition-transform duration-300 group-hover:scale-110"
+            style={{
+              background: `${NEON}20`,
+              border: `2px solid ${NEON}`,
+              boxShadow: `0 0 30px ${NEON}50, 0 0 60px ${NEON}20`,
+            }}
+          >
+            <svg width="32" height="32" viewBox="0 0 24 24" fill={NEON} style={{ marginLeft: 4 }}>
+              <polygon points="5,3 19,12 5,21" />
+            </svg>
+          </div>
+        </div>
+
+        <div className="absolute bottom-4 right-4 px-2 py-1 rounded-md text-xs font-bold text-white"
+          style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}>
+          2:34
+        </div>
+
+        <div className="absolute top-4 left-4 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold"
+          style={{ background: `${NEON}20`, border: `1px solid ${NEON}40`, color: NEON }}>
+          <span className="inline-block w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: NEON }} />
+          Depoimentos reais
+        </div>
+      </div>
+
+      {/* Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        {TESTIMONIALS.map(t => (
+          <div
+            key={t.name}
+            className="relative rounded-2xl p-6 overflow-hidden flex flex-col gap-4"
+            style={{
+              background: 'rgba(255,255,255,0.03)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              border: `1px solid rgba(124,58,237,0.40)`,
+              boxShadow: `0 0 30px rgba(124,58,237,0.15), inset 0 1px 0 rgba(255,255,255,0.04)`,
+            }}
+          >
+            <div className="absolute inset-x-0 top-0 h-px"
+              style={{ background: `linear-gradient(90deg, transparent, ${VIOLET}80, transparent)` }} />
+            <div className="absolute top-4 right-5 text-5xl font-black leading-none select-none"
+              style={{ color: `${VIOLET}25` }}>"</div>
+
+            <p className="text-slate-300 text-sm leading-relaxed relative z-10">"{t.text}"</p>
+
+            <div className="flex items-center gap-3 mt-auto pt-3 border-t border-white/5">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center text-xl shrink-0"
+                style={{ background: `${VIOLET}20`, border: `1px solid ${VIOLET}40` }}>
+                {t.avatar}
+              </div>
+              <div>
+                <p className="text-white font-bold text-sm">{t.name}</p>
+                <p className="text-slate-500 text-xs">{t.course}</p>
+              </div>
+              <div className="ml-auto text-right shrink-0">
+                <p className="font-black text-sm" style={{ color: NEON }}>{t.score}</p>
+                <p className="text-slate-700 text-xs">ENEM</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// ─── FAQ data ─────────────────────────────────────────────────────────────────
+const FAQ_ITEMS = [
+  {
+    q: 'O FlashAprova é gratuito?',
+    a: 'Sim. O plano gratuito (Flash) dá acesso a centenas de flashcards e ao Diagnóstico por IA sem cartão de crédito. Para acesso ilimitado a todos os 5.700+ cards, Tutores IA e Redação com IA, existe o plano AiPro+.',
+  },
+  {
+    q: 'Funciona para quem está começando do zero?',
+    a: 'Perfeitamente. O Diagnóstico de IA identifica seu nível em cada disciplina e cria um plano personalizado. Você começa exatamente de onde precisa — sem desperdiçar tempo com conteúdo que já domina.',
+  },
+  {
+    q: 'Em quanto tempo vejo resultado?',
+    a: 'A maioria dos alunos relata melhora perceptível em retenção após 7 dias de uso consistente. Alunos que usam o FlashAprova por 60+ dias apresentam, em média, 30% mais acertos nas disciplinas treinadas.',
+  },
+  {
+    q: 'Quanto tempo preciso dedicar por dia?',
+    a: 'O algoritmo SRS otimiza suas revisões para 15 a 20 minutos diários. Sessões curtas e diárias são cientificamente mais eficazes do que maratonas semanais.',
+  },
+  {
+    q: 'O que diferencia o FlashAprova do Anki e outros apps?',
+    a: 'Três diferenciais: (1) conteúdo 100% curado para o ENEM — nenhum card genérico; (2) Tutores IA especialistas por disciplina; (3) Mapa de Domínio em tempo real que mostra onde você está perdendo pontos.',
+  },
+  {
+    q: 'Posso usar no celular?',
+    a: 'Sim. O FlashAprova é 100% web responsivo — funciona no navegador do celular, tablet e computador sem precisar instalar nenhum aplicativo.',
+  },
+] as const;
+
+// ─── FAQ Accordion ─────────────────────────────────────────────────────────────
+function FAQAccordion() {
+  const [open, setOpen] = useState<number | null>(null);
+  return (
+    <section className="max-w-3xl mx-auto px-5 sm:px-10 pb-24">
+      <div className="text-center mb-10">
+        <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: VIOLET }}>
+          Dúvidas Frequentes
+        </p>
+        <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">
+          Ainda tem dúvidas?{' '}
+          <span style={{ color: NEON }}>A gente responde.</span>
+        </h2>
+      </div>
+
+      <div className="flex flex-col gap-3">
+        {FAQ_ITEMS.map((item, i) => (
+          <div
+            key={i}
+            className="relative rounded-2xl overflow-hidden transition-all duration-200"
+            style={{
+              background: open === i ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.02)',
+              border: `1px solid ${open === i ? `rgba(124,58,237,0.50)` : 'rgba(255,255,255,0.07)'}`,
+              boxShadow: open === i ? `0 0 20px rgba(124,58,237,0.12)` : 'none',
+            }}
+          >
+            {open === i && (
+              <div className="absolute inset-x-0 top-0 h-px"
+                style={{ background: `linear-gradient(90deg, transparent, ${VIOLET}70, transparent)` }} />
+            )}
+            <button
+              className="w-full flex items-center justify-between px-6 py-4 text-left"
+              onClick={() => setOpen(open === i ? null : i)}
+            >
+              <span className="text-white font-semibold text-sm sm:text-base pr-4">{item.q}</span>
+              <span
+                className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center transition-transform duration-300"
+                style={{
+                  background: open === i ? `${VIOLET}30` : 'rgba(255,255,255,0.05)',
+                  border: `1px solid ${open === i ? `rgba(124,58,237,0.60)` : 'rgba(255,255,255,0.10)'}`,
+                  transform: open === i ? 'rotate(45deg)' : 'rotate(0deg)',
+                  color: open === i ? NEON : 'rgba(255,255,255,0.5)',
+                }}
+              >
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="6" y1="1" x2="6" y2="11" /><line x1="1" y1="6" x2="11" y2="6" />
+                </svg>
+              </span>
+            </button>
+            {open === i && (
+              <div className="px-6 pb-5">
+                <p className="text-slate-400 text-sm leading-relaxed">{item.a}</p>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div className="text-center mt-10">
+        <CTAButton size="sm" label="Começar gratuitamente agora" />
+      </div>
+    </section>
+  );
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 export default function LandingPage() {
   return (
@@ -337,6 +607,8 @@ export default function LandingPage() {
             ))}
           </div>
         </section>
+
+        <AuthorityBanner />
 
         {/* ════════════════════════════════ A DOR — Ebbinghaus ══ */}
         <section className="max-w-4xl mx-auto px-5 sm:px-10 pb-24">
@@ -716,6 +988,10 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
+
+        <TestimonialsMural />
+
+        <FAQAccordion />
 
         {/* ════════════════════════════════ FOOTER ══ */}
         <footer className="border-t border-white/5 py-8 px-5 sm:px-10 text-center">
