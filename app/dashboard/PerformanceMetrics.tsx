@@ -741,7 +741,7 @@ export default function PerformanceMetrics() {
       const today = new Date().toISOString().split('T')[0];
 
       const [planInfo, { data: allCards }, { data: progressRows }, { count: totalCards }] = await Promise.all([
-        fetchUserPlan(user.id, user.email ?? undefined),
+        fetchUserPlan(user.id),
         supabase.from('cards').select('id, decks(id, title, subjects(id, title, icon_url, category))'),
         supabase.from('user_progress').select('card_id, interval_days, next_review, lapses, history').eq('user_id', user.id),
         supabase.from('cards').select('id', { count: 'exact', head: true }),

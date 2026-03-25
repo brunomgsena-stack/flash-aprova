@@ -12,6 +12,7 @@
 
 import { NextRequest, NextResponse }   from 'next/server';
 import { createClient }                from '@supabase/supabase-js';
+import { timingSafeEqual }             from 'crypto';
 
 export const runtime = 'nodejs';
 
@@ -29,6 +30,7 @@ function makeAdminClient() {
 
 // ── Payload do AbacatePay (flat ou nested) ────────────────────────────────────
 interface AbacatePayload {
+  id?:         string;        // ID único da cobrança — chave de idempotência
   event?:      string;
   status?:     string;
   externalId?: string;        // email do lead (setado na criação da cobrança)
@@ -38,6 +40,7 @@ interface AbacatePayload {
   };
   // estrutura nested (data.*)
   data?: {
+    id?:         string;
     status?:     string;
     externalId?: string;
     customer?: {
@@ -107,7 +110,10 @@ export async function POST(req: NextRequest) {
     console.error('[webhook/abacate] ABACATEPAY_WEBHOOK_SECRET não configurado.');
     return NextResponse.json({ error: 'Configuração interna incompleta.' }, { status: 500 });
   }
-  if (secret !== expectedSecret) {
+  // Comparação timing-safe para evitar timing attacks
+  const secretOk = !!secret && secret.length === expectedSecret.length &&
+    timingSafeEqual(Buffer.from(secret), Buffer.from(expectedSecret));
+  if (!secretOk) {
     console.warn('[webhook/abacate] Segredo inválido.');
     return NextResponse.json({ error: 'Não autorizado.' }, { status: 401 });
   }
@@ -133,7 +139,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'E-mail do comprador não encontrado.' }, { status: 400 });
   }
 
-  // 4. Upgrade ────────────────────────────────────────────────────────────────
+  // 4. Idempotência — garante que cada cobrança seja processada uma única vez ──
   let adminClient: ReturnType<typeof makeAdminClient>;
   try {
     adminClient = makeAdminClient();
@@ -141,6 +147,25 @@ export async function POST(req: NextRequest) {
     const msg = e instanceof Error ? e.message : String(e);
     console.error('[webhook/abacate]', msg);
     return NextResponse.json({ error: msg }, { status: 500 });
+  }
+
+  const eventId = payload.data?.id ?? payload.id ?? '';
+  if (eventId) {
+    const { error: insertError } = await adminClient
+      .from('webhook_events')
+      .insert({ event_id: eventId, payload });
+
+    if (insertError) {
+      // Código 23505 = violação de unique constraint → evento já processado
+      if (insertError.code === '23505') {
+        console.log(`[webhook/abacate] Evento ${eventId} já processado anteriormente. Ignorando.`);
+        return NextResponse.json({ received: true, action: 'already_processed' });
+      }
+      // Outro erro de DB: loga mas não bloqueia o pagamento
+      console.error('[webhook/abacate] Erro ao registrar webhook_event:', insertError.message);
+    }
+  } else {
+    console.warn('[webhook/abacate] Payload sem campo id — idempotência não garantida.', { email, status });
   }
 
   const baseUrl = process.env.NEXT_PUBLIC_URL ?? 'https://flashaprova.app';

@@ -52,7 +52,7 @@ export default function UserMenu() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       setEmail(user.email ?? '');
-      const info = await fetchUserPlan(user.id, user.email ?? undefined);
+      const info = await fetchUserPlan(user.id);
       setPlan(info.plan);
     }
     load();

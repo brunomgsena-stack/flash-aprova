@@ -6,7 +6,7 @@ import RedacaoClient from './RedacaoClient';
 export default async function RedacaoPage() {
   const serverClient = await createClient();
   const { data: { user } } = await serverClient.auth.getUser();
-  const planInfo = user ? await fetchUserPlan(user.id, user.email ?? undefined) : null;
+  const planInfo = user ? await fetchUserPlan(user.id) : null;
   const plan = planInfo?.plan ?? 'flash';
 
   const color = '#06b6d4';

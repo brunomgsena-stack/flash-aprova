@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
   }
 
   // ── Plano ───────────────────────────────────────────────────────────────────
-  const planInfo = await fetchUserPlan(user.id, user.email ?? undefined);
+  const planInfo = await fetchUserPlan(user.id);
   if (planInfo.plan !== 'proai_plus') {
     return NextResponse.json(
       { error: 'Recurso exclusivo do plano AiPro+.' },

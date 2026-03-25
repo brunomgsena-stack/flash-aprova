@@ -82,7 +82,7 @@ export default function SubjectsWithDomain({ subjects }: Props) {
       const [{ data: allCards }, { data: progress }, planInfo] = await Promise.all([
         supabase.from('cards').select('id, decks(subject_id)'),
         supabase.from('user_progress').select('card_id, interval_days').eq('user_id', user.id),
-        fetchUserPlan(user.id, user.email ?? undefined),
+        fetchUserPlan(user.id),
       ]);
 
       setIsFlash(planInfo.plan === 'flash');

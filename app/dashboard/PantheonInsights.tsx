@@ -412,7 +412,7 @@ export default function PantheonInsights() {
 
       // Fetch plan + data in parallel for all users
       const [planInfo, cardsRes, progressRes, countRes] = await Promise.all([
-        fetchUserPlan(user.id, user.email ?? undefined),
+        fetchUserPlan(user.id),
         supabase.from('cards').select('id, decks(id, title, subject_id, subjects(id, title, category))'),
         supabase.from('user_progress').select('card_id, lapses, interval_days, next_review, history').eq('user_id', user.id),
         supabase.from('cards').select('id', { count: 'exact', head: true }),

@@ -2,31 +2,31 @@
 @import "katex/dist/katex.min.css";
 
 :root {
-  --bg-deep: #050b14;
-  --grid-color: rgba(0, 255, 128, 0.04);
+  --bg-deep: #121212;
+  --grid-color: rgba(124, 58, 237, 0.04);
 }
 
 /* ── Pulsing neon borders ───────────────────────────────────────────────── */
-@keyframes pulse-cyan {
-  0%, 100% { box-shadow: 0 0 14px rgba(0,229,255,0.18), 0 0 4px rgba(0,229,255,0.08); }
-  50%       { box-shadow: 0 0 28px rgba(0,229,255,0.40), 0 0 8px rgba(0,229,255,0.18); }
+@keyframes pulse-violet {
+  0%, 100% { box-shadow: 0 0 14px rgba(124,58,237,0.20), 0 0 4px rgba(124,58,237,0.10); }
+  50%       { box-shadow: 0 0 28px rgba(124,58,237,0.45), 0 0 8px rgba(124,58,237,0.20); }
 }
 @keyframes pulse-green {
-  0%, 100% { box-shadow: 0 0 14px rgba(0,255,128,0.18), 0 0 4px rgba(0,255,128,0.08); }
-  50%       { box-shadow: 0 0 28px rgba(0,255,128,0.40), 0 0 8px rgba(0,255,128,0.18); }
+  0%, 100% { box-shadow: 0 0 14px rgba(0,255,115,0.18), 0 0 4px rgba(0,255,115,0.08); }
+  50%       { box-shadow: 0 0 28px rgba(0,255,115,0.40), 0 0 8px rgba(0,255,115,0.18); }
 }
-.pulse-glow-cyan  { animation: pulse-cyan   4s ease-in-out infinite; }
-.pulse-glow-green { animation: pulse-green  4s ease-in-out infinite 0.8s; }
+.pulse-glow-violet { animation: pulse-violet 4s ease-in-out infinite; }
+.pulse-glow-green  { animation: pulse-green  4s ease-in-out infinite 0.8s; }
 
 @keyframes pulse-streak {
   0%, 100% { box-shadow: 0 0 10px rgba(251,146,60,0.2); }
   50%       { box-shadow: 0 0 22px rgba(251,146,60,0.5); }
 }
 
-/* ── Landing page CTA pulse (neon green) ─────────────────────────────────── */
+/* ── Landing page CTA pulse (verde neon #00FF73) ─────────────────────────── */
 @keyframes cta-pulse {
-  0%, 100% { box-shadow: 0 0 20px rgba(34,197,94,0.45), 0 0 60px rgba(34,197,94,0.15), 0 4px 24px rgba(0,0,0,0.50); }
-  50%       { box-shadow: 0 0 44px rgba(34,197,94,0.80), 0 0 90px rgba(34,197,94,0.30), 0 4px 24px rgba(0,0,0,0.50); }
+  0%, 100% { box-shadow: 0 0 20px rgba(0,255,115,0.45), 0 0 60px rgba(0,255,115,0.15), 0 4px 24px rgba(0,0,0,0.50); }
+  50%       { box-shadow: 0 0 44px rgba(0,255,115,0.80), 0 0 90px rgba(0,255,115,0.30), 0 4px 24px rgba(0,0,0,0.50); }
 }
 .cta-pulse { animation: cta-pulse 2.4s ease-in-out infinite; }
 
@@ -99,7 +99,7 @@
 }
 
 body {
-  background-color: var(--bg-deep);
+  background-color: #121212;
   background-image:
     linear-gradient(var(--grid-color) 1px, transparent 1px),
     linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);

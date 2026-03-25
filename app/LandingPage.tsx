@@ -4,20 +4,25 @@ import Link from 'next/link';
 import AnkiComparison from '@/components/AnkiComparison';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
-const GREEN  = '#22c55e';
-const VIOLET = '#7C3AED';
-const CYAN   = '#06b6d4';
+const GREEN  = '#22c55e';          // Biologia / 24h stat
+const VIOLET = '#7C3AED';          // Roxo Elétrico
+const NEON   = '#00FF73';          // Verde Neon — cor primária da plataforma
+const ORANGE = '#FF8A00';          // Laranja Vibrante — "esquecer" / dor
+
+// Card backgrounds sobre Grafite Escuro (#121212)
+const CARD_BG   = 'rgba(255,255,255,0.04)';
+const CARD_BG2  = 'rgba(255,255,255,0.05)';
 
 // ─── Subjects data ────────────────────────────────────────────────────────────
 const SUBJECTS = [
   {
     icon: '🍎', name: 'Física',    area: 'Ciências da Natureza', count: '1.128',
-    color: '#f97316',
+    color: ORANGE,
     topics: ['Mecânica Clássica', 'Eletromagnetismo', 'Termodinâmica', 'Óptica Geométrica', 'Ondulatória'],
   },
   {
     icon: '⚗️', name: 'Química',   area: 'Ciências da Natureza', count: '892',
-    color: CYAN,
+    color: NEON,
     topics: ['Estequiometria', 'Termoquímica', 'Ácidos e Bases', 'Eletroquímica', 'Orgânica e Funções'],
   },
   {
@@ -51,7 +56,7 @@ function RadarMockup() {
 
   const dataR = [0.75, 0.45, 0.62, 0.82, 0.38, 0.70].map(p => p * R);
   const labels = ['Bio', 'Quím', 'Fís', 'Hist', 'Geo', 'Mat'];
-  const labelColors = [GREEN, CYAN, '#f97316', '#eab308', '#10b981', VIOLET];
+  const labelColors = [GREEN, NEON, ORANGE, '#eab308', '#10b981', VIOLET];
 
   return (
     <svg viewBox="0 0 200 200" className="w-full" style={{ maxHeight: 180 }}>
@@ -66,12 +71,12 @@ function RadarMockup() {
       ))}
       <polygon
         points={dataR.map((r, i) => pt(r, i)).join(' ')}
-        fill={`${CYAN}22`} stroke={CYAN} strokeWidth="1.5"
+        fill={`${NEON}22`} stroke={NEON} strokeWidth="1.5"
       />
       {dataR.map((r, i) => (
         <circle key={i}
           cx={cx + r * Math.cos(angles[i])} cy={cy + r * Math.sin(angles[i])}
-          r="3" fill={CYAN} />
+          r="3" fill={NEON} />
       ))}
       {angles.map((_, i) => {
         const lx = cx + (R + 14) * Math.cos(angles[i]);
@@ -103,8 +108,8 @@ function HeatmapMockup() {
           {week.map((v, di) => (
             <div key={di} style={{
               width: 10, height: 10, borderRadius: 2,
-              background: v === 0 ? 'rgba(255,255,255,0.05)' : `rgba(6,182,212,${HEAT_ALPHA[v]})`,
-              boxShadow: v >= 4 ? `0 0 4px rgba(6,182,212,0.5)` : 'none',
+              background: v === 0 ? 'rgba(255,255,255,0.05)' : `rgba(0,255,115,${HEAT_ALPHA[v]})`,
+              boxShadow: v >= 4 ? `0 0 4px rgba(0,255,115,0.5)` : 'none',
             }} />
           ))}
         </div>
@@ -121,8 +126,8 @@ function LineMockup() {
     <svg viewBox="0 0 200 90" className="w-full" style={{ maxHeight: 90 }}>
       <defs>
         <linearGradient id="line-fill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={CYAN} stopOpacity="0.25" />
-          <stop offset="100%" stopColor={CYAN} stopOpacity="0" />
+          <stop offset="0%" stopColor={NEON} stopOpacity="0.25" />
+          <stop offset="100%" stopColor={NEON} stopOpacity="0" />
         </linearGradient>
         <filter id="line-glow">
           <feGaussianBlur stdDeviation="2" result="blur"/>
@@ -133,10 +138,10 @@ function LineMockup() {
         <line key={y} x1="10" y1={y} x2="190" y2={y} stroke="rgba(255,255,255,0.05)" strokeWidth="1"/>
       ))}
       <path d={area} fill="url(#line-fill)" />
-      <path d={path} fill="none" stroke={CYAN} strokeWidth="2" strokeLinecap="round"
+      <path d={path} fill="none" stroke={NEON} strokeWidth="2" strokeLinecap="round"
         filter="url(#line-glow)" />
-      <circle cx="190" cy="8" r="4" fill={CYAN} />
-      <circle cx="190" cy="8" r="7" fill={`${CYAN}33`} />
+      <circle cx="190" cy="8" r="4" fill={NEON} />
+      <circle cx="190" cy="8" r="7" fill={`${NEON}33`} />
     </svg>
   );
 }
@@ -147,17 +152,17 @@ function ForgettingCurve() {
     <svg viewBox="0 0 440 190" className="w-full" style={{ maxHeight: 200 }}>
       <defs>
         <linearGradient id="grad-forget" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="#f97316" /><stop offset="100%" stopColor="#ef4444" />
+          <stop offset="0%" stopColor={ORANGE} /><stop offset="100%" stopColor="#ef4444" />
         </linearGradient>
         <linearGradient id="grad-srs2" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor={VIOLET} /><stop offset="60%" stopColor={CYAN} /><stop offset="100%" stopColor={GREEN} />
+          <stop offset="0%" stopColor={VIOLET} /><stop offset="60%" stopColor={NEON} /><stop offset="100%" stopColor={GREEN} />
         </linearGradient>
         <filter id="glow-srs2"><feGaussianBlur stdDeviation="2.5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
         <linearGradient id="area-forget2" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#f97316" stopOpacity="0.15"/><stop offset="100%" stopColor="#f97316" stopOpacity="0"/>
+          <stop offset="0%" stopColor={ORANGE} stopOpacity="0.15"/><stop offset="100%" stopColor={ORANGE} stopOpacity="0"/>
         </linearGradient>
         <linearGradient id="area-srs2" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={CYAN} stopOpacity="0.20"/><stop offset="100%" stopColor={CYAN} stopOpacity="0"/>
+          <stop offset="0%" stopColor={NEON} stopOpacity="0.20"/><stop offset="100%" stopColor={NEON} stopOpacity="0"/>
         </linearGradient>
       </defs>
       {[10,50,90,130,170].map(y => (
@@ -174,13 +179,13 @@ function ForgettingCurve() {
       <path d="M40,10 C52,10 58,44 72,40 C86,36 92,18 112,16 C132,14 138,46 152,42 C166,38 172,18 194,16 C216,14 222,46 242,42 C262,38 268,18 292,16 C312,14 320,46 342,42 C356,38 364,20 380,18 L380,170 L40,170 Z" fill="url(#area-srs2)"/>
       <path d="M40,10 C52,10 58,44 72,40 C86,36 92,18 112,16 C132,14 138,46 152,42 C166,38 172,18 194,16 C216,14 222,46 242,42 C262,38 268,18 292,16 C312,14 320,46 342,42 C356,38 364,20 380,18" fill="none" stroke="url(#grad-srs2)" strokeWidth="2.5" strokeLinecap="round" filter="url(#glow-srs2)"/>
       {([112,194,292] as const).map(cx => (
-        <circle key={cx} cx={cx} cy={16} r="4" fill="#050505" stroke={CYAN} strokeWidth="1.8"/>
+        <circle key={cx} cx={cx} cy={16} r="4" fill="#121212" stroke={NEON} strokeWidth="1.8"/>
       ))}
     </svg>
   );
 }
 
-// ─── CTA button (cyan, shimmer) ───────────────────────────────────────────────
+// ─── CTA button (verde neon, shimmer) ─────────────────────────────────────────
 function CTAButton({ size = 'lg', label }: { size?: 'sm' | 'lg'; label?: string }) {
   const big = size === 'lg';
   const text = label ?? 'Quero reter meu estudo agora';
@@ -189,9 +194,9 @@ function CTAButton({ size = 'lg', label }: { size?: 'sm' | 'lg'; label?: string 
       href="/onboarding"
       className={`cta-pulse relative inline-flex items-center gap-3 rounded-2xl font-black text-black overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.99] ${big ? 'px-8 py-5 text-lg' : 'px-6 py-4 text-base'}`}
       style={{
-        background:    `linear-gradient(135deg, ${CYAN} 0%, #0891b2 100%)`,
+        background:    `linear-gradient(135deg, ${NEON} 0%, #00cc5a 100%)`,
         letterSpacing: '-0.01em',
-        boxShadow:     `0 0 40px ${CYAN}50, 0 4px 24px ${CYAN}30`,
+        boxShadow:     `0 0 40px ${NEON}50, 0 4px 24px ${NEON}30`,
       }}
     >
       {/* shimmer sweep */}
@@ -212,10 +217,10 @@ function CTAButton({ size = 'lg', label }: { size?: 'sm' | 'lg'; label?: string 
   );
 }
 
-// ─── Neon number highlight ────────────────────────────────────────────────────
+// ─── Neon green highlight ──────────────────────────────────────────────────────
 function Neon({ children }: { children: React.ReactNode }) {
   return (
-    <span style={{ color: CYAN, textShadow: `0 0 20px ${CYAN}80, 0 0 40px ${CYAN}40` }}>
+    <span style={{ color: NEON, textShadow: `0 0 20px ${NEON}80, 0 0 40px ${NEON}40` }}>
       {children}
     </span>
   );
@@ -226,7 +231,7 @@ export default function LandingPage() {
   return (
     <div
       className="relative overflow-x-hidden"
-      style={{ background: 'radial-gradient(ellipse at 30% 0%, #0a0514 0%, #050505 60%)' }}
+      style={{ background: '#121212' }}
     >
 
       {/* shimmer keyframe */}
@@ -244,10 +249,10 @@ export default function LandingPage() {
             background: `radial-gradient(circle, rgba(124,58,237,0.18) 0%, transparent 70%)` }} />
         <div className="orb-b absolute rounded-full"
           style={{ width: 550, height: 550, top: '30%', right: '-18%',
-            background: `radial-gradient(circle, rgba(99,102,241,0.14) 0%, transparent 70%)` }} />
+            background: `radial-gradient(circle, rgba(124,58,237,0.12) 0%, transparent 70%)` }} />
         <div className="orb-a absolute rounded-full"
           style={{ width: 450, height: 450, bottom: '5%', left: '20%',
-            background: `radial-gradient(circle, rgba(6,182,212,0.08) 0%, transparent 70%)`, animationDelay: '-5s' }} />
+            background: `radial-gradient(circle, rgba(0,255,115,0.07) 0%, transparent 70%)`, animationDelay: '-5s' }} />
       </div>
 
       {/* ── Grid overlay ── */}
@@ -263,7 +268,7 @@ export default function LandingPage() {
         <nav className="flex items-center justify-between px-5 sm:px-10 py-5 max-w-6xl mx-auto">
           <span className="font-black text-white text-xl tracking-tight">
             Flash<span style={{
-              background: `linear-gradient(90deg, ${CYAN}, ${VIOLET})`,
+              background: `linear-gradient(90deg, ${NEON}, ${VIOLET})`,
               WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
             }}>Aprova</span>
           </span>
@@ -273,36 +278,33 @@ export default function LandingPage() {
             </Link>
             <Link href="/onboarding"
               className="text-sm px-4 py-2 rounded-xl font-bold text-black transition-all duration-200 hover:-translate-y-0.5"
-              style={{ background: CYAN, boxShadow: `0 0 16px ${CYAN}40` }}>
+              style={{ background: NEON, boxShadow: `0 0 16px ${NEON}40` }}>
               Começar grátis
             </Link>
           </div>
         </nav>
 
-        {/* ════════════════════════════════════ HERO ══
-            PAS — Problem: você estuda mas esquece                             */}
+        {/* ════════════════════════════════════ HERO ══ */}
         <section className="max-w-4xl mx-auto px-5 sm:px-10 pt-10 pb-20 text-center">
 
           <div className="fade-up inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-8 text-xs font-bold tracking-widest uppercase"
-            style={{ background: `${CYAN}14`, border: `1px solid ${CYAN}35`, color: CYAN }}>
-            <span className="inline-block w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: CYAN }} />
+            style={{ background: `${NEON}14`, border: `1px solid ${NEON}35`, color: NEON }}>
+            <span className="inline-block w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: NEON }} />
             Retenção Cognitiva · IA Especialista · SRS Automático
           </div>
 
           <h1 className="fade-up-d1 text-4xl sm:text-5xl md:text-6xl font-black leading-tight text-white mb-6">
             Pare de estudar<br/>
             para{' '}
-            <span style={{ color: '#f87171', textShadow: '0 0 20px rgba(248,113,113,0.60)' }}>
+            <span style={{ color: ORANGE, textShadow: `0 0 20px ${ORANGE}80, 0 0 40px ${ORANGE}40` }}>
               esquecer.
             </span>
             <br/>
             Garanta{' '}
-            <Neon>97%</Neon>{' '}
-            de retenção{' '}
-            <span style={{
-              background: `linear-gradient(90deg, ${CYAN}, ${VIOLET})`,
-              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-            }}>
+            <span style={{ color: NEON, textShadow: `0 0 20px ${NEON}80, 0 0 40px ${NEON}40` }}>
+              97% de retenção
+            </span>{' '}
+            <span style={{ color: '#5F00F6', textShadow: '0 0 20px rgba(95,0,246,0.50)' }}>
               até o dia do ENEM.
             </span>
           </h1>
@@ -321,9 +323,9 @@ export default function LandingPage() {
           {/* Stats */}
           <div className="fade-up-d4 flex flex-wrap justify-center gap-8 mt-14">
             {[
-              { n: '97%',    label: 'retenção com SRS + IA',    color: CYAN },
+              { n: '97%',    label: 'retenção com SRS + IA',    color: NEON   },
               { n: '5.700+', label: 'flashcards táticos ENEM',  color: VIOLET },
-              { n: '24h',    label: 'para sentir a diferença',  color: GREEN },
+              { n: '24h',    label: 'para sentir a diferença',  color: GREEN  },
             ].map(({ n, label, color }) => (
               <div key={n} className="text-center">
                 <p className="text-3xl font-black" style={{
@@ -336,29 +338,28 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* ════════════════════════════════ A DOR — Ebbinghaus ══
-            PAS — Agitation: mostrar a dor do esquecimento com ciência         */}
+        {/* ════════════════════════════════ A DOR — Ebbinghaus ══ */}
         <section className="max-w-4xl mx-auto px-5 sm:px-10 pb-24">
           <div className="relative rounded-3xl p-7 sm:p-10 overflow-hidden"
             style={{
-              background: 'rgba(10,5,20,0.80)',
+              background: CARD_BG2,
               backdropFilter: 'blur(20px)',
               WebkitBackdropFilter: 'blur(20px)',
-              border: '1px solid rgba(249,115,22,0.20)',
-              boxShadow: '0 0 60px rgba(249,115,22,0.06)',
+              border: `1px solid ${ORANGE}25`,
+              boxShadow: `0 0 60px ${ORANGE}08, 0 0 0 1px rgba(124,58,237,0.08)`,
             }}>
             <div className="absolute inset-0 pointer-events-none"
               style={{ background: 'radial-gradient(ellipse at bottom left, rgba(124,58,237,0.10) 0%, transparent 60%)' }} />
             <div className="absolute inset-x-0 top-0 h-px"
-              style={{ background: 'linear-gradient(90deg, transparent, rgba(249,115,22,0.50), rgba(124,58,237,0.30), transparent)' }} />
+              style={{ background: `linear-gradient(90deg, transparent, ${ORANGE}50, rgba(124,58,237,0.30), transparent)` }} />
 
             <div className="max-w-xl mb-6">
-              <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: '#f97316' }}>
+              <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: ORANGE }}>
                 A Dor Real do Estudante
               </p>
               <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight mb-3">
                 Você estuda horas. Amanhã,{' '}
-                <span style={{ color: '#f87171' }}>esqueceu quase tudo.</span>
+                <span style={{ color: ORANGE }}>esqueceu quase tudo.</span>
               </h2>
               <p className="text-slate-400 text-base leading-relaxed">
                 A Curva de Ebbinghaus é implacável:{' '}
@@ -372,27 +373,26 @@ export default function LandingPage() {
 
             <div className="flex flex-wrap gap-5 mt-4">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-0.5 rounded-full" style={{ background: '#f97316' }} />
+                <div className="w-8 h-0.5 rounded-full" style={{ background: ORANGE }} />
                 <span className="text-slate-500 text-xs">Sem revisão (método tradicional)</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-8 h-0.5 rounded-full" style={{ background: `linear-gradient(90deg, ${VIOLET}, ${CYAN})` }} />
+                <div className="w-8 h-0.5 rounded-full" style={{ background: `linear-gradient(90deg, ${VIOLET}, ${NEON})` }} />
                 <span className="text-slate-500 text-xs">Com IA + SRS (FlashAprova)</span>
               </div>
             </div>
           </div>
         </section>
 
-        {/* ════════════════════════════ ANKI COMPARISON ══
-            PAS — Agitation: comparar com o que o aluno já conhece             */}
+        {/* ════════════════════════════ ANKI COMPARISON ══ */}
         <section className="max-w-5xl mx-auto px-5 sm:px-10 pb-24">
           <div className="text-center mb-10">
-            <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: '#f87171' }}>
+            <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: ORANGE }}>
               Por que o Anki não é suficiente
             </p>
             <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">
               Você já tentou o Anki.{' '}
-              <span style={{ color: '#f87171' }}>Abandonou em 2 semanas.</span>
+              <span style={{ color: ORANGE }}>Abandonou em 2 semanas.</span>
             </h2>
             <p className="text-slate-500 text-base max-w-xl mx-auto">
               O problema não é você. É a ferramenta genérica que não foi feita para o ENEM — e nem para o seu cérebro.
@@ -402,17 +402,16 @@ export default function LandingPage() {
           <AnkiComparison />
         </section>
 
-        {/* ════════════════════════ A SOLUÇÃO — Dashboard ══
-            PAS — Solution: revelar o FlashAprova como resposta               */}
+        {/* ════════════════════════ A SOLUÇÃO — Dashboard ══ */}
         <section className="max-w-6xl mx-auto px-5 sm:px-10 pb-24">
           <div className="text-center mb-10">
-            <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: CYAN }}>
+            <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: NEON }}>
               A Solução
             </p>
             <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">
               A IA mapeia seu cérebro{' '}
               <span style={{
-                background: `linear-gradient(90deg, ${CYAN}, ${VIOLET})`,
+                background: `linear-gradient(90deg, ${NEON}, ${VIOLET})`,
                 WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
               }}>em tempo real</span>
             </h2>
@@ -424,14 +423,17 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {/* Radar */}
             <div className="relative rounded-2xl p-5 overflow-hidden"
-              style={{ background: 'rgba(10,5,20,0.80)', border: `1px solid ${CYAN}28`,
+              style={{
+                background: CARD_BG2,
+                border: `1px solid ${NEON}28`,
                 backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-                boxShadow: `0 0 50px ${CYAN}0a` }}>
+                boxShadow: `0 0 30px rgba(124,58,237,0.12), 0 0 0 1px rgba(124,58,237,0.08)`,
+              }}>
               <div className="absolute inset-0 pointer-events-none"
-                style={{ background: `radial-gradient(ellipse at top right, ${CYAN}0d 0%, transparent 65%)` }} />
+                style={{ background: `radial-gradient(ellipse at top right, ${NEON}0d 0%, transparent 65%)` }} />
               <div className="absolute inset-x-0 top-0 h-px"
-                style={{ background: `linear-gradient(90deg, transparent, ${CYAN}70, transparent)` }} />
-              <p className="text-xs font-bold tracking-widest uppercase mb-1" style={{ color: CYAN }}>Radar ENEM</p>
+                style={{ background: `linear-gradient(90deg, transparent, ${NEON}70, transparent)` }} />
+              <p className="text-xs font-bold tracking-widest uppercase mb-1" style={{ color: NEON }}>Radar ENEM</p>
               <p className="text-slate-600 text-xs mb-4">Equilíbrio de domínio por disciplina</p>
               <RadarMockup />
               <p className="text-slate-600 text-xs mt-3 text-center">
@@ -441,14 +443,17 @@ export default function LandingPage() {
 
             {/* Heatmap */}
             <div className="relative rounded-2xl p-5 overflow-hidden"
-              style={{ background: 'rgba(10,5,20,0.80)', border: `1px solid rgba(99,102,241,0.25)`,
+              style={{
+                background: CARD_BG2,
+                border: `1px solid rgba(124,58,237,0.25)`,
                 backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-                boxShadow: '0 0 50px rgba(99,102,241,0.08)' }}>
+                boxShadow: `0 0 30px rgba(124,58,237,0.12), 0 0 0 1px rgba(124,58,237,0.08)`,
+              }}>
               <div className="absolute inset-0 pointer-events-none"
-                style={{ background: 'radial-gradient(ellipse at top left, rgba(99,102,241,0.10) 0%, transparent 65%)' }} />
+                style={{ background: 'radial-gradient(ellipse at top left, rgba(124,58,237,0.10) 0%, transparent 65%)' }} />
               <div className="absolute inset-x-0 top-0 h-px"
-                style={{ background: `linear-gradient(90deg, transparent, ${CYAN}50, ${VIOLET}40, transparent)` }} />
-              <p className="text-xs font-bold tracking-widest uppercase mb-1" style={{ color: CYAN }}>Consistência</p>
+                style={{ background: `linear-gradient(90deg, transparent, ${NEON}50, ${VIOLET}40, transparent)` }} />
+              <p className="text-xs font-bold tracking-widest uppercase mb-1" style={{ color: NEON }}>Consistência</p>
               <p className="text-slate-600 text-xs mb-4">Heatmap de revisões · últimos 3 meses</p>
               <div className="overflow-x-auto">
                 <HeatmapMockup />
@@ -457,7 +462,7 @@ export default function LandingPage() {
                 <span className="text-slate-700 text-xs">Menos</span>
                 {[0.05, 0.25, 0.50, 0.75, 1.0].map(a => (
                   <div key={a} style={{ width:10, height:10, borderRadius:2,
-                    background: `rgba(6,182,212,${a})` }} />
+                    background: `rgba(0,255,115,${a})` }} />
                 ))}
                 <span className="text-slate-700 text-xs">Mais</span>
               </div>
@@ -465,21 +470,24 @@ export default function LandingPage() {
 
             {/* Line chart */}
             <div className="relative rounded-2xl p-5 overflow-hidden"
-              style={{ background: 'rgba(10,5,20,0.80)', border: `1px solid ${VIOLET}25`,
+              style={{
+                background: CARD_BG2,
+                border: `1px solid ${VIOLET}25`,
                 backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-                boxShadow: `0 0 50px ${VIOLET}08` }}>
+                boxShadow: `0 0 30px rgba(124,58,237,0.12), 0 0 0 1px rgba(124,58,237,0.08)`,
+              }}>
               <div className="absolute inset-0 pointer-events-none"
                 style={{ background: `radial-gradient(ellipse at bottom right, ${VIOLET}09 0%, transparent 65%)` }} />
               <div className="absolute inset-x-0 top-0 h-px"
                 style={{ background: `linear-gradient(90deg, transparent, ${VIOLET}60, transparent)` }} />
-              <p className="text-xs font-bold tracking-widest uppercase mb-1" style={{ color: CYAN }}>Previsão de Revisão</p>
+              <p className="text-xs font-bold tracking-widest uppercase mb-1" style={{ color: NEON }}>Previsão de Revisão</p>
               <p className="text-slate-600 text-xs mb-4">Evolução do domínio por semana</p>
               <LineMockup />
               <div className="flex justify-between text-slate-700 text-xs mt-2">
                 <span>Semana 1</span><span>→</span><span>Hoje</span>
               </div>
               <div className="mt-3 flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full" style={{ background: CYAN }} />
+                <div className="w-2 h-2 rounded-full" style={{ background: NEON }} />
                 <span className="text-slate-500 text-xs">% Domínio acumulado (IA)</span>
               </div>
             </div>
@@ -495,7 +503,7 @@ export default function LandingPage() {
             <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">
               Travou numa questão?{' '}
               <span style={{
-                background: `linear-gradient(90deg, ${CYAN}, ${VIOLET})`,
+                background: `linear-gradient(90deg, ${NEON}, ${VIOLET})`,
                 WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
               }}>
                 A IA resolve em segundos.
@@ -509,25 +517,25 @@ export default function LandingPage() {
 
           <div className="relative rounded-3xl overflow-hidden"
             style={{
-              background: 'rgba(5,5,5,0.90)',
+              background: CARD_BG,
               backdropFilter: 'blur(20px)',
               WebkitBackdropFilter: 'blur(20px)',
-              border: `1px solid ${CYAN}25`,
-              boxShadow: `0 0 60px ${CYAN}0c`,
+              border: `1px solid ${NEON}25`,
+              boxShadow: `0 0 40px rgba(124,58,237,0.14), 0 0 0 1px rgba(124,58,237,0.08)`,
             }}>
             <div className="absolute inset-x-0 top-0 h-px"
-              style={{ background: `linear-gradient(90deg, transparent, ${CYAN}50, transparent)` }} />
+              style={{ background: `linear-gradient(90deg, transparent, ${NEON}50, transparent)` }} />
 
             {/* Chat header */}
             <div className="flex items-center gap-3 px-5 py-4 border-b border-white/5">
               <div className="w-8 h-8 rounded-full flex items-center justify-center text-base"
-                style={{ background: `${CYAN}20`, border: `1px solid ${CYAN}40` }}>
+                style={{ background: `${NEON}20`, border: `1px solid ${NEON}40` }}>
                 🤖
               </div>
               <div>
                 <p className="text-white font-bold text-sm">Tutor IA · Química Especialista</p>
                 <div className="flex items-center gap-1.5 mt-0.5">
-                  <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: CYAN }} />
+                  <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: NEON }} />
                   <span className="text-slate-600 text-xs">Online · Analisando lacunas</span>
                 </div>
               </div>
@@ -548,11 +556,11 @@ export default function LandingPage() {
 
               <div className="flex justify-start gap-3">
                 <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0 mt-1"
-                  style={{ background: `${CYAN}20`, border: `1px solid ${CYAN}40` }}>
+                  style={{ background: `${NEON}20`, border: `1px solid ${NEON}40` }}>
                   🤖
                 </div>
                 <div className="max-w-xs sm:max-w-md rounded-2xl rounded-tl-sm px-4 py-3"
-                  style={{ background: `${CYAN}0e`, border: `1px solid ${CYAN}25` }}>
+                  style={{ background: `${NEON}0e`, border: `1px solid ${NEON}25` }}>
                   <p className="text-white text-sm font-semibold mb-2">
                     Técnica dos 3 passos — memorize isso:
                   </p>
@@ -563,14 +571,14 @@ export default function LandingPage() {
                       ['③', 'Confira as unidades.', 'Se der mol → converta pra gramas multiplicando pela massa molar. Pronto.'],
                     ].map(([num, bold, rest]) => (
                       <div key={num} className="flex gap-2">
-                        <span style={{ color: CYAN }} className="font-bold shrink-0">{num}</span>
+                        <span style={{ color: NEON }} className="font-bold shrink-0">{num}</span>
                         <span><span className="text-white font-semibold">{bold}</span>{' '}{rest}</span>
                       </div>
                     ))}
                   </div>
                   <div className="mt-3 px-3 py-2 rounded-xl text-xs"
                     style={{ background: 'rgba(255,255,255,0.04)', border: 'rgba(255,255,255,0.06)' }}>
-                    <span style={{ color: CYAN }} className="font-bold">💡 Macete ENEM:</span>
+                    <span style={{ color: NEON }} className="font-bold">💡 Macete ENEM:</span>
                     <span className="text-slate-400 ml-1">Coeficiente = proporção = regra de 3. Nunca mude isso.</span>
                   </div>
                   <p className="text-slate-700 text-xs mt-2">Tutor IA · agora</p>
@@ -579,14 +587,14 @@ export default function LandingPage() {
 
               <div className="flex justify-start gap-3">
                 <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0"
-                  style={{ background: `${CYAN}20`, border: `1px solid ${CYAN}40` }}>
+                  style={{ background: `${NEON}20`, border: `1px solid ${NEON}40` }}>
                   🤖
                 </div>
                 <div className="px-4 py-3 rounded-2xl rounded-tl-sm flex items-center gap-1"
-                  style={{ background: `${CYAN}0a`, border: `1px solid ${CYAN}18` }}>
+                  style={{ background: `${NEON}0a`, border: `1px solid ${NEON}18` }}>
                   {[0,0.2,0.4].map(delay => (
                     <div key={delay} className="w-1.5 h-1.5 rounded-full animate-pulse"
-                      style={{ background: CYAN, animationDelay: `${delay}s` }} />
+                      style={{ background: NEON, animationDelay: `${delay}s` }} />
                   ))}
                   <span className="text-slate-600 text-xs ml-2">Preparando seu próximo card...</span>
                 </div>
@@ -614,11 +622,11 @@ export default function LandingPage() {
               <div key={s.name}
                 className="relative rounded-2xl p-5 overflow-hidden transition-all duration-300 hover:-translate-y-1"
                 style={{
-                  background: 'rgba(10,5,20,0.70)',
+                  background: CARD_BG2,
                   backdropFilter: 'blur(20px)',
                   WebkitBackdropFilter: 'blur(20px)',
                   border: `1px solid rgba(124,58,237,0.20)`,
-                  boxShadow: `0 0 40px rgba(124,58,237,0.06)`,
+                  boxShadow: `0 0 20px rgba(124,58,237,0.10), 0 0 0 1px rgba(124,58,237,0.06)`,
                 }}>
                 <div className="absolute inset-0 pointer-events-none"
                   style={{ background: `radial-gradient(ellipse at top left, rgba(124,58,237,0.08) 0%, transparent 65%)` }} />
@@ -662,35 +670,34 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* ════════════════════════════ FINAL CTA ══
-            PAS — Solution: call to action impossível de ignorar               */}
+        {/* ════════════════════════════ FINAL CTA ══ */}
         <section className="max-w-4xl mx-auto px-5 sm:px-10 pb-24">
           <div className="relative rounded-3xl p-10 sm:p-16 overflow-hidden text-center"
             style={{
-              background: 'rgba(5,8,20,0.95)',
-              border: `1px solid ${CYAN}30`,
-              boxShadow: `0 0 0 1px ${CYAN}10, 0 0 80px ${CYAN}14, 0 0 160px ${VIOLET}08`,
+              background: 'rgba(15,15,15,0.98)',
+              border: `1px solid ${NEON}30`,
+              boxShadow: `0 0 0 1px ${NEON}10, 0 0 80px ${NEON}14, 0 0 160px rgba(124,58,237,0.10)`,
             }}>
             <div className="absolute inset-x-0 top-0 h-px"
-              style={{ background: `linear-gradient(90deg, transparent, ${CYAN}80, ${VIOLET}60, transparent)` }} />
+              style={{ background: `linear-gradient(90deg, transparent, ${NEON}80, ${VIOLET}60, transparent)` }} />
             <div className="absolute top-0 left-0 w-80 h-80 pointer-events-none"
-              style={{ background: `radial-gradient(circle, ${CYAN}12 0%, transparent 70%)`, transform: 'translate(-30%,-30%)' }} />
+              style={{ background: `radial-gradient(circle, ${NEON}10 0%, transparent 70%)`, transform: 'translate(-30%,-30%)' }} />
             <div className="absolute bottom-0 right-0 w-72 h-72 pointer-events-none"
-              style={{ background: `radial-gradient(circle, rgba(124,58,237,0.14) 0%, transparent 70%)`, transform: 'translate(30%,30%)' }} />
+              style={{ background: `radial-gradient(circle, rgba(124,58,237,0.16) 0%, transparent 70%)`, transform: 'translate(30%,30%)' }} />
 
             <div className="relative">
               <div
                 className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-6 text-xs font-bold tracking-widest uppercase"
-                style={{ background: `${CYAN}14`, border: `1px solid ${CYAN}35`, color: CYAN }}
+                style={{ background: `${NEON}14`, border: `1px solid ${NEON}35`, color: NEON }}
               >
-                <span className="inline-block w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: CYAN }} />
+                <span className="inline-block w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: NEON }} />
                 Seu concorrente já está usando
               </div>
 
               <h2 className="text-3xl sm:text-4xl font-black text-white leading-tight mb-4">
                 Cada dia sem o método certo<br/>
                 é memória perdida{' '}
-                <span style={{ color: '#f87171' }}>que não volta.</span>
+                <span style={{ color: ORANGE }}>que não volta.</span>
               </h2>
               <p className="text-slate-400 text-base mb-10 max-w-lg mx-auto">
                 Inicie seu Diagnóstico por IA agora, descubra suas lacunas em 3 minutos e comece a reter{' '}
@@ -701,7 +708,7 @@ export default function LandingPage() {
                 <div className="flex flex-wrap justify-center gap-6 text-xs text-slate-600">
                   {['Sem cartão de crédito', 'Acesso imediato', 'Cancele quando quiser'].map(t => (
                     <span key={t} className="flex items-center gap-1.5">
-                      <span style={{ color: CYAN }}>✓</span> {t}
+                      <span style={{ color: NEON }}>✓</span> {t}
                     </span>
                   ))}
                 </div>
@@ -714,7 +721,7 @@ export default function LandingPage() {
         <footer className="border-t border-white/5 py-8 px-5 sm:px-10 text-center">
           <p className="text-white font-black mb-2">
             Flash<span style={{
-              background: `linear-gradient(90deg, ${CYAN}, ${VIOLET})`,
+              background: `linear-gradient(90deg, ${NEON}, ${VIOLET})`,
               WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
             }}>Aprova</span>
           </p>

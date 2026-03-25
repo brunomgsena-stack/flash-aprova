@@ -145,7 +145,7 @@ export default function AccountStatusCard() {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      setInfo(await fetchUserPlan(user.id, user.email ?? undefined));
+      setInfo(await fetchUserPlan(user.id));
     }
     load();
   }, []);

@@ -488,7 +488,7 @@ export default function SubscriptionPage() {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      setUserPlan(await fetchUserPlan(user.id, user.email ?? undefined));
+      setUserPlan(await fetchUserPlan(user.id));
     }
     load();
   }, []);
