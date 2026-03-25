@@ -76,7 +76,7 @@ export async function middleware(request: NextRequest) {
             return NextResponse.json(
               {
                 success: false,
-                error:   'Você atingiu o limite de requisições. Tente novamente em alguns minutos.',
+                error:   'Calma lá! Você atingiu o limite de requisições. Tente novamente em 1 minuto.',
               },
               {
                 status:  429,
