@@ -81,6 +81,12 @@ type FlashInsight = {
   ctaHref:    string;
 };
 
+type AiBriefing = {
+  resumo_estrategico: string;
+  alerta_de_risco:    string;
+  missao_do_dia:      string;
+};
+
 type UserProfile = {
   target_course?:      string | null;
   target_university?:  string | null;
@@ -89,12 +95,14 @@ type UserProfile = {
 
 /** Single state shape — all plans now get real data. */
 type InsightData = {
-  insight:    FlashInsight;
-  maturePct:  number;
-  streak:     number;
-  plan:       Plan;
-  profile:    UserProfile;
-  areaScores: Record<string, number>;
+  insight:      FlashInsight;
+  maturePct:    number;
+  streak:       number;
+  plan:         Plan;
+  profile:      UserProfile;
+  areaScores:   Record<string, number>;
+  topLapseInfo: { deckTitle: string; area: string; lapses: number } | null;
+  totalDue:     number;
 };
 
 type State =
@@ -368,6 +376,67 @@ function SpeechBubble({
   );
 }
 
+// ─── AI Briefing (AiPro+ only) ────────────────────────────────────────────────
+
+function AiBriefingSection({ briefing, maturePct, streak }: { briefing: AiBriefing; maturePct: number; streak: number }) {
+  return (
+    <div className="flex-1 min-w-0 flex flex-col gap-3" style={{ animation: 'ft-appear 0.4s ease-out both' }}>
+      {/* Name row */}
+      <div className="flex items-center gap-2">
+        <span className="text-sm font-bold" style={{ color: NEON_PURPLE }}>{getFlashTutor().name}</span>
+        <span className="text-xs" style={{ color: 'rgba(255,255,255,0.25)' }}>{getFlashTutor().title}</span>
+        <span className="rounded-full px-2 py-0.5 text-xs font-bold" style={{ background: `${NEON_CYAN}18`, border: `1px solid ${NEON_CYAN}40`, color: NEON_CYAN, fontSize: '9px', letterSpacing: '0.05em' }}>
+          BRIEFING IA
+        </span>
+      </div>
+
+      {/* Resumo Estratégico */}
+      <div className="rounded-xl p-3" style={{ background: `${NEON_PURPLE}0F`, border: `1px solid ${NEON_PURPLE}30` }}>
+        <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: NEON_PURPLE }}>
+          📊 Resumo Estratégico
+        </p>
+        <p className="text-sm leading-snug" style={{ color: 'rgba(255,255,255,0.75)' }}>
+          {briefing.resumo_estrategico}
+        </p>
+      </div>
+
+      {/* Alerta de Risco */}
+      <div className="rounded-xl p-3" style={{ background: `${RED_ALERT}0C`, border: `1px solid ${RED_ALERT}35` }}>
+        <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: RED_ALERT }}>
+          ⚠️ Alerta de Risco
+        </p>
+        <p className="text-sm leading-snug" style={{ color: 'rgba(255,255,255,0.75)' }}>
+          {briefing.alerta_de_risco}
+        </p>
+      </div>
+
+      {/* Missão do Dia */}
+      <div className="rounded-xl p-3" style={{ background: `${NEON_GREEN}0C`, border: `1px solid ${NEON_GREEN}35` }}>
+        <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: NEON_GREEN }}>
+          🎯 Missão do Dia
+        </p>
+        <p className="text-sm leading-snug" style={{ color: 'rgba(255,255,255,0.75)' }}>
+          {briefing.missao_do_dia}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function AiBriefingLoading() {
+  return (
+    <div className="flex-1 min-w-0 flex flex-col gap-3" style={{ animation: 'ft-appear 0.3s ease-out both' }}>
+      {[80, 64, 72].map((w, i) => (
+        <div key={i} className="rounded-xl p-3 animate-pulse" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+          <div className="h-2.5 rounded mb-2" style={{ width: '40%', background: 'rgba(255,255,255,0.08)' }} />
+          <div className="h-2 rounded mb-1.5" style={{ width: `${w}%`, background: 'rgba(255,255,255,0.06)' }} />
+          <div className="h-2 rounded" style={{ width: '55%', background: 'rgba(255,255,255,0.05)' }} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ─── Stats badges (right column) ─────────────────────────────────────────────
 
 function StatsBadges({ maturePct, streak }: { maturePct: number; streak: number }) {
@@ -417,6 +486,8 @@ export default function PantheonInsights() {
   const [state, setState]               = useState<State>({ status: 'loading' });
   const [showModal, setShowModal]       = useState(false);
   const [showPlanModal, setShowPlanModal] = useState(false);
+  const [briefing, setBriefing]         = useState<AiBriefing | null>(null);
+  const [briefingLoading, setBriefingLoading] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -523,7 +594,25 @@ export default function PantheonInsights() {
       const areaScoresObj: Record<string, number> = {};
       for (const [k, v] of areaScores.entries()) areaScoresObj[k] = v;
 
-      setState({ status: 'ready', data: { insight, maturePct, streak, plan, profile, areaScores: areaScoresObj } });
+      const topLapseInfo = topLapseDeck
+        ? { deckTitle: topLapseDeck.deckTitle, area: getCategoryShort(topLapseDeck.subjectCategory), lapses: topLapseDeck.lapses }
+        : null;
+
+      setState({ status: 'ready', data: { insight, maturePct, streak, plan, profile, areaScores: areaScoresObj, topLapseInfo, totalDue } });
+
+      // AiPro+ → busca briefing IA em background após montar o estado
+      if (plan === 'proai_plus') {
+        setBriefingLoading(true);
+        fetch('/api/insights/briefing', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ maturePct, areaScores: areaScoresObj, topLapseInfo, totalDue, streak, targetCourse: profile.target_course }),
+        })
+          .then(r => r.ok ? r.json() : null)
+          .then(data => { if (data) setBriefing(data as AiBriefing); })
+          .catch(() => {})
+          .finally(() => setBriefingLoading(false));
+      }
     }
     load();
   }, []);
@@ -601,7 +690,7 @@ export default function PantheonInsights() {
             </div>
           </div>
 
-          {/* ── Body: avatar + bubble + stats ─────────────────────────────── */}
+          {/* ── Body: avatar + content + stats ────────────────────────────── */}
           <div className="relative z-10 flex items-start gap-3">
 
             {/* Avatar column */}
@@ -621,11 +710,16 @@ export default function PantheonInsights() {
               </span>
             </div>
 
-            {/* Speech bubble */}
-            <SpeechBubble insight={insight} isPro={isPro} onUpgrade={() => setShowModal(true)} />
+            {/* Pro: AI Briefing | Flash: speech bubble teaser */}
+            {isPro
+              ? briefingLoading || !briefing
+                ? <AiBriefingLoading />
+                : <AiBriefingSection briefing={briefing} maturePct={maturePct} streak={streak} />
+              : <SpeechBubble insight={insight} isPro={false} onUpgrade={() => setShowModal(true)} />
+            }
 
-            {/* Stats — pro only */}
-            {isPro && <StatsBadges maturePct={maturePct} streak={streak} />}
+            {/* Stats — pro only, shown alongside AI briefing */}
+            {isPro && !briefingLoading && briefing && <StatsBadges maturePct={maturePct} streak={streak} />}
           </div>
 
           {/* ── Action buttons ─────────────────────────────────────────────── */}

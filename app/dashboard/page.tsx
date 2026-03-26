@@ -3,6 +3,7 @@ import { getSubjectIcon } from '@/lib/iconMap';
 import PerformanceMetrics from './PerformanceMetrics';
 import UserMenu from './UserMenu';
 import StreakBadge from './StreakBadge';
+import EnemCountdown from './EnemCountdown';
 import ChartsRow from './ChartsRow';
 import SubjectsWithDomain from './SubjectsWithDomain';
 import DynamicStatus from './DynamicStatus';
@@ -54,6 +55,7 @@ export default async function DashboardPage() {
           </p>
           <div className="flex items-center gap-3">
             <StreakBadge />
+            <EnemCountdown />
             <UserMenu />
           </div>
         </div>

@@ -4,50 +4,72 @@ import { useEffect, useState } from 'react';
 import { useRouter }            from 'next/navigation';
 import { supabase }             from '@/lib/supabaseClient';
 
-// ─── Tokens ───────────────────────────────────────────────────────────────────
+// ─── Design tokens ─────────────────────────────────────────────────────────────
 const VIOLET = '#8B5CF6';
 const NEON   = '#10B981';
+const CYAN   = '#06b6d4';
 
-// ─── Quiz data ────────────────────────────────────────────────────────────────
+// ─── Quiz data ─────────────────────────────────────────────────────────────────
 
-const OBJETIVOS = [
-  { id: 'enem',       icon: '🎓', label: 'ENEM',                    sub: 'Quero passar no ENEM' },
-  { id: 'vestibular', icon: '🏛️', label: 'Vestibular Específico',   sub: 'FUVEST, UNICAMP, UFPE...' },
-  { id: 'concurso',   icon: '⚖️', label: 'Concurso Público',        sub: 'TRT, Receita, PRF...' },
+// Grid simétrico 2 colunas × 3 linhas — todos os cards idênticos
+const CURSOS = [
+  { id: 'medicina',   emoji: '🩺', label: 'Medicina',    sub: 'Foco total nos pesos de Natureza e TRI.' },
+  { id: 'psicologia', emoji: '🧠', label: 'Psicologia',  sub: 'Equilíbrio entre Humanas e Biológicas.' },
+  { id: 'direito',    emoji: '⚖️', label: 'Direito',     sub: 'Humanas + Redação como prioridade.' },
+  { id: 'saude',      emoji: '🏥', label: 'Saúde',       sub: 'Enfermagem, Odonto, Fisioterapia e mais.' },
+  { id: 'exatas',     emoji: '📐', label: 'Exatas',      sub: 'Matemática e Física no topo da estratégia.' },
+  { id: 'outro',      emoji: '🎓', label: 'Outro Curso', sub: 'Me conte qual é o seu alvo.' },
 ];
 
-const CURSOS = [
-  { id: 'Medicina',         icon: '🩺', label: 'Medicina / Odonto' },
-  { id: 'Direito',          icon: '⚖️', label: 'Direito' },
-  { id: 'Engenharia',       icon: '⚙️', label: 'Engenharia' },
-  { id: 'Administração',    icon: '📊', label: 'Administração / Economia' },
-  { id: 'Humanas',          icon: '🏛️', label: 'Humanas / Sociais' },
-  { id: 'Outro',            icon: '✏️', label: 'Outro curso...' },
+const BASES = [
+  { id: 'zero',     icon: '🌱', label: 'Começando do zero',         sub: 'Ainda não estudei muito' },
+  { id: 'basico',   icon: '📖', label: 'Base básica',                sub: 'Vi o conteúdo mas esqueci bastante' },
+  { id: 'medio',    icon: '📚', label: 'Base intermediária',         sub: 'Sei o básico de cada área' },
+  { id: 'avancado', icon: '🚀', label: 'Base avançada',              sub: 'Só preciso de revisão estratégica' },
+];
+
+const TEMPOS = [
+  { id: 2, icon: '⚡', label: '1-2h por dia',  sub: 'Estudo focado e constante' },
+  { id: 4, icon: '🎯', label: '3-4h por dia',  sub: 'Ritmo equilibrado' },
+  { id: 6, icon: '🔥', label: '5-6h por dia',  sub: 'Alta intensidade' },
+  { id: 8, icon: '💀', label: '7h+ por dia',   sub: 'Modo vestibulando 100%' },
 ];
 
 const DIFICULDADES = [
-  { id: 'Natureza',   icon: '🔬', label: 'Ciências da Natureza', sub: 'Biologia, Física, Química' },
-  { id: 'Humanas',    icon: '🏛️', label: 'Ciências Humanas',    sub: 'História, Geografia, Filosofia' },
-  { id: 'Linguagens', icon: '📚', label: 'Linguagens',           sub: 'Português, Literatura, Artes' },
   { id: 'Matemática', icon: '📐', label: 'Matemática',           sub: 'Álgebra, Geometria, Estatística' },
+  { id: 'Natureza',   icon: '🔬', label: 'Ciências da Natureza', sub: 'Física, Química, Biologia' },
+  { id: 'Humanas',    icon: '🏛️', label: 'Ciências Humanas',    sub: 'História, Geografia, Filosofia' },
+  { id: 'Linguagens', icon: '📚', label: 'Linguagens',           sub: 'Português, Literatura, Inglês' },
+  { id: 'Redação',    icon: '✍️', label: 'Redação',              sub: 'Estrutura, argumentação, repertório' },
 ];
 
-const METAS = [
-  { id: 25,  label: '25 cards',  sub: 'Constância acima de tudo ⚡' },
-  { id: 50,  label: '50 cards',  sub: 'Equilíbrio perfeito 🎯' },
-  { id: 75,  label: '75 cards',  sub: 'Gás total! ☕🔥' },
-  { id: 100, label: '100 cards', sub: 'Modo aprovação 💀' },
+const EXPERIENCIAS = [
+  { id: 'treineiro', icon: '🏃', label: 'Treineiro',          sub: 'Ainda no ensino médio' },
+  { id: 'primeira',  icon: '🎓', label: 'Primeira tentativa', sub: 'Vou fazer o ENEM pela 1ª vez' },
+  { id: 'segunda',   icon: '🔁', label: 'Segunda tentativa',  sub: 'Já fiz uma vez, quero melhorar' },
+  { id: 'veterano',  icon: '⚔️', label: 'Veterano',           sub: 'Já fiz 3x ou mais' },
 ];
 
 const AI_MSGS = [
-  'Calculando pesos por área do ENEM...',
-  'Mapeando lacunas críticas para seu curso...',
-  'Aplicando metodologia 80/20...',
-  'Gerando cronograma personalizado...',
-  'Plano quase pronto...',
+  'Consultando pesos do SISU para o seu curso...',
+  'Analisando a TRI e distribuição de questões por área...',
+  'Calculando a regra 80/20 para a sua realidade...',
+  'Mapeando os temas de maior impacto na sua nota...',
+  'Montando sua rota personalizada de aprovação...',
+  'Ajustando o cronograma para as próximas 4 semanas...',
+  'Seu plano está quase pronto...',
 ];
 
-// ─── Progress bar ─────────────────────────────────────────────────────────────
+const QUESTIONS = [
+  { emoji: '🎯', title: 'Qual curso você quer fazer?',           sub: 'Isso define os pesos do SISU para a sua estratégia.' },
+  { emoji: '📊', title: 'Como está sua base de estudos hoje?',   sub: 'Seja honesto — isso calibra o nível do seu plano.' },
+  { emoji: '⏱️', title: 'Quanto tempo você tem por dia?',        sub: 'Constância bate maratona. Escolha o que você consegue manter.' },
+  { emoji: '⚡', title: 'Qual é sua maior dificuldade?',          sub: 'Vamos atacar o elo mais fraco com foco 80/20.' },
+  { emoji: '🏆', title: 'Qual é a sua experiência com o ENEM?',  sub: 'Sua história importa para calibrar a estratégia.' },
+];
+
+// ─── Progress Bar ──────────────────────────────────────────────────────────────
+
 function ProgressBar({ step, total }: { step: number; total: number }) {
   return (
     <div className="mb-8">
@@ -59,9 +81,9 @@ function ProgressBar({ step, total }: { step: number; total: number }) {
       </div>
       <div className="h-1 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
         <div
-          className="h-full rounded-full transition-all duration-500"
+          className="h-full rounded-full transition-all duration-700"
           style={{
-            width:      `${(step / total) * 100}%`,
+            width:     `${(step / total) * 100}%`,
             background: `linear-gradient(90deg, ${VIOLET}, ${NEON})`,
             boxShadow:  `0 0 8px ${NEON}60`,
           }}
@@ -71,17 +93,19 @@ function ProgressBar({ step, total }: { step: number; total: number }) {
   );
 }
 
-// ─── AI Loading screen ───────────────────────────────────────────────────────
+// ─── AI Loader ─────────────────────────────────────────────────────────────────
+
 function AiLoader({ msg }: { msg: string }) {
   return (
-    <div className="flex flex-col items-center justify-center py-20 gap-8">
+    <div className="flex flex-col items-center justify-center py-14 gap-8">
+      {/* Brain orb */}
       <div className="relative">
         <div
-          className="w-24 h-24 rounded-full flex items-center justify-center text-5xl"
+          className="w-28 h-28 rounded-full flex items-center justify-center text-5xl"
           style={{
-            background: `${VIOLET}18`,
-            border:     `1px solid ${VIOLET}40`,
-            boxShadow:  `0 0 60px ${VIOLET}30`,
+            background: `radial-gradient(circle at 35% 35%, ${VIOLET}40, ${VIOLET}10)`,
+            border:     `1px solid ${VIOLET}50`,
+            boxShadow:  `0 0 60px ${VIOLET}40, 0 0 120px ${VIOLET}15`,
           }}
         >
           🧠
@@ -95,46 +119,128 @@ function AiLoader({ msg }: { msg: string }) {
             animation:        'spin 1s linear infinite',
           }}
         />
+        <div
+          className="absolute rounded-full"
+          style={{
+            inset:            '-8px',
+            border:           `1px solid ${VIOLET}20`,
+            borderTopColor:   `${NEON}40`,
+            animation:        'spin 3s linear infinite reverse',
+          }}
+        />
       </div>
-      <div className="text-center">
-        <p className="text-white font-black text-xl mb-3">
-          IA gerando seu plano de estudos...
+
+      {/* Copy */}
+      <div className="text-center max-w-xs">
+        <p className="text-white font-black text-2xl mb-2 leading-tight">
+          Montando sua rota de aprovação...
         </p>
-        <p className="text-sm font-mono transition-all duration-300" style={{ color: NEON }}>
-          {msg}
-          <span style={{ animation: 'blink 1s step-end infinite' }}>_</span>
+        <p className="text-slate-400 text-sm leading-relaxed">
+          Nossa IA está analisando os{' '}
+          <span className="font-bold" style={{ color: VIOLET }}>pesos do SISU</span>{' '}
+          para o seu curso e montando sua{' '}
+          <span className="font-bold" style={{ color: NEON }}>rota 80/20</span>{' '}
+          personalizada.
         </p>
       </div>
-      <div className="w-64 h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+
+      {/* Status message */}
+      <div
+        className="px-5 py-3 rounded-xl text-sm font-mono text-center max-w-sm w-full"
+        style={{
+          background: `${VIOLET}12`,
+          border:     `1px solid ${VIOLET}30`,
+          color:       NEON,
+        }}
+      >
+        <span
+          className="inline-block w-1.5 h-1.5 rounded-full mr-2 animate-pulse"
+          style={{ background: NEON }}
+        />
+        {msg}
+        <span style={{ animation: 'blink 1s step-end infinite' }}>_</span>
+      </div>
+
+      {/* Progress bar */}
+      <div className="w-72 h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
         <div
           className="h-full rounded-full"
           style={{
             background: `linear-gradient(90deg, ${VIOLET}, ${NEON})`,
-            animation:  'fill 4s ease-out forwards',
+            animation:  'loadFill 7s ease-out forwards',
           }}
         />
+      </div>
+
+      {/* Tags */}
+      <div className="flex flex-wrap justify-center gap-2">
+        {['TRI ENEM', 'Pesos SISU', '80/20', '4 Semanas', 'Personalizado'].map(tag => (
+          <span
+            key={tag}
+            className="text-xs px-3 py-1 rounded-full font-semibold"
+            style={{
+              background: 'rgba(255,255,255,0.05)',
+              border:     '1px solid rgba(255,255,255,0.10)',
+              color:      'rgba(255,255,255,0.40)',
+            }}
+          >
+            {tag}
+          </span>
+        ))}
       </div>
     </div>
   );
 }
 
-// ─── Main ─────────────────────────────────────────────────────────────────────
+// ─── Option Button ─────────────────────────────────────────────────────────────
+
+function OptionBtn({
+  icon, label, sub, selected, onClick, accentColor = VIOLET,
+}: {
+  icon: string; label: string; sub: string; selected: boolean;
+  onClick: () => void; accentColor?: string;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="flex items-center gap-4 rounded-2xl px-5 py-4 text-left transition-all duration-150 hover:-translate-y-0.5 active:scale-[0.98] w-full"
+      style={{
+        background: selected ? `${accentColor}22` : 'rgba(255,255,255,0.04)',
+        border:     `1px solid ${selected ? accentColor + '70' : 'rgba(255,255,255,0.09)'}`,
+        boxShadow:  selected ? `0 0 20px ${accentColor}25` : 'none',
+      }}
+    >
+      <span className="text-3xl shrink-0">{icon}</span>
+      <div className="flex-1">
+        <p className="text-white font-bold text-base leading-snug">{label}</p>
+        <p className="text-slate-500 text-xs mt-0.5">{sub}</p>
+      </div>
+      {selected && (
+        <span className="text-xs font-black shrink-0" style={{ color: accentColor }}>✓</span>
+      )}
+    </button>
+  );
+}
+
+// ─── Main Component ────────────────────────────────────────────────────────────
+
 export default function SetupPage() {
   const router = useRouter();
 
-  // ── State ──────────────────────────────────────────────────────────────────
-  const [step,          setStep]          = useState(1);
-  const [objetivo,      setObjetivo]      = useState('');
-  const [curso,         setCurso]         = useState('');
-  const [cursoCustom,   setCursoCustom]   = useState('');
-  const [universidade,  setUniversidade]  = useState('');
-  const [dificuldades,  setDificuldades]  = useState<string[]>([]);
-  const [meta,          setMeta]          = useState(50);
-  const [loading,       setLoading]       = useState(false);
-  const [aiMsg,         setAiMsg]         = useState(AI_MSGS[0]);
-  const [error,         setError]         = useState('');
+  const [step,        setStep]        = useState(1);
+  const [dir,         setDir]         = useState<'fwd' | 'bwd'>('fwd');
+  const [animKey,     setAnimKey]     = useState(0);
+  const [curso,       setCurso]       = useState('');
+  const [cursoCustom, setCursoCustom] = useState('');
+  const [base,        setBase]        = useState('');
+  const [tempo,       setTempo]       = useState(4);
+  const [dificuldade, setDificuldade] = useState('');
+  const [experiencia, setExperiencia] = useState('');
+  const [loading,     setLoading]     = useState(false);
+  const [aiMsg,       setAiMsg]       = useState(AI_MSGS[0]);
+  const [error,       setError]       = useState('');
 
-  // ── Auth guard (if already setup, go to dashboard) ────────────────────────
+  // ── Auth guard ──────────────────────────────────────────────────────────────
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) { router.push('/login'); return; }
@@ -144,7 +250,7 @@ export default function SetupPage() {
     });
   }, [router]);
 
-  // ── AI msg rotation ────────────────────────────────────────────────────────
+  // ── AI msg rotation ─────────────────────────────────────────────────────────
   useEffect(() => {
     if (!loading) return;
     let i = 0;
@@ -155,46 +261,73 @@ export default function SetupPage() {
     return () => clearInterval(t);
   }, [loading]);
 
-  // ── Helpers ────────────────────────────────────────────────────────────────
-  function toggleDiff(id: string) {
-    setDificuldades(prev =>
-      prev.includes(id) ? prev.filter(d => d !== id) : [...prev, id],
-    );
+  // ── Navigation ──────────────────────────────────────────────────────────────
+  function advance(next: number) {
+    setDir('fwd');
+    setAnimKey(k => k + 1);
+    setStep(next);
   }
 
-  function next() { setStep(s => s + 1); }
+  // Bloqueia o "Voltar" enquanto a IA está gerando ou após a conclusão
+  function back() {
+    if (loading) return;
+    setDir('bwd');
+    setAnimKey(k => k + 1);
+    setStep(s => s - 1);
+  }
 
-  async function finish(finalMeta: number) {
+  // ── Finish → call API ───────────────────────────────────────────────────────
+  async function finish(finalExp: string) {
     setLoading(true);
     setError('');
 
-    const cursoFinal = curso === 'Outro' ? (cursoCustom.trim() || 'Outro') : curso;
+    // IDs dos cursos são todos lowercase; 'outro' dispara campo livre
+    const cursoFinal = curso === 'outro' ? (cursoCustom.trim() || 'outro') : curso;
 
     try {
+      // ── 1. Gera plano via API (OpenAI + upsert admin) ───────────────────────
       const res = await fetch('/api/onboarding/generate-plan', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({
-          objetivo,
-          curso:        cursoFinal,
-          universidade: universidade.trim() || null,
-          dificuldades,
-          metaDiaria:   finalMeta,
+          curso:       cursoFinal,
+          base,
+          tempo,
+          dificuldade,
+          experiencia: finalExp,
         }),
       });
 
-      if (!res.ok) throw new Error(await res.text());
+      if (!res.ok) {
+        const msg = await res.text().catch(() => 'Erro desconhecido');
+        throw new Error(msg);
+      }
 
-      // Refresh JWT so middleware sees onboarding_completed = true
-      await supabase.auth.refreshSession();
-      router.push('/dashboard');
+      // ── 2. RPC client-side (dupla garantia, SECURITY DEFINER ignora RLS) ────
+      const { error: rpcErr } = await supabase.rpc('complete_onboarding');
+      if (rpcErr) {
+        console.error('[Onboarding] Erro no rpc client-side:', rpcErr.message);
+      } else {
+        console.log('[Onboarding] ✅ onboarding_completed = true gravado no banco!');
+      }
+
+      // ── 3. Atualiza o JWT nos cookies ───────────────────────────────────────
+      await supabase.auth.refreshSession().catch(() => {});
+
+      // ── 4. Delay de segurança: dá tempo ao Supabase de propagar o commit ────
+      await new Promise(resolve => setTimeout(resolve, 800));
+
+      // ── 5. Hard redirect — destrói cache do browser, Middleware lê DB limpo ─
+      window.location.href = '/dashboard';
     } catch (e) {
       setLoading(false);
       setError(e instanceof Error ? e.message : 'Erro ao gerar plano. Tente novamente.');
     }
   }
 
-  // ─── Render ───────────────────────────────────────────────────────────────
+  const q = QUESTIONS[step - 1];
+
+  // ─── Render ────────────────────────────────────────────────────────────────
   return (
     <div
       className="min-h-screen px-4 py-12 sm:px-8 flex flex-col items-center justify-center"
@@ -208,26 +341,30 @@ export default function SetupPage() {
           backgroundSize:  '48px 48px',
         }}
       />
+      {/* Ambient orbs */}
+      <div className="fixed pointer-events-none" style={{ top: '-20%', right: '-10%', width: 600, height: 600, borderRadius: '50%', background: `radial-gradient(circle, ${VIOLET}12 0%, transparent 70%)` }} />
+      <div className="fixed pointer-events-none" style={{ bottom: '-10%', left: '-10%', width: 400, height: 400, borderRadius: '50%', background: `radial-gradient(circle, ${CYAN}08 0%, transparent 70%)` }} />
 
       <div className="relative w-full max-w-lg" style={{ zIndex: 1 }}>
-
         {/* Logo */}
         <div className="text-center mb-10">
-          <p className="text-emerald-400 text-sm font-bold tracking-widest uppercase mb-1">FlashAprova</p>
-          <h1 className="text-2xl font-black text-white">Configurando sua rota de aprovação</h1>
-          <p className="text-slate-500 text-sm mt-1">5 perguntas · menos de 1 minuto</p>
+          <p className="text-xs font-bold tracking-widest uppercase mb-1" style={{ color: NEON }}>
+            FlashAprova
+          </p>
+          <h1 className="text-2xl font-black text-white">Sua rota personalizada de aprovação</h1>
+          <p className="text-slate-500 text-sm mt-1">5 perguntas · IA analisa · Plano em segundos</p>
         </div>
 
         {/* Card */}
         <div
           className="rounded-3xl p-7 relative overflow-hidden"
           style={{
-            background: 'rgba(7,4,15,0.95)',
+            background: 'rgba(7,4,15,0.96)',
             border:     `1px solid ${VIOLET}35`,
-            boxShadow:  `0 0 80px ${VIOLET}12`,
+            boxShadow:  `0 0 80px ${VIOLET}12, 0 32px 64px rgba(0,0,0,0.50)`,
           }}
         >
-          {/* Top accent */}
+          {/* Top accent line */}
           <div
             className="absolute inset-x-0 top-0 h-px"
             style={{ background: `linear-gradient(90deg, transparent, ${VIOLET}, ${NEON}60, transparent)` }}
@@ -236,201 +373,163 @@ export default function SetupPage() {
           {loading ? (
             <AiLoader msg={aiMsg} />
           ) : (
-            <div key={step} style={{ animation: 'fadeUp 0.25s ease-out' }}>
+            <>
               <ProgressBar step={step} total={5} />
 
-              {/* ── Q1: Objetivo ── */}
-              {step === 1 && (
-                <div>
-                  <h2 className="text-xl font-black text-white mb-1">Qual é o seu objetivo principal?</h2>
-                  <p className="text-slate-500 text-sm mb-6">Vamos calibrar seu plano para o alvo certo.</p>
+              {/* Animated question wrapper — key changes trigger slide */}
+              <div
+                key={animKey}
+                style={{
+                  animation: dir === 'fwd'
+                    ? 'slideInRight 0.28s ease-out'
+                    : 'slideInLeft 0.28s ease-out',
+                }}
+              >
+                {/* Question header */}
+                <div className="flex items-start gap-3 mb-6">
+                  <span className="text-4xl mt-0.5 shrink-0">{q.emoji}</span>
+                  <div>
+                    <h2 className="text-xl font-black text-white leading-tight">{q.title}</h2>
+                    <p className="text-slate-500 text-sm mt-0.5">{q.sub}</p>
+                  </div>
+                </div>
+
+                {/* ── Q1: Curso — grid simétrico 2×3 ── */}
+                {step === 1 && (
                   <div className="flex flex-col gap-3">
-                    {OBJETIVOS.map(o => (
-                      <button
-                        key={o.id}
-                        onClick={() => { setObjetivo(o.id); next(); }}
-                        className="flex items-center gap-4 rounded-2xl px-5 py-4 text-left transition-all duration-150 hover:-translate-y-0.5"
-                        style={{
-                          background: objetivo === o.id ? `${VIOLET}20` : 'rgba(255,255,255,0.04)',
-                          border:     `1px solid ${objetivo === o.id ? VIOLET + '60' : 'rgba(255,255,255,0.08)'}`,
-                        }}
-                      >
-                        <span className="text-3xl">{o.icon}</span>
-                        <div>
-                          <p className="text-white font-bold text-base">{o.label}</p>
-                          <p className="text-slate-500 text-xs">{o.sub}</p>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* ── Q2: Curso ── */}
-              {step === 2 && (
-                <div>
-                  <h2 className="text-xl font-black text-white mb-1">Qual curso você sonha?</h2>
-                  <p className="text-slate-500 text-sm mb-6">Isso define o peso de cada área no seu plano.</p>
-                  <div className="grid grid-cols-2 gap-3">
-                    {CURSOS.map(c => (
-                      <button
-                        key={c.id}
-                        onClick={() => {
-                          setCurso(c.id);
-                          if (c.id !== 'Outro') next();
-                        }}
-                        className="flex items-center gap-3 rounded-2xl px-4 py-4 text-left transition-all duration-150 hover:-translate-y-0.5"
-                        style={{
-                          background: curso === c.id ? `${VIOLET}20` : 'rgba(255,255,255,0.04)',
-                          border:     `1px solid ${curso === c.id ? VIOLET + '60' : 'rgba(255,255,255,0.08)'}`,
-                        }}
-                      >
-                        <span className="text-2xl">{c.icon}</span>
-                        <span className="text-white font-semibold text-sm leading-tight">{c.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                  {curso === 'Outro' && (
-                    <div className="mt-4 flex gap-2">
-                      <input
-                        autoFocus
-                        value={cursoCustom}
-                        onChange={e => setCursoCustom(e.target.value)}
-                        onKeyDown={e => e.key === 'Enter' && cursoCustom.trim() && next()}
-                        placeholder="Qual curso? Ex: Psicologia, Pedagogia..."
-                        className="flex-1 rounded-xl px-4 py-3 text-sm text-white outline-none"
-                        style={{
-                          background:  'rgba(255,255,255,0.05)',
-                          border:      `1px solid ${VIOLET}50`,
-                          caretColor:  VIOLET,
-                        }}
-                      />
-                      <button
-                        onClick={() => cursoCustom.trim() && next()}
-                        disabled={!cursoCustom.trim()}
-                        className="px-4 py-3 rounded-xl font-bold text-sm text-white disabled:opacity-30"
-                        style={{ background: `linear-gradient(135deg, ${VIOLET}, #6d28d9)` }}
-                      >
-                        →
-                      </button>
+                    <div className="grid grid-cols-2 gap-3">
+                      {CURSOS.map(({ id, emoji, label, sub }) => {
+                        const sel = curso === id;
+                        return (
+                          <button
+                            key={id}
+                            onClick={() => { setCurso(id); if (id !== 'outro') advance(2); }}
+                            className="flex flex-col items-start gap-3 rounded-2xl p-4 text-left transition-all duration-150 hover:-translate-y-0.5 active:scale-[0.98]"
+                            style={{
+                              background: sel ? `${VIOLET}22` : 'rgba(255,255,255,0.04)',
+                              border:     `1px solid ${sel ? VIOLET + '70' : 'rgba(255,255,255,0.09)'}`,
+                              boxShadow:  sel ? `0 0 20px ${VIOLET}25` : 'none',
+                            }}
+                          >
+                            <span className="text-3xl">{emoji}</span>
+                            <div>
+                              <p className="text-white font-bold text-sm leading-snug">{label}</p>
+                              <p className="text-slate-500 text-xs mt-0.5">{sub}</p>
+                            </div>
+                          </button>
+                        );
+                      })}
                     </div>
-                  )}
-                </div>
-              )}
 
-              {/* ── Q3: Universidade ── */}
-              {step === 3 && (
-                <div>
-                  <h2 className="text-xl font-black text-white mb-1">Qual universidade você quer?</h2>
-                  <p className="text-slate-500 text-sm mb-6">Opcional — mas ajuda a personalizar ainda mais.</p>
-                  <input
-                    autoFocus
-                    value={universidade}
-                    onChange={e => setUniversidade(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && next()}
-                    placeholder="Ex: USP, UNICAMP, UFPE, ITA..."
-                    className="w-full rounded-xl px-4 py-3 text-sm text-white outline-none mb-4"
-                    style={{
-                      background: 'rgba(255,255,255,0.05)',
-                      border:     `1px solid rgba(255,255,255,0.12)`,
-                      caretColor: VIOLET,
-                    }}
-                  />
-                  <div className="flex gap-3">
-                    <button
-                      onClick={next}
-                      className="text-xs text-slate-500 hover:text-white transition-colors"
-                    >
-                      Pular →
-                    </button>
-                    <button
-                      onClick={next}
-                      className="flex-1 py-3 rounded-xl font-bold text-sm text-white"
-                      style={{ background: `linear-gradient(135deg, ${VIOLET}, #6d28d9)` }}
-                    >
-                      Continuar →
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* ── Q4: Dificuldades ── */}
-              {step === 4 && (
-                <div>
-                  <h2 className="text-xl font-black text-white mb-1">Onde você sente mais dificuldade?</h2>
-                  <p className="text-slate-500 text-sm mb-6">Selecione todas que se aplicam. Honestidade = vantagem.</p>
-                  <div className="flex flex-col gap-3 mb-6">
-                    {DIFICULDADES.map(d => {
-                      const sel = dificuldades.includes(d.id);
-                      return (
-                        <button
-                          key={d.id}
-                          onClick={() => toggleDiff(d.id)}
-                          className="flex items-center gap-4 rounded-2xl px-5 py-4 text-left transition-all duration-150"
+                    {/* Campo livre para "Outro Curso" */}
+                    {curso === 'outro' && (
+                      <div className="flex gap-2">
+                        <input
+                          autoFocus
+                          value={cursoCustom}
+                          onChange={e => setCursoCustom(e.target.value)}
+                          onKeyDown={e => e.key === 'Enter' && cursoCustom.trim() && advance(2)}
+                          placeholder="Qual curso? Ex: Nutrição, Arquitetura..."
+                          className="flex-1 rounded-xl px-4 py-3 text-sm text-white outline-none"
                           style={{
-                            background: sel ? `${VIOLET}20` : 'rgba(255,255,255,0.04)',
-                            border:     `1px solid ${sel ? VIOLET + '60' : 'rgba(255,255,255,0.08)'}`,
+                            background: 'rgba(255,255,255,0.05)',
+                            border:     `1px solid ${VIOLET}50`,
+                            caretColor: VIOLET,
+                          }}
+                        />
+                        <button
+                          onClick={() => cursoCustom.trim() && advance(2)}
+                          disabled={!cursoCustom.trim()}
+                          className="px-4 py-3 rounded-xl font-bold text-sm text-white disabled:opacity-30"
+                          style={{ background: `linear-gradient(135deg, ${VIOLET}, #6d28d9)` }}
+                        >
+                          →
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* ── Q2: Base ── */}
+                {step === 2 && (
+                  <div className="flex flex-col gap-3">
+                    {BASES.map(b => (
+                      <OptionBtn
+                        key={b.id}
+                        icon={b.icon} label={b.label} sub={b.sub}
+                        selected={base === b.id}
+                        onClick={() => { setBase(b.id); advance(3); }}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {/* ── Q3: Tempo ── */}
+                {step === 3 && (
+                  <div className="flex flex-col gap-3">
+                    {TEMPOS.map(t => (
+                      <OptionBtn
+                        key={t.id}
+                        icon={t.icon} label={t.label} sub={t.sub}
+                        selected={tempo === t.id}
+                        onClick={() => { setTempo(t.id); advance(4); }}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {/* ── Q4: Dificuldade ── */}
+                {step === 4 && (
+                  <div className="flex flex-col gap-3">
+                    {DIFICULDADES.map(d => (
+                      <OptionBtn
+                        key={d.id}
+                        icon={d.icon} label={d.label} sub={d.sub}
+                        selected={dificuldade === d.id}
+                        accentColor={VIOLET}
+                        onClick={() => { setDificuldade(d.id); advance(5); }}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {/* ── Q5: Experiência ── */}
+                {step === 5 && (
+                  <div>
+                    <div className="grid grid-cols-2 gap-3">
+                      {EXPERIENCIAS.map(e => (
+                        <button
+                          key={e.id}
+                          onClick={() => { setExperiencia(e.id); finish(e.id); }}
+                          className="flex flex-col items-start gap-2 rounded-2xl p-4 text-left transition-all duration-150 hover:-translate-y-0.5 active:scale-[0.98]"
+                          style={{
+                            background: experiencia === e.id ? `${NEON}18` : 'rgba(255,255,255,0.04)',
+                            border:     `1px solid ${experiencia === e.id ? NEON + '50' : 'rgba(255,255,255,0.09)'}`,
+                            boxShadow:  experiencia === e.id ? `0 0 20px ${NEON}20` : 'none',
                           }}
                         >
-                          <span className="text-2xl">{d.icon}</span>
-                          <div className="flex-1">
-                            <p className="text-white font-bold text-sm">{d.label}</p>
-                            <p className="text-slate-500 text-xs">{d.sub}</p>
+                          <span className="text-2xl">{e.icon}</span>
+                          <div>
+                            <p className="text-white font-bold text-sm leading-snug">{e.label}</p>
+                            <p className="text-slate-500 text-xs mt-0.5">{e.sub}</p>
                           </div>
-                          {sel && <span className="text-xs font-bold" style={{ color: NEON }}>✓</span>}
                         </button>
-                      );
-                    })}
+                      ))}
+                    </div>
+                    {error && (
+                      <p className="text-red-400 text-xs text-center mt-4">{error}</p>
+                    )}
                   </div>
-                  <button
-                    onClick={next}
-                    className="w-full py-3.5 rounded-xl font-black text-sm text-white transition-all duration-200 hover:-translate-y-0.5"
-                    style={{ background: `linear-gradient(135deg, ${VIOLET}, #6d28d9)`, boxShadow: `0 0 20px ${VIOLET}40` }}
-                  >
-                    Continuar →
-                  </button>
-                </div>
-              )}
-
-              {/* ── Q5: Meta diária ── */}
-              {step === 5 && (
-                <div>
-                  <h2 className="text-xl font-black text-white mb-1">Qual seu ritmo diário?</h2>
-                  <p className="text-slate-500 text-sm mb-6">Constância bate maratona. Escolha o que você consegue manter.</p>
-                  <div className="flex flex-col gap-3">
-                    {METAS.map(m => (
-                      <button
-                        key={m.id}
-                        onClick={() => { setMeta(m.id); finish(m.id); }}
-                        className="flex items-center justify-between rounded-2xl px-5 py-4 transition-all duration-150 hover:-translate-y-0.5"
-                        style={{
-                          background: meta === m.id ? `${NEON}18` : 'rgba(255,255,255,0.04)',
-                          border:     `1px solid ${meta === m.id ? NEON + '50' : 'rgba(255,255,255,0.08)'}`,
-                        }}
-                      >
-                        <div className="text-left">
-                          <p className="text-white font-black text-base">{m.label}</p>
-                          <p className="text-slate-500 text-xs mt-0.5">{m.sub}</p>
-                        </div>
-                        <span className="text-2xl">
-                          {m.id === 25 ? '⚡' : m.id === 50 ? '🎯' : m.id === 75 ? '🔥' : '💀'}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                  {error && (
-                    <p className="text-red-400 text-xs text-center mt-4">{error}</p>
-                  )}
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            </>
           )}
         </div>
 
         {/* Back button */}
         {!loading && step > 1 && (
           <button
-            onClick={() => setStep(s => s - 1)}
+            onClick={back}
             className="mt-4 w-full text-center text-xs text-slate-600 hover:text-slate-400 transition-colors"
           >
             ← Voltar
@@ -439,10 +538,11 @@ export default function SetupPage() {
       </div>
 
       <style>{`
-        @keyframes spin    { to { transform: rotate(360deg); } }
-        @keyframes fill    { from { width: 0; } to { width: 100%; } }
-        @keyframes blink   { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
-        @keyframes fadeUp  { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes spin         { to { transform: rotate(360deg); } }
+        @keyframes blink        { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+        @keyframes loadFill     { from { width: 0; } to { width: 100%; } }
+        @keyframes slideInRight { from { opacity: 0; transform: translateX(36px);  } to { opacity: 1; transform: translateX(0); } }
+        @keyframes slideInLeft  { from { opacity: 0; transform: translateX(-36px); } to { opacity: 1; transform: translateX(0); } }
       `}</style>
     </div>
   );

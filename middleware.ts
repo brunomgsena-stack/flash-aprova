@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { getAiLimiter, getGeneralLimiter, getClientIp, isAdminId } from '@/lib/ratelimit';
 
 // ─── Rotas com limite estrito (5 req/min) ─────────────────────────────────────
-const AI_ROUTES = ['/api/chat/tutor', '/api/chat/redacao', '/api/ai/grade-essay'];
+const AI_ROUTES = ['/api/chat/tutor', '/api/chat/redacao', '/api/ai/grade-essay', '/api/insights/briefing'];
 
 // ─── Rotas excluídas do rate limit (callbacks de terceiros) ───────────────────
 const EXCLUDED_API = ['/api/webhooks/', '/api/onboarding/'];
@@ -45,7 +45,19 @@ export async function middleware(request: NextRequest) {
   }
 
   if (user) {
-    const onboardingDone = user.user_metadata?.onboarding_completed === true;
+    // Fonte de verdade: tabela profiles no banco.
+    // Não confia no JWT (pode estar desatualizado após o onboarding).
+    let onboardingDone = false;
+
+    if (isProtected || isSetup) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('onboarding_completed')
+        .eq('id', user.id)
+        .single();
+
+      onboardingDone = profile?.onboarding_completed === true;
+    }
 
     // Usuário logado em rota protegida sem ter completado o setup → redireciona
     if (!onboardingDone && isProtected) {
