@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import AnkiComparison from '@/components/AnkiComparison';
 import NeuralEcosystemFlow from '@/components/NeuralEcosystemFlow';
 import TacticalOperations from '@/components/TacticalOperations';
@@ -19,36 +20,155 @@ const CARD_BG2  = 'rgba(255,255,255,0.05)';
 // ─── Subjects data ────────────────────────────────────────────────────────────
 const SUBJECTS = [
   {
-    icon: '🍎', name: 'Física',    area: 'Ciências da Natureza', count: '1.128',
+    icon: '⚛️', name: 'Física',    area: 'Ciências da Natureza', count: '1.128',
     color: ORANGE,
     topics: ['Mecânica Clássica', 'Eletromagnetismo', 'Termodinâmica', 'Óptica Geométrica', 'Ondulatória'],
+    sysTag: 'CINEMÁTICA SINCRONIZADA',
   },
   {
     icon: '⚗️', name: 'Química',   area: 'Ciências da Natureza', count: '892',
     color: NEON,
     topics: ['Estequiometria', 'Termoquímica', 'Ácidos e Bases', 'Eletroquímica', 'Orgânica e Funções'],
+    sysTag: 'REAÇÃO ESTÁVEL',
   },
   {
     icon: '🧬', name: 'Biologia',  area: 'Ciências da Natureza', count: '1.354',
     color: GREEN,
     topics: ['Ecologia', 'Genética e Evolução', 'Citologia', 'Embriologia', 'Fisiologia Humana'],
+    sysTag: 'BIONEXUS ATIVO',
   },
   {
     icon: '⏳', name: 'História',  area: 'Ciências Humanas',     count: '756',
     color: '#eab308',
     topics: ['Revolução Francesa', 'Brasil Colonial', 'Guerra Fria', 'Era Vargas', 'Ditadura Militar'],
+    sysTag: 'LINHA TEMPORAL INTEGRADA',
   },
   {
     icon: '🌐', name: 'Geografia', area: 'Ciências Humanas',     count: '634',
     color: '#10b981',
     topics: ['Geopolítica', 'Climatologia', 'Urbanização', 'Geopolítica Brasileira', 'Globalização'],
+    sysTag: 'GEOPROCESSAMENTO OK',
   },
   {
     icon: '📐', name: 'Matemática',area: 'Matemática',           count: '1.043',
     color: VIOLET,
     topics: ['Funções e Gráficos', 'Estatística e Probabilidade', 'Geometria Plana', 'Trigonometria', 'Análise Combinatória'],
+    sysTag: 'LOGIX: 100%',
   },
 ] as const;
+
+// ─── Subject card (Neural Hardware Module) ────────────────────────────────────
+function SubjectCard({ s }: { s: typeof SUBJECTS[number] }) {
+  const [hovered, setHovered] = useState(false);
+
+  return (
+    <div
+      className="relative rounded-2xl p-5 overflow-hidden cursor-default"
+      style={{
+        background:             'rgba(9,9,11,0.50)',
+        backdropFilter:         'blur(16px)',
+        WebkitBackdropFilter:   'blur(16px)',
+        border:                 `1px solid ${hovered ? s.color + '45' : 'rgba(255,255,255,0.07)'}`,
+        boxShadow:              hovered
+          ? `0 0 32px ${s.color}18, 0 0 60px ${s.color}08`
+          : 'none',
+        transform:              hovered ? 'translateY(-4px)' : 'translateY(0)',
+        transition:             'border-color 0.3s ease, box-shadow 0.3s ease, transform 0.25s ease',
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      {/* Top shimmer */}
+      <div
+        className="absolute inset-x-0 top-0 h-px pointer-events-none"
+        style={{
+          background: `linear-gradient(90deg, transparent, ${s.color}${hovered ? '70' : '30'}, transparent)`,
+          transition: 'opacity 0.3s',
+        }}
+      />
+
+      {/* Pulsing border overlay */}
+      {hovered && (
+        <motion.div
+          className="absolute inset-0 rounded-2xl pointer-events-none"
+          style={{ border: `1px solid ${s.color}` }}
+          animate={{ opacity: [0.25, 0.6, 0.25] }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+        />
+      )}
+
+      {/* ── Count — top, most prominent ── */}
+      <div className="mb-4">
+        <div className="flex items-baseline gap-1.5">
+          <span
+            className="text-2xl font-black tabular-nums leading-none"
+            style={{ color: s.color, fontFamily: 'ui-monospace, monospace' }}
+          >
+            {s.count}
+          </span>
+          <span
+            className="text-[10px] font-bold tracking-[0.2em]"
+            style={{ fontFamily: 'ui-monospace, monospace', color: 'rgba(255,255,255,0.22)' }}
+          >
+            CARDS
+          </span>
+        </div>
+      </div>
+
+      {/* ── Identity row ── */}
+      <div className="flex items-center gap-3 mb-4">
+        <div
+          className="w-9 h-9 rounded-xl flex items-center justify-center text-xl shrink-0"
+          style={{ background: `${s.color}12`, border: `1px solid ${s.color}28` }}
+        >
+          {s.icon}
+        </div>
+        <div>
+          <p className="text-white font-bold text-sm leading-tight">{s.name}</p>
+          <p className="text-slate-600 text-xs mt-0.5">{s.area}</p>
+        </div>
+      </div>
+
+      {/* ── Topics with neon bullet + stagger ── */}
+      <div className="flex flex-col gap-1.5 pb-8">
+        {s.topics.map((t, i) => (
+          <motion.div
+            key={t}
+            className="flex items-center gap-2"
+            animate={hovered
+              ? { opacity: 1, x: 0 }
+              : { opacity: 0.5, x: 0 }
+            }
+            transition={{ duration: 0.18, delay: hovered ? i * 0.05 : 0, ease: 'easeOut' }}
+          >
+            <span
+              className="text-[11px] shrink-0 leading-none"
+              style={{ color: s.color }}
+            >
+              •
+            </span>
+            <span className="text-xs text-slate-500 leading-snug">{t}</span>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* ── System tag — bottom right ── */}
+      <div className="absolute bottom-4 right-4">
+        <span
+          className="text-[9px] tracking-widest uppercase"
+          style={{
+            fontFamily: 'ui-monospace, monospace',
+            color: s.color,
+            opacity: hovered ? 0.75 : 0.35,
+            transition: 'opacity 0.3s',
+          }}
+        >
+          [ {s.sysTag} ]
+        </span>
+      </div>
+    </div>
+  );
+}
 
 // ─── Radar chart mockup ───────────────────────────────────────────────────────
 function RadarMockup() {
@@ -891,66 +1011,24 @@ export default function LandingPage() {
         {/* ═══════════════════════════ BIBLIOTECA ══ */}
         <section className="max-w-6xl mx-auto px-5 sm:px-10 pb-24">
           <div className="text-center mb-10">
-            <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: VIOLET }}>
-              Banco de Questões
+            <p
+              className="text-xs font-bold tracking-widest uppercase mb-3"
+              style={{ color: NEON, fontFamily: 'ui-monospace, monospace' }}
+            >
+              CONHECIMENTO BRUTO
             </p>
             <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">
-              +<Neon>5.700</Neon> flashcards táticos ENEM
+              +<Neon>5.700</Neon> Flashcards Táticos
             </h2>
             <p className="text-slate-500 text-base max-w-xl mx-auto">
-              Cada card foi gerado e validado por IA Especialista com base nas provas anteriores do ENEM — zero tempo perdido criando material.
+              Cada card foi validado por especialistas para garantir o filtro 80/20.{' '}
+              <span className="text-slate-300 font-medium">Zero tempo criando, 100% do tempo evoluindo.</span>
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {SUBJECTS.map(s => (
-              <div key={s.name}
-                className="relative rounded-2xl p-5 overflow-hidden transition-all duration-300 hover:-translate-y-1"
-                style={{
-                  background: CARD_BG2,
-                  backdropFilter: 'blur(20px)',
-                  WebkitBackdropFilter: 'blur(20px)',
-                  border: `1px solid rgba(124,58,237,0.20)`,
-                  boxShadow: `0 0 20px rgba(124,58,237,0.10), 0 0 0 1px rgba(124,58,237,0.06)`,
-                }}>
-                <div className="absolute inset-0 pointer-events-none"
-                  style={{ background: `radial-gradient(ellipse at top left, rgba(124,58,237,0.08) 0%, transparent 65%)` }} />
-                <div className="absolute inset-x-0 top-0 h-px"
-                  style={{ background: `linear-gradient(90deg, transparent, ${s.color}60, rgba(124,58,237,0.40), transparent)` }} />
-
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center text-2xl"
-                      style={{ background: `${s.color}18`, border: `1px solid ${s.color}30` }}>
-                      {s.icon}
-                    </div>
-                    <div>
-                      <p className="text-white font-bold text-sm">{s.name}</p>
-                      <p className="text-slate-600 text-xs">{s.area}</p>
-                    </div>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <p className="font-black text-base" style={{ color: s.color }}>{s.count}</p>
-                    <p className="text-slate-700 text-xs font-semibold tracking-wider">CARDS</p>
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  {s.topics.map(t => (
-                    <div key={t} className="flex items-center gap-2">
-                      <div className="w-1 h-1 rounded-full shrink-0" style={{ background: s.color }} />
-                      <span className="text-slate-500 text-xs">{t}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="mt-4 flex items-center gap-1.5">
-                  <span className="text-xs px-2 py-0.5 rounded-full font-medium"
-                    style={{ background: `${s.color}15`, color: s.color, border: `1px solid ${s.color}25` }}>
-                    IA-curado
-                  </span>
-                </div>
-              </div>
+              <SubjectCard key={s.name} s={s} />
             ))}
           </div>
         </section>
