@@ -1,0 +1,358 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import {
+  motion,
+  useMotionValue,
+  useMotionTemplate,
+  animate,
+  useInView,
+} from 'framer-motion';
+import { useRef } from 'react';
+
+// ─── Design tokens ─────────────────────────────────────────────────────────────
+const NEON   = '#00FF73';
+const VIOLET = '#7C3AED';
+
+// ─── Subject data ───────────────────────────────────────────────────────────────
+interface Subject {
+  icon:   string;
+  name:   string;
+  area:   string;
+  count:  number;
+  color:  string;
+  topics: readonly [string, string, string];
+  sysTag: string;
+}
+
+const SUBJECTS: Subject[] = [
+  {
+    icon: '🧬', name: 'Biologia',          area: 'Ciências da Natureza',
+    count: 1354, color: '#22c55e',
+    topics:   ['Citologia', 'Genética & Evolução', 'Ecologia'],
+    sysTag:   'BIONEXUS ATIVO',
+  },
+  {
+    icon: '⚛️', name: 'Física',             area: 'Ciências da Natureza',
+    count: 1128, color: '#f97316',
+    topics:   ['Mecânica Clássica', 'Eletromagnetismo', 'Termodinâmica'],
+    sysTag:   'CINEMÁTICA SINCRONIZADA',
+  },
+  {
+    icon: '⚗️', name: 'Química',            area: 'Ciências da Natureza',
+    count:  892, color: '#06b6d4',
+    topics:   ['Estequiometria', 'Termoquímica', 'Química Orgânica'],
+    sysTag:   'REAÇÃO ESTÁVEL',
+  },
+  {
+    icon: '📐', name: 'Matemática',         area: 'Matemática',
+    count: 1043, color: VIOLET,
+    topics:   ['Funções & Gráficos', 'Probabilidade', 'Geometria Plana'],
+    sysTag:   'LOGIX: 100%',
+  },
+  {
+    icon: '📚', name: 'Língua Portuguesa',  area: 'Linguagens & Códigos',
+    count:  743, color: '#a78bfa',
+    topics:   ['Morfologia', 'Sintaxe', 'Semântica & Texto'],
+    sysTag:   'ANÁLISE MORFOSSINTÁTICA OK',
+  },
+  {
+    icon: '📖', name: 'Literatura',         area: 'Linguagens & Códigos',
+    count:  512, color: '#34d399',
+    topics:   ['Romantismo', 'Realismo', 'Modernismo Brasileiro'],
+    sysTag:   'ESTILO DE ÉPOCA CARREGADO',
+  },
+  {
+    icon: '🎨', name: 'Artes',              area: 'Linguagens & Códigos',
+    count:  287, color: '#fb7185',
+    topics:   ['Modernismo Brasileiro', 'História da Arte', 'Linguagens Artísticas'],
+    sysTag:   'VANGUARDA ESTÁVEL',
+  },
+  {
+    icon: '⏳', name: 'História',           area: 'Ciências Humanas',
+    count:  756, color: '#eab308',
+    topics:   ['Era Vargas', 'Revolução Francesa', 'Brasil Colonial'],
+    sysTag:   'LINHA TEMPORAL INTEGRADA',
+  },
+  {
+    icon: '🌐', name: 'Geografia',          area: 'Ciências Humanas',
+    count:  634, color: '#10b981',
+    topics:   ['Geopolítica', 'Climatologia', 'Urbanização'],
+    sysTag:   'GEOPROCESSAMENTO OK',
+  },
+  {
+    icon: '🏛️', name: 'Filosofia',          area: 'Ciências Humanas',
+    count:  421, color: '#e879f9',
+    topics:   ['Platão & Aristóteles', 'Iluminismo', 'Contemporânea'],
+    sysTag:   'DIALÉTICA ATIVA',
+  },
+  {
+    icon: '👥', name: 'Sociologia',         area: 'Ciências Humanas',
+    count:  298, color: '#f59e0b',
+    topics:   ['Marx & Durkheim', 'Estratificação Social', 'Movimentos Sociais'],
+    sysTag:   'ESTRUTURA SOCIAL MAPEADA',
+  },
+];
+
+// ─── Border-beam (conic-gradient orbiting the card edge) ───────────────────────
+function BorderBeam({ color, active }: { color: string; active: boolean }) {
+  const angle   = useMotionValue(0);
+  const beamEnd = color + 'BB';   // static; computed once per card instance
+  const bg      = useMotionTemplate`conic-gradient(from ${angle}deg, transparent 77%, ${beamEnd} 87%, transparent 96%)`;
+
+  useEffect(() => {
+    if (!active) return;
+    const controls = animate(angle, [0, 360], {
+      duration: 2.5,
+      repeat:   Infinity,
+      ease:     'linear',
+    });
+    return () => controls.stop();
+  }, [active]);   // eslint-disable-line react-hooks/exhaustive-deps
+
+  return (
+    <motion.div
+      className="absolute pointer-events-none"
+      style={{
+        inset:        '-1px',
+        borderRadius: 'inherit',
+        background:   bg,
+        /* punch a border-width hole so only the edge shows */
+        WebkitMask:         'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+        WebkitMaskComposite: 'xor',
+        maskComposite:      'exclude',
+        padding:            '1px',
+      }}
+      animate={{ opacity: active ? 1 : 0 }}
+      transition={{ duration: 0.22 }}
+    />
+  );
+}
+
+// ─── Count-up ──────────────────────────────────────────────────────────────────
+function CountUp({ target, color }: { target: number; color: string }) {
+  const spanRef  = useRef<HTMLSpanElement>(null);
+  const inView   = useInView(spanRef, { once: true, margin: '-60px' });
+  const motionN  = useMotionValue(0);
+  const [shown, setShown] = useState(0);
+
+  useEffect(() => {
+    if (!inView) return;
+    const controls = animate(motionN, target, {
+      duration: 1.4,
+      ease: [0.22, 0.61, 0.36, 1],   // easeOutQuart
+      onUpdate: (v) => setShown(Math.floor(v)),
+    });
+    return () => controls.stop();
+  }, [inView, target]);   // eslint-disable-line react-hooks/exhaustive-deps
+
+  return (
+    <span
+      ref={spanRef}
+      className="text-2xl font-black tabular-nums leading-none"
+      style={{ color, fontFamily: 'ui-monospace, monospace' }}
+    >
+      {shown.toLocaleString('pt-BR')}
+    </span>
+  );
+}
+
+// ─── Vault card ─────────────────────────────────────────────────────────────────
+function VaultCard({ s, index }: { s: Subject; index: number }) {
+  const [hovered, setHovered] = useState(false);
+
+  return (
+    <motion.div
+      className="relative rounded-xl overflow-hidden cursor-default"
+      style={{
+        background:           'rgba(9,9,11,0.60)',
+        backdropFilter:       'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        border:               '1px solid rgba(255,255,255,0.08)',
+      }}
+      initial={{ opacity: 0, y: 18 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-40px' }}
+      transition={{ duration: 0.38, delay: index * 0.045, ease: 'easeOut' }}
+      whileHover={{
+        y: -4,
+        borderColor: s.color + '42',
+        boxShadow:   `0 0 28px ${s.color}1a, 0 0 56px ${s.color}0a`,
+        transition:  { duration: 0.22, ease: 'easeOut' },
+      }}
+      onHoverStart={() => setHovered(true)}
+      onHoverEnd={() => setHovered(false)}
+    >
+      <BorderBeam color={s.color} active={hovered} />
+
+      {/* Top shimmer line — brightens on hover */}
+      <motion.div
+        className="absolute inset-x-0 top-0 h-px pointer-events-none"
+        animate={{
+          background: hovered
+            ? `linear-gradient(90deg, transparent, ${s.color}70, transparent)`
+            : `linear-gradient(90deg, transparent, ${s.color}28, transparent)`,
+        }}
+        transition={{ duration: 0.3 }}
+      />
+
+      <div className="p-4 flex flex-col gap-3">
+
+        {/* ── Module header ── */}
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-center gap-2.5">
+            <div
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-base shrink-0"
+              style={{ background: `${s.color}12`, border: `1px solid ${s.color}2a` }}
+            >
+              {s.icon}
+            </div>
+            <div>
+              <p className="text-white font-bold text-sm leading-tight">{s.name}</p>
+              <p className="text-slate-600 text-[10px] mt-0.5 leading-none">{s.area}</p>
+            </div>
+          </div>
+
+          {/* Live indicator */}
+          <motion.div
+            className="flex items-center gap-1 shrink-0 mt-0.5"
+            animate={{ opacity: hovered ? 0.85 : 0.28 }}
+            transition={{ duration: 0.2 }}
+          >
+            <motion.div
+              className="w-1.5 h-1.5 rounded-full"
+              style={{ background: s.color }}
+              animate={{ opacity: [1, 0.3, 1] }}
+              transition={{ duration: 1.8, repeat: Infinity }}
+            />
+            <span
+              className="text-[8px] font-bold tracking-wider"
+              style={{ fontFamily: 'ui-monospace, monospace', color: s.color }}
+            >
+              LIVE
+            </span>
+          </motion.div>
+        </div>
+
+        {/* ── Count-up ── */}
+        <div className="flex items-baseline gap-1.5">
+          <CountUp target={s.count} color={s.color} />
+          <span
+            className="text-[8px] font-bold tracking-[0.2em] uppercase"
+            style={{ fontFamily: 'ui-monospace, monospace', color: 'rgba(255,255,255,0.2)' }}
+          >
+            CARDS
+          </span>
+        </div>
+
+        {/* ── Thin rule ── */}
+        <div className="h-px" style={{ background: 'rgba(255,255,255,0.05)' }} />
+
+        {/* ── Topic list — 3 items ── */}
+        <div className="flex flex-col gap-1.5">
+          {s.topics.map((topic, i) => (
+            <motion.div
+              key={topic}
+              className="flex items-center gap-1.5"
+              animate={hovered
+                ? { opacity: 1,   x: 2 }
+                : { opacity: 0.42, x: 0 }}
+              transition={{ duration: 0.16, delay: hovered ? i * 0.04 : 0, ease: 'easeOut' }}
+            >
+              <span
+                className="text-[10px] font-bold shrink-0 leading-none"
+                style={{ color: s.color }}
+              >
+                ›
+              </span>
+              <span className="text-[11px] text-slate-500 leading-snug">{topic}</span>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* ── System tag footer ── */}
+        <div className="pt-1">
+          <motion.span
+            className="text-[8px] tracking-[0.17em] uppercase block"
+            style={{ fontFamily: 'ui-monospace, monospace', color: s.color }}
+            animate={{ opacity: hovered ? 0.75 : 0.28 }}
+            transition={{ duration: 0.25 }}
+          >
+            [ {s.sysTag} ]
+          </motion.span>
+        </div>
+
+      </div>
+    </motion.div>
+  );
+}
+
+// ─── Main export ────────────────────────────────────────────────────────────────
+export default function CardVaultSection() {
+  return (
+    <section className="max-w-6xl mx-auto px-5 sm:px-10 pb-24">
+
+      {/* ── Section header ── */}
+      <div className="text-center mb-10">
+
+        {/* Badge */}
+        <div
+          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full mb-5 text-[10px] font-bold tracking-[0.22em] uppercase"
+          style={{
+            fontFamily: 'ui-monospace, monospace',
+            color:      NEON,
+            background: `${NEON}0d`,
+            border:     `1px solid ${NEON}28`,
+          }}
+        >
+          <span
+            className="inline-block w-1.5 h-1.5 rounded-full animate-pulse"
+            style={{ background: NEON }}
+          />
+          DATABASE: CONHECIMENTO BRUTO
+        </div>
+
+        <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">
+          +
+          <span
+            style={{
+              background:             `linear-gradient(90deg, ${NEON}, ${VIOLET})`,
+              WebkitBackgroundClip:   'text',
+              WebkitTextFillColor:    'transparent',
+            }}
+          >
+            5.700
+          </span>
+          {' '}Flashcards Táticos
+        </h2>
+
+        <p className="text-slate-500 text-base max-w-xl mx-auto mb-5">
+          O arsenal definitivo para dominar o 80/20 do ENEM.{' '}
+          <span className="text-slate-300 font-medium">
+            Zero tempo criando material, 100% do tempo evoluindo sua nota.
+          </span>
+        </p>
+
+        {/* Module count rule */}
+        <div className="flex items-center justify-center gap-3">
+          <div className="h-px w-12 sm:w-20" style={{ background: 'rgba(255,255,255,0.07)' }} />
+          <span
+            className="text-[9px] tracking-[0.22em] uppercase whitespace-nowrap"
+            style={{ fontFamily: 'ui-monospace, monospace', color: 'rgba(255,255,255,0.28)' }}
+          >
+            11 MÓDULOS CARREGADOS
+          </span>
+          <div className="h-px w-12 sm:w-20" style={{ background: 'rgba(255,255,255,0.07)' }} />
+        </div>
+      </div>
+
+      {/* ── Card grid ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {SUBJECTS.map((s, i) => (
+          <VaultCard key={s.name} s={s} index={i} />
+        ))}
+      </div>
+
+    </section>
+  );
+}

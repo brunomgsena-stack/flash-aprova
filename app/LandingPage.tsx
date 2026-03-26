@@ -8,6 +8,8 @@ import NeuralEcosystemFlow from '@/components/NeuralEcosystemFlow';
 import TacticalOperations from '@/components/TacticalOperations';
 import NeuralBrainMap from '@/components/NeuralBrainMap';
 import ReelsTestimonials from '@/components/ReelsTestimonials';
+import AiTutorsSection from '@/components/AiTutorsSection';
+import CardVaultSection from '@/components/CardVaultSection';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const GREEN  = '#22c55e';          // Biologia / 24h stat
@@ -682,113 +684,7 @@ export default function LandingPage() {
         <TacticalOperations />
 
         {/* ════════════════════════════ TUTOR IA ══ */}
-        <section className="max-w-4xl mx-auto px-5 sm:px-10 pb-24">
-          <div className="text-center mb-10">
-            <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: VIOLET }}>
-              7 Tutores IA Especialistas
-            </p>
-            <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">
-              Travou numa questão?{' '}
-              <span style={{
-                background: `linear-gradient(90deg, ${NEON}, ${VIOLET})`,
-                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-              }}>
-                A IA resolve em segundos.
-              </span>
-            </h2>
-            <p className="text-slate-500 text-base max-w-xl mx-auto">
-              Treinado exclusivamente nas provas do ENEM, cada Tutor IA explica conceitos de forma tática — disponível{' '}
-              <Neon>24h</Neon> por dia, sem julgamento.
-            </p>
-          </div>
-
-          <div className="relative rounded-3xl overflow-hidden"
-            style={{
-              background: CARD_BG,
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              border: `1px solid ${NEON}25`,
-              boxShadow: `0 0 40px rgba(124,58,237,0.14), 0 0 0 1px rgba(124,58,237,0.08)`,
-            }}>
-            <div className="absolute inset-x-0 top-0 h-px"
-              style={{ background: `linear-gradient(90deg, transparent, ${NEON}50, transparent)` }} />
-
-            {/* Chat header */}
-            <div className="flex items-center gap-3 px-5 py-4 border-b border-white/5">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center text-base"
-                style={{ background: `${NEON}20`, border: `1px solid ${NEON}40` }}>
-                🤖
-              </div>
-              <div>
-                <p className="text-white font-bold text-sm">Tutor IA · Química Especialista</p>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: NEON }} />
-                  <span className="text-slate-600 text-xs">Online · Analisando lacunas</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Messages */}
-            <div className="px-5 py-6 flex flex-col gap-4">
-
-              <div className="flex justify-end">
-                <div className="max-w-xs sm:max-w-sm rounded-2xl rounded-tr-sm px-4 py-3"
-                  style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.09)' }}>
-                  <p className="text-slate-300 text-sm leading-relaxed">
-                    Não consigo entender Estequiometria. Como calculo a proporção entre reagentes sem travar na prova?
-                  </p>
-                  <p className="text-slate-700 text-xs mt-1 text-right">Você · agora</p>
-                </div>
-              </div>
-
-              <div className="flex justify-start gap-3">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0 mt-1"
-                  style={{ background: `${NEON}20`, border: `1px solid ${NEON}40` }}>
-                  🤖
-                </div>
-                <div className="max-w-xs sm:max-w-md rounded-2xl rounded-tl-sm px-4 py-3"
-                  style={{ background: `${NEON}0e`, border: `1px solid ${NEON}25` }}>
-                  <p className="text-white text-sm font-semibold mb-2">
-                    Técnica dos 3 passos — memorize isso:
-                  </p>
-                  <div className="flex flex-col gap-2 text-sm text-slate-300 leading-relaxed">
-                    {[
-                      ['①', 'Escreva a equação balanceada.', 'Os coeficientes são as proporções. Ex: 2H₂ + O₂ → 2H₂O significa 2 mol de H₂ para 1 mol de O₂.'],
-                      ['②', 'Monte a regra de 3', 'usando massas molares (H=1, O=16, C=12...).'],
-                      ['③', 'Confira as unidades.', 'Se der mol → converta pra gramas multiplicando pela massa molar. Pronto.'],
-                    ].map(([num, bold, rest]) => (
-                      <div key={num} className="flex gap-2">
-                        <span style={{ color: NEON }} className="font-bold shrink-0">{num}</span>
-                        <span><span className="text-white font-semibold">{bold}</span>{' '}{rest}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="mt-3 px-3 py-2 rounded-xl text-xs"
-                    style={{ background: 'rgba(255,255,255,0.04)', border: 'rgba(255,255,255,0.06)' }}>
-                    <span style={{ color: NEON }} className="font-bold">💡 Macete ENEM:</span>
-                    <span className="text-slate-400 ml-1">Coeficiente = proporção = regra de 3. Nunca mude isso.</span>
-                  </div>
-                  <p className="text-slate-700 text-xs mt-2">Tutor IA · agora</p>
-                </div>
-              </div>
-
-              <div className="flex justify-start gap-3">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0"
-                  style={{ background: `${NEON}20`, border: `1px solid ${NEON}40` }}>
-                  🤖
-                </div>
-                <div className="px-4 py-3 rounded-2xl rounded-tl-sm flex items-center gap-1"
-                  style={{ background: `${NEON}0a`, border: `1px solid ${NEON}18` }}>
-                  {[0,0.2,0.4].map(delay => (
-                    <div key={delay} className="w-1.5 h-1.5 rounded-full animate-pulse"
-                      style={{ background: NEON, animationDelay: `${delay}s` }} />
-                  ))}
-                  <span className="text-slate-600 text-xs ml-2">Preparando seu próximo card...</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+        <AiTutorsSection />
 
         {/* ═══════════════════ CTA mid-page ══ */}
         <div className="flex justify-center pb-16">
@@ -796,29 +692,7 @@ export default function LandingPage() {
         </div>
 
         {/* ═══════════════════════════ BIBLIOTECA ══ */}
-        <section className="max-w-6xl mx-auto px-5 sm:px-10 pb-24">
-          <div className="text-center mb-10">
-            <p
-              className="text-xs font-bold tracking-widest uppercase mb-3"
-              style={{ color: NEON, fontFamily: 'ui-monospace, monospace' }}
-            >
-              CONHECIMENTO BRUTO
-            </p>
-            <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">
-              +<Neon>5.700</Neon> Flashcards Táticos
-            </h2>
-            <p className="text-slate-500 text-base max-w-xl mx-auto">
-              Cada card foi validado por especialistas para garantir o filtro 80/20.{' '}
-              <span className="text-slate-300 font-medium">Zero tempo criando, 100% do tempo evoluindo.</span>
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {SUBJECTS.map(s => (
-              <SubjectCard key={s.name} s={s} />
-            ))}
-          </div>
-        </section>
+        <CardVaultSection />
 
         {/* ════════════════════════════ FINAL CTA ══ */}
         <section className="max-w-4xl mx-auto px-5 sm:px-10 pb-24">
