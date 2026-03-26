@@ -7,6 +7,7 @@ import AnkiComparison from '@/components/AnkiComparison';
 import NeuralEcosystemFlow from '@/components/NeuralEcosystemFlow';
 import TacticalOperations from '@/components/TacticalOperations';
 import NeuralBrainMap from '@/components/NeuralBrainMap';
+import ReelsTestimonials from '@/components/ReelsTestimonials';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const GREEN  = '#22c55e';          // Biologia / 24h stat
@@ -399,132 +400,6 @@ function AuthorityBanner() {
   );
 }
 
-// ─── Testimonials data ────────────────────────────────────────────────────────
-const TESTIMONIALS = [
-  {
-    avatar: '👩‍⚕️',
-    name: 'Ana Lima',
-    course: 'Medicina na UFPE',
-    score: '940/1000',
-    text: 'Tentei o ENEM três vezes com métodos tradicionais. No quarto ano, com o FlashAprova, tirei 940 e entrei em Medicina. A revisão espaçada mudou minha retenção em Biologia e Química.',
-  },
-  {
-    avatar: '👨‍💻',
-    name: 'Carlos Mendes',
-    course: 'Engenharia na USP',
-    score: '920/1000',
-    text: 'Estudava 8h por dia e travava nas provas. Com o FlashAprova, reduzi para 4h e meu domínio em Matemática e Física foi de 40% para 89% em dois meses. Aprovado na Poli.',
-  },
-  {
-    avatar: '👩‍⚖️',
-    name: 'Beatriz Santos',
-    course: 'Direito na Unicamp',
-    score: '910/1000',
-    text: 'O Tutor IA de Redação foi decisivo. Tinha terror de dissertação. Após 30 feedbacks personalizados, tirei 880 na redação. Entrei no Direito da Unicamp no primeiro ano.',
-  },
-] as const;
-
-// ─── Testimonials Mural ────────────────────────────────────────────────────────
-function TestimonialsMural() {
-  return (
-    <section className="max-w-6xl mx-auto px-5 sm:px-10 pb-24">
-      <div className="text-center mb-10">
-        <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: NEON }}>
-          Resultados Reais
-        </p>
-        <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">
-          Quem usou, passou.{' '}
-          <span style={{
-            background: `linear-gradient(90deg, ${NEON}, ${VIOLET})`,
-            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-          }}>
-            Veja o que eles dizem:
-          </span>
-        </h2>
-      </div>
-
-      {/* Video container */}
-      <div
-        className="relative rounded-2xl overflow-hidden mb-12 mx-auto cursor-pointer group"
-        style={{
-          maxWidth: 640,
-          aspectRatio: '16/9',
-          background: 'linear-gradient(135deg, rgba(124,58,237,0.15) 0%, rgba(0,255,115,0.05) 100%)',
-          border: `1px solid ${NEON}30`,
-          boxShadow: `0 0 60px rgba(0,255,115,0.10)`,
-        }}
-      >
-        <div className="absolute inset-0"
-          style={{ background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.01) 2px, rgba(255,255,255,0.01) 4px)' }} />
-
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div
-            className="relative z-10 flex items-center justify-center w-20 h-20 rounded-full transition-transform duration-300 group-hover:scale-110"
-            style={{
-              background: `${NEON}20`,
-              border: `2px solid ${NEON}`,
-              boxShadow: `0 0 30px ${NEON}50, 0 0 60px ${NEON}20`,
-            }}
-          >
-            <svg width="32" height="32" viewBox="0 0 24 24" fill={NEON} style={{ marginLeft: 4 }}>
-              <polygon points="5,3 19,12 5,21" />
-            </svg>
-          </div>
-        </div>
-
-        <div className="absolute bottom-4 right-4 px-2 py-1 rounded-md text-xs font-bold text-white"
-          style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}>
-          2:34
-        </div>
-
-        <div className="absolute top-4 left-4 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold"
-          style={{ background: `${NEON}20`, border: `1px solid ${NEON}40`, color: NEON }}>
-          <span className="inline-block w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: NEON }} />
-          Depoimentos reais
-        </div>
-      </div>
-
-      {/* Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        {TESTIMONIALS.map(t => (
-          <div
-            key={t.name}
-            className="relative rounded-2xl p-6 overflow-hidden flex flex-col gap-4"
-            style={{
-              background: 'rgba(255,255,255,0.03)',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              border: `1px solid rgba(124,58,237,0.40)`,
-              boxShadow: `0 0 30px rgba(124,58,237,0.15), inset 0 1px 0 rgba(255,255,255,0.04)`,
-            }}
-          >
-            <div className="absolute inset-x-0 top-0 h-px"
-              style={{ background: `linear-gradient(90deg, transparent, ${VIOLET}80, transparent)` }} />
-            <div className="absolute top-4 right-5 text-5xl font-black leading-none select-none"
-              style={{ color: `${VIOLET}25` }}>"</div>
-
-            <p className="text-slate-300 text-sm leading-relaxed relative z-10">"{t.text}"</p>
-
-            <div className="flex items-center gap-3 mt-auto pt-3 border-t border-white/5">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center text-xl shrink-0"
-                style={{ background: `${VIOLET}20`, border: `1px solid ${VIOLET}40` }}>
-                {t.avatar}
-              </div>
-              <div>
-                <p className="text-white font-bold text-sm">{t.name}</p>
-                <p className="text-slate-500 text-xs">{t.course}</p>
-              </div>
-              <div className="ml-auto text-right shrink-0">
-                <p className="font-black text-sm" style={{ color: NEON }}>{t.score}</p>
-                <p className="text-slate-700 text-xs">ENEM</p>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
 
 // ─── FAQ data ─────────────────────────────────────────────────────────────────
 const FAQ_ITEMS = [
@@ -992,7 +867,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <TestimonialsMural />
+        <ReelsTestimonials />
 
         <FAQAccordion />
 
