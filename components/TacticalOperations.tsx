@@ -448,10 +448,17 @@ export default function TacticalOperations() {
                   : 'rgba(255,255,255,0.025)',
                 backdropFilter:       'blur(12px)',
                 WebkitBackdropFilter: 'blur(12px)',
-                border:               `1px solid ${activeWidget === b.widget && b.widget ? b.color + '30' : b.color + '15'}`,
-                borderTop:            `2px solid ${b.color}40`,
-                boxShadow:            activeWidget === b.widget && b.widget ? `0 0 20px ${b.color}15` : 'none',
-                transition:           'background 0.3s, border-color 0.3s, box-shadow 0.3s',
+                borderStyle:         'solid',
+                borderTopWidth:      '2px',
+                borderTopColor:      `${b.color}40`,
+                borderLeftWidth:     '1px',
+                borderRightWidth:    '1px',
+                borderBottomWidth:   '1px',
+                borderLeftColor:     activeWidget === b.widget && b.widget ? `${b.color}30` : `${b.color}15`,
+                borderRightColor:    activeWidget === b.widget && b.widget ? `${b.color}30` : `${b.color}15`,
+                borderBottomColor:   activeWidget === b.widget && b.widget ? `${b.color}30` : `${b.color}15`,
+                boxShadow:           activeWidget === b.widget && b.widget ? `0 0 20px ${b.color}15` : 'none',
+                transition:          'background 0.3s, border-color 0.3s, box-shadow 0.3s',
               }}
               initial={{ opacity: 0, x: 24 }}
               animate={inView ? { opacity: 1, x: 0 } : { opacity: 0, x: 24 }}
