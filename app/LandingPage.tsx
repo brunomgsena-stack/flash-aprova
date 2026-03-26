@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import AnkiComparison from '@/components/AnkiComparison';
 import NeuralEcosystemFlow from '@/components/NeuralEcosystemFlow';
+import TacticalOperations from '@/components/TacticalOperations';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const GREEN  = '#22c55e';          // Biologia / 24h stat
@@ -769,6 +770,9 @@ export default function LandingPage() {
 
         {/* ════════════════════════ ECOSSISTEMA — Neural Ciclo FlashAprova ══ */}
         <NeuralEcosystemFlow />
+
+        {/* ════════════════════════ CENTRAL DE OPERAÇÕES ══ */}
+        <TacticalOperations />
 
         {/* ════════════════════════════ TUTOR IA ══ */}
         <section className="max-w-4xl mx-auto px-5 sm:px-10 pb-24">
