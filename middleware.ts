@@ -6,7 +6,7 @@ import { getAiLimiter, getGeneralLimiter, getClientIp, isAdminId } from '@/lib/r
 const AI_ROUTES = ['/api/chat/tutor', '/api/chat/redacao', '/api/ai/grade-essay'];
 
 // ─── Rotas excluídas do rate limit (callbacks de terceiros) ───────────────────
-const EXCLUDED_API = ['/api/webhooks/'];
+const EXCLUDED_API = ['/api/webhooks/', '/api/onboarding/'];
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -37,9 +37,25 @@ export async function middleware(request: NextRequest) {
   const isProtected = ['/dashboard', '/admin', '/study', '/subscription'].some((p) =>
     pathname.startsWith(p),
   );
+  const isSetup = pathname.startsWith('/setup');
 
-  if (isProtected && !user) {
+  // Rotas protegidas e /setup exigem login
+  if ((isProtected || isSetup) && !user) {
     return NextResponse.redirect(new URL('/login', request.url));
+  }
+
+  if (user) {
+    const onboardingDone = user.user_metadata?.onboarding_completed === true;
+
+    // Usuário logado em rota protegida sem ter completado o setup → redireciona
+    if (!onboardingDone && isProtected) {
+      return NextResponse.redirect(new URL('/setup', request.url));
+    }
+
+    // Usuário que já completou o setup tentando acessar /setup → redireciona
+    if (onboardingDone && isSetup) {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
   }
 
   const authOnlyPages = ['/login', '/forgot-password', '/update-password'];

@@ -7,7 +7,6 @@ import ChartsRow from './ChartsRow';
 import SubjectsWithDomain from './SubjectsWithDomain';
 import DynamicStatus from './DynamicStatus';
 import PantheonInsights from './PantheonInsights';
-import OnboardingWizard from './OnboardingWizard';
 
 type Subject = {
   id:       string;
@@ -63,9 +62,6 @@ export default async function DashboardPage() {
         </h1>
         <DynamicStatus />
       </div>
-
-      {/* ── Onboarding (mostra apenas na 1ª vez) ─────────────────────────── */}
-      <OnboardingWizard />
 
       {/* ── Panteão: Insights + botões de ação ──────────────────────────── */}
       <PantheonInsights />
