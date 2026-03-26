@@ -492,7 +492,7 @@ export default function PantheonInsights() {
   useEffect(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { setState({ status: 'ready', data: { insight: fallbackInsight(), maturePct: 0, streak: 0, plan: 'flash', profile: {}, areaScores: {} } }); return; }
+      if (!user) { setState({ status: 'ready', data: { insight: fallbackInsight(), maturePct: 0, streak: 0, plan: 'flash', profile: {}, areaScores: {}, topLapseInfo: null, totalDue: 0 } }); return; }
 
       // Fetch plan + data + profile in parallel
       const [planInfo, cardsRes, progressRes, countRes, profileRes] = await Promise.all([
