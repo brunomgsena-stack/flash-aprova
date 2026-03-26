@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import AnkiComparison from '@/components/AnkiComparison';
 import NeuralEcosystemFlow from '@/components/NeuralEcosystemFlow';
 import TacticalOperations from '@/components/TacticalOperations';
+import NeuralBrainMap from '@/components/NeuralBrainMap';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const GREEN  = '#22c55e';          // Biologia / 24h stat
@@ -796,97 +797,8 @@ export default function LandingPage() {
           <AnkiComparison />
         </section>
 
-        {/* ════════════════════════ A SOLUÇÃO — Dashboard ══ */}
-        <section className="max-w-6xl mx-auto px-5 sm:px-10 pb-24">
-          <div className="text-center mb-10">
-            <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: NEON }}>
-              A Solução
-            </p>
-            <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">
-              A IA mapeia seu cérebro{' '}
-              <span style={{
-                background: `linear-gradient(90deg, ${NEON}, ${VIOLET})`,
-                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-              }}>em tempo real</span>
-            </h2>
-            <p className="text-slate-500 text-base max-w-xl mx-auto">
-              Visualize exatamente o que você domina, o que está esquecendo e quando revisar cada tópico — sem esforço manual.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {/* Radar */}
-            <div className="relative rounded-2xl p-5 overflow-hidden"
-              style={{
-                background: CARD_BG2,
-                border: `1px solid ${NEON}28`,
-                backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-                boxShadow: `0 0 30px rgba(124,58,237,0.12), 0 0 0 1px rgba(124,58,237,0.08)`,
-              }}>
-              <div className="absolute inset-0 pointer-events-none"
-                style={{ background: `radial-gradient(ellipse at top right, ${NEON}0d 0%, transparent 65%)` }} />
-              <div className="absolute inset-x-0 top-0 h-px"
-                style={{ background: `linear-gradient(90deg, transparent, ${NEON}70, transparent)` }} />
-              <p className="text-xs font-bold tracking-widest uppercase mb-1" style={{ color: NEON }}>Radar ENEM</p>
-              <p className="text-slate-600 text-xs mb-4">Equilíbrio de domínio por disciplina</p>
-              <RadarMockup />
-              <p className="text-slate-600 text-xs mt-3 text-center">
-                ● Domínio atual &nbsp;&nbsp;○ Meta
-              </p>
-            </div>
-
-            {/* Heatmap */}
-            <div className="relative rounded-2xl p-5 overflow-hidden"
-              style={{
-                background: CARD_BG2,
-                border: `1px solid rgba(124,58,237,0.25)`,
-                backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-                boxShadow: `0 0 30px rgba(124,58,237,0.12), 0 0 0 1px rgba(124,58,237,0.08)`,
-              }}>
-              <div className="absolute inset-0 pointer-events-none"
-                style={{ background: 'radial-gradient(ellipse at top left, rgba(124,58,237,0.10) 0%, transparent 65%)' }} />
-              <div className="absolute inset-x-0 top-0 h-px"
-                style={{ background: `linear-gradient(90deg, transparent, ${NEON}50, ${VIOLET}40, transparent)` }} />
-              <p className="text-xs font-bold tracking-widest uppercase mb-1" style={{ color: NEON }}>Consistência</p>
-              <p className="text-slate-600 text-xs mb-4">Heatmap de revisões · últimos 3 meses</p>
-              <div className="overflow-x-auto">
-                <HeatmapMockup />
-              </div>
-              <div className="flex items-center gap-2 mt-4">
-                <span className="text-slate-700 text-xs">Menos</span>
-                {[0.05, 0.25, 0.50, 0.75, 1.0].map(a => (
-                  <div key={a} style={{ width:10, height:10, borderRadius:2,
-                    background: `rgba(0,255,115,${a})` }} />
-                ))}
-                <span className="text-slate-700 text-xs">Mais</span>
-              </div>
-            </div>
-
-            {/* Line chart */}
-            <div className="relative rounded-2xl p-5 overflow-hidden"
-              style={{
-                background: CARD_BG2,
-                border: `1px solid ${VIOLET}25`,
-                backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-                boxShadow: `0 0 30px rgba(124,58,237,0.12), 0 0 0 1px rgba(124,58,237,0.08)`,
-              }}>
-              <div className="absolute inset-0 pointer-events-none"
-                style={{ background: `radial-gradient(ellipse at bottom right, ${VIOLET}09 0%, transparent 65%)` }} />
-              <div className="absolute inset-x-0 top-0 h-px"
-                style={{ background: `linear-gradient(90deg, transparent, ${VIOLET}60, transparent)` }} />
-              <p className="text-xs font-bold tracking-widest uppercase mb-1" style={{ color: NEON }}>Previsão de Revisão</p>
-              <p className="text-slate-600 text-xs mb-4">Evolução do domínio por semana</p>
-              <LineMockup />
-              <div className="flex justify-between text-slate-700 text-xs mt-2">
-                <span>Semana 1</span><span>→</span><span>Hoje</span>
-              </div>
-              <div className="mt-3 flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full" style={{ background: NEON }} />
-                <span className="text-slate-500 text-xs">% Domínio acumulado (IA)</span>
-              </div>
-            </div>
-          </div>
-        </section>
+        {/* ════════════════════════ A SOLUÇÃO — Neural Brain Map ══ */}
+        <NeuralBrainMap />
 
         {/* ════════════════════════ ECOSSISTEMA — Neural Ciclo FlashAprova ══ */}
         <NeuralEcosystemFlow />
