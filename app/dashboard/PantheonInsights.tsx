@@ -14,6 +14,7 @@ import {
   type TutorConfig,
 } from '@/lib/tutor-config';
 import AiProUpgradeModal from '@/components/AiProUpgradeModal';
+import StudyPlanModal from './StudyPlanModal';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -80,12 +81,20 @@ type FlashInsight = {
   ctaHref:    string;
 };
 
+type UserProfile = {
+  target_course?:      string | null;
+  target_university?:  string | null;
+  difficulty_subjects?: string[] | null;
+};
+
 /** Single state shape — all plans now get real data. */
 type InsightData = {
-  insight:   FlashInsight;
-  maturePct: number;
-  streak:    number;
-  plan:      Plan;
+  insight:    FlashInsight;
+  maturePct:  number;
+  streak:     number;
+  plan:       Plan;
+  profile:    UserProfile;
+  areaScores: Record<string, number>;
 };
 
 type State =
@@ -102,8 +111,10 @@ function generateInsight(params: {
   streak:        number;
   totalReviews:  number;
   hasAnyHistory: boolean;
+  targetCourse?: string | null;
 }): FlashInsight {
-  const { maturePct, areaScores, topLapseDeck, totalDue, streak, totalReviews, hasAnyHistory } = params;
+  const { maturePct, areaScores, topLapseDeck, totalDue, streak, totalReviews, hasAnyHistory, targetCourse } = params;
+  const courseTag = targetCourse ? `, futuro(a) de ${targetCourse}` : '';
 
   // Cenário D — zero edital
   if (maturePct === 0 && totalDue > 0) {
@@ -121,7 +132,7 @@ function generateInsight(params: {
   if (streak === 0 && hasAnyHistory) {
     return {
       type:       'no-consistency',
-      line1:      'Soldado, seu radar está perdendo sinal.',
+      line1:      `Soldado${courseTag}, seu radar está perdendo sinal.`,
       line2:      'A aprovação não é um evento, é um hábito. Sem consistência, o Dr. Chronos não pode salvar sua nota. Comece sua fila de hoje AGORA. 🛡️',
       specialist: getTutorById('dr-chronos'),
       ctaLabel:   'Retomar Sequência Agora',
@@ -178,11 +189,12 @@ function generateInsight(params: {
   }
 
   // Positivo rotativo — muda a cada revisão concluída
+  const courseCall = targetCourse ? `, futuro(a) ${targetCourse}` : '';
   const positives: [string, string][] = [
-    ['Consistência ativa. Ritmo dentro do esperado.',        'Continue o ciclo — a aprovação é construída revisão a revisão. ⚡'],
-    ['Nenhuma brecha crítica detectada no radar.',           'Mantenha a frequência. A memória se consolida com repetição, não com intensidade. 🧠'],
-    ['Sua base está sendo erguida tijolo a tijolo.',         'Cada card revisado hoje é uma questão garantida no dia da prova. 🏹'],
-    ['Operação em andamento. Sem alertas no momento.',       'O General aguarda seu próximo movimento. Avance para o próximo deck. ⚔️'],
+    ['Consistência ativa. Ritmo dentro do esperado.',              `Continue o ciclo${courseCall} — a aprovação é construída revisão a revisão. ⚡`],
+    ['Nenhuma brecha crítica detectada no radar.',                 'Mantenha a frequência. A memória se consolida com repetição, não com intensidade. 🧠'],
+    [`O tempo tá passando${courseCall}! Já fez sua RevisãoFlash?`, 'Cada card revisado hoje é uma questão garantida no dia da prova. 🏹'],
+    ['Operação em andamento. Sem alertas no momento.',             'O General aguarda seu próximo movimento. Avance para o próximo deck. ⚔️'],
   ];
   const [l1, l2] = positives[totalReviews % positives.length];
   return { type: 'positive', line1: l1, line2: l2, specialist: null, ctaLabel: 'Ir para Fila de Revisão', ctaHref: '/dashboard' };
@@ -402,21 +414,29 @@ function StatsBadges({ maturePct, streak }: { maturePct: number; streak: number 
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function PantheonInsights() {
-  const [state, setState]         = useState<State>({ status: 'loading' });
-  const [showModal, setShowModal] = useState(false);
+  const [state, setState]               = useState<State>({ status: 'loading' });
+  const [showModal, setShowModal]       = useState(false);
+  const [showPlanModal, setShowPlanModal] = useState(false);
 
   useEffect(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { setState({ status: 'ready', data: { insight: fallbackInsight(), maturePct: 0, streak: 0, plan: 'flash' } }); return; }
+      if (!user) { setState({ status: 'ready', data: { insight: fallbackInsight(), maturePct: 0, streak: 0, plan: 'flash', profile: {}, areaScores: {} } }); return; }
 
-      // Fetch plan + data in parallel for all users
-      const [planInfo, cardsRes, progressRes, countRes] = await Promise.all([
+      // Fetch plan + data + profile in parallel
+      const [planInfo, cardsRes, progressRes, countRes, profileRes] = await Promise.all([
         fetchUserPlan(user.id),
         supabase.from('cards').select('id, decks(id, title, subject_id, subjects(id, title, category))'),
         supabase.from('user_progress').select('card_id, lapses, interval_days, next_review, history').eq('user_id', user.id),
         supabase.from('cards').select('id', { count: 'exact', head: true }),
+        supabase.from('profiles').select('target_course, target_university, difficulty_subjects').eq('id', user.id).single(),
       ]);
+
+      const profile: UserProfile = {
+        target_course:       (profileRes.data as UserProfile | null)?.target_course ?? null,
+        target_university:   (profileRes.data as UserProfile | null)?.target_university ?? null,
+        difficulty_subjects: ((profileRes.data as UserProfile | null)?.difficulty_subjects as string[]) ?? [],
+      };
 
       const plan  = planInfo.plan;
       const rows  = progressRes.data ?? [];
@@ -497,15 +517,20 @@ export default function PantheonInsights() {
       }
 
       // ── generate insight ──────────────────────────────────────────────────
-      const insight = generateInsight({ maturePct, areaScores, topLapseDeck, totalDue, streak, totalReviews, hasAnyHistory });
-      setState({ status: 'ready', data: { insight, maturePct, streak, plan } });
+      const insight = generateInsight({ maturePct, areaScores, topLapseDeck, totalDue, streak, totalReviews, hasAnyHistory, targetCourse: profile.target_course });
+
+      // Serialize areaScores for StudyPlanModal
+      const areaScoresObj: Record<string, number> = {};
+      for (const [k, v] of areaScores.entries()) areaScoresObj[k] = v;
+
+      setState({ status: 'ready', data: { insight, maturePct, streak, plan, profile, areaScores: areaScoresObj } });
     }
     load();
   }, []);
 
   if (state.status === 'loading') return <Skeleton />;
 
-  const { insight, maturePct, streak, plan } = state.data;
+  const { insight, maturePct, streak, plan, profile, areaScores } = state.data;
   const isPro       = plan === 'proai_plus';
   const flashTutor  = getFlashTutor();
   const borderColor = isPro ? `${NEON_PURPLE}55` : `${NEON_PURPLE}28`;
@@ -513,7 +538,16 @@ export default function PantheonInsights() {
   return (
     <>
       <style>{STYLE}</style>
-      {showModal && <AiProUpgradeModal onClose={() => setShowModal(false)} />}
+      {showModal     && <AiProUpgradeModal onClose={() => setShowModal(false)} />}
+      {showPlanModal && (
+        <StudyPlanModal
+          course={profile.target_course ?? null}
+          university={profile.target_university ?? null}
+          difficulties={(profile.difficulty_subjects as string[]) ?? []}
+          areaScores={areaScores}
+          onClose={() => setShowPlanModal(false)}
+        />
+      )}
 
       <div className="max-w-5xl mx-auto mb-10">
         <div
@@ -592,6 +626,49 @@ export default function PantheonInsights() {
 
             {/* Stats — pro only */}
             {isPro && <StatsBadges maturePct={maturePct} streak={streak} />}
+          </div>
+
+          {/* ── Action buttons ─────────────────────────────────────────────── */}
+          <div className="relative z-10 flex gap-3 mt-5">
+            {/* Relatório Inteligente */}
+            <Link
+              href="/dashboard/settings"
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 hover:-translate-y-0.5"
+              style={{
+                background: 'transparent',
+                border:     `1px solid ${NEON_PURPLE}55`,
+                color:      NEON_PURPLE,
+              }}
+            >
+              📊 Relatório Inteligente
+            </Link>
+
+            {/* Plano de Estudos */}
+            {isPro ? (
+              <button
+                onClick={() => setShowPlanModal(true)}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 hover:-translate-y-0.5"
+                style={{
+                  background: `linear-gradient(135deg, #10B981, #059669)`,
+                  color:      '#fff',
+                  boxShadow:  '0 0 16px rgba(16,185,129,0.30)',
+                }}
+              >
+                🗺️ Plano de Estudos
+              </button>
+            ) : (
+              <button
+                onClick={() => setShowModal(true)}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 hover:-translate-y-0.5"
+                style={{
+                  background: 'rgba(16,185,129,0.10)',
+                  border:     '1px solid rgba(16,185,129,0.30)',
+                  color:      'rgba(255,255,255,0.40)',
+                }}
+              >
+                🔒 Plano de Estudos
+              </button>
+            )}
           </div>
         </div>
       </div>
