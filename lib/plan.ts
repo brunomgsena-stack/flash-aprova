@@ -19,27 +19,39 @@ export function planLabel(plan: Plan): string {
 }
 
 export async function fetchUserPlan(userId: string): Promise<PlanInfo> {
-  const { data } = await supabase
-    .from('user_stats')
-    .select('plan, plan_expires_at')
-    .eq('user_id', userId)
-    .maybeSingle();
+  // Queries paralelas: plano + role (admin bypass)
+  const [statsResult, profileResult] = await Promise.all([
+    supabase
+      .from('user_stats')
+      .select('plan, plan_expires_at')
+      .eq('user_id', userId)
+      .maybeSingle(),
+    supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', userId)
+      .maybeSingle(),
+  ]);
 
-  const rawPlan   = (data?.plan as Plan | undefined) ?? 'flash';
+  // Admin bypass: acesso total independente do plano cadastrado
+  if (profileResult.data?.role === 'admin') {
+    return { plan: 'proai_plus', expiresAt: null, daysLeft: null };
+  }
+
+  const data     = statsResult.data;
+  const rawPlan  = (data?.plan as Plan | undefined) ?? 'flash';
   const expiresAt = data?.plan_expires_at ? new Date(data.plan_expires_at) : null;
 
-  // Se o plano tem data de expiração e já passou, rebaixa para 'flash'
+  // Plano expirado → rebaixa para 'flash'
   const now = new Date();
   if (expiresAt && expiresAt < now) {
     return { plan: 'flash', expiresAt, daysLeft: 0 };
   }
-
-  const plan = rawPlan;
 
   let daysLeft: number | null = null;
   if (expiresAt) {
     daysLeft = Math.max(0, Math.ceil((expiresAt.getTime() - now.getTime()) / 864e5));
   }
 
-  return { plan, expiresAt, daysLeft };
+  return { plan: rawPlan, expiresAt, daysLeft };
 }

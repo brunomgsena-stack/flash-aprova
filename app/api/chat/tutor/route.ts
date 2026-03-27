@@ -34,9 +34,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Não autenticado.' }, { status: 401 });
   }
 
-  // ── Plan check ──────────────────────────────────────────────────────────────
-  const planInfo = await fetchUserPlan(user.id);
-  if (planInfo.plan !== 'proai_plus') {
+  // ── Plan check + Admin bypass ────────────────────────────────────────────────
+  const [planInfo, profileResult] = await Promise.all([
+    fetchUserPlan(user.id),
+    serverClient.from('profiles').select('role').eq('id', user.id).maybeSingle(),
+  ]);
+  const hasAccess =
+    planInfo.plan === 'proai_plus' || profileResult.data?.role === 'admin';
+  if (!hasAccess) {
     return NextResponse.json({ error: 'Recurso exclusivo do plano AiPro+.' }, { status: 403 });
   }
 
