@@ -9,6 +9,7 @@ import TacticalOperations from '@/components/TacticalOperations';
 import NeuralBrainMap from '@/components/NeuralBrainMap';
 import ReelsTestimonials from '@/components/ReelsTestimonials';
 import AiTutorsSection from '@/components/AiTutorsSection';
+import NormaRedacaoSection from '@/components/NormaRedacaoSection';
 import CardVaultSection from '@/components/CardVaultSection';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
@@ -685,6 +686,9 @@ export default function LandingPage() {
 
         {/* ════════════════════════════ TUTOR IA ══ */}
         <AiTutorsSection />
+
+        {/* ═══════════════════════ NORMA · REDAÇÃO ══ */}
+        <NormaRedacaoSection />
 
         {/* ═══════════════════ CTA mid-page ══ */}
         <div className="flex justify-center pb-16">
