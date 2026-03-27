@@ -5,648 +5,578 @@ import { motion, animate, useMotionValue, useInView } from 'framer-motion';
 
 // ─── Design tokens ─────────────────────────────────────────────────────────────
 const GOLD    = '#FFD700';
-const EMERALD = '#00F385';
+const NEON    = '#00FF73';
+const EMERALD = '#10b981';
 const AMBER   = '#f59e0b';
-const CYAN    = '#06b6d4';
+const ORANGE  = '#f97316';
 const RED     = '#ef4444';
 
-// ─── Competências ──────────────────────────────────────────────────────────────
+const NORMA_AVATAR =
+  'https://api.dicebear.com/9.x/lorelei/svg?seed=ProfNorma&backgroundColor=0d0a1e&hair=variant19&earrings=variant02';
+
+// ─── Competências TRI ──────────────────────────────────────────────────────────
 const COMPETENCIAS = [
-  { id: 'C1', label: 'Norma Culta',             score: 180, max: 200, weak: false },
-  { id: 'C2', label: 'Adequação ao Tema',        score: 160, max: 200, weak: false },
-  { id: 'C3', label: 'Argumentação',             score: 140, max: 200, weak: false },
-  { id: 'C4', label: 'Coesão Textual',           score: 120, max: 200, weak: false },
-  { id: 'C5', label: 'Proposta de Intervenção',  score: 80,  max: 200, weak: true  },
+  { id: 'C1', label: 'Norma Culta',            score: 200, max: 200, color: EMERALD },
+  { id: 'C2', label: 'Tema e Argumentação',     score: 160, max: 200, color: NEON   },
+  { id: 'C3', label: 'Organização Textual',     score: 140, max: 200, color: AMBER  },
+  { id: 'C4', label: 'Coesão e Conectivos',     score: 120, max: 200, color: ORANGE },
+  { id: 'C5', label: 'Proposta de Intervenção', score: 160, max: 200, color: NEON   },
 ] as const;
 
-const TOTAL_SCORE = COMPETENCIAS.reduce((s, c) => s + c.score, 0); // 680
+const TOTAL_SCORE = COMPETENCIAS.reduce((s, c) => s + c.score, 0); // 780
 
-// ─── Essay segments ────────────────────────────────────────────────────────────
-type SegType = 'normal' | 'highlight' | 'correct' | 'error';
+// ─── Evolution milestones ──────────────────────────────────────────────────────
+const EVO = [680, 720, 760, 800, 840, 880, 920, 960, 1000] as const;
 
-const ESSAY: { text: string; type: SegType; marker?: string }[] = [
-  { text: 'A questão da ',              type: 'normal' },
-  { text: 'desigualdade social',        type: 'highlight' },
-  { text: ' no Brasil é um ',           type: 'normal' },
-  { text: 'problema estrutural',        type: 'correct', marker: '✓' },
-  { text: ', afetando milhões de cidadãos. É ', type: 'normal' },
-  { text: 'mister que',                 type: 'error', marker: '✗' },
-  { text: ' o Estado implemente políticas públicas efetivas. ', type: 'normal' },
-  { text: 'Djamila Ribeiro',            type: 'correct', marker: '✓' },
-  { text: ', em "Lugar de Fala", defende a visibilidade das vozes marginalizadas como condição para a ', type: 'normal' },
-  { text: 'democracia plena',           type: 'highlight' },
-  { text: '. Portanto, ',               type: 'normal' },
-  { text: 'o governo deve criar programas', type: 'error', marker: '⚠' },
-  { text: ' de inclusão social.',       type: 'normal' },
-];
-
-// ─── Scan annotation cycle ─────────────────────────────────────────────────────
-const SCAN_ANNOTS = [
-  { id: 'C1', text: 'Verificando norma culta…',             color: GOLD    },
-  { id: 'C3', text: 'Validando repertório bibliográfico…',   color: EMERALD },
-  { id: 'C4', text: 'Analisando coesão e conectivos…',       color: CYAN    },
-  { id: 'C5', text: 'Avaliando proposta de intervenção…',    color: AMBER   },
-];
-
-// ─── Repertório sugerido ───────────────────────────────────────────────────────
-const REPERTORIO = [
-  { name: 'Djamila Ribeiro',   work: '"Lugar de Fala"',            used: true  },
-  { name: 'Silvio Almeida',    work: '"Racismo Estrutural"',        used: false },
-  { name: 'Boaventura Sousa',  work: '"Epistemologias do Sul"',     used: false },
-];
-
-// ─── Evolution chart data ──────────────────────────────────────────────────────
-const EVO_SCORES = [620, 680, 750, 820, 880];
+// ─── Floating annotation balloons ─────────────────────────────────────────────
+const BALLOONS = [
+  { top: '11%', text: '✓ CITAÇÃO RELEVANTE',   color: EMERALD, right: true,  delay: 0    },
+  { top: '29%', text: '✗ ERRO FATÍDERO',        color: RED,     right: false, delay: 0.4  },
+  { top: '52%', text: '⚠ DESENVOLVER C3',       color: AMBER,   right: true,  delay: 0.8  },
+  { top: '72%', text: '💡 FORTALECER C5',        color: GOLD,    right: false, delay: 1.2  },
+] as const;
 
 // ══════════════════════════ SUB-COMPONENTS ════════════════════════════════════
 
-// ── Score count-up ────────────────────────────────────────────────────────────
-function ScoreCountUp({ target, color }: { target: number; color: string }) {
-  const spanRef  = useRef<HTMLSpanElement>(null);
-  const inView   = useInView(spanRef, { once: true, margin: '-50px' });
-  const motionN  = useMotionValue(0);
-  const [shown, setShown] = useState(0);
+// ── Counter-up ────────────────────────────────────────────────────────────────
+function CountUp({ target, color, size = 'xl' }: { target: number; color: string; size?: 'xl' | 'lg' | 'sm' }) {
+  const ref    = useRef<HTMLSpanElement>(null);
+  const inView = useInView(ref, { once: true, margin: '-60px' });
+  const mv     = useMotionValue(0);
+  const [n, setN] = useState(0);
 
   useEffect(() => {
     if (!inView) return;
-    const ctrl = animate(motionN, target, {
-      duration: 1.2,
-      ease: [0.22, 0.61, 0.36, 1],
-      onUpdate: v => setShown(Math.floor(v)),
+    const ctrl = animate(mv, target, {
+      duration: 1.4, ease: [0.22, 0.61, 0.36, 1],
+      onUpdate: v => setN(Math.floor(v)),
     });
     return () => ctrl.stop();
   }, [inView, target]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const sz = size === 'xl' ? 'text-5xl sm:text-6xl' : size === 'lg' ? 'text-2xl' : 'text-sm';
   return (
-    <span ref={spanRef} style={{ color, fontFamily: 'ui-monospace, monospace' }}>
-      {shown}
+    <span ref={ref} className={`${sz} font-black tabular-nums`}
+      style={{ color, fontFamily: 'ui-monospace, monospace' }}>
+      {n}
     </span>
   );
 }
 
 // ── Competência progress bar ───────────────────────────────────────────────────
 function CompBar({ score, max, color, delay }: { score: number; max: number; color: string; delay: number }) {
+  const pct = Math.round((score / max) * 100);
   return (
-    <div className="relative h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
+    <div className="relative h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
       <motion.div
         className="absolute inset-y-0 left-0 rounded-full"
-        style={{ background: color, boxShadow: `0 0 8px ${color}70` }}
+        style={{ background: `linear-gradient(90deg, ${color}CC, ${color})`, boxShadow: `0 0 8px ${color}70` }}
         initial={{ width: '0%' }}
-        whileInView={{ width: `${(score / max) * 100}%` }}
-        viewport={{ once: true, margin: '-60px' }}
+        whileInView={{ width: `${pct}%` }}
+        viewport={{ once: true, margin: '-80px' }}
         transition={{ duration: 1.1, ease: [0.22, 0.61, 0.36, 1], delay }}
       />
     </div>
   );
 }
 
-// ── SVG evolution chart ────────────────────────────────────────────────────────
-function EvolutionChart() {
-  const W = 280, H = 60;
-  const PX = 8, PY = 6;
-  const minS = 580, maxS = 920;
-
-  const pts = EVO_SCORES.map((s, i) => ({
-    x: PX + (i / (EVO_SCORES.length - 1)) * (W - PX * 2),
-    y: H - PY - ((s - minS) / (maxS - minS)) * (H - PY * 2),
-  }));
-
-  const dLine = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
-  const dArea = `${dLine} L ${pts.at(-1)!.x},${H} L ${pts[0].x},${H} Z`;
-
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ overflow: 'visible' }}>
-      <defs>
-        <linearGradient id="normaChartFill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stopColor={GOLD} stopOpacity="0.22" />
-          <stop offset="100%" stopColor={GOLD} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      {/* Area fill */}
-      <path d={dArea} fill="url(#normaChartFill)" />
-      {/* Line */}
-      <motion.path
-        d={dLine}
-        fill="none"
-        stroke={GOLD}
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        style={{ filter: `drop-shadow(0 0 4px ${GOLD}80)` }}
-        initial={{ pathLength: 0, opacity: 0 }}
-        whileInView={{ pathLength: 1, opacity: 1 }}
-        viewport={{ once: true, margin: '-60px' }}
-        transition={{ duration: 1.8, ease: 'easeOut', delay: 0.1 }}
-      />
-      {/* Dots */}
-      {pts.map((p, i) => (
-        <motion.circle
-          key={i}
-          cx={p.x} cy={p.y} r="2.8"
-          fill={GOLD}
-          style={{ filter: `drop-shadow(0 0 5px ${GOLD})` }}
-          initial={{ scale: 0, opacity: 0 }}
-          whileInView={{ scale: 1, opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.25, delay: 1.7 + i * 0.07, ease: 'backOut' }}
-        />
-      ))}
-    </svg>
-  );
-}
-
-// ── Scanner Panel (left column) ────────────────────────────────────────────────
+// ── Scanner panel (left) ───────────────────────────────────────────────────────
 function ScannerPanel() {
-  const [annotIdx, setAnnotIdx] = useState(0);
+  const [scanPct, setScanPct] = useState(0);
 
+  // Simulate scan progress cycling
   useEffect(() => {
-    const t = setInterval(() => setAnnotIdx(p => (p + 1) % SCAN_ANNOTS.length), 2400);
-    return () => clearInterval(t);
-  }, []);
+    let frame = 0;
+    let start: number | null = null;
+    const CYCLE = 6000; // ms per full sweep
 
-  const annot = SCAN_ANNOTS[annotIdx];
+    const tick = (ts: number) => {
+      if (!start) start = ts;
+      const elapsed = (ts - start) % CYCLE;
+      const pct = elapsed < CYCLE / 2
+        ? (elapsed / (CYCLE / 2)) * 100
+        : 100 - ((elapsed - CYCLE / 2) / (CYCLE / 2)) * 100;
+      setScanPct(Math.round(pct));
+      frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, []);
 
   return (
     <div
       className="relative rounded-2xl overflow-hidden flex flex-col"
       style={{
-        minHeight:            420,
-        background:           'rgba(9,9,11,0.58)',
-        backdropFilter:       'blur(18px)',
-        WebkitBackdropFilter: 'blur(18px)',
+        minHeight:            580,
+        background:           'rgba(6,8,16,0.70)',
+        backdropFilter:       'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
         border:               `1px solid ${GOLD}22`,
-        boxShadow:            `0 0 48px ${GOLD}0a`,
+        boxShadow:            `0 0 60px ${GOLD}0a`,
       }}
     >
-      {/* Gold shimmer top */}
+      {/* Gold shimmer line */}
       <div className="absolute inset-x-0 top-0 h-px"
-        style={{ background: `linear-gradient(90deg, transparent, ${GOLD}70, transparent)` }} />
+        style={{ background: `linear-gradient(90deg, transparent, ${GOLD}80, transparent)` }} />
 
-      {/* ── Traffic-light header ── */}
-      <div
-        className="flex items-center justify-between px-4 py-3 shrink-0"
-        style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}
-      >
-        <div className="flex items-center gap-2">
+      {/* ── Window chrome ── */}
+      <div className="flex items-center justify-between px-4 py-3 shrink-0"
+        style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+        <div className="flex items-center gap-3">
           <div className="flex gap-1.5">
-            {[RED, AMBER, '#22c55e'].map(c => (
+            {[RED, AMBER, EMERALD].map(c => (
               <div key={c} className="w-2.5 h-2.5 rounded-full" style={{ background: c }} />
             ))}
           </div>
-          <span className="text-[10px] text-slate-600" style={{ fontFamily: 'ui-monospace, monospace' }}>
-            norma.scanner.v2 · redacao_001.txt
+          <span className="text-[9px] text-slate-600 hidden sm:block"
+            style={{ fontFamily: 'ui-monospace, monospace' }}>
+            norma.scanner · redacao_alfab_002.txt
           </span>
         </div>
-        <motion.div
-          className="flex items-center gap-1.5 text-[10px] font-bold"
-          style={{ color: GOLD, fontFamily: 'ui-monospace, monospace' }}
-          animate={{ opacity: [1, 0.35, 1] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
-        >
-          <div className="w-1.5 h-1.5 rounded-full" style={{ background: GOLD }} />
-          ANALISANDO
-        </motion.div>
+        <div className="flex items-center gap-3">
+          {/* Scan progress bar */}
+          <div className="w-20 h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
+            <motion.div
+              className="h-full rounded-full"
+              style={{ width: `${scanPct}%`, background: `linear-gradient(90deg, ${GOLD}80, ${GOLD})` }}
+            />
+          </div>
+          <motion.span
+            className="text-[9px] font-bold"
+            style={{ color: GOLD, fontFamily: 'ui-monospace, monospace' }}
+            animate={{ opacity: [1, 0.3, 1] }}
+            transition={{ duration: 1.4, repeat: Infinity }}
+          >
+            ● ANALISANDO
+          </motion.span>
+        </div>
       </div>
 
-      {/* ── Essay text + scan line ── */}
-      <div className="relative flex-1 px-5 py-6">
+      {/* ── Essay text area ── */}
+      <div className="relative flex-1 px-5 sm:px-7 pt-6 pb-4">
 
-        {/* Scan line — animated vertically */}
+        {/* Scan line */}
         <motion.div
           className="absolute inset-x-0 pointer-events-none z-20"
           style={{ height: 1 }}
-          animate={{ top: ['18%', '86%'] }}
-          transition={{ duration: 3.8, repeat: Infinity, repeatType: 'reverse', ease: 'easeInOut' }}
+          animate={{ top: ['12%', '88%'] }}
+          transition={{ duration: 5, repeat: Infinity, repeatType: 'reverse', ease: 'easeInOut' }}
         >
-          <div
-            className="w-full h-px"
-            style={{
-              background: `linear-gradient(90deg, transparent 0%, ${GOLD}CC 35%, ${GOLD} 50%, ${GOLD}CC 65%, transparent 100%)`,
-              boxShadow:  `0 0 12px ${GOLD}90, 0 0 24px ${GOLD}40`,
-            }}
-          />
-          {/* Ambient glow above/below the line */}
-          <div
-            className="absolute inset-x-0 pointer-events-none"
-            style={{
-              height: 40,
-              top: -20,
-              background: `linear-gradient(180deg, transparent, ${GOLD}08, transparent)`,
-            }}
-          />
+          <div className="w-full h-px" style={{
+            background: `linear-gradient(90deg, transparent 0%, ${GOLD}CC 30%, ${GOLD} 50%, ${GOLD}CC 70%, transparent 100%)`,
+            boxShadow:  `0 0 14px ${GOLD}AA, 0 0 28px ${GOLD}50`,
+          }} />
+          {/* Ambient glow */}
+          <div className="absolute inset-x-0 pointer-events-none" style={{
+            height: 56, top: -28,
+            background: `linear-gradient(180deg, transparent, ${GOLD}07, transparent)`,
+          }} />
         </motion.div>
 
-        {/* Essay text (serif, handwritten feel) */}
-        <p
-          className="relative z-10 leading-[1.9] text-slate-300"
-          style={{ fontFamily: 'Georgia, "Times New Roman", serif', fontSize: '0.82rem' }}
+        {/* Floating annotation balloons */}
+        {BALLOONS.map((b, i) => (
+          <motion.div
+            key={i}
+            className="absolute z-30 flex items-center gap-1 px-2.5 py-1 rounded-full text-[8px] font-black tracking-wider whitespace-nowrap"
+            style={{
+              top:        b.top,
+              ...(b.right ? { right: '0.75rem' } : { left: '0.75rem' }),
+              color:      b.color,
+              background: `${b.color}14`,
+              border:     `1px solid ${b.color}38`,
+              boxShadow:  `0 0 10px ${b.color}20`,
+              fontFamily: 'ui-monospace, monospace',
+            }}
+            initial={{ opacity: 0, x: b.right ? 10 : -10 }}
+            animate={{ opacity: 1, x: 0, y: [0, -5, 0] }}
+            transition={{
+              opacity: { duration: 0.4, delay: b.delay },
+              x:       { duration: 0.4, delay: b.delay },
+              y:       { duration: 2.8 + i * 0.4, repeat: Infinity, ease: 'easeInOut', delay: b.delay + 0.5 },
+            }}
+          >
+            {b.text}
+          </motion.div>
+        ))}
+
+        {/* Essay — 4 paragraphs in serif */}
+        <div
+          className="relative z-10 flex flex-col gap-4 pr-2"
+          style={{ fontFamily: 'Georgia, "Times New Roman", serif', fontSize: '0.78rem', lineHeight: '1.85', color: 'rgba(226,232,240,0.85)' }}
         >
-          {ESSAY.map((seg, i) => {
-            if (seg.type === 'normal') return <span key={i}>{seg.text}</span>;
+          {/* ¶1 — Introdução */}
+          <p>
+            A{' '}
+            <span style={{ color: EMERALD, borderBottom: `1px solid ${EMERALD}50` }}>alfabetização funcional</span>
+            {' '}representa, no contexto brasileiro, um desafio estrutural que compromete o pleno exercício da cidadania. Segundo dados da{' '}
+            <span style={{ color: NEON }} className="font-semibold">UNESCO</span>
+            , cerca de 29% dos brasileiros adultos são considerados analfabetos funcionais — indivíduos capazes de decodificar símbolos, mas incapazes de interpretar informações do cotidiano de forma eficaz.
+          </p>
 
-            if (seg.type === 'highlight') return (
-              <span key={i} className="text-white font-semibold">{seg.text}</span>
-            );
+          {/* ¶2 — Desenvolvimento I */}
+          <p>
+            Historicamente, a fragilidade do sistema educacional público tem sido apontada como causadora desse cenário. O sociólogo{' '}
+            <span style={{ color: EMERALD }} className="font-semibold">Florestan Fernandes</span>
+            , em sua análise das desigualdades brasileiras, evidenciou que a educação foi usada como instrumento de manutenção das elites,{' '}
+            <span style={{ color: RED, textDecoration: 'underline', textDecorationStyle: 'wavy', textDecorationColor: RED + '70' }}>
+              excluindo sistematicamente
+            </span>
+            {' '}as camadas populares do acesso ao conhecimento formal e à mobilidade social.
+          </p>
 
-            if (seg.type === 'correct') return (
-              <span key={i} className="relative">
-                <span style={{ color: EMERALD, borderBottom: `1px solid ${EMERALD}55` }}>
-                  {seg.text}
-                </span>
-                <sup
-                  className="ml-0.5 text-[7px] font-black px-0.5 py-px rounded"
-                  style={{ color: EMERALD, background: `${EMERALD}20`, verticalAlign: 'super' }}
-                >
-                  {seg.marker}
-                </sup>
-              </span>
-            );
+          {/* ¶3 — Desenvolvimento II */}
+          <p>
+            Além disso, a{' '}
+            <span style={{ color: ORANGE, textDecoration: 'underline dotted', textDecorationColor: ORANGE + '80' }}>
+              precarização do trabalho docente
+            </span>
+            {' '}e a ausência de políticas públicas continuadas de letramento contribuem para a perpetuação desse quadro. Estudos do IBGE revelam que municípios com menor investimento per capita apresentam índices{' '}
+            <span className="text-white font-semibold">alarmantes</span>
+            {' '}de analfabetismo, demonstrando a correlação direta entre recurso financeiro e qualidade do aprendizado.
+          </p>
 
-            // error
-            return (
-              <span key={i} className="relative">
-                <span style={{ color: '#fca5a5', borderBottom: `1px dashed ${RED}60` }}>
-                  {seg.text}
-                </span>
-                <sup
-                  className="ml-0.5 text-[7px] font-black px-0.5 py-px rounded"
-                  style={{ color: RED, background: `${RED}20`, verticalAlign: 'super' }}
-                >
-                  {seg.marker}
-                </sup>
-              </span>
-            );
-          })}
-        </p>
+          {/* ¶4 — Conclusão */}
+          <p>
+            Portanto, para superar esse desafio histórico, é imprescindível que o{' '}
+            <span className="text-white">Estado brasileiro</span>
+            {' '}implemente políticas integradas de letramento ao longo da vida, articulando o{' '}
+            <span style={{ color: AMBER }} className="font-medium">Ministério da Educação</span>
+            , organizações da sociedade civil e empresas por meio de programas de qualificação, visando garantir o pleno exercício da cidadania a todos os brasileiros.
+          </p>
+        </div>
       </div>
 
-      {/* ── Active annotation chip ── */}
-      <div className="px-4 pb-4 shrink-0">
-        <motion.div
-          key={annotIdx}
-          className="flex items-center gap-2 px-3 py-2 rounded-xl"
-          style={{
-            background: `${annot.color}0d`,
-            border:     `1px solid ${annot.color}28`,
-          }}
-          initial={{ opacity: 0, y: 5 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.28 }}
-        >
-          <motion.div
-            className="w-1.5 h-1.5 rounded-full shrink-0"
-            style={{ background: annot.color }}
-            animate={{ opacity: [1, 0.25, 1] }}
-            transition={{ duration: 1.2, repeat: Infinity }}
-          />
-          <span
-            className="text-[10px] font-medium"
-            style={{ color: annot.color, fontFamily: 'ui-monospace, monospace' }}
-          >
-            [{annot.id}] {annot.text}
-          </span>
-        </motion.div>
+      {/* ── Status bar ── */}
+      <div className="px-5 py-3 shrink-0 flex items-center justify-between"
+        style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+        <span className="text-[9px] text-slate-700" style={{ fontFamily: 'ui-monospace, monospace' }}>
+          340 PALAVRAS · 4 PARÁGRAFOS
+        </span>
+        <span className="text-[9px] font-bold" style={{ color: GOLD, fontFamily: 'ui-monospace, monospace' }}>
+          ANÁLISE COMPLETA
+        </span>
       </div>
     </div>
   );
 }
 
-// ── Verdict Panel (right column) ───────────────────────────────────────────────
-function VerdictPanel() {
+// ── TRI Dossier panel (right) ──────────────────────────────────────────────────
+function TriDossier() {
   return (
     <div className="flex flex-col gap-4">
 
-      {/* Competências widget */}
+      {/* ── Total Score badge ── */}
+      <div
+        className="relative rounded-2xl p-5 flex flex-col items-center text-center overflow-hidden"
+        style={{
+          background: 'rgba(6,8,16,0.70)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          border: `1px solid ${NEON}30`,
+          boxShadow: `0 0 50px ${NEON}18, 0 0 100px ${NEON}0a`,
+        }}
+      >
+        {/* Radial ambient */}
+        <div className="absolute inset-0 pointer-events-none"
+          style={{ background: `radial-gradient(ellipse at 50% 30%, ${NEON}10 0%, transparent 65%)` }} />
+        <div className="absolute inset-x-0 top-0 h-px"
+          style={{ background: `linear-gradient(90deg, transparent, ${NEON}60, transparent)` }} />
+
+        <p className="text-[9px] font-bold tracking-[0.25em] text-slate-500 mb-1 relative z-10"
+          style={{ fontFamily: 'ui-monospace, monospace' }}>
+          DOSSIÊ TRI · TOTAL SCORE
+        </p>
+
+        <div className="relative z-10 my-1">
+          <CountUp target={TOTAL_SCORE} color={NEON} size="xl" />
+          <span className="text-2xl font-black text-slate-600 ml-1"
+            style={{ fontFamily: 'ui-monospace, monospace' }}>/1000</span>
+        </div>
+
+        <div className="flex items-center gap-1.5 mt-1 relative z-10">
+          <motion.div className="w-1.5 h-1.5 rounded-full" style={{ background: NEON }}
+            animate={{ opacity: [1, 0.2, 1] }}
+            transition={{ duration: 1.8, repeat: Infinity }} />
+          <span className="text-[9px] font-bold tracking-widest"
+            style={{ color: NEON, fontFamily: 'ui-monospace, monospace' }}>
+            ANÁLISE CONCLUÍDA
+          </span>
+        </div>
+      </div>
+
+      {/* ── Competências widget ── */}
       <div
         className="rounded-2xl p-4"
         style={{
-          background:           'rgba(9,9,11,0.58)',
-          backdropFilter:       'blur(16px)',
+          background: 'rgba(6,8,16,0.65)',
+          backdropFilter: 'blur(16px)',
           WebkitBackdropFilter: 'blur(16px)',
-          border:               '1px solid rgba(255,255,255,0.07)',
+          border: '1px solid rgba(255,255,255,0.07)',
         }}
       >
-        {/* Header row */}
-        <div className="flex items-center justify-between mb-4">
-          <p
-            className="text-[10px] font-bold tracking-widest uppercase text-slate-500"
-            style={{ fontFamily: 'ui-monospace, monospace' }}
-          >
-            Análise de Competências
-          </p>
-          <p className="text-base font-black" style={{ fontFamily: 'ui-monospace, monospace' }}>
-            <ScoreCountUp target={TOTAL_SCORE} color={GOLD} />
-            <span className="text-slate-600 text-[10px] font-normal ml-0.5">/1000</span>
-          </p>
-        </div>
+        <p className="text-[9px] font-bold tracking-[0.22em] text-slate-600 mb-4 uppercase"
+          style={{ fontFamily: 'ui-monospace, monospace' }}>
+          Breakdown por Competência
+        </p>
 
-        {/* Bars */}
-        <div className="flex flex-col gap-3">
-          {COMPETENCIAS.map((c, i) => {
-            const color = c.weak ? RED : GOLD;
+        <div className="flex flex-col gap-3.5">
+          {COMPETENCIAS.map((c, i) => (
+            <div key={c.id}>
+              <div className="flex items-center justify-between mb-1.5">
+                <div className="flex items-center gap-2">
+                  <span
+                    className="text-[9px] font-black px-1.5 py-0.5 rounded"
+                    style={{
+                      color: c.color, background: `${c.color}18`,
+                      border: `1px solid ${c.color}35`,
+                      fontFamily: 'ui-monospace, monospace',
+                    }}>
+                    {c.id}
+                  </span>
+                  <span className="text-[11px] text-slate-500">{c.label}</span>
+                </div>
+                <div className="flex items-baseline gap-0.5">
+                  <CountUp target={c.score} color={c.color} size="sm" />
+                  <span className="text-[9px] text-slate-700">/200</span>
+                </div>
+              </div>
+              <CompBar score={c.score} max={c.max} color={c.color} delay={i * 0.1} />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Norma feedback box ── */}
+      <div
+        className="rounded-2xl p-4"
+        style={{
+          background: `linear-gradient(135deg, ${GOLD}08 0%, rgba(6,8,16,0.75) 100%)`,
+          border: `1px solid ${GOLD}28`,
+          boxShadow: `0 0 24px ${GOLD}0c`,
+        }}
+      >
+        <div className="flex items-start gap-3">
+          {/* Avatar */}
+          <div
+            className="w-10 h-10 rounded-full overflow-hidden shrink-0"
+            style={{ border: `1.5px solid ${GOLD}50`, background: '#0d0a1e' }}
+          >
+            <img src={NORMA_AVATAR} alt="Prof. Norma" className="w-full h-full object-cover" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-2">
+              <p className="text-xs font-black text-white">Prof. Norma</p>
+              <span
+                className="text-[8px] font-bold px-1.5 py-0.5 rounded-full"
+                style={{ color: GOLD, background: `${GOLD}18`, border: `1px solid ${GOLD}35` }}>
+                VEREDITO
+              </span>
+            </div>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              {'"'}Cuidado:{' '}
+              <span style={{ color: ORANGE }} className="font-semibold">repertório sociocultural mal legitimado</span>
+              {' '}na Competência 2 derrubou sua nota. Além disso, o uso excessivo de{' '}
+              <span style={{ color: AMBER }} className="font-semibold">orações intercaladas</span>
+              {' '}está prejudicando a coesão em C4.{'"'}
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  );
+}
+
+// ── Evolution timeline ─────────────────────────────────────────────────────────
+function EvolutionTimeline() {
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const inView  = useInView(wrapRef, { once: true, margin: '-80px' });
+
+  return (
+    <div
+      ref={wrapRef}
+      className="rounded-2xl p-5 sm:p-7"
+      style={{
+        background: 'rgba(6,8,16,0.65)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
+        border: '1px solid rgba(255,255,255,0.06)',
+      }}
+    >
+      {/* Label */}
+      <p className="text-[10px] font-black tracking-[0.3em] uppercase mb-6 text-center"
+        style={{ color: NEON, fontFamily: 'ui-monospace, monospace' }}>
+        ▸ SUA JORNADA ATÉ O 1000
+      </p>
+
+      {/* Nodes + connectors — horizontally scrollable on mobile */}
+      <div className="overflow-x-auto pb-3" style={{ scrollbarWidth: 'none' }}>
+        <div className="flex items-center" style={{ minWidth: 'max-content', gap: 0 }}>
+          {EVO.map((score, i) => {
+            const isLast   = i === EVO.length - 1;
+            const progress = (score - 680) / (1000 - 680); // 0-1
+            const nodeColor = isLast ? GOLD
+              : progress > 0.6 ? NEON
+              : progress > 0.3 ? AMBER
+              : 'rgba(255,255,255,0.25)';
+
             return (
-              <div key={c.id}>
-                <div className="flex items-center justify-between mb-1.5">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="text-[9px] font-bold px-1.5 py-0.5 rounded"
-                      style={{
-                        fontFamily: 'ui-monospace, monospace',
-                        color,
-                        background: `${color}18`,
-                        border:     `1px solid ${color}30`,
-                      }}
-                    >
-                      {c.id}
-                    </span>
-                    <span className="text-[11px] text-slate-500">{c.label}</span>
-                    {c.weak && (
-                      <span className="text-[8px] font-bold" style={{ color: RED }}>⚠ CRÍTICO</span>
+              <div key={score} className="flex items-center">
+                {/* Node */}
+                <motion.div
+                  className="relative flex flex-col items-center gap-1.5 shrink-0"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={inView ? { opacity: 1, y: 0 } : {}}
+                  transition={{ duration: 0.35, delay: i * 0.1, ease: 'easeOut' }}
+                >
+                  {/* Hexagon SVG */}
+                  <div className="relative">
+                    <svg width={isLast ? 64 : 52} height={isLast ? 56 : 46} viewBox="0 0 64 56" style={{ overflow: 'visible' }}>
+                      <path
+                        d="M32 2 L62 18 L62 38 L32 54 L2 38 L2 18 Z"
+                        fill={`${nodeColor}16`}
+                        stroke={nodeColor}
+                        strokeWidth={isLast ? 1.8 : 1.2}
+                        style={isLast ? { filter: `drop-shadow(0 0 6px ${GOLD}) drop-shadow(0 0 14px ${GOLD}80)` } : {}}
+                      />
+                      <text
+                        x="32" y="32"
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                        fontSize={isLast ? 11 : 9}
+                        fontWeight="900"
+                        fill={nodeColor}
+                        fontFamily="ui-monospace, monospace"
+                      >
+                        {score}
+                      </text>
+                    </svg>
+                    {/* Pulse ring on 1000 */}
+                    {isLast && (
+                      <motion.div
+                        className="absolute inset-0 pointer-events-none"
+                        style={{ borderRadius: '0' }}
+                        animate={{ opacity: [0.6, 0, 0.6], scale: [1, 1.2, 1] }}
+                        transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+                      >
+                        <svg width={64} height={56} viewBox="0 0 64 56">
+                          <path
+                            d="M32 2 L62 18 L62 38 L32 54 L2 38 L2 18 Z"
+                            fill="none"
+                            stroke={GOLD}
+                            strokeWidth="1.5"
+                            opacity="0.5"
+                          />
+                        </svg>
+                      </motion.div>
                     )}
                   </div>
-                  <span
-                    className="text-xs font-black tabular-nums"
-                    style={{ color, fontFamily: 'ui-monospace, monospace' }}
-                  >
-                    <ScoreCountUp target={c.score} color={color} />
-                  </span>
-                </div>
-                <CompBar score={c.score} max={c.max} color={color} delay={i * 0.1} />
+                  {/* Label below node */}
+                  {isLast && (
+                    <span className="text-[8px] font-black tracking-wider"
+                      style={{ color: GOLD, fontFamily: 'ui-monospace, monospace' }}>
+                      META
+                    </span>
+                  )}
+                </motion.div>
+
+                {/* Connector line between nodes */}
+                {!isLast && (
+                  <motion.div
+                    className="shrink-0 h-px"
+                    style={{
+                      width: 28,
+                      background: progress > 0.5
+                        ? `linear-gradient(90deg, ${NEON}80, ${AMBER}80)`
+                        : `rgba(255,255,255,0.12)`,
+                    }}
+                    initial={{ scaleX: 0, originX: 0 }}
+                    animate={inView ? { scaleX: 1 } : {}}
+                    transition={{ duration: 0.3, delay: i * 0.1 + 0.15, ease: 'easeOut' }}
+                  />
+                )}
               </div>
             );
           })}
         </div>
       </div>
 
-      {/* Veredito da Norma */}
-      <div
-        className="rounded-2xl p-4"
-        style={{
-          background: `linear-gradient(135deg, ${GOLD}08, rgba(9,9,11,0.72))`,
-          border:     `1px solid ${GOLD}32`,
-          boxShadow:  `0 0 20px ${GOLD}0c`,
-        }}
-      >
-        <div className="flex items-center gap-2 mb-2.5">
-          <div
-            className="w-6 h-6 rounded-lg flex items-center justify-center text-sm shrink-0"
-            style={{ background: `${GOLD}1a`, border: `1px solid ${GOLD}40` }}
-          >
-            ⚖️
+      {/* Stats row */}
+      <div className="flex flex-wrap gap-x-8 gap-y-2 justify-center mt-4 pt-4"
+        style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+        {[
+          { label: 'Redações enviadas', value: '5',   color: NEON  },
+          { label: 'Nota média',        value: '780', color: AMBER },
+          { label: 'Melhor nota',       value: '880', color: GOLD  },
+          { label: 'Progresso',         value: '+29%', color: EMERALD },
+        ].map(s => (
+          <div key={s.label} className="text-center">
+            <p className="text-xs font-black" style={{ color: s.color, fontFamily: 'ui-monospace, monospace' }}>
+              {s.value}
+            </p>
+            <p className="text-[9px] text-slate-700 mt-0.5" style={{ fontFamily: 'ui-monospace, monospace' }}>
+              {s.label}
+            </p>
           </div>
-          <p
-            className="text-[10px] font-bold tracking-widest uppercase"
-            style={{ color: GOLD, fontFamily: 'ui-monospace, monospace' }}
-          >
-            Veredito da Norma
-          </p>
-        </div>
-        <p className="text-sm text-slate-300 leading-relaxed">
-          {'"'}Sua{' '}
-          <span className="text-white font-semibold">proposta de intervenção</span>{' '}
-          carece de detalhamento. Foque nos{' '}
-          <span style={{ color: GOLD }} className="font-semibold">5 elementos obrigatórios</span>
-          {' '}— agente, ação, modo, finalidade e detalhamento — para garantir os{' '}
-          <span style={{ color: GOLD }} className="font-bold">200 pontos</span> em C5.{'"'}
-        </p>
-      </div>
-
-      {/* Repertório sugerido */}
-      <div
-        className="rounded-2xl p-4"
-        style={{
-          background: 'rgba(9,9,11,0.45)',
-          border:     'rgba(255,255,255,0.06) solid 1px',
-        }}
-      >
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-base">💡</span>
-          <p
-            className="text-[10px] font-bold tracking-widest uppercase text-slate-500"
-            style={{ fontFamily: 'ui-monospace, monospace' }}
-          >
-            Repertório Sugerido
-          </p>
-          <span
-            className="ml-auto text-[8px] font-bold px-2 py-0.5 rounded-full"
-            style={{ color: EMERALD, background: `${EMERALD}18`, border: `1px solid ${EMERALD}30` }}
-          >
-            BLINDAGEM ATIVA
-          </span>
-        </div>
-        <div className="flex flex-col gap-2.5">
-          {REPERTORIO.map((r, i) => (
-            <div key={i} className="flex items-center gap-2">
-              <div
-                className="w-1.5 h-1.5 rounded-full shrink-0"
-                style={{ background: r.used ? EMERALD : 'rgba(255,255,255,0.18)' }}
-              />
-              <span
-                className="text-xs font-semibold leading-none"
-                style={{ color: r.used ? EMERALD : 'rgba(255,255,255,0.5)' }}
-              >
-                {r.name}
-              </span>
-              <span className="text-[10px] text-slate-700 leading-none">{r.work}</span>
-              {r.used && (
-                <span
-                  className="ml-auto text-[7px] font-black px-1 py-0.5 rounded"
-                  style={{ color: EMERALD, background: `${EMERALD}18`, border: `1px solid ${EMERALD}28` }}
-                >
-                  USADO
-                </span>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-
-    </div>
-  );
-}
-
-// ── Evolution strip ────────────────────────────────────────────────────────────
-function EvolutionStrip() {
-  const STATS = [
-    { label: 'Redações',  value: '5',   unit: ''    },
-    { label: 'Média',     value: '830', unit: 'pts' },
-    { label: 'Melhor',    value: '880', unit: 'pts' },
-  ];
-
-  return (
-    <div
-      className="rounded-2xl p-5"
-      style={{
-        background:           'rgba(9,9,11,0.50)',
-        backdropFilter:       'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
-        border:               '1px solid rgba(255,255,255,0.06)',
-      }}
-    >
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 sm:gap-6">
-
-        {/* Stats numbers */}
-        <div className="flex gap-7 shrink-0">
-          {STATS.map(s => (
-            <div key={s.label}>
-              <p
-                className="text-[9px] text-slate-600 mb-0.5 uppercase tracking-widest"
-                style={{ fontFamily: 'ui-monospace, monospace' }}
-              >
-                {s.label}
-              </p>
-              <p
-                className="text-xl font-black leading-none"
-                style={{ color: GOLD, fontFamily: 'ui-monospace, monospace' }}
-              >
-                {s.value}
-                {s.unit && (
-                  <span className="text-[10px] text-slate-600 font-normal ml-0.5">{s.unit}</span>
-                )}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        {/* Vertical divider */}
-        <div className="hidden sm:block w-px self-stretch" style={{ background: 'rgba(255,255,255,0.06)' }} />
-
-        {/* Chart */}
-        <div className="flex-1 w-full min-w-0">
-          <p
-            className="text-[9px] text-slate-600 mb-2 uppercase tracking-widest"
-            style={{ fontFamily: 'ui-monospace, monospace' }}
-          >
-            Curva de Evolução
-          </p>
-          <EvolutionChart />
-        </div>
-
-        {/* Target badge */}
-        <div className="shrink-0 hidden lg:flex flex-col items-center gap-1">
-          <div
-            className="w-14 h-14 rounded-2xl flex items-center justify-center"
-            style={{
-              background: `linear-gradient(135deg, ${GOLD}20, ${GOLD}08)`,
-              border:     `1px solid ${GOLD}40`,
-              boxShadow:  `0 0 20px ${GOLD}20`,
-            }}
-          >
-            <span className="text-2xl font-black" style={{ color: GOLD, fontFamily: 'ui-monospace, monospace' }}>
-              1K
-            </span>
-          </div>
-          <p className="text-[8px] text-slate-600 text-center" style={{ fontFamily: 'ui-monospace, monospace' }}>
-            META
-          </p>
-        </div>
-
+        ))}
       </div>
     </div>
   );
 }
-
-// ─── Pillars ───────────────────────────────────────────────────────────────────
-const PILLARS = [
-  {
-    icon: '🖋️',
-    title: 'Análise de Repertório',
-    desc: 'Validação automática de citações e argumentos bibliográficos para blindar sua C3.',
-  },
-  {
-    icon: '⚖️',
-    title: 'Cálculo de Competências',
-    desc: 'Nota instantânea baseada nos critérios oficiais da banca examinadora do ENEM.',
-  },
-  {
-    icon: '🛡️',
-    title: 'Blindagem de Erros',
-    desc: 'Identificação cirúrgica de vícios de linguagem, falhas de coesão e proposta incompleta.',
-  },
-];
 
 // ─── Main export ───────────────────────────────────────────────────────────────
 export default function NormaRedacaoSection() {
   return (
-    <section className="max-w-6xl mx-auto px-5 sm:px-10 pb-24">
+    <section className="max-w-7xl mx-auto px-5 sm:px-10 pb-24">
 
-      {/* ── Section header ── */}
+      {/* ── Header ── */}
       <div className="text-center mb-12">
-
-        {/* Badge */}
         <div
-          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full mb-5 text-[10px] font-bold tracking-[0.22em] uppercase"
+          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full mb-5 text-[9px] font-black tracking-[0.28em] uppercase"
           style={{
             fontFamily: 'ui-monospace, monospace',
             color:      GOLD,
             background: `${GOLD}10`,
-            border:     `1px solid ${GOLD}32`,
+            border:     `1px solid ${GOLD}35`,
           }}
         >
           <motion.span
-            className="inline-block w-1.5 h-1.5 rounded-full"
+            className="w-1.5 h-1.5 rounded-full inline-block"
             style={{ background: GOLD }}
             animate={{ opacity: [1, 0.2, 1] }}
             transition={{ duration: 1.6, repeat: Infinity }}
           />
-          REDAÇÃO NOTA 1000
+          MENTORIA DE ELITE
         </div>
 
-        <h2 className="text-3xl sm:text-4xl font-black text-white mb-4">
-          A Prof. Norma não passa{' '}
+        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white mb-4 leading-tight tracking-tight uppercase">
+          Análise Cirúrgica de Redação{' '}
           <span
             style={{
-              background:           `linear-gradient(90deg, ${GOLD}, #FFA500)`,
+              background:           `linear-gradient(90deg, ${GOLD}, #FFA500, ${NEON})`,
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor:  'transparent',
             }}
           >
-            a mão na cabeça.
+            com I.A. baseada no ENEM
           </span>
         </h2>
 
-        <p className="text-slate-500 text-base max-w-2xl mx-auto">
-          A única IA treinada com o rigor da banca examinadora oficial do ENEM.{' '}
-          <span className="text-slate-300 font-medium">
-            Transforme seu 600 em 1000 com uma análise cirúrgica das 5 competências.
-          </span>
+        <p className="text-slate-400 text-sm sm:text-base max-w-2xl mx-auto uppercase tracking-wide leading-relaxed">
+          Tenha a opinião de um especialista em tempo real e{' '}
+          <span className="text-white font-semibold">elimine seus erros fatais</span>
+          {' '}para o 1000.
         </p>
       </div>
 
       {/* ── Two-column layout ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-5 mb-5">
+      <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_1fr] gap-5 mb-5">
         <ScannerPanel />
-        <VerdictPanel />
+        <TriDossier />
       </div>
 
-      {/* ── Evolution strip ── */}
-      <div className="mb-8">
-        <EvolutionStrip />
-      </div>
-
-      {/* ── Pillars ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {PILLARS.map((p, i) => (
-          <motion.div
-            key={p.title}
-            className="rounded-xl p-4 flex items-start gap-3"
-            style={{
-              background: 'rgba(9,9,11,0.45)',
-              border:     '1px solid rgba(255,255,255,0.06)',
-            }}
-            initial={{ opacity: 0, y: 14 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-40px' }}
-            transition={{ duration: 0.35, delay: i * 0.1, ease: 'easeOut' }}
-          >
-            <span className="text-xl mt-0.5 shrink-0">{p.icon}</span>
-            <div>
-              <p className="text-sm font-bold text-white mb-1">{p.title}</p>
-              <p className="text-xs text-slate-500 leading-relaxed">{p.desc}</p>
-            </div>
-          </motion.div>
-        ))}
-      </div>
+      {/* ── Evolution timeline ── */}
+      <EvolutionTimeline />
 
     </section>
   );
