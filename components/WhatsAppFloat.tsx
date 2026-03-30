@@ -73,10 +73,10 @@ export default function WhatsAppFloat() {
             <span className="absolute -bottom-2 right-5 h-3 w-3 rotate-45 border-b border-r border-emerald-500/30 bg-[#0d1117]/80" />
 
             <p className="font-semibold text-emerald-400">
-              Garanta sua vaga no Panteão.
+              Dúvida final antes de garantir sua vaga no Panteão Elite?
             </p>
             <p className="mt-0.5 text-white/75">
-              Tire suas dúvidas antes de assinar.
+              Fale com o consultor agora.
             </p>
 
             {/* Fechar tooltip */}

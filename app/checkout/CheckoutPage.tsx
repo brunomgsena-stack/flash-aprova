@@ -1,16 +1,19 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { type SubjectId, SUBJECT_META } from '../onboarding/flashcardData';
+import WhatsAppFloat from '@/components/WhatsAppFloat';
 
-const GREEN  = '#22c55e';
-const VIOLET = '#7C3AED';
-const CYAN   = '#06b6d4';
-const RED    = '#ef4444';
-const ORANGE = '#f97316';
+// ─── Design tokens ────────────────────────────────────────────────────────────
+const GREEN   = '#22c55e';
+const VIOLET  = '#7C3AED';
+const CYAN    = '#06b6d4';
+const RED     = '#ef4444';
+const ORANGE  = '#f97316';
+const EMERALD = '#10b981';
 
-// ─── Radar Chart ────────────────────────────────────────────────────────────
+// ─── Radar Chart ─────────────────────────────────────────────────────────────
 const RADAR_ORDER: SubjectId[] = ['biologia', 'quimica', 'historia', 'geografia'];
 const RADAR_LABELS = ['Bio', 'Quím', 'Hist', 'Geo'];
 const RADAR_COLORS = [GREEN, CYAN, '#eab308', '#10b981'];
@@ -55,7 +58,7 @@ function RadarChart({ scores }: { scores: number[] }) {
   );
 }
 
-// ─── Narrative Report ────────────────────────────────────────────────────────
+// ─── Narrative Report ─────────────────────────────────────────────────────────
 function NarrativeReport({
   subjectMeta, hardCount, health,
 }: {
@@ -92,7 +95,7 @@ function NarrativeReport({
         </span>.
         {' '}Com saúde de memória em{' '}
         <span className="font-bold" style={{ color: health < 55 ? RED : ORANGE }}>{health}%</span>,
-        {' '}o risco de <em>"branco" no{' '}
+        {' '}o risco de <em>&quot;branco&quot; no{' '}
         <span style={{ color: GREEN, textShadow: `0 0 14px ${GREEN}80`, fontStyle: 'normal', fontWeight: 700 }}>
           ENEM
         </span>
@@ -106,7 +109,7 @@ function NarrativeReport({
         exatamente o cenário de uma prova do{' '}
         <span style={{ color: GREEN, fontWeight: 700, textShadow: `0 0 10px ${GREEN}60` }}>ENEM</span>.
         Este é o{' '}
-        <strong className="text-white">"Efeito de Fluência Ilusória"</strong>:{' '}
+        <strong className="text-white">&quot;Efeito de Fluência Ilusória&quot;</strong>:{' '}
         você acha que sabe, mas a memória falha na hora H.
       </p>
 
@@ -126,7 +129,7 @@ function NarrativeReport({
   );
 }
 
-// ─── Knowledge Loss Curve ────────────────────────────────────────────────────
+// ─── Knowledge Loss Curve ─────────────────────────────────────────────────────
 function InsightsPanel({ health }: { health: number }) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
@@ -153,36 +156,24 @@ function InsightsPanel({ health }: { health: number }) {
               <stop offset="100%" stopColor={GREEN} stopOpacity="0.02" />
             </linearGradient>
           </defs>
-
-          {/* Grid lines */}
           {[25, 50, 75].map(y => (
             <line key={y} x1="20" y1={y} x2="250" y2={y}
               stroke="rgba(255,255,255,0.05)" strokeWidth="1" strokeDasharray="4,4" />
           ))}
-
-          {/* Y axis labels */}
           {[{ y: 10, t: '100%' }, { y: 55, t: '50%' }, { y: 100, t: '0%' }].map(({ y, t }) => (
             <text key={t} x="16" y={y + 4} textAnchor="end" fontSize="7"
               fill="rgba(255,255,255,0.25)" fontFamily="monospace">{t}</text>
           ))}
-
-          {/* Red forgetting curve fill */}
           <path d={`M 20,10 C 55,16 90,42 140,72 C 180,92 220,98 250,101 L 250,105 L 20,105 Z`}
             fill="url(#red-fade)" />
-          {/* Red forgetting curve line */}
           <path d={`M 20,10 C 55,16 90,42 140,72 C 180,92 220,98 250,101`}
             fill="none" stroke={RED} strokeWidth="2"
             style={{ filter: `drop-shadow(0 0 4px ${RED}80)` }} />
-
-          {/* Green SRS curve fill */}
           <path d={`M 20,10 C 80,11 140,13 250,18 L 250,105 L 20,105 Z`}
             fill="url(#green-fade)" />
-          {/* Green SRS curve line */}
           <path d={`M 20,10 C 80,11 140,13 250,18`}
             fill="none" stroke={GREEN} strokeWidth="2" strokeDasharray="6,3"
             style={{ filter: `drop-shadow(0 0 4px ${GREEN}80)` }} />
-
-          {/* X axis labels */}
           {[{ x: 20, t: 'Hoje' }, { x: 135, t: '15 dias' }, { x: 250, t: '30 dias' }].map(({ x, t }) => (
             <text key={t} x={x} y="110" textAnchor="middle" fontSize="7"
               fill="rgba(255,255,255,0.25)" fontFamily="monospace">{t}</text>
@@ -213,7 +204,6 @@ function InsightsPanel({ health }: { health: number }) {
         <p className="text-slate-600 text-xs mb-6">Sua situação atual vs meta para aprovação</p>
 
         <div className="flex flex-col gap-5">
-          {/* Sua retenção */}
           <div>
             <div className="flex justify-between items-center mb-2">
               <span className="text-xs font-semibold text-slate-400">Sua Retenção Atual</span>
@@ -232,8 +222,6 @@ function InsightsPanel({ health }: { health: number }) {
                 }} />
             </div>
           </div>
-
-          {/* Meta */}
           <div>
             <div className="flex justify-between items-center mb-2">
               <span className="text-xs font-semibold text-slate-400">Meta para Aprovação</span>
@@ -248,8 +236,6 @@ function InsightsPanel({ health }: { health: number }) {
                 }} />
             </div>
           </div>
-
-          {/* Gap */}
           <div className="mt-1 px-4 py-3 rounded-xl text-center"
             style={{ background: 'rgba(124,58,237,0.10)', border: '1px solid rgba(124,58,237,0.22)' }}>
             <p className="text-xs text-slate-500">Gap a preencher</p>
@@ -267,7 +253,7 @@ function InsightsPanel({ health }: { health: number }) {
   );
 }
 
-// ─── Expiry Timer ────────────────────────────────────────────────────────────
+// ─── Expiry Timer ─────────────────────────────────────────────────────────────
 function ExpiryTimer() {
   const [secs, setSecs] = useState(600);
   useEffect(() => {
@@ -298,7 +284,7 @@ function ExpiryTimer() {
   );
 }
 
-// ─── Urgency Strip (vagas) ───────────────────────────────────────────────────
+// ─── Urgency Strip ────────────────────────────────────────────────────────────
 function UrgencyStrip() {
   const [count, setCount] = useState(7);
   useEffect(() => {
@@ -309,12 +295,165 @@ function UrgencyStrip() {
     <div className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-semibold mb-6"
       style={{ background: 'rgba(239,68,68,0.08)', border: `1px solid ${RED}25`, color: RED }}>
       <span className="inline-block w-2 h-2 rounded-full animate-pulse" style={{ background: RED }} />
-      Apenas <strong className="mx-1">{count} vagas</strong> restantes para acesso ao Tutor IA nesta sessão
+      Apenas <strong className="mx-1">{count} vagas</strong> restantes para acesso ao Exército de IA nesta sessão
     </div>
   );
 }
 
-// ─── Main ────────────────────────────────────────────────────────────────────
+// ─── Evidence Carousel ────────────────────────────────────────────────────────
+const EVIDENCE_VIDEOS = [
+  { id: 1, name: 'Ana Clara M.',    city: 'SP', score: '960 pts', quote: 'Medicina USP na 1ª chamada!',              accent: EMERALD },
+  { id: 2, name: 'Pedro Alves',     city: 'MG', score: '940 pts', quote: 'Aprovado em Medicina UFMG!',               accent: CYAN    },
+  { id: 3, name: 'Beatriz S.',      city: 'RJ', score: '952 pts', quote: 'Sem cursinho — só FlashAprova.',           accent: VIOLET  },
+  { id: 4, name: 'Lucas T.',        city: 'BA', score: '930 pts', quote: 'Do 680 para 930 em 4 meses.',             accent: ORANGE  },
+  { id: 5, name: 'Mariana F.',      city: 'PR', score: '944 pts', quote: 'Prof. Norma salvou minha redação!',       accent: '#ec4899' },
+  { id: 6, name: 'Rafael O.',       city: 'CE', score: '920 pts', quote: 'Os tutores IA são incríveis.',            accent: GREEN   },
+  { id: 7, name: 'Juliana C.',      city: 'RS', score: '936 pts', quote: 'Passei em Odonto UFRGS!',                 accent: CYAN    },
+  { id: 8, name: 'Gabriel N.',      city: 'GO', score: '948 pts', quote: 'Panteão Elite mudou tudo pra mim.',      accent: EMERALD },
+] as const;
+
+function EvidenceCarousel() {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  return (
+    <div className="mb-8">
+      <div className="text-center mb-5">
+        <p className="text-xs font-bold tracking-widest uppercase mb-1" style={{ color: EMERALD }}>
+          📹 Prova Social — Depoimentos Reais
+        </p>
+        <h3 className="text-white font-black text-lg">
+          Quem já está no Panteão conta a história
+        </h3>
+      </div>
+
+      <div
+        ref={scrollRef}
+        className="flex gap-4 overflow-x-auto pb-3"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
+        {EVIDENCE_VIDEOS.map(v => (
+          <div
+            key={v.id}
+            className="shrink-0 rounded-2xl overflow-hidden relative cursor-pointer group"
+            style={{
+              width: 200,
+              height: 280,
+              background: `radial-gradient(ellipse at top, ${v.accent}22 0%, rgba(8,4,18,0.95) 65%)`,
+              border: `1px solid ${v.accent}30`,
+            }}
+          >
+            {/* Thumbnail gradient */}
+            <div className="absolute inset-0"
+              style={{
+                background: `linear-gradient(160deg, ${v.accent}18 0%, rgba(4,2,10,0.90) 55%, rgba(4,2,10,0.98) 100%)`,
+              }} />
+
+            {/* Play button */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div
+                className="w-14 h-14 rounded-full flex items-center justify-center transition-transform duration-200 group-hover:scale-110"
+                style={{
+                  background: `${v.accent}30`,
+                  border: `2px solid ${v.accent}60`,
+                  backdropFilter: 'blur(8px)',
+                }}
+              >
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M6 4L16 10L6 16V4Z" fill={v.accent} />
+                </svg>
+              </div>
+            </div>
+
+            {/* Score badge */}
+            <div className="absolute top-3 left-3">
+              <span className="text-xs font-black px-2 py-1 rounded-full"
+                style={{ background: `${v.accent}25`, border: `1px solid ${v.accent}50`, color: v.accent }}>
+                {v.score}
+              </span>
+            </div>
+
+            {/* Info bottom */}
+            <div className="absolute bottom-0 inset-x-0 p-4"
+              style={{ background: 'linear-gradient(to top, rgba(4,2,10,0.98) 0%, transparent 100%)' }}>
+              <p className="text-white font-bold text-sm leading-tight mb-1">{v.name}</p>
+              <p className="text-xs mb-2" style={{ color: v.accent }}>{v.city}</p>
+              <p className="text-slate-400 text-xs leading-snug">&ldquo;{v.quote}&rdquo;</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Scroll hint */}
+      <p className="text-center text-slate-700 text-xs mt-2">← deslize para ver mais →</p>
+    </div>
+  );
+}
+
+// ─── Status Ticker ────────────────────────────────────────────────────────────
+const TICKER_ITEMS = [
+  '🟢 Beatriz F. (Recife-PE) garantiu o Panteão Elite',
+  '🟢 Lucas T. (BH-MG) desbloqueou o Plano Aceleração',
+  '🟢 Camila R. (Curitiba-PR) garantiu o Panteão Elite',
+  '🟢 Gabriel S. (Salvador-BA) ativou Acesso Imediato',
+  '🟢 Fernanda M. (Porto Alegre-RS) garantiu o Panteão Elite',
+  '🟢 Thiago A. (Fortaleza-CE) desbloqueou o Plano Aceleração',
+  '🟢 Julia P. (Goiânia-GO) garantiu o Panteão Elite',
+  '🟢 Rafael C. (Manaus-AM) ativou Acesso Imediato',
+  '🟢 Larissa O. (Natal-RN) garantiu o Panteão Elite',
+  '🟢 Diego V. (Belém-PA) desbloqueou o Plano Aceleração',
+  '🟢 Amanda K. (Florianópolis-SC) garantiu o Panteão Elite',
+  '🟢 Marcelo B. (Maceió-AL) ativou Acesso Imediato',
+  '🟢 Isabela N. (João Pessoa-PB) garantiu o Panteão Elite',
+  '🟢 Bruno H. (Vitória-ES) desbloqueou o Plano Aceleração',
+  '🟢 Natália Q. (Teresina-PI) garantiu o Panteão Elite',
+  '🟢 Vinicius L. (Campo Grande-MS) ativou Acesso Imediato',
+  '🟢 Letícia W. (Aracaju-SE) garantiu o Panteão Elite',
+  '🟢 Henrique D. (Macapá-AP) desbloqueou o Plano Aceleração',
+  '🟢 Carolina E. (Palmas-TO) garantiu o Panteão Elite',
+  '🟢 Rodrigo X. (Rio Branco-AC) ativou Acesso Imediato',
+];
+
+function StatusTicker() {
+  const doubled = [...TICKER_ITEMS, ...TICKER_ITEMS];
+  return (
+    <div className="mb-8 overflow-hidden rounded-xl"
+      style={{ background: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.15)' }}>
+      <div className="flex items-center gap-3 px-4 py-2 border-b" style={{ borderColor: 'rgba(16,185,129,0.10)' }}>
+        <span className="inline-block w-2 h-2 rounded-full animate-pulse" style={{ background: EMERALD }} />
+        <span className="text-xs font-bold tracking-widest uppercase" style={{ color: EMERALD }}>
+          Ao Vivo — Novos Alunos Entrando Agora
+        </span>
+      </div>
+      <div className="py-2 overflow-hidden">
+        <div
+          className="flex gap-8 whitespace-nowrap"
+          style={{
+            animation: 'ticker-scroll 40s linear infinite',
+          }}
+        >
+          {doubled.map((item, i) => (
+            <span key={i} className="text-xs font-medium shrink-0" style={{ color: 'rgba(255,255,255,0.55)' }}>
+              {item}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes ticker-scroll {
+          0%   { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        @keyframes emerald-pulse {
+          0%, 100% { box-shadow: 0 0 0 1px ${EMERALD}88, 0 0 28px ${EMERALD}30, 0 0 60px ${EMERALD}14; }
+          50%       { box-shadow: 0 0 0 1px ${EMERALD}, 0 0 48px ${EMERALD}55, 0 0 100px ${EMERALD}22; }
+        }
+        .elite-card { animation: emerald-pulse 2.8s ease-in-out infinite; }
+      `}</style>
+    </div>
+  );
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
 interface OnboardingData {
   subject: SubjectId;
   results: { rating: string; seconds: number }[];
@@ -323,6 +462,8 @@ interface OnboardingData {
   email?: string;
   name?:  string;
 }
+
+type PlanId = 'flash' | 'proai_plus';
 
 const cardStyle = {
   background: 'rgba(10,5,20,0.88)',
@@ -334,6 +475,7 @@ export default function CheckoutPage() {
   const [data,          setData]          = useState<OnboardingData | null>(null);
   const [email,         setEmail]         = useState('');
   const [name,          setName]          = useState('');
+  const [activePlan,    setActivePlan]    = useState<PlanId | null>(null);
   const [showEmailForm, setShowEmailForm] = useState(false);
   const [buyLoading,    setBuyLoading]    = useState(false);
   const [buyError,      setBuyError]      = useState<string | null>(null);
@@ -350,15 +492,14 @@ export default function CheckoutPage() {
     } catch { /* ignore */ }
   }, []);
 
-  async function handleBuyPro(e: React.FormEvent) {
-    e.preventDefault();
-
-    // Se ainda não temos e-mail, mostra o formulário inline
+  async function handleBuy(planId: PlanId) {
     if (!email) {
+      setActivePlan(planId);
       setShowEmailForm(true);
       return;
     }
 
+    setActivePlan(planId);
     setBuyLoading(true);
     setBuyError(null);
 
@@ -366,7 +507,7 @@ export default function CheckoutPage() {
       const res  = await fetch('/api/checkout', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ email, name: name || undefined }),
+        body:    JSON.stringify({ email, name: name || undefined, planId }),
       });
       const json = await res.json() as { url?: string; error?: string };
       if (!res.ok || !json.url) throw new Error(json.error ?? 'Erro ao gerar link de pagamento.');
@@ -386,7 +527,6 @@ export default function CheckoutPage() {
   const statusColor = health < 55 ? RED : health < 72 ? ORANGE : '#eab308';
   const statusBorder= health < 55 ? 'rgba(239,68,68,0.28)' : health < 72 ? 'rgba(249,115,22,0.28)' : 'rgba(234,179,8,0.28)';
 
-  // Radar scores
   const subjectScore = health > 80 ? 0.76 : health > 60 ? 0.52 : health > 40 ? 0.32 : 0.18;
   const defaultScores: Record<SubjectId, number> = { biologia: 0.60, quimica: 0.42, historia: 0.55, geografia: 0.68 };
   const scores = RADAR_ORDER.map(id => {
@@ -399,7 +539,37 @@ export default function CheckoutPage() {
     return defaultScores[id];
   });
 
+  function EmailForm({ planId }: { planId: PlanId }) {
+    if (activePlan !== planId || !showEmailForm) return null;
+    return (
+      <div className="flex flex-col gap-2 mb-4">
+        <input
+          type="text"
+          placeholder="Seu nome"
+          value={name}
+          onChange={e => setName(e.target.value)}
+          className="w-full px-4 py-2.5 rounded-xl text-sm text-white outline-none"
+          style={{ background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)' }}
+        />
+        <input
+          type="email"
+          placeholder="Seu melhor e-mail *"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          required
+          autoFocus
+          className="w-full px-4 py-2.5 rounded-xl text-sm text-white outline-none"
+          style={{ background:'rgba(255,255,255,0.06)', border:`1px solid ${planId === 'proai_plus' ? EMERALD : VIOLET}55` }}
+        />
+        <p className="text-xs" style={{ color:'rgba(255,255,255,0.30)' }}>
+          Usamos seu e-mail para criar seu acesso após o pagamento.
+        </p>
+      </div>
+    );
+  }
+
   return (
+    <>
     <div className="min-h-screen px-4 py-10 sm:px-8 relative overflow-hidden"
       style={{ background: 'radial-gradient(ellipse at 30% 0%, #0a0514 0%, #050505 65%)' }}>
 
@@ -472,213 +642,253 @@ export default function CheckoutPage() {
         {/* ── Visual Insights ── */}
         <InsightsPanel health={health} />
 
-
         {/* ── Urgency ── */}
         <ExpiryTimer />
         <UrgencyStrip />
 
         {/* ── Plan cards ── */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8 items-start">
 
-          {/* Flash — desemphasized */}
-          <div className="relative rounded-2xl p-6 overflow-hidden opacity-70 hover:opacity-90 transition-opacity"
-            style={{ ...cardStyle, border:'1px solid rgba(124,58,237,0.15)' }}>
+          {/* ── PLANO ACELERAÇÃO (Flash) ── */}
+          <div className="relative rounded-2xl p-7 overflow-hidden opacity-80 hover:opacity-100 transition-opacity"
+            style={{ ...cardStyle, border:'1px solid rgba(124,58,237,0.18)' }}>
             <div className="absolute inset-x-0 top-0 h-px"
               style={{ background:`linear-gradient(90deg,transparent,rgba(124,58,237,0.40),transparent)` }} />
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg mb-4"
-              style={{ background:'rgba(124,58,237,0.12)',border:'1px solid rgba(124,58,237,0.25)' }}>⚡</div>
-            <p className="text-xs font-bold tracking-widest uppercase mb-1" style={{ color:'#6d519e' }}>Plano Flash</p>
-            <div className="flex items-baseline gap-1 mb-6">
-              <span className="text-slate-600 text-xs">12x de</span>
-              <span className="text-4xl font-black text-slate-300 ml-1">R$&nbsp;46</span>
-              <span className="text-2xl font-black text-slate-300">,90</span>
+
+            <p className="text-xs font-black tracking-widest uppercase mb-3" style={{ color:'#8b5cf6' }}>
+              ⚡ PLANO ACELERAÇÃO
+            </p>
+
+            {/* Validity — hero element */}
+            <div className="px-4 py-2.5 rounded-xl mb-4 text-center"
+              style={{ background:'rgba(124,58,237,0.10)', border:'1px solid rgba(124,58,237,0.30)' }}>
+              <p className="text-xs font-bold tracking-widest uppercase" style={{ color:'#8b5cf6' }}>
+                VÁLIDO ATÉ
+              </p>
+              <p className="text-lg font-black text-white mt-0.5">ENEM 2026</p>
             </div>
+
+            {/* Price */}
+            <div className="mb-1">
+              <span className="text-slate-600 text-sm line-through">De R$ 797</span>
+            </div>
+            <div className="flex items-baseline gap-1 mb-1">
+              <span className="text-4xl font-black text-slate-200">R$&nbsp;597</span>
+              <span className="text-xl font-black text-slate-200">,00</span>
+            </div>
+            <p className="text-slate-500 text-xs mb-6">à vista · ou 12x no cartão</p>
+
             <div className="h-px mb-5" style={{ background:'rgba(255,255,255,0.05)' }} />
+
             <div className="flex flex-col gap-2 mb-6 text-sm text-slate-500">
-              {['Flashcards ilimitados', 'Algoritmo SRS avançado', 'Dashboard & heatmap'].map(f => (
+              {['Flashcards SRS ilimitados', 'Algoritmo SRS avançado', 'Dashboard & heatmap'].map(f => (
                 <div key={f} className="flex items-center gap-2">
-                  <span style={{ color:'#6d519e' }}>✓</span> {f}
+                  <span style={{ color:'#8b5cf6' }}>✓</span> {f}
                 </div>
               ))}
-              {['Resumos & Tabelas', 'Áudio-Resumos', 'Tutor IA Especialista'].map(f => (
+              {['Resumos & Tabelas', 'Áudio-Resumos', 'Exército de 10 Especialistas IA'].map(f => (
                 <div key={f} className="flex items-center gap-2 opacity-30">
                   <span>🔒</span> <span className="line-through">{f}</span>
                 </div>
               ))}
             </div>
-            <Link href="/login"
-              className="block w-full py-3 rounded-xl text-center text-sm font-bold transition-all hover:opacity-70"
-              style={{ background:'rgba(124,58,237,0.12)',border:'1px solid rgba(124,58,237,0.25)',color:'#6d519e' }}>
-              Começar com Flash
-            </Link>
-          </div>
 
-          {/* AiPro+ — the obvious choice */}
-          <div className="shimmer-card relative rounded-2xl p-6 overflow-hidden"
-            style={{
-              background:'rgba(8,4,18,0.95)',
-              boxShadow:`0 0 0 1px rgba(124,58,237,0.55), 0 0 70px rgba(124,58,237,0.22), 0 0 140px rgba(6,182,212,0.10)`,
-            }}>
-            {/* Gradient border */}
-            <div className="absolute inset-0 rounded-2xl pointer-events-none"
-              style={{ padding:'1px', background:'linear-gradient(135deg,#7C3AED,#06b6d4,#ec4899)',
-                WebkitMask:'linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0)',
-                WebkitMaskComposite:'xor', maskComposite:'exclude' }} />
-            {/* Ambient */}
-            <div className="absolute inset-0 pointer-events-none"
-              style={{ background:'radial-gradient(ellipse at top right,rgba(6,182,212,0.12) 0%,transparent 60%)' }} />
-            <div className="absolute inset-x-0 top-0 h-px"
-              style={{ background:'linear-gradient(90deg,#7C3AED,#06b6d4,#ec4899)' }} />
-
-            {/* Badge */}
-            <div className="absolute top-4 right-4 text-xs font-black px-2.5 py-1.5 rounded-full text-white"
-              style={{ background:'linear-gradient(135deg,#7C3AED,#06b6d4)', boxShadow:'0 0 16px rgba(124,58,237,0.55)' }}>
-              💎 Plano Recomendado para Medicina
-            </div>
-
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg mb-4 relative"
-              style={{ background:'linear-gradient(135deg,rgba(124,58,237,0.30),rgba(6,182,212,0.22))',
-                border:'1px solid rgba(6,182,212,0.40)', boxShadow:'0 0 20px rgba(6,182,212,0.25)' }}>
-              🤖
-            </div>
-            <p className="text-xs font-bold tracking-widest uppercase mb-1 relative"
-              style={{ background:'linear-gradient(90deg,#a78bfa,#67e8f9)',
-                WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>
-              Plano AiPro+
-            </p>
-            <div className="flex items-baseline gap-1 mb-6 relative">
-              <span className="text-slate-400 text-xs">12x de</span>
-              <span className="text-4xl font-black text-white ml-1">R$&nbsp;67</span>
-              <span className="text-2xl font-black text-white">,90</span>
-            </div>
-            <div className="h-px mb-5 relative"
-              style={{ background:'linear-gradient(90deg,rgba(124,58,237,0.45),rgba(6,182,212,0.45))' }} />
-
-            <div className="flex flex-col gap-2 mb-6 text-sm relative">
-              {[
-                { t:'Tudo do Plano Flash incluído',      c:'#67e8f9' },
-                { t:'Resumos Storytelling por deck',     c:'#67e8f9' },
-                { t:'Tabelas + Macetes & Mnemonics',     c:'#67e8f9' },
-                { t:'Áudio-Resumos narrados por IA',     c:'#67e8f9' },
-                { t:'Tutor IA Especialista 24h',         c:'#f472b6' },
-                { t:'Flashcards via Foto/PDF',           c:'#f472b6' },
-              ].map(({ t, c }) => (
-                <div key={t} className="flex items-center gap-2">
-                  <span style={{ color:c }}>✓</span>
-                  <span className="text-slate-300">{t}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* ── Email form (aparece quando não há e-mail em localStorage) ── */}
-            {showEmailForm && (
-              <div className="flex flex-col gap-2 mb-4 relative">
-                <input
-                  type="text"
-                  placeholder="Seu nome"
-                  value={name}
-                  onChange={e => setName(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl text-sm text-white outline-none"
-                  style={{ background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)' }}
-                />
-                <input
-                  type="email"
-                  placeholder="Seu melhor e-mail *"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  required
-                  autoFocus
-                  className="w-full px-4 py-2.5 rounded-xl text-sm text-white outline-none"
-                  style={{ background:'rgba(255,255,255,0.06)', border:'1px solid rgba(124,58,237,0.45)' }}
-                />
-                <p className="text-xs" style={{ color:'rgba(255,255,255,0.30)' }}>
-                  Usamos seu e-mail para criar seu acesso após o pagamento.
-                </p>
-              </div>
-            )}
-
-            {/* ── Erro ── */}
-            {buyError && (
+            <EmailForm planId="flash" />
+            {buyError && activePlan === 'flash' && (
               <p className="text-xs text-red-400 text-center mb-3">{buyError}</p>
             )}
 
             <button
-              onClick={handleBuyPro}
-              disabled={buyLoading}
+              onClick={() => handleBuy('flash')}
+              disabled={buyLoading && activePlan === 'flash'}
+              className="block w-full py-3 rounded-xl text-center text-sm font-bold transition-all hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ background:'rgba(124,58,237,0.14)', border:'1px solid rgba(124,58,237,0.30)', color:'#a78bfa' }}>
+              {buyLoading && activePlan === 'flash'
+                ? 'Redirecionando…'
+                : showEmailForm && activePlan === 'flash' && !email
+                ? 'Continuar →'
+                : 'Garantir Aceleração →'}
+            </button>
+          </div>
+
+          {/* ── PLANO PANTEÃO ELITE (AiPro+) ── */}
+          <div className="elite-card relative rounded-2xl p-8 overflow-hidden"
+            style={{ background:'rgba(4,10,8,0.97)' }}>
+            {/* Emerald gradient border overlay */}
+            <div className="absolute inset-0 rounded-2xl pointer-events-none"
+              style={{
+                padding:'1.5px',
+                background:`linear-gradient(135deg,${EMERALD},#06b6d4,#a78bfa,${EMERALD})`,
+                WebkitMask:'linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0)',
+                WebkitMaskComposite:'xor', maskComposite:'exclude',
+              }} />
+            {/* Ambient glow */}
+            <div className="absolute inset-0 pointer-events-none"
+              style={{ background:`radial-gradient(ellipse at top right,${EMERALD}18 0%,transparent 55%)` }} />
+            <div className="absolute inset-x-0 top-0 h-px"
+              style={{ background:`linear-gradient(90deg,${EMERALD},${CYAN},#a78bfa)` }} />
+
+            {/* Top badge — inline, no overlap */}
+            <div className="flex justify-center mb-4">
+              <span className="text-xs font-black px-3 py-1.5 rounded-full text-white text-center"
+                style={{ background:`linear-gradient(135deg,${EMERALD},${CYAN})`, boxShadow:`0 0 20px ${EMERALD}55` }}>
+                🏅 ESCOLHA DOS TOP 1% MEDICINA
+              </span>
+            </div>
+
+            <p className="text-xs font-black tracking-widest uppercase mb-3 relative"
+              style={{ background:`linear-gradient(90deg,${EMERALD},${CYAN})`,
+                WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>
+              🏆 PLANO PANTEÃO ELITE
+            </p>
+
+            {/* Validity — hero element */}
+            <div className="px-4 py-3 rounded-xl mb-4 text-center relative"
+              style={{ background:`${EMERALD}15`, border:`1px solid ${EMERALD}45` }}>
+              <p className="text-xs font-black tracking-widest uppercase" style={{ color: EMERALD }}>
+                SEGURO APROVAÇÃO
+              </p>
+              <p className="text-lg font-black text-white mt-0.5">ENEM 2026 + 2027</p>
+              <p className="text-xs font-bold mt-0.5" style={{ color: EMERALD }}>COMBO 2 ANOS</p>
+            </div>
+
+            {/* Price */}
+            <div className="mb-1">
+              <span className="text-slate-600 text-sm line-through">De R$ 1.297</span>
+            </div>
+            <div className="flex items-baseline gap-1 mb-1 relative">
+              <span className="text-5xl font-black text-white">R$&nbsp;697</span>
+              <span className="text-2xl font-black text-white">,00</span>
+            </div>
+            <p className="text-slate-400 text-xs mb-6 relative">à vista · ou 12x no cartão</p>
+
+            <div className="h-px mb-5 relative"
+              style={{ background:`linear-gradient(90deg,${EMERALD}55,${CYAN}55)` }} />
+
+            <div className="flex flex-col gap-2.5 mb-6 text-sm relative">
+              {([
+                { t:'Tudo do Plano Aceleração incluído',          c: EMERALD },
+                { t:'Exército de 10 Especialistas IA 24h',        c: EMERALD },
+                { t:'__NORMA__',                                   c: EMERALD },
+                { t:'Resumos Storytelling por deck',               c: CYAN    },
+                { t:'Tabelas Comparativas + Macetes & Mnemonics', c: CYAN    },
+                { t:'Áudio-Resumos narrados por IA',              c: CYAN    },
+              ] as { t: string; c: string }[]).map(({ t, c }) => (
+                <div key={t} className="flex items-start gap-2">
+                  <span className="shrink-0 mt-0.5" style={{ color:c }}>✓</span>
+                  <span className="text-slate-200 leading-snug">
+                    {t === '__NORMA__'
+                      ? <>Redação Master: Mentoria e Correção com Tutor.IA{' '}
+                          <strong style={{ color: EMERALD, textShadow: `0 0 8px ${EMERALD}90` }}>Norma</strong>
+                        </>
+                      : t}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <EmailForm planId="proai_plus" />
+            {buyError && activePlan === 'proai_plus' && (
+              <p className="text-xs text-red-400 text-center mb-3">{buyError}</p>
+            )}
+
+            <button
+              onClick={() => handleBuy('proai_plus')}
+              disabled={buyLoading && activePlan === 'proai_plus'}
               className="relative block w-full py-4 rounded-xl text-center font-black text-white text-base transition-all duration-200 hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
               style={{
-                background:'linear-gradient(135deg,#7C3AED 0%,#06b6d4 60%,#ec4899 100%)',
-                boxShadow:'0 0 36px rgba(124,58,237,0.60),0 4px 20px rgba(0,0,0,0.50)',
+                background:`linear-gradient(135deg,${EMERALD} 0%,${CYAN} 60%,#a78bfa 100%)`,
+                boxShadow:`0 0 40px ${EMERALD}55, 0 4px 20px rgba(0,0,0,0.50)`,
               }}>
               <span className="absolute inset-0 rounded-xl overflow-hidden pointer-events-none">
                 <span className="absolute inset-0"
                   style={{ background:'linear-gradient(105deg,transparent 30%,rgba(255,255,255,0.12) 50%,transparent 70%)' }} />
               </span>
-              {buyLoading ? 'Redirecionando para pagamento…'
-                : showEmailForm && !email ? 'Continuar →'
-                : 'Garantir minha Aprovação →'}
+              {buyLoading && activePlan === 'proai_plus'
+                ? 'Redirecionando para pagamento…'
+                : showEmailForm && activePlan === 'proai_plus' && !email
+                ? 'Continuar →'
+                : data
+                ? `Vencer ${subjectMeta.name} no Panteão Elite →`
+                : 'Entrar no Panteão Elite →'}
             </button>
+
+            {/* Micro trust */}
+            <p className="text-center text-xs mt-3 relative" style={{ color:`${EMERALD}80` }}>
+              🛡️ Garantia Incondicional de 7 Dias · Risco Zero
+            </p>
           </div>
         </div>
+
+        {/* ── A MURALHA — Prova Social ── */}
+        <EvidenceCarousel />
+        <StatusTicker />
 
         {/* ── Guarantee ── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
           <div className="rounded-2xl p-5 flex items-start gap-4"
-            style={{ background:'rgba(10,5,20,0.70)',border:'1px solid rgba(34,197,94,0.18)' }}>
+            style={{ background:'rgba(10,5,20,0.70)', border:`1px solid ${EMERALD}20` }}>
             <div className="text-3xl shrink-0">🛡️</div>
             <div>
-              <p className="text-white font-bold text-sm">Garantia de 7 dias</p>
+              <p className="text-white font-bold text-sm">Garantia Incondicional de 7 Dias. Risco Zero.</p>
               <p className="text-slate-500 text-xs mt-1 leading-relaxed">
-                Se não sentir melhora na sua retenção em 7 dias, devolvemos 100% do valor. Sem perguntas.
+                Se não sentir melhora na sua retenção em 7 dias, devolvemos 100% do valor. Sem perguntas, sem burocracia.
               </p>
             </div>
           </div>
           <div className="rounded-2xl p-5 flex items-start gap-4"
-            style={{ background:'rgba(10,5,20,0.70)',border:'1px solid rgba(124,58,237,0.18)' }}>
+            style={{ background:'rgba(10,5,20,0.70)', border:'1px solid rgba(124,58,237,0.18)' }}>
             <div className="text-3xl shrink-0">⚡</div>
             <div>
               <p className="text-white font-bold text-sm">Acesso em menos de 2 minutos</p>
               <p className="text-slate-500 text-xs mt-1 leading-relaxed">
-                Após a confirmação, seus flashcards e o Tutor IA já estarão disponíveis. Sem espera.
+                Após a confirmação, seus flashcards e o Exército de Especialistas IA já estarão disponíveis. Sem espera.
               </p>
             </div>
           </div>
         </div>
 
-        {/* Feature comparison */}
+        {/* ── Feature comparison ── */}
         <div className="rounded-2xl overflow-hidden mb-8"
-          style={{ border:'1px solid rgba(255,255,255,0.06)',background:'rgba(10,5,20,0.60)' }}>
+          style={{ border:'1px solid rgba(255,255,255,0.06)', background:'rgba(10,5,20,0.60)' }}>
           <div className="grid grid-cols-3 px-5 py-3 border-b border-white/5">
             <span className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Recurso</span>
-            <span className="text-xs font-semibold text-center uppercase tracking-wider" style={{ color:'#6d519e' }}>Flash</span>
+            <span className="text-xs font-semibold text-center uppercase tracking-wider" style={{ color:'#8b5cf6' }}>
+              ⚡ Aceleração
+            </span>
             <span className="text-xs font-semibold text-center uppercase tracking-widest"
-              style={{ background:'linear-gradient(90deg,#a78bfa,#67e8f9)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent' }}>
-              AiPro+
+              style={{ background:`linear-gradient(90deg,${EMERALD},${CYAN})`, WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>
+              🏆 Panteão
             </span>
           </div>
           {[
-            ['Flashcards SRS ilimitados', true,  true ],
-            ['Dashboard & heatmap',       true,  true ],
-            ['Resumos Storytelling',       false, true ],
-            ['Tabelas Comparativas',       false, true ],
-            ['Áudio-Resumos IA',           false, true ],
-            ['Tutor IA Especialista',      false, true ],
-            ['Flashcards por Foto/PDF',    false, true ],
+            ['Flashcards SRS ilimitados',                true,  true ],
+            ['Dashboard & heatmap',                      true,  true ],
+            ['Resumos Storytelling',                     false, true ],
+            ['Tabelas Comparativas',                     false, true ],
+            ['Áudio-Resumos IA',                         false, true ],
+            ['Exército de 10 Especialistas IA',          false, true ],
+            ['Redação Master — Tutor.IA Norma',          false, true ],
+            ['Acesso 2 anos (ENEM 2026 + 2027)',         false, true ],
           ].map(([feat, flash, pro], i) => (
             <div key={feat as string} className="grid grid-cols-3 px-5 py-3 text-sm"
-              style={{ borderTop:'1px solid rgba(255,255,255,0.04)',background:i%2===0?'rgba(255,255,255,0.012)':'transparent' }}>
+              style={{ borderTop:'1px solid rgba(255,255,255,0.04)', background:i%2===0?'rgba(255,255,255,0.012)':'transparent' }}>
               <span className="text-slate-400">{feat as string}</span>
-              <span className="text-center font-semibold" style={{ color:flash?'#6d519e':'#1e1b4b' }}>{flash?'✓':'—'}</span>
-              <span className="text-center font-semibold" style={{ color:pro?'#67e8f9':'#334155' }}>{pro?'✓':'—'}</span>
+              <span className="text-center font-semibold" style={{ color:flash?'#8b5cf6':'#1e1b4b' }}>{flash?'✓':'—'}</span>
+              <span className="text-center font-semibold" style={{ color:pro?EMERALD:'#334155' }}>{pro?'✓':'—'}</span>
             </div>
           ))}
         </div>
 
+        {/* ── Footer ── */}
         <p className="text-center text-slate-700 text-xs pb-8">
-          🔒 Pagamento 100% seguro · 📅 Cancele quando quiser · ⚡ Acesso imediato
+          🔒 Pagamento 100% seguro · 🛡️ Garantia Incondicional de 7 Dias. Risco Zero. · ⚡ Acesso imediato
         </p>
       </div>
 
     </div>
+
+    <WhatsAppFloat />
+    </>
   );
 }

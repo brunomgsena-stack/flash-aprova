@@ -4,7 +4,7 @@
  * Cria uma cobrança no AbacatePay e retorna o link de pagamento.
  * Não requer conta no Supabase — o usuário ainda não existe.
  *
- * Body: { email: string; name?: string }
+ * Body: { email: string; name?: string; planId: 'flash' | 'proai_plus' }
  * Resposta: { url: string }
  */
 
@@ -12,12 +12,27 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
 
-// ── Preço do plano AiPro+ em centavos (R$ 67,90) ─────────────────────────────
-const PLAN_PRICE_CENTS = 6790;
+// ── Configuração de planos ─────────────────────────────────────────────────────
+const PLAN_CONFIG: Record<string, {
+  priceCents:         number;
+  productName:        string;
+  productDescription: string;
+}> = {
+  flash: {
+    priceCents:         59700,
+    productName:        'FlashAprova Aceleração',
+    productDescription: 'Flashcards SRS ilimitados + Dashboard — Acesso até ENEM 2026',
+  },
+  proai_plus: {
+    priceCents:         69700,
+    productName:        'FlashAprova Panteão Elite',
+    productDescription: 'Arsenal completo IA: 10 Tutores Especialistas, Prof. Norma, Storytelling — 2 anos',
+  },
+};
 
 // ── Config AbacatePay ─────────────────────────────────────────────────────────
-const ABACATE_API_URL  = 'https://api.abacatepay.com/v1';
-const ABACATE_API_KEY  = process.env.ABACATEPAY_API_KEY ?? '';
+const ABACATE_API_URL = 'https://api.abacatepay.com/v1';
+const ABACATE_API_KEY = process.env.ABACATEPAY_API_KEY ?? '';
 
 interface AbacateCreateResponse {
   error: string | null;
@@ -35,11 +50,12 @@ export async function POST(req: NextRequest) {
   }
 
   // ── Parse do body ─────────────────────────────────────────────────────────
-  let email: string, name: string;
+  let email: string, name: string, planId: string;
   try {
-    const body = await req.json() as { email?: string; name?: string };
-    email = (body.email ?? '').trim().toLowerCase();
-    name  = (body.name  ?? '').trim() || email.split('@')[0];
+    const body = await req.json() as { email?: string; name?: string; planId?: string };
+    email  = (body.email  ?? '').trim().toLowerCase();
+    name   = (body.name   ?? '').trim() || email.split('@')[0];
+    planId = (body.planId ?? 'proai_plus').trim();
   } catch {
     return NextResponse.json({ error: 'Corpo da requisição inválido.' }, { status: 400 });
   }
@@ -48,11 +64,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'E-mail inválido.' }, { status: 422 });
   }
 
+  const plan = PLAN_CONFIG[planId];
+  if (!plan) {
+    return NextResponse.json({ error: 'Plano inválido.' }, { status: 422 });
+  }
+
   const baseUrl = process.env.NEXT_PUBLIC_URL ?? 'https://flashaprova.app';
 
   // ── Cria cobrança no AbacatePay ───────────────────────────────────────────
-  // Documentação: https://abacatepay.com/docs
-  // O campo `externalId` transporta o email do lead para o webhook.
   let abacateRes: Response;
   try {
     abacateRes = await fetch(`${ABACATE_API_URL}/billing/create`, {
@@ -64,20 +83,19 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         frequency:     'ONE_TIME',
         methods:       ['PIX'],
-        externalId:    email,           // recebemos de volta no webhook para identificar o comprador
+        externalId:    email,
         returnUrl:     `${baseUrl}/dashboard?upgrade=success`,
         completionUrl: `${baseUrl}/dashboard`,
         products: [{
-          externalId:  'aipro_plus',
-          name:        'FlashAprova AiPro+',
-          description: 'Acesso completo: Tutores IA, Redação, Arsenal de Estudo',
+          externalId:  planId,                    // 'flash' ou 'proai_plus' — lido no webhook
+          name:        plan.productName,
+          description: plan.productDescription,
           quantity:    1,
-          price:       PLAN_PRICE_CENTS,
+          price:       plan.priceCents,
         }],
         customer: {
           name,
           email,
-          // Telefone e CPF são coletados pelo AbacatePay no checkout
           cellphone: '',
           taxId: { number: '', type: 'CPF' },
         },
