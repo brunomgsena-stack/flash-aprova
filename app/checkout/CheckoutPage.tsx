@@ -472,13 +472,12 @@ const cardStyle = {
 } as React.CSSProperties;
 
 export default function CheckoutPage() {
-  const [data,          setData]          = useState<OnboardingData | null>(null);
-  const [email,         setEmail]         = useState('');
-  const [name,          setName]          = useState('');
-  const [activePlan,    setActivePlan]    = useState<PlanId | null>(null);
-  const [showEmailForm, setShowEmailForm] = useState(false);
-  const [buyLoading,    setBuyLoading]    = useState(false);
-  const [buyError,      setBuyError]      = useState<string | null>(null);
+  const [data,       setData]       = useState<OnboardingData | null>(null);
+  const [email,      setEmail]      = useState('');
+  const [activePlan, setActivePlan] = useState<PlanId | null>(null);
+  const [needsEmail, setNeedsEmail] = useState(false);
+  const [buyLoading, setBuyLoading] = useState(false);
+  const [buyError,   setBuyError]   = useState<string | null>(null);
 
   useEffect(() => {
     try {
@@ -487,19 +486,20 @@ export default function CheckoutPage() {
         const parsed = JSON.parse(raw) as OnboardingData;
         setData(parsed);
         if (parsed.email) setEmail(parsed.email);
-        if (parsed.name)  setName(parsed.name);
       }
     } catch { /* ignore */ }
   }, []);
 
   async function handleBuy(planId: PlanId) {
+    // Edge case: lead pulou o onboarding e não tem e-mail salvo
     if (!email) {
       setActivePlan(planId);
-      setShowEmailForm(true);
+      setNeedsEmail(true);
       return;
     }
 
     setActivePlan(planId);
+    setNeedsEmail(false);
     setBuyLoading(true);
     setBuyError(null);
 
@@ -507,7 +507,7 @@ export default function CheckoutPage() {
       const res  = await fetch('/api/checkout', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ email, name: name || undefined, planId }),
+        body:    JSON.stringify({ email, planId }),
       });
       const json = await res.json() as { url?: string; error?: string };
       if (!res.ok || !json.url) throw new Error(json.error ?? 'Erro ao gerar link de pagamento.');
@@ -539,32 +539,20 @@ export default function CheckoutPage() {
     return defaultScores[id];
   });
 
-  function EmailForm({ planId }: { planId: PlanId }) {
-    if (activePlan !== planId || !showEmailForm) return null;
+  // Fallback mínimo — só exibido se o lead pulou o onboarding (sem e-mail em localStorage)
+  function EmailFallback({ planId }: { planId: PlanId }) {
+    if (!needsEmail || activePlan !== planId) return null;
     return (
-      <div className="flex flex-col gap-2 mb-4">
-        <input
-          type="text"
-          placeholder="Seu nome"
-          value={name}
-          onChange={e => setName(e.target.value)}
-          className="w-full px-4 py-2.5 rounded-xl text-sm text-white outline-none"
-          style={{ background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)' }}
-        />
-        <input
-          type="email"
-          placeholder="Seu melhor e-mail *"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-          required
-          autoFocus
-          className="w-full px-4 py-2.5 rounded-xl text-sm text-white outline-none"
-          style={{ background:'rgba(255,255,255,0.06)', border:`1px solid ${planId === 'proai_plus' ? EMERALD : VIOLET}55` }}
-        />
-        <p className="text-xs" style={{ color:'rgba(255,255,255,0.30)' }}>
-          Usamos seu e-mail para criar seu acesso após o pagamento.
-        </p>
-      </div>
+      <input
+        type="email"
+        placeholder="Seu e-mail para acesso"
+        value={email}
+        onChange={e => setEmail(e.target.value)}
+        onKeyDown={e => { if (e.key === 'Enter' && email) handleBuy(planId); }}
+        autoFocus
+        className="w-full px-4 py-2.5 rounded-xl text-sm text-white outline-none mb-3"
+        style={{ background:'rgba(255,255,255,0.06)', border:`1px solid ${planId === 'proai_plus' ? EMERALD : VIOLET}55` }}
+      />
     );
   }
 
@@ -693,7 +681,7 @@ export default function CheckoutPage() {
               ))}
             </div>
 
-            <EmailForm planId="flash" />
+            <EmailFallback planId="flash" />
             {buyError && activePlan === 'flash' && (
               <p className="text-xs text-red-400 text-center mb-3">{buyError}</p>
             )}
@@ -705,9 +693,7 @@ export default function CheckoutPage() {
               style={{ background:'rgba(124,58,237,0.14)', border:'1px solid rgba(124,58,237,0.30)', color:'#a78bfa' }}>
               {buyLoading && activePlan === 'flash'
                 ? 'Redirecionando…'
-                : showEmailForm && activePlan === 'flash' && !email
-                ? 'Continuar →'
-                : 'Garantir Aceleração →'}
+                : 'Assinar Plano Aceleração →'}
             </button>
           </div>
 
@@ -787,7 +773,7 @@ export default function CheckoutPage() {
               ))}
             </div>
 
-            <EmailForm planId="proai_plus" />
+            <EmailFallback planId="proai_plus" />
             {buyError && activePlan === 'proai_plus' && (
               <p className="text-xs text-red-400 text-center mb-3">{buyError}</p>
             )}
@@ -806,11 +792,9 @@ export default function CheckoutPage() {
               </span>
               {buyLoading && activePlan === 'proai_plus'
                 ? 'Redirecionando para pagamento…'
-                : showEmailForm && activePlan === 'proai_plus' && !email
-                ? 'Continuar →'
                 : data
-                ? `Vencer ${subjectMeta.name} no Panteão Elite →`
-                : 'Entrar no Panteão Elite →'}
+                ? `Garantir Aprovação em ${subjectMeta.name} →`
+                : 'Garantir Minha Vaga no Panteão →'}
             </button>
 
             {/* Micro trust */}
