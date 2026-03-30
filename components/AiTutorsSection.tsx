@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
 
 // ─── Design tokens ─────────────────────────────────────────────────────────
 const NEON   = '#00FF73';
@@ -167,7 +168,7 @@ function TutorAvatar({ tutor, isActive, onClick }: {
     <button
       onClick={onClick}
       className="flex flex-col items-center gap-1.5 shrink-0 transition-all duration-200"
-      style={{ minWidth: 72 }}
+      style={{ minWidth: 72, minHeight: 56 }}
       aria-label={`Selecionar ${tutor.name}`}
     >
       <motion.div
@@ -179,20 +180,36 @@ function TutorAvatar({ tutor, isActive, onClick }: {
         transition={{ duration: 0.25 }}
         style={{ border: `2px solid rgba(255,255,255,0.1)`, background: '#0d0a1e' }}
       >
-        <img
+        <Image
           src={tutor.avatar}
           alt={tutor.name}
+          width={56}
+          height={56}
           className="w-full h-full object-cover"
-          loading="lazy"
+          unoptimized
         />
-        {/* Active pulse ring */}
+        {/* Active aura — inner glow + two expanding rings */}
         {isActive && (
-          <motion.div
-            className="absolute inset-0 rounded-full"
-            style={{ border: `2px solid ${tutor.color}` }}
-            animate={{ opacity: [0.6, 0, 0.6], scale: [1, 1.15, 1] }}
-            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-          />
+          <>
+            <motion.div
+              className="absolute inset-0 rounded-full pointer-events-none"
+              style={{ boxShadow: `0 0 0 3px ${tutor.color}50, 0 0 22px ${tutor.color}70, 0 0 44px ${tutor.color}30` }}
+              animate={{ opacity: [0.55, 1, 0.55] }}
+              transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
+            />
+            <motion.div
+              className="absolute rounded-full pointer-events-none"
+              style={{ inset: -10, border: `1.5px solid ${tutor.color}70` }}
+              animate={{ opacity: [0.7, 0], scale: [0.88, 1.45] }}
+              transition={{ duration: 1.4, repeat: Infinity, ease: 'easeOut' }}
+            />
+            <motion.div
+              className="absolute rounded-full pointer-events-none"
+              style={{ inset: -10, border: `1px solid ${tutor.color}45` }}
+              animate={{ opacity: [0.5, 0], scale: [0.88, 1.7] }}
+              transition={{ duration: 1.4, repeat: Infinity, ease: 'easeOut', delay: 0.55 }}
+            />
+          </>
         )}
       </motion.div>
       <p
@@ -312,7 +329,7 @@ export default function AiTutorsSection() {
             className="w-10 h-10 rounded-full overflow-hidden shrink-0"
             style={{ background: '#0d0a1e', border: `1px solid ${tutor.color}45` }}
           >
-            <img src={tutor.avatar} alt={tutor.name} className="w-full h-full object-cover" />
+            <Image src={tutor.avatar} alt={tutor.name} width={40} height={40} className="w-full h-full object-cover" unoptimized />
           </div>
           <div>
             <p className="text-white font-bold text-sm">
@@ -349,8 +366,8 @@ export default function AiTutorsSection() {
                 <div
                   className="max-w-xs sm:max-w-sm rounded-2xl rounded-tr-sm px-4 py-3"
                   style={{
-                    background: 'rgba(255,255,255,0.07)',
-                    border: '1px solid rgba(255,255,255,0.09)',
+                    background: 'linear-gradient(135deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.05) 100%)',
+                    border: '1px solid rgba(255,255,255,0.10)',
                   }}
                 >
                   <p className="text-slate-300 text-sm leading-relaxed">{tutor.userMsg}</p>
@@ -373,13 +390,13 @@ export default function AiTutorsSection() {
                   className="w-9 h-9 rounded-full overflow-hidden shrink-0 mt-0.5"
                   style={{ border: `1px solid ${tutor.color}40`, background: '#0d0a1e' }}
                 >
-                  <img src={tutor.avatar} alt="" className="w-full h-full object-cover" />
+                  <Image src={tutor.avatar} alt="" width={36} height={36} className="w-full h-full object-cover" unoptimized />
                 </div>
                 <div
                   className="rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-3"
                   style={{
-                    background: `${tutor.color}0d`,
-                    border: `1px solid ${tutor.color}22`,
+                    background: `linear-gradient(135deg, ${tutor.color}1a 0%, ${tutor.color}08 100%)`,
+                    border: `1px solid ${tutor.color}28`,
                   }}
                 >
                   <TypingDots color={tutor.color} />
@@ -402,13 +419,13 @@ export default function AiTutorsSection() {
                   className="w-9 h-9 rounded-full overflow-hidden shrink-0 mt-0.5"
                   style={{ border: `1px solid ${tutor.color}40`, background: '#0d0a1e' }}
                 >
-                  <img src={tutor.avatar} alt="" className="w-full h-full object-cover" />
+                  <Image src={tutor.avatar} alt="" width={36} height={36} className="w-full h-full object-cover" unoptimized />
                 </div>
                 <div
                   className="max-w-xs sm:max-w-md rounded-2xl rounded-tl-sm px-4 py-3"
                   style={{
-                    background: `${tutor.color}0e`,
-                    border: `1px solid ${tutor.color}28`,
+                    background: `linear-gradient(135deg, ${tutor.color}1c 0%, ${tutor.color}08 100%)`,
+                    border: `1px solid ${tutor.color}30`,
                   }}
                 >
                   <p className="text-white text-sm leading-relaxed">{tutor.tutorMsg}</p>

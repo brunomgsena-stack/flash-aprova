@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, animate, useMotionValue, useInView } from 'framer-motion';
+import Image from 'next/image';
 
 // ─── Design tokens ─────────────────────────────────────────────────────────────
 const GOLD    = '#FFD700';
@@ -16,11 +17,11 @@ const NORMA_AVATAR =
 
 // ─── Competências TRI ──────────────────────────────────────────────────────────
 const COMPETENCIAS = [
-  { id: 'C1', label: 'Norma Culta',            score: 200, max: 200, color: EMERALD },
-  { id: 'C2', label: 'Tema e Argumentação',     score: 160, max: 200, color: NEON   },
-  { id: 'C3', label: 'Organização Textual',     score: 140, max: 200, color: AMBER  },
+  { id: 'C1', label: 'Norma Culta',            score: 160, max: 200, color: EMERALD },
+  { id: 'C2', label: 'Tema e Argumentação',     score: 140, max: 200, color: NEON   },
+  { id: 'C3', label: 'Organização Textual',     score: 160, max: 200, color: AMBER  },
   { id: 'C4', label: 'Coesão e Conectivos',     score: 120, max: 200, color: ORANGE },
-  { id: 'C5', label: 'Proposta de Intervenção', score: 160, max: 200, color: NEON   },
+  { id: 'C5', label: 'Proposta de Intervenção', score: 200, max: 200, color: NEON   },
 ] as const;
 
 const TOTAL_SCORE = COMPETENCIAS.reduce((s, c) => s + c.score, 0); // 780
@@ -346,39 +347,85 @@ function TriDossier() {
         </div>
       </div>
 
-      {/* ── Norma feedback box ── */}
+      {/* ── Norma feedback box — terminal style ── */}
       <div
-        className="rounded-2xl p-4"
+        className="rounded-2xl overflow-hidden"
         style={{
-          background: `linear-gradient(135deg, ${GOLD}08 0%, rgba(6,8,16,0.75) 100%)`,
-          border: `1px solid ${GOLD}28`,
-          boxShadow: `0 0 24px ${GOLD}0c`,
+          background: 'rgba(4,6,14,0.92)',
+          border: `1px solid ${GOLD}30`,
+          boxShadow: `0 0 28px ${GOLD}10, inset 0 0 40px rgba(0,0,0,0.5)`,
         }}
       >
-        <div className="flex items-start gap-3">
-          {/* Avatar */}
-          <div
-            className="w-10 h-10 rounded-full overflow-hidden shrink-0"
-            style={{ border: `1.5px solid ${GOLD}50`, background: '#0d0a1e' }}
-          >
-            <img src={NORMA_AVATAR} alt="Prof. Norma" className="w-full h-full object-cover" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-2">
-              <p className="text-xs font-black text-white">Prof. Norma</p>
-              <span
-                className="text-[8px] font-bold px-1.5 py-0.5 rounded-full"
-                style={{ color: GOLD, background: `${GOLD}18`, border: `1px solid ${GOLD}35` }}>
-                VEREDITO
-              </span>
+        {/* Terminal chrome bar */}
+        <div
+          className="flex items-center justify-between px-4 py-2"
+          style={{ background: `${GOLD}0c`, borderBottom: `1px solid ${GOLD}20` }}
+        >
+          <div className="flex items-center gap-2">
+            <div
+              className="w-8 h-8 rounded-full overflow-hidden shrink-0"
+              style={{ border: `1.5px solid ${GOLD}50`, background: '#0d0a1e' }}
+            >
+              <Image src={NORMA_AVATAR} alt="Prof. Norma" width={32} height={32} className="w-full h-full object-cover" unoptimized />
             </div>
-            <p className="text-xs text-slate-300 leading-relaxed">
-              {'"'}Cuidado:{' '}
-              <span style={{ color: ORANGE }} className="font-semibold">repertório sociocultural mal legitimado</span>
-              {' '}na Competência 2 derrubou sua nota. Além disso, o uso excessivo de{' '}
-              <span style={{ color: AMBER }} className="font-semibold">orações intercaladas</span>
-              {' '}está prejudicando a coesão em C4.{'"'}
-            </p>
+            <span
+              className="text-[9px] font-black tracking-widest"
+              style={{ color: GOLD, fontFamily: "'JetBrains Mono', 'Courier New', ui-monospace, monospace" }}
+            >
+              norma@flashaprova ~ veredito
+            </span>
+          </div>
+          <motion.span
+            className="text-[8px] font-bold px-2 py-0.5 rounded"
+            style={{
+              color: GOLD,
+              background: `${GOLD}18`,
+              border: `1px solid ${GOLD}35`,
+              fontFamily: 'ui-monospace, monospace',
+            }}
+            animate={{ opacity: [1, 0.4, 1] }}
+            transition={{ duration: 2.2, repeat: Infinity }}
+          >
+            ● VEREDITO
+          </motion.span>
+        </div>
+
+        {/* Terminal body */}
+        <div className="px-4 py-3">
+          {/* Prompt line */}
+          <p
+            className="text-[9px] mb-2"
+            style={{
+              color: `${GOLD}60`,
+              fontFamily: "'JetBrains Mono', 'Courier New', ui-monospace, monospace",
+            }}
+          >
+            $ analyze --student=alfab_002 --deep=true
+          </p>
+          {/* Output */}
+          <div
+            style={{
+              fontFamily: "'JetBrains Mono', 'Courier New', ui-monospace, monospace",
+              fontSize: '0.70rem',
+              lineHeight: '1.75',
+              color: 'rgba(226,232,240,0.88)',
+            }}
+          >
+            <span style={{ color: `${GOLD}90` }}>&gt; </span>
+            Cuidado:{' '}
+            <span style={{ color: ORANGE, fontWeight: 700 }}>repertório sociocultural mal legitimado</span>
+            {' '}na Competência 2 derrubou sua nota.
+            <br />
+            <span style={{ color: `${GOLD}90` }}>&gt; </span>
+            Além disso, o uso excessivo de{' '}
+            <span style={{ color: AMBER, fontWeight: 700 }}>orações intercaladas</span>
+            {' '}está prejudicando a coesão em C4.
+            <br />
+            <span style={{ color: `${GOLD}90` }}>&gt; </span>
+            <span style={{ color: EMERALD }}>
+              C5 PERFEITA — proposta de intervenção completa e detalhada.
+            </span>
+            <span className="cursor-blink" style={{ color: GOLD }}> ▮</span>
           </div>
         </div>
       </div>

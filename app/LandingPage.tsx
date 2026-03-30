@@ -1,16 +1,67 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
+import dynamic from 'next/dynamic';
+
+// ─── Above-the-fold: static import (needed for LCP / SSR) ─────────────────────
+import HeroSection    from '@/components/HeroSection';
 import AnkiComparison from '@/components/AnkiComparison';
-import NeuralEcosystemFlow from '@/components/NeuralEcosystemFlow';
-import TacticalOperations from '@/components/TacticalOperations';
-import NeuralBrainMap from '@/components/NeuralBrainMap';
-import ReelsTestimonials from '@/components/ReelsTestimonials';
-import AiTutorsSection from '@/components/AiTutorsSection';
-import NormaRedacaoSection from '@/components/NormaRedacaoSection';
-import CardVaultSection from '@/components/CardVaultSection';
+
+// ─── Below-the-fold: dynamic imports → separate JS chunks ─────────────────────
+// Each chunk is only downloaded when the section scrolls into view (see LazySection).
+const SkeletonBlock = ({ h = 400 }: { h?: number }) => (
+  <div
+    aria-hidden="true"
+    style={{
+      minHeight: h,
+      background: 'rgba(255,255,255,0.02)',
+      borderRadius: 16,
+      margin: '0 auto',
+      maxWidth: 1152,
+    }}
+  />
+);
+
+const NeuralBrainMap     = dynamic(() => import('@/components/NeuralBrainMap'),     { ssr: false, loading: () => <SkeletonBlock h={380} /> });
+const CardVaultSection   = dynamic(() => import('@/components/CardVaultSection'),   { ssr: false, loading: () => <SkeletonBlock h={480} /> });
+const NormaRedacaoSection= dynamic(() => import('@/components/NormaRedacaoSection'),{ ssr: false, loading: () => <SkeletonBlock h={520} /> });
+const AiTutorsSection    = dynamic(() => import('@/components/AiTutorsSection'),    { ssr: false, loading: () => <SkeletonBlock h={480} /> });
+const NeuralEcosystemFlow= dynamic(() => import('@/components/NeuralEcosystemFlow'),{ ssr: false, loading: () => <SkeletonBlock h={360} /> });
+const TacticalOperations = dynamic(() => import('@/components/TacticalOperations'), { ssr: false, loading: () => <SkeletonBlock h={400} /> });
+const ReelsTestimonials  = dynamic(() => import('@/components/ReelsTestimonials'),  { ssr: false, loading: () => <SkeletonBlock h={340} /> });
+
+// ─── Lazy section wrapper ──────────────────────────────────────────────────────
+// Defers rendering (and therefore chunk download) until the section is ~300px
+// from entering the viewport. Prevents heavy JS from blocking the initial paint.
+function LazySection({
+  children,
+  minHeight = 400,
+}: {
+  children: React.ReactNode;
+  minHeight?: number;
+}) {
+  const [visible, setVisible] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); obs.disconnect(); } },
+      { rootMargin: '300px 0px' },
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  return (
+    <div ref={ref}>
+      {visible ? children : <SkeletonBlock h={minHeight} />}
+    </div>
+  );
+}
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const GREEN  = '#22c55e';          // Biologia / 24h stat
@@ -320,7 +371,7 @@ function CTAButton({ size = 'lg', label }: { size?: 'sm' | 'lg'; label?: string 
   return (
     <Link
       href="/onboarding"
-      className={`cta-pulse relative inline-flex items-center gap-3 rounded-2xl font-black text-black overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.99] ${big ? 'px-8 py-5 text-lg' : 'px-6 py-4 text-base'}`}
+      className={`cta-pulse relative flex sm:inline-flex w-full sm:w-auto justify-center items-center gap-3 rounded-2xl font-black text-black overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.99] ${big ? 'px-8 py-5 text-lg' : 'px-6 py-4 text-base'}`}
       style={{
         background:    `linear-gradient(135deg, ${NEON} 0%, #00cc5a 100%)`,
         letterSpacing: '-0.01em',
@@ -362,7 +413,7 @@ function AuthorityBanner() {
     { abbr: 'UFPE',    full: 'Univ. Federal de Pernambuco' },
   ];
   return (
-    <section className="max-w-6xl mx-auto px-5 sm:px-10 pb-16">
+    <section className="max-w-6xl mx-auto px-6 sm:px-10 pb-16">
       <div
         className="relative rounded-2xl overflow-hidden"
         style={{
@@ -436,7 +487,7 @@ const FAQ_ITEMS = [
 function FAQAccordion() {
   const [open, setOpen] = useState<number | null>(null);
   return (
-    <section className="max-w-3xl mx-auto px-5 sm:px-10 pb-24">
+    <section className="max-w-3xl mx-auto px-6 sm:px-10 pb-24">
       <div className="text-center mb-10">
         <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: VIOLET }}>
           Dúvidas Frequentes
@@ -536,7 +587,7 @@ export default function LandingPage() {
       <div className="relative" style={{ zIndex: 1 }}>
 
         {/* ════════════════════════════════════ NAVBAR ══ */}
-        <nav className="flex items-center justify-between px-5 sm:px-10 py-5 max-w-6xl mx-auto">
+        <nav className="flex items-center justify-between px-6 sm:px-10 py-5 max-w-6xl mx-auto">
           <span className="font-black text-white text-xl tracking-tight">
             Flash<span style={{
               background: `linear-gradient(90deg, ${NEON}, ${VIOLET})`,
@@ -556,63 +607,12 @@ export default function LandingPage() {
         </nav>
 
         {/* ════════════════════════════════════ HERO ══ */}
-        <section className="max-w-4xl mx-auto px-5 sm:px-10 pt-10 pb-20 text-center">
-
-          <div className="fade-up inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-8 text-xs font-bold tracking-widest uppercase"
-            style={{ background: `${NEON}14`, border: `1px solid ${NEON}35`, color: NEON }}>
-            <span className="inline-block w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: NEON }} />
-            Retenção Cognitiva · IA Especialista · SRS Automático
-          </div>
-
-          <h1 className="fade-up-d1 text-4xl sm:text-5xl md:text-6xl font-black leading-tight text-white mb-6">
-            Pare de estudar<br/>
-            para{' '}
-            <span style={{ color: ORANGE, textShadow: `0 0 20px ${ORANGE}80, 0 0 40px ${ORANGE}40` }}>
-              esquecer.
-            </span>
-            <br/>
-            Garanta{' '}
-            <span style={{ color: NEON, textShadow: `0 0 20px ${NEON}80, 0 0 40px ${NEON}40` }}>
-              97% de retenção
-            </span>{' '}
-            <span style={{ color: '#5F00F6', textShadow: '0 0 20px rgba(95,0,246,0.50)' }}>
-              até o dia do ENEM.
-            </span>
-          </h1>
-
-          <p className="fade-up-d2 text-slate-400 text-lg sm:text-xl leading-relaxed max-w-2xl mx-auto mb-10">
-            A ciência prova: sem revisão espaçada, você esquece{' '}
-            <span className="text-white font-semibold">70% do conteúdo em menos de 24h.</span>{' '}
-            O FlashAprova usa IA + SRS para blindar sua memória — e seu nome na lista de aprovados.
-          </p>
-
-          <div className="fade-up-d3 flex flex-col items-center gap-3">
-            <CTAButton />
-            <p className="text-slate-700 text-xs">Sem cartão · Diagnóstico por IA em 3 min · Acesso imediato</p>
-          </div>
-
-          {/* Stats */}
-          <div className="fade-up-d4 flex flex-wrap justify-center gap-8 mt-14">
-            {[
-              { n: '97%',    label: 'retenção com SRS + IA',    color: NEON   },
-              { n: '5.700+', label: 'flashcards táticos ENEM',  color: VIOLET },
-              { n: '24h',    label: 'para sentir a diferença',  color: GREEN  },
-            ].map(({ n, label, color }) => (
-              <div key={n} className="text-center">
-                <p className="text-3xl font-black" style={{
-                  color,
-                  textShadow: `0 0 18px ${color}70`,
-                }}>{n}</p>
-                <p className="text-slate-600 text-xs mt-0.5">{label}</p>
-              </div>
-            ))}
-          </div>
-        </section>
+        <HeroSection />
 
         <AuthorityBanner />
 
         {/* ════════════════════════════════ A DOR — Ebbinghaus ══ */}
-        <section className="max-w-4xl mx-auto px-5 sm:px-10 pb-24">
+        <section className="max-w-4xl mx-auto px-6 sm:px-10 pb-24">
           <div className="relative rounded-3xl p-7 sm:p-10 overflow-hidden"
             style={{
               background: CARD_BG2,
@@ -658,7 +658,7 @@ export default function LandingPage() {
         </section>
 
         {/* ════════════════════════════ ANKI COMPARISON ══ */}
-        <section className="max-w-5xl mx-auto px-5 sm:px-10 pb-24">
+        <section className="max-w-5xl mx-auto px-6 sm:px-10 pb-24">
           <div className="text-center mb-10">
             <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: ORANGE }}>
               Por que o Anki não é suficiente
@@ -676,30 +676,42 @@ export default function LandingPage() {
         </section>
 
         {/* ════════════════════════ A SOLUÇÃO — Neural Brain Map ══ */}
-        <NeuralBrainMap />
+        <LazySection minHeight={380}>
+          <NeuralBrainMap />
+        </LazySection>
 
-        {/* ════════════════════════ ECOSSISTEMA — Neural Ciclo FlashAprova ══ */}
-        <NeuralEcosystemFlow />
-
-        {/* ════════════════════════ CENTRAL DE OPERAÇÕES ══ */}
-        <TacticalOperations />
-
-        {/* ════════════════════════════ TUTOR IA ══ */}
-        <AiTutorsSection />
+        {/* ═══════════════════════════ BIBLIOTECA ══ */}
+        <LazySection minHeight={480}>
+          <CardVaultSection />
+        </LazySection>
 
         {/* ═══════════════════════ NORMA · REDAÇÃO ══ */}
-        <NormaRedacaoSection />
+        <LazySection minHeight={520}>
+          <NormaRedacaoSection />
+        </LazySection>
+
+        {/* ════════════════════════════ TUTOR IA ══ */}
+        <LazySection minHeight={480}>
+          <AiTutorsSection />
+        </LazySection>
+
+        {/* ════════════════════════ ECOSSISTEMA — Neural Ciclo FlashAprova ══ */}
+        <LazySection minHeight={360}>
+          <NeuralEcosystemFlow />
+        </LazySection>
+
+        {/* ════════════════════════ CENTRAL DE OPERAÇÕES ══ */}
+        <LazySection minHeight={400}>
+          <TacticalOperations />
+        </LazySection>
 
         {/* ═══════════════════ CTA mid-page ══ */}
         <div className="flex justify-center pb-16">
           <CTAButton />
         </div>
 
-        {/* ═══════════════════════════ BIBLIOTECA ══ */}
-        <CardVaultSection />
-
         {/* ════════════════════════════ FINAL CTA ══ */}
-        <section className="max-w-4xl mx-auto px-5 sm:px-10 pb-24">
+        <section className="max-w-4xl mx-auto px-6 sm:px-10 pb-24">
           <div className="relative rounded-3xl p-10 sm:p-16 overflow-hidden text-center"
             style={{
               background: 'rgba(15,15,15,0.98)',
@@ -745,12 +757,14 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <ReelsTestimonials />
+        <LazySection minHeight={340}>
+          <ReelsTestimonials />
+        </LazySection>
 
         <FAQAccordion />
 
         {/* ════════════════════════════════ FOOTER ══ */}
-        <footer className="border-t border-white/5 py-8 px-5 sm:px-10 text-center">
+        <footer className="border-t border-white/5 py-8 px-6 sm:px-10 text-center">
           <p className="text-white font-black mb-2">
             Flash<span style={{
               background: `linear-gradient(90deg, ${NEON}, ${VIOLET})`,

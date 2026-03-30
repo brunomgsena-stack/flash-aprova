@@ -17,6 +17,22 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+
+  images: {
+    // Allow next/image to proxy dicebear avatars (used for tutors & Norma)
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'api.dicebear.com',
+        pathname: '/**',
+      },
+    ],
+    // Serve external SVGs through the optimizer; skip size transform (SVGs are vector)
+    dangerouslyAllowSVG: true,
+    contentDispositionType: 'inline',
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    formats: ['image/avif', 'image/webp'],
+  },
 };
 
 export default nextConfig;

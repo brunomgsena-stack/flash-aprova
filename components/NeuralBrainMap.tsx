@@ -79,13 +79,17 @@ const LOGS = [
 ];
 
 // ─── Component ───────────────────────────────────────────────────────────────
+interface Shockwave { x: number; y: number; t: number; color: string; }
+
 export default function NeuralBrainMap() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const canvasRef    = useRef<HTMLCanvasElement>(null);
-  const sectionRef   = useRef<HTMLDivElement>(null);
-  const healRef      = useRef<number | null>(null);
-  const scaleRef     = useRef(1);
-  const rafRef       = useRef(0);
+  const containerRef  = useRef<HTMLDivElement>(null);
+  const canvasRef     = useRef<HTMLCanvasElement>(null);
+  const sectionRef    = useRef<HTMLDivElement>(null);
+  const healRef       = useRef<number | null>(null);
+  const scaleRef      = useRef(1);
+  const rafRef        = useRef(0);
+  const shockwavesRef = useRef<Shockwave[]>([]);
+  const isMobileRef   = useRef(false);
 
   const inView = useInView(sectionRef, { once: true, margin: '-80px' });
 
@@ -114,6 +118,7 @@ export default function NeuralBrainMap() {
       canvas.style.width  = `${cssW}px`;
       canvas.style.height = `${cssH}px`;
       scaleRef.current    = (cssW / LW) * dpr;
+      isMobileRef.current = cssW < 640;
     };
     resize();
     const ro = new ResizeObserver(resize);
@@ -128,6 +133,12 @@ export default function NeuralBrainMap() {
       const hs = healRef.current;
       const hf = hs !== null ? Math.min(Math.max((now - hs) / 2600, 0), 1) : 0;
 
+      // Mobile density reduction
+      const mobileCutoff = isMobileRef.current ? Math.floor(NODES.length * 0.4) : NODES.length;
+      const VISIBLE_NODES = isMobileRef.current ? NODES.filter(n => n.id < mobileCutoff) : NODES;
+      const visibleSet = new Set(VISIBLE_NODES.map(n => n.id));
+      const VISIBLE_EDGES = EDGES.filter(([i, j]) => visibleSet.has(i) && visibleSet.has(j));
+
       // 1. Radial background glow — shifts red → emerald as healing progresses
       const bg = ctx.createRadialGradient(GCX, GCY, 0, GCX, GCY, 175);
       bg.addColorStop(0,   `rgba(16,185,129,${0.03 + hf * 0.12})`);
@@ -138,7 +149,7 @@ export default function NeuralBrainMap() {
 
       // 2. Edges
       ctx.lineWidth = 0.75;
-      for (const [i, j] of EDGES) {
+      for (const [i, j] of VISIBLE_EDGES) {
         const ni = NODES[i], nj = NODES[j];
         const ih = hf > ni.dn, jh = hf > nj.dn;
         ctx.beginPath();
@@ -153,7 +164,7 @@ export default function NeuralBrainMap() {
       }
 
       // 3. Healing pulses — emerald dots traveling along edges
-      for (const [i, j, ph] of EDGES) {
+      for (const [i, j, ph] of VISIBLE_EDGES) {
         const ni = NODES[i], nj = NODES[j];
         const ih = hf > ni.dn, jh = hf > nj.dn;
         if (!ih && !jh) continue;  // nothing healed yet on this edge
@@ -174,7 +185,7 @@ export default function NeuralBrainMap() {
       }
 
       // 4. Nodes
-      for (const n of NODES) {
+      for (const n of VISIBLE_NODES) {
         const healed = hf > n.dn;
         // healT: 0→1 transition once node's threshold is crossed (over ~14% of total range)
         const healT  = healed ? Math.min((hf - n.dn) / 0.14, 1) : 0;
@@ -205,15 +216,95 @@ export default function NeuralBrainMap() {
         ctx.shadowBlur  = 0;
       }
 
+      // 5. Shockwaves
+      const alive: Shockwave[] = [];
+      for (const sw of shockwavesRef.current) {
+        const age = (now - sw.t) / 850; // 0→1 over 850 ms
+        if (age >= 1) continue;
+        alive.push(sw);
+        const r     = age * 40;
+        const alpha = (1 - age) * 0.75;
+        // outer ring
+        ctx.beginPath();
+        ctx.arc(sw.x, sw.y, r, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(0,255,115,${alpha * 0.9})`;
+        ctx.lineWidth   = 1.5 * (1 - age);
+        ctx.shadowBlur  = 12 * (1 - age);
+        ctx.shadowColor = NEON;
+        ctx.stroke();
+        ctx.shadowBlur  = 0;
+        // mid ring
+        if (age < 0.65) {
+          ctx.beginPath();
+          ctx.arc(sw.x, sw.y, r * 0.55, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(255,255,255,${alpha * 0.55 * (1 - age / 0.65)})`;
+          ctx.lineWidth   = 0.75;
+          ctx.stroke();
+        }
+        // center flash
+        if (age < 0.2) {
+          ctx.beginPath();
+          ctx.arc(sw.x, sw.y, 3.5, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255,255,255,${(1 - age / 0.2) * 0.9})`;
+          ctx.fill();
+        }
+      }
+      shockwavesRef.current = alive;
+
       ctx.restore();
       rafRef.current = requestAnimationFrame(draw);
     };
+
+    // ── Node hit-detection helpers ─────────────────────────────────────────
+    const getLogicalPos = (clientX: number, clientY: number) => {
+      const rect = canvas.getBoundingClientRect();
+      const sx   = LW / rect.width;
+      const sy   = LH / rect.height;
+      return { lx: (clientX - rect.left) * sx, ly: (clientY - rect.top) * sy };
+    };
+
+    const trySpawnShockwave = (lx: number, ly: number) => {
+      // Find nearest node within 14 logical-px
+      let closest: (typeof NODES)[0] | null = null;
+      let minDist = 14;
+      for (const n of NODES) {
+        const d = Math.hypot(lx - n.bx, ly - n.by);
+        if (d < minDist) { minDist = d; closest = n; }
+      }
+      if (!closest) return;
+      const now2 = performance.now();
+      // Debounce: don't re-spawn within 350 ms on same node
+      const recent = shockwavesRef.current.find(
+        sw => Math.hypot(sw.x - closest!.bx, sw.y - closest!.by) < 6 && (now2 - sw.t) < 350
+      );
+      if (!recent) {
+        shockwavesRef.current.push({ x: closest.bx, y: closest.by, t: now2, color: NEON });
+      }
+    };
+
+    const onMouseMove = (e: MouseEvent) => {
+      const { lx, ly } = getLogicalPos(e.clientX, e.clientY);
+      trySpawnShockwave(lx, ly);
+    };
+    const onTouch = (e: TouchEvent) => {
+      const t = e.touches[0];
+      if (!t) return;
+      const { lx, ly } = getLogicalPos(t.clientX, t.clientY);
+      trySpawnShockwave(lx, ly);
+    };
+
+    if (!isMobileRef.current) {
+      canvas.addEventListener('mousemove', onMouseMove);
+    }
+    canvas.addEventListener('touchstart', onTouch, { passive: true });
 
     rafRef.current = requestAnimationFrame(draw);
 
     return () => {
       cancelAnimationFrame(rafRef.current);
       ro.disconnect();
+      canvas.removeEventListener('mousemove', onMouseMove);
+      canvas.removeEventListener('touchstart', onTouch);
     };
   }, []);
 

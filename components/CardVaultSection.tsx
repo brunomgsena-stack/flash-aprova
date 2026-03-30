@@ -170,10 +170,10 @@ function VaultCard({ s, index }: { s: Subject; index: number }) {
         WebkitBackdropFilter: 'blur(12px)',
         border:               '1px solid rgba(255,255,255,0.08)',
       }}
-      initial={{ opacity: 0, y: 18 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-40px' }}
-      transition={{ duration: 0.38, delay: index * 0.045, ease: 'easeOut' }}
+      initial={{ opacity: 0, y: 32, scale: 0.94, filter: 'blur(4px)' }}
+      whileInView={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+      viewport={{ once: true, margin: '-60px' }}
+      transition={{ duration: 0.48, delay: index * 0.065, ease: [0.16, 1, 0.3, 1] }}
       whileHover={{
         y: -4,
         borderColor: s.color + '42',
@@ -346,8 +346,16 @@ export default function CardVaultSection() {
         </div>
       </div>
 
-      {/* ── Card grid ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      {/* Mobile: horizontal snap carousel */}
+      <div className="sm:hidden flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 px-1" style={{ scrollbarWidth: 'none' }}>
+        {SUBJECTS.map((s, i) => (
+          <div key={s.name} className="snap-start shrink-0" style={{ width: '72vw', maxWidth: 280 }}>
+            <VaultCard s={s} index={i} />
+          </div>
+        ))}
+      </div>
+      {/* Desktop: grid */}
+      <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {SUBJECTS.map((s, i) => (
           <VaultCard key={s.name} s={s} index={i} />
         ))}
