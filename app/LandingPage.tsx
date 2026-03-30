@@ -31,6 +31,7 @@ const AiTutorsSection    = dynamic(() => import('@/components/AiTutorsSection'),
 const NeuralEcosystemFlow= dynamic(() => import('@/components/NeuralEcosystemFlow'),{ ssr: false, loading: () => <SkeletonBlock h={360} /> });
 const TacticalOperations = dynamic(() => import('@/components/TacticalOperations'), { ssr: false, loading: () => <SkeletonBlock h={400} /> });
 const ReelsTestimonials  = dynamic(() => import('@/components/ReelsTestimonials'),  { ssr: false, loading: () => <SkeletonBlock h={340} /> });
+const WhatsAppFloat      = dynamic(() => import('@/components/WhatsAppFloat'),      { ssr: false });
 
 // ─── Lazy section wrapper ──────────────────────────────────────────────────────
 // Defers rendering (and therefore chunk download) until the section is ~300px
@@ -780,5 +781,8 @@ export default function LandingPage() {
       </div>
 
     </div>
+
+    {/* ── WhatsApp High-Ticket Float ─────────────────────────────────── */}
+    <WhatsAppFloat />
   );
 }
