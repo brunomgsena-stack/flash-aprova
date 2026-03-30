@@ -475,7 +475,6 @@ export default function CheckoutPage() {
   const [data,       setData]       = useState<OnboardingData | null>(null);
   const [email,      setEmail]      = useState('');
   const [activePlan, setActivePlan] = useState<PlanId | null>(null);
-  const [needsEmail, setNeedsEmail] = useState(false);
   const [buyLoading, setBuyLoading] = useState(false);
   const [buyError,   setBuyError]   = useState<string | null>(null);
 
@@ -491,15 +490,7 @@ export default function CheckoutPage() {
   }, []);
 
   async function handleBuy(planId: PlanId) {
-    // Edge case: lead pulou o onboarding e não tem e-mail salvo
-    if (!email) {
-      setActivePlan(planId);
-      setNeedsEmail(true);
-      return;
-    }
-
     setActivePlan(planId);
-    setNeedsEmail(false);
     setBuyLoading(true);
     setBuyError(null);
 
@@ -539,22 +530,6 @@ export default function CheckoutPage() {
     return defaultScores[id];
   });
 
-  // Fallback mínimo — só exibido se o lead pulou o onboarding (sem e-mail em localStorage)
-  function EmailFallback({ planId }: { planId: PlanId }) {
-    if (!needsEmail || activePlan !== planId) return null;
-    return (
-      <input
-        type="email"
-        placeholder="Seu e-mail para acesso"
-        value={email}
-        onChange={e => setEmail(e.target.value)}
-        onKeyDown={e => { if (e.key === 'Enter' && email) handleBuy(planId); }}
-        autoFocus
-        className="w-full px-4 py-2.5 rounded-xl text-sm text-white outline-none mb-3"
-        style={{ background:'rgba(255,255,255,0.06)', border:`1px solid ${planId === 'proai_plus' ? EMERALD : VIOLET}55` }}
-      />
-    );
-  }
 
   return (
     <>
@@ -681,7 +656,6 @@ export default function CheckoutPage() {
               ))}
             </div>
 
-            <EmailFallback planId="flash" />
             {buyError && activePlan === 'flash' && (
               <p className="text-xs text-red-400 text-center mb-3">{buyError}</p>
             )}
@@ -691,9 +665,7 @@ export default function CheckoutPage() {
               disabled={buyLoading && activePlan === 'flash'}
               className="block w-full py-3 rounded-xl text-center text-sm font-bold transition-all hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ background:'rgba(124,58,237,0.14)', border:'1px solid rgba(124,58,237,0.30)', color:'#a78bfa' }}>
-              {buyLoading && activePlan === 'flash'
-                ? 'Redirecionando…'
-                : 'Assinar Plano Aceleração →'}
+              {buyLoading && activePlan === 'flash' ? 'Redirecionando…' : 'Garantir Minha Vaga no ENEM →'}
             </button>
           </div>
 
@@ -773,7 +745,6 @@ export default function CheckoutPage() {
               ))}
             </div>
 
-            <EmailFallback planId="proai_plus" />
             {buyError && activePlan === 'proai_plus' && (
               <p className="text-xs text-red-400 text-center mb-3">{buyError}</p>
             )}
@@ -792,9 +763,7 @@ export default function CheckoutPage() {
               </span>
               {buyLoading && activePlan === 'proai_plus'
                 ? 'Redirecionando para pagamento…'
-                : data
-                ? `Garantir Aprovação em ${subjectMeta.name} →`
-                : 'Garantir Minha Vaga no Panteão →'}
+                : 'Garantir Minha Vaga no ENEM →'}
             </button>
 
             {/* Micro trust */}
