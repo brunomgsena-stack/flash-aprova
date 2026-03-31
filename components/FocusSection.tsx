@@ -1,0 +1,535 @@
+'use client';
+
+import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence, useInView, type Easing } from 'framer-motion';
+
+// ─── Design tokens ────────────────────────────────────────────────────────────
+const NEON    = '#00FF73';
+const EMERALD = '#10b981';
+const CYAN    = '#06b6d4';
+const VIOLET  = '#7C3AED';
+const ORANGE  = '#f97316';
+
+// ─── Stagger variants ─────────────────────────────────────────────────────────
+const grid = {
+  hidden:  { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.16, delayChildren: 0.15 },
+  },
+};
+const card = {
+  hidden:  { opacity: 0, y: 28, scale: 0.97 },
+  visible: { opacity: 1, y: 0,  scale: 1,
+    transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] as Easing } },
+};
+
+// ─── Shared card shell ────────────────────────────────────────────────────────
+function Card({
+  children, color, tooltip, className = '',
+}: {
+  children: React.ReactNode;
+  color: string;
+  tooltip?: string;
+  className?: string;
+}) {
+  const [hovered, setHovered] = useState(false);
+
+  return (
+    <motion.div
+      variants={card}
+      className={`relative rounded-2xl p-5 sm:p-6 overflow-hidden ${className}`}
+      style={{
+        background: 'rgba(255,255,255,0.025)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        border: `1px solid ${hovered ? color + '50' : 'rgba(255,255,255,0.08)'}`,
+        boxShadow: hovered
+          ? `0 0 36px ${color}28, 0 0 0 1px ${color}35`
+          : '0 0 0 0 transparent',
+        transition: 'border-color 0.28s ease, box-shadow 0.28s ease',
+      }}
+      whileHover={{ scale: 1.018 }}
+      transition={{ duration: 0.22 }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      {/* Top shimmer line */}
+      <div className="absolute inset-x-0 top-0 h-px pointer-events-none"
+        style={{
+          background: `linear-gradient(90deg, transparent, ${color}${hovered ? '80' : '40'}, transparent)`,
+          transition: 'opacity 0.28s',
+        }} />
+
+      {children}
+
+      {/* Tooltip */}
+      <AnimatePresence>
+        {hovered && tooltip && (
+          <motion.div
+            className="absolute bottom-3 right-3 pointer-events-none z-20"
+            initial={{ opacity: 0, y: 6, scale: 0.92 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 4, scale: 0.92, transition: { duration: 0.13 } }}
+            transition={{ duration: 0.18, ease: 'easeOut' }}
+          >
+            <div
+              className="rounded-xl px-3 py-1.5 text-[11px] font-semibold whitespace-nowrap"
+              style={{
+                background: `${color}15`,
+                border: `1px solid ${color}45`,
+                color,
+                backdropFilter: 'blur(12px)',
+                boxShadow: `0 0 14px ${color}28`,
+              }}
+            >
+              {tooltip}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Card 1 — Heatmap de Fragilidades (Radar + Scan Line)
+// ─────────────────────────────────────────────────────────────────────────────
+const toRad = (d: number) => (d * Math.PI) / 180;
+const CX = 90, CY = 90, R = 68;
+const FRAG_AXES = [
+  { label: 'Química',   deg: -90, v: 0.35, color: ORANGE  },
+  { label: 'Física',    deg:  -2, v: 0.48, color: CYAN    },
+  { label: 'Biologia',  deg:  70, v: 0.72, color: EMERALD },
+  { label: 'História',  deg: 142, v: 0.80, color: VIOLET  },
+  { label: 'Geografia', deg: 214, v: 0.68, color: '#a78bfa' },
+];
+const polar  = (r: number, deg: number) => ({
+  x: CX + r * Math.cos(toRad(deg)),
+  y: CY + r * Math.sin(toRad(deg)),
+});
+const toPoly = (pts: { x: number; y: number }[]) =>
+  pts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+
+function HeatmapRadar({ inView }: { inView: boolean }) {
+  const rings    = [0.25, 0.5, 0.75, 1.0];
+  const dataPts  = FRAG_AXES.map(a => polar(a.v * R, a.deg));
+  const axisEnds = FRAG_AXES.map(a => polar(R, a.deg));
+  const labelPts = FRAG_AXES.map(a => polar(R + 16, a.deg));
+
+  return (
+    <div className="relative w-full" style={{ maxWidth: 200, margin: '0 auto' }}>
+      {/* Scanning line */}
+      <motion.div
+        className="absolute pointer-events-none z-10"
+        style={{
+          left: 0, right: 0,
+          height: 2,
+          background: `linear-gradient(90deg, transparent 5%, ${NEON}55 40%, ${NEON}80 50%, ${NEON}55 60%, transparent 95%)`,
+          borderRadius: 1,
+        }}
+        animate={{ top: ['0%', '100%', '0%'] }}
+        transition={{ duration: 3.5, repeat: Infinity, ease: 'linear', repeatDelay: 0.8 }}
+      />
+
+      <svg viewBox="0 0 180 180" className="w-full" style={{ overflow: 'visible' }}>
+        <defs>
+          <filter id="frag-glow" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="3" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+
+        {/* Rings */}
+        {rings.map(r => (
+          <polygon key={r} points={toPoly(FRAG_AXES.map(a => polar(r * R, a.deg)))}
+            fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="0.8" />
+        ))}
+        {/* Axes */}
+        {axisEnds.map((end, i) => (
+          <line key={i} x1={CX} y1={CY} x2={end.x} y2={end.y}
+            stroke="rgba(255,255,255,0.07)" strokeWidth="0.8" />
+        ))}
+
+        {/* Data polygon — grows from center */}
+        <motion.polygon
+          points={toPoly(dataPts)}
+          fill={`${ORANGE}22`}
+          stroke={ORANGE}
+          strokeWidth="1.8"
+          strokeLinejoin="round"
+          filter="url(#frag-glow)"
+          initial={{ scale: 0, opacity: 0 }}
+          animate={inView ? { scale: 1, opacity: 1 } : { scale: 0, opacity: 0 }}
+          transition={{ duration: 0.85, ease: 'easeOut', delay: 0.2 }}
+          style={{ transformOrigin: `${CX}px ${CY}px` }}
+        />
+
+        {/* Data dots */}
+        {dataPts.map((p, i) => (
+          <motion.circle key={i} cx={p.x} cy={p.y} r="3.5"
+            fill={FRAG_AXES[i].color}
+            initial={{ scale: 0, opacity: 0 }}
+            animate={inView ? { scale: 1, opacity: 1 } : { scale: 0, opacity: 0 }}
+            transition={{ delay: 0.5 + i * 0.1, duration: 0.35, ease: 'backOut' }}
+            style={{
+              transformOrigin: `${p.x}px ${p.y}px`,
+              filter: `drop-shadow(0 0 4px ${FRAG_AXES[i].color})`,
+            }}
+          />
+        ))}
+
+        {/* Labels */}
+        {FRAG_AXES.map((axis, i) => (
+          <text key={i} x={labelPts[i].x} y={labelPts[i].y}
+            textAnchor="middle" dominantBaseline="middle"
+            fontSize="7.5" fill="rgba(255,255,255,0.30)"
+            fontFamily="ui-monospace, monospace">
+            {axis.label}
+          </text>
+        ))}
+
+        {/* Center */}
+        <motion.circle cx={CX} cy={CY} r="3" fill={NEON}
+          animate={{ r: [3, 5, 3], opacity: [1, 0.3, 1] }}
+          transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
+          style={{ filter: `drop-shadow(0 0 6px ${NEON})` }}
+        />
+      </svg>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Card 2 — Cronograma Preditivo
+// ─────────────────────────────────────────────────────────────────────────────
+const DAYS = [
+  { label: 'SEG', status: 'done',     subject: 'Bio',  color: EMERALD  },
+  { label: 'TER', status: 'done',     subject: 'Quím', color: CYAN     },
+  { label: 'QUA', status: 'done',     subject: 'Mat',  color: '#a78bfa'},
+  { label: 'QUI', status: 'done',     subject: 'Fís',  color: ORANGE   },
+  { label: 'SEX', status: 'deadline', subject: 'RED',  color: NEON     },
+  { label: 'SÁB', status: 'upcoming', subject: 'Hist', color: VIOLET   },
+  { label: 'DOM', status: 'upcoming', subject: 'Geo',  color: '#34d399'},
+] as const;
+
+function CalendarBlock({ day, index, inView }: {
+  day: typeof DAYS[number]; index: number; inView: boolean;
+}) {
+  const done     = day.status === 'done';
+  const deadline = day.status === 'deadline';
+  const upcoming = day.status === 'upcoming';
+
+  return (
+    <motion.div
+      className="flex-1 flex flex-col items-center gap-1.5 relative"
+      initial={{ opacity: 0, y: 10 }}
+      animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
+      transition={{ duration: 0.4, delay: 0.2 + index * 0.07, ease: 'easeOut' }}
+    >
+      {/* Day label */}
+      <span className="text-[9px] font-bold tracking-widest"
+        style={{
+          fontFamily: 'ui-monospace, monospace',
+          color: deadline ? NEON : done ? 'rgba(255,255,255,0.45)' : 'rgba(255,255,255,0.18)',
+        }}>
+        {day.label}
+      </span>
+
+      {/* Block */}
+      <div
+        className="w-full rounded-lg flex items-center justify-center"
+        style={{
+          height: 52,
+          background: done
+            ? `${day.color}22`
+            : deadline
+            ? `${NEON}18`
+            : 'rgba(255,255,255,0.02)',
+          border: done
+            ? `1px solid ${day.color}50`
+            : deadline
+            ? `1px solid ${NEON}70`
+            : '1px solid rgba(255,255,255,0.06)',
+          boxShadow: deadline ? `0 0 16px ${NEON}35` : 'none',
+        }}
+      >
+        <span className="text-[10px] font-black"
+          style={{
+            color: done ? day.color : deadline ? NEON : 'rgba(255,255,255,0.14)',
+            fontFamily: 'ui-monospace, monospace',
+            filter: (done || deadline) ? `drop-shadow(0 0 4px ${day.color})` : 'none',
+          }}>
+          {upcoming ? '···' : day.subject}
+        </span>
+      </div>
+
+      {/* Done checkmark */}
+      {done && (
+        <motion.div
+          className="absolute -top-1.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center"
+          style={{ background: day.color, fontSize: 8 }}
+          initial={{ scale: 0 }}
+          animate={inView ? { scale: 1 } : { scale: 0 }}
+          transition={{ delay: 0.35 + index * 0.07, type: 'spring', stiffness: 400, damping: 18 }}
+        >
+          ✓
+        </motion.div>
+      )}
+    </motion.div>
+  );
+}
+
+function CalendarWidget({ inView }: { inView: boolean }) {
+  // Deadline line slides to Friday (index 4 = 4/6 = ~62.5%)
+  const deadlineX = `calc(${(4 / 6) * 100}% + 0px)`;
+
+  return (
+    <div className="relative">
+      {/* Sliding deadline needle */}
+      <motion.div
+        className="absolute top-4 bottom-4 w-px pointer-events-none z-10"
+        style={{
+          background: `linear-gradient(to bottom, transparent, ${NEON}90, ${NEON}, ${NEON}90, transparent)`,
+          boxShadow: `0 0 8px ${NEON}`,
+        }}
+        initial={{ left: '0%', opacity: 0 }}
+        animate={inView ? { left: deadlineX, opacity: 1 } : { left: '0%', opacity: 0 }}
+        transition={{ duration: 1.1, delay: 0.45, ease: [0.34, 1.2, 0.64, 1] }}
+      />
+
+      {/* Days grid */}
+      <div className="flex gap-1.5">
+        {DAYS.map((day, i) => (
+          <CalendarBlock key={day.label} day={day} index={i} inView={inView} />
+        ))}
+      </div>
+
+      {/* Legend */}
+      <div className="flex items-center gap-3 mt-3">
+        <div className="flex items-center gap-1.5">
+          <div className="w-2 h-2 rounded-sm" style={{ background: EMERALD }} />
+          <span className="text-[9px] text-slate-600" style={{ fontFamily: 'monospace' }}>Concluído</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-2 h-2 rounded-sm" style={{ background: NEON }} />
+          <span className="text-[9px] text-slate-600" style={{ fontFamily: 'monospace' }}>Deadline IA</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-2 h-2 rounded-sm" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)' }} />
+          <span className="text-[9px] text-slate-600" style={{ fontFamily: 'monospace' }}>Agendado</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Card 3 — Nivelamento Inteligente (Animated Progress Bars + Counter)
+// ─────────────────────────────────────────────────────────────────────────────
+const LEVELS = [
+  { label: 'Ciências da Natureza', pct: 65, color: '#22c55e',  level: 'Intermediário' },
+  { label: 'Ciências Humanas',     pct: 74, color: VIOLET,     level: 'Avançado'      },
+  { label: 'Linguagens',           pct: 82, color: CYAN,       level: 'Avançado'      },
+  { label: 'Matemática',           pct: 58, color: ORANGE,     level: 'Básico'        },
+];
+
+function ProgressBar({ label, pct, color, level, index, inView }: {
+  label: string; pct: number; color: string; level: string;
+  index: number; inView: boolean;
+}) {
+  const [count, setCount] = useState(0);
+  const started = useRef(false);
+
+  useEffect(() => {
+    if (!inView || started.current) return;
+    started.current = true;
+    const delay = 300 + index * 120;
+    const duration = 900;
+    let timeout: ReturnType<typeof setTimeout>;
+
+    timeout = setTimeout(() => {
+      const start = performance.now();
+      const tick = (now: number) => {
+        const p = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - p, 3);
+        setCount(Math.round(eased * pct));
+        if (p < 1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    }, delay);
+
+    return () => clearTimeout(timeout);
+  }, [inView, pct, index]);
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-semibold text-slate-400 leading-tight">{label}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-md"
+            style={{ background: `${color}18`, color, fontFamily: 'ui-monospace, monospace' }}>
+            {level}
+          </span>
+          <span className="text-sm font-black tabular-nums"
+            style={{ color, fontFamily: 'ui-monospace, monospace', minWidth: 38, textAlign: 'right',
+              textShadow: `0 0 10px ${color}80` }}>
+            {count}%
+          </span>
+        </div>
+      </div>
+
+      {/* Track */}
+      <div className="h-2 rounded-full overflow-hidden"
+        style={{ background: 'rgba(255,255,255,0.05)' }}>
+        <motion.div
+          className="h-full rounded-full"
+          style={{
+            background: `linear-gradient(90deg, ${color}cc, ${color})`,
+            boxShadow: `0 0 8px ${color}70`,
+          }}
+          initial={{ width: '0%' }}
+          animate={inView ? { width: `${pct}%` } : { width: '0%' }}
+          transition={{ duration: 0.9, delay: 0.3 + index * 0.12, ease: [0.34, 1.1, 0.64, 1] }}
+        />
+      </div>
+    </div>
+  );
+}
+
+// ─── Main export ──────────────────────────────────────────────────────────────
+export default function FocusSection() {
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const inView     = useInView(sectionRef, { once: true, margin: '-80px' });
+
+  return (
+    <section ref={sectionRef} className="max-w-6xl mx-auto px-5 sm:px-10 pb-24">
+
+      {/* ── Header ── */}
+      <div className="text-center mb-12">
+        <p className="text-xs font-bold tracking-widest uppercase mb-3"
+          style={{ color: EMERALD, fontFamily: 'ui-monospace, monospace' }}>
+          &gt; Mapeamento de Fragilidades
+        </p>
+        <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">
+          A IA detecta o{' '}
+          <span style={{
+            background: `linear-gradient(90deg, ${NEON}, ${EMERALD})`,
+            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+          }}>
+            ponto exato da falha.
+          </span>
+        </h2>
+        <p className="text-slate-500 text-base max-w-2xl mx-auto">
+          Não é estudo aleatório. É um sistema que mapeia suas lacunas,
+          agenda revisões no tempo certo e te nivela semana a semana.
+        </p>
+      </div>
+
+      {/* ── 3-card grid ── */}
+      <motion.div
+        className="grid grid-cols-1 md:grid-cols-3 gap-5 items-start"
+        variants={grid}
+        initial="hidden"
+        animate={inView ? 'visible' : 'hidden'}
+      >
+
+        {/* ── Card 1: Heatmap de Fragilidades ── */}
+        <Card color={ORANGE} tooltip="IA detectou falha em Estequiometria.">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-lg">🎯</span>
+            <div>
+              <p className="text-[11px] font-black tracking-widest uppercase"
+                style={{ color: ORANGE, fontFamily: 'ui-monospace, monospace' }}>
+                Heatmap de Fragilidades
+              </p>
+              <p className="text-[10px] text-slate-600 mt-0.5">Radar de competências ENEM</p>
+            </div>
+            {/* Live dot */}
+            <motion.span className="ml-auto w-2 h-2 rounded-full shrink-0"
+              style={{ background: ORANGE }}
+              animate={{ opacity: [1, 0.2, 1] }}
+              transition={{ duration: 1.4, repeat: Infinity }} />
+          </div>
+
+          <HeatmapRadar inView={inView} />
+
+          <div className="mt-3 grid grid-cols-5 gap-1">
+            {FRAG_AXES.map(a => (
+              <div key={a.label} className="flex flex-col items-center gap-0.5">
+                <div className="w-1.5 h-1.5 rounded-full" style={{ background: a.color }} />
+                <span className="text-[8px] text-slate-700" style={{ fontFamily: 'monospace' }}>
+                  {Math.round(a.v * 100)}%
+                </span>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        {/* ── Card 2: Cronograma Preditivo ── */}
+        <Card color={NEON}>
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-lg">📅</span>
+            <div>
+              <p className="text-[11px] font-black tracking-widest uppercase"
+                style={{ color: NEON, fontFamily: 'ui-monospace, monospace' }}>
+                Cronograma Preditivo
+              </p>
+              <p className="text-[10px] text-slate-600 mt-0.5">Agendamento tático pela IA</p>
+            </div>
+            <motion.span className="ml-auto w-2 h-2 rounded-full shrink-0"
+              style={{ background: NEON }}
+              animate={{ opacity: [1, 0.2, 1] }}
+              transition={{ duration: 1.2, repeat: Infinity, delay: 0.3 }} />
+          </div>
+
+          <CalendarWidget inView={inView} />
+
+          <div className="mt-4 px-3 py-2.5 rounded-xl"
+            style={{ background: `${NEON}0a`, border: `1px solid ${NEON}20` }}>
+            <p className="text-[11px] font-semibold" style={{ color: NEON }}>
+              ⏱ Próxima revisão: <span className="font-black">Química</span> — hoje 19h
+            </p>
+          </div>
+        </Card>
+
+        {/* ── Card 3: Nivelamento Inteligente ── */}
+        <Card color={CYAN} tooltip="Conteúdo adaptado para nível Intermediário.">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-lg">📈</span>
+            <div>
+              <p className="text-[11px] font-black tracking-widest uppercase"
+                style={{ color: CYAN, fontFamily: 'ui-monospace, monospace' }}>
+                Nivelamento Inteligente
+              </p>
+              <p className="text-[10px] text-slate-600 mt-0.5">Progresso por área ENEM</p>
+            </div>
+            <motion.span className="ml-auto w-2 h-2 rounded-full shrink-0"
+              style={{ background: CYAN }}
+              animate={{ opacity: [1, 0.2, 1] }}
+              transition={{ duration: 1.6, repeat: Infinity, delay: 0.6 }} />
+          </div>
+
+          <div className="flex flex-col gap-4">
+            {LEVELS.map((lvl, i) => (
+              <ProgressBar
+                key={lvl.label}
+                {...lvl}
+                index={i}
+                inView={inView}
+              />
+            ))}
+          </div>
+
+          <div className="mt-4 px-3 py-2.5 rounded-xl"
+            style={{ background: `${CYAN}0a`, border: `1px solid ${CYAN}20` }}>
+            <p className="text-[11px] font-semibold" style={{ color: CYAN }}>
+              🧬 Nível geral: <span className="font-black">Intermediário+</span> — subindo
+            </p>
+          </div>
+        </Card>
+
+      </motion.div>
+    </section>
+  );
+}

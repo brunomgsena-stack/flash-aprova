@@ -24,10 +24,13 @@ const SkeletonBlock = ({ h = 400 }: { h?: number }) => (
   />
 );
 
+const EbbinghausSection  = dynamic(() => import('@/components/EbbinghausSection'), { ssr: false, loading: () => <SkeletonBlock h={340} /> });
 const NeuralBrainMap     = dynamic(() => import('@/components/NeuralBrainMap'),     { ssr: false, loading: () => <SkeletonBlock h={380} /> });
 const CardVaultSection   = dynamic(() => import('@/components/CardVaultSection'),   { ssr: false, loading: () => <SkeletonBlock h={480} /> });
 const NormaRedacaoSection= dynamic(() => import('@/components/NormaRedacaoSection'),{ ssr: false, loading: () => <SkeletonBlock h={520} /> });
 const AiTutorsSection    = dynamic(() => import('@/components/AiTutorsSection'),    { ssr: false, loading: () => <SkeletonBlock h={480} /> });
+const EssayEvolutionSection = dynamic(() => import('@/components/EssayEvolutionSection'), { ssr: false, loading: () => <SkeletonBlock h={460} /> });
+const FocusSection          = dynamic(() => import('@/components/FocusSection'),          { ssr: false, loading: () => <SkeletonBlock h={480} /> });
 const NeuralEcosystemFlow= dynamic(() => import('@/components/NeuralEcosystemFlow'),{ ssr: false, loading: () => <SkeletonBlock h={360} /> });
 const TacticalOperations = dynamic(() => import('@/components/TacticalOperations'), { ssr: false, loading: () => <SkeletonBlock h={400} /> });
 const ReelsTestimonials  = dynamic(() => import('@/components/ReelsTestimonials'),  { ssr: false, loading: () => <SkeletonBlock h={340} /> });
@@ -325,44 +328,6 @@ function LineMockup() {
   );
 }
 
-// ─── Ebbinghaus curve ─────────────────────────────────────────────────────────
-function ForgettingCurve() {
-  return (
-    <svg viewBox="0 0 440 190" className="w-full" style={{ maxHeight: 200 }}>
-      <defs>
-        <linearGradient id="grad-forget" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor={ORANGE} /><stop offset="100%" stopColor="#ef4444" />
-        </linearGradient>
-        <linearGradient id="grad-srs2" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor={VIOLET} /><stop offset="60%" stopColor={NEON} /><stop offset="100%" stopColor={GREEN} />
-        </linearGradient>
-        <filter id="glow-srs2"><feGaussianBlur stdDeviation="2.5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-        <linearGradient id="area-forget2" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={ORANGE} stopOpacity="0.15"/><stop offset="100%" stopColor={ORANGE} stopOpacity="0"/>
-        </linearGradient>
-        <linearGradient id="area-srs2" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={NEON} stopOpacity="0.20"/><stop offset="100%" stopColor={NEON} stopOpacity="0"/>
-        </linearGradient>
-      </defs>
-      {[10,50,90,130,170].map(y => (
-        <line key={y} x1="40" y1={y} x2="430" y2={y} stroke="rgba(255,255,255,0.05)" strokeWidth="1"/>
-      ))}
-      {([[10,'100%'],[50,'75%'],[90,'50%'],[130,'25%'],[170,'0%']] as const).map(([y,l]) => (
-        <text key={l} x="34" y={y+4} textAnchor="end" fill="rgba(255,255,255,0.20)" fontSize="9" fontFamily="Inter,system-ui">{l}</text>
-      ))}
-      {([[40,'Hoje'],[105,'1d'],[170,'3d'],[260,'1 sem'],[380,'1 mês']] as const).map(([x,l]) => (
-        <text key={l} x={x} y="185" textAnchor="middle" fill="rgba(255,255,255,0.20)" fontSize="9" fontFamily="Inter,system-ui">{l}</text>
-      ))}
-      <path d="M40,10 C70,10 80,70 105,95 C130,118 150,138 200,148 C250,156 310,160 380,163 L380,170 L40,170 Z" fill="url(#area-forget2)"/>
-      <path d="M40,10 C70,10 80,70 105,95 C130,118 150,138 200,148 C250,156 310,160 380,163" fill="none" stroke="url(#grad-forget)" strokeWidth="2" strokeLinecap="round"/>
-      <path d="M40,10 C52,10 58,44 72,40 C86,36 92,18 112,16 C132,14 138,46 152,42 C166,38 172,18 194,16 C216,14 222,46 242,42 C262,38 268,18 292,16 C312,14 320,46 342,42 C356,38 364,20 380,18 L380,170 L40,170 Z" fill="url(#area-srs2)"/>
-      <path d="M40,10 C52,10 58,44 72,40 C86,36 92,18 112,16 C132,14 138,46 152,42 C166,38 172,18 194,16 C216,14 222,46 242,42 C262,38 268,18 292,16 C312,14 320,46 342,42 C356,38 364,20 380,18" fill="none" stroke="url(#grad-srs2)" strokeWidth="2.5" strokeLinecap="round" filter="url(#glow-srs2)"/>
-      {([112,194,292] as const).map(cx => (
-        <circle key={cx} cx={cx} cy={16} r="4" fill="#121212" stroke={NEON} strokeWidth="1.8"/>
-      ))}
-    </svg>
-  );
-}
 
 // ─── CTA button (verde neon, shimmer) ─────────────────────────────────────────
 function CTAButton({ size = 'lg', label }: { size?: 'sm' | 'lg'; label?: string }) {
@@ -612,50 +577,7 @@ export default function LandingPage() {
         <AuthorityBanner />
 
         {/* ════════════════════════════════ A DOR — Ebbinghaus ══ */}
-        <section className="max-w-4xl mx-auto px-6 sm:px-10 pb-24">
-          <div className="relative rounded-3xl p-7 sm:p-10 overflow-hidden"
-            style={{
-              background: CARD_BG2,
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              border: `1px solid ${ORANGE}25`,
-              boxShadow: `0 0 60px ${ORANGE}08, 0 0 0 1px rgba(124,58,237,0.08)`,
-            }}>
-            <div className="absolute inset-0 pointer-events-none"
-              style={{ background: 'radial-gradient(ellipse at bottom left, rgba(124,58,237,0.10) 0%, transparent 60%)' }} />
-            <div className="absolute inset-x-0 top-0 h-px"
-              style={{ background: `linear-gradient(90deg, transparent, ${ORANGE}50, rgba(124,58,237,0.30), transparent)` }} />
-
-            <div className="max-w-xl mb-6">
-              <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: ORANGE }}>
-                A Dor Real do Estudante
-              </p>
-              <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight mb-3">
-                Você estuda horas. Amanhã,{' '}
-                <span style={{ color: ORANGE }}>esqueceu quase tudo.</span>
-              </h2>
-              <p className="text-slate-400 text-base leading-relaxed">
-                A Curva de Ebbinghaus é implacável:{' '}
-                <span className="text-white font-semibold">sem revisão, você perde 70% do conteúdo em menos de{' '}
-                  <Neon>24h</Neon>.</span>{' '}
-                Não é falta de inteligência — é falta do método certo.
-              </p>
-            </div>
-
-            <ForgettingCurve />
-
-            <div className="flex flex-wrap gap-5 mt-4">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-0.5 rounded-full" style={{ background: ORANGE }} />
-                <span className="text-slate-500 text-xs">Sem revisão (método tradicional)</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-0.5 rounded-full" style={{ background: `linear-gradient(90deg, ${VIOLET}, ${NEON})` }} />
-                <span className="text-slate-500 text-xs">Com IA + SRS (FlashAprova)</span>
-              </div>
-            </div>
-          </div>
-        </section>
+        <EbbinghausSection />
 
         {/* ════════════════════════════ ANKI COMPARISON ══ */}
         <section className="max-w-5xl mx-auto px-6 sm:px-10 pb-24">
@@ -690,9 +612,19 @@ export default function LandingPage() {
           <NormaRedacaoSection />
         </LazySection>
 
+        {/* ══════════════════ TRAJETÓRIA — Essay Evolution ══ */}
+        <LazySection minHeight={460}>
+          <EssayEvolutionSection />
+        </LazySection>
+
         {/* ════════════════════════════ TUTOR IA ══ */}
         <LazySection minHeight={480}>
           <AiTutorsSection />
+        </LazySection>
+
+        {/* ════════════════════ FOCO — Mapeamento de Fragilidades ══ */}
+        <LazySection minHeight={480}>
+          <FocusSection />
         </LazySection>
 
         {/* ════════════════════════ ECOSSISTEMA — Neural Ciclo FlashAprova ══ */}

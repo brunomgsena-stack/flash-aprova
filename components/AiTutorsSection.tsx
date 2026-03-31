@@ -1,12 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 
 // ─── Design tokens ─────────────────────────────────────────────────────────
 const NEON   = '#00FF73';
 const VIOLET = '#7C3AED';
+
+// ─── Timing ────────────────────────────────────────────────────────────────
+const CYCLE_DELAY_MS  = 4_500;  // wait after phase 4 before advancing
+const MANUAL_PAUSE_MS = 30_000; // pause auto-cycle after manual click
 
 // ─── Avatar factory ─────────────────────────────────────────────────────────
 function av(seed: string, extra = '') {
@@ -140,7 +144,11 @@ const TUTORS: TutorDef[] = [
   },
 ];
 
-// ─── Typing animation ────────────────────────────────────────────────────────
+// ─── Ring constants ──────────────────────────────────────────────────────────
+const RING_R = 30;                       // radius inside 64×64 viewBox
+const RING_C = 2 * Math.PI * RING_R;    // ≈ 188.5
+
+// ─── Typing dots ─────────────────────────────────────────────────────────────
 function TypingDots({ color }: { color: string }) {
   return (
     <div className="flex items-center gap-1.5">
@@ -157,71 +165,120 @@ function TypingDots({ color }: { color: string }) {
   );
 }
 
-// ─── Avatar circle ────────────────────────────────────────────────────────────
-function TutorAvatar({ tutor, isActive, onClick }: {
-  tutor: TutorDef;
-  isActive: boolean;
-  onClick: () => void;
+// ─── Avatar with optional progress ring ──────────────────────────────────────
+function TutorAvatar({ tutor, isActive, ringActive, ringKey, onClick }: {
+  tutor:      TutorDef;
+  isActive:   boolean;
+  ringActive: boolean;   // animate progress ring
+  ringKey:    number;    // reset animation when incremented
+  onClick:    () => void;
 }) {
   const lastName = tutor.name.split(' ').slice(-1)[0];
   return (
     <button
       onClick={onClick}
       className="flex flex-col items-center gap-1.5 shrink-0 transition-all duration-200"
-      style={{ minWidth: 72, minHeight: 56 }}
+      style={{ minWidth: 72 }}
       aria-label={`Selecionar ${tutor.name}`}
     >
-      <motion.div
-        className="relative w-14 h-14 rounded-full overflow-hidden"
-        animate={{
-          borderColor: isActive ? tutor.color : 'rgba(255,255,255,0.1)',
-          boxShadow: isActive ? `0 0 18px ${tutor.color}55` : '0 0 0px transparent',
-        }}
-        transition={{ duration: 0.25 }}
-        style={{ border: `2px solid rgba(255,255,255,0.1)`, background: '#0d0a1e' }}
-      >
-        <Image
-          src={tutor.avatar}
-          alt={tutor.name}
-          width={56}
-          height={56}
-          className="w-full h-full object-cover"
-          unoptimized
-        />
-        {/* Active aura — inner glow + two expanding rings */}
+      {/* 64×64 container — ring lives here, avatar inset 4px */}
+      <div className="relative" style={{ width: 64, height: 64 }}>
+
+        {/* ── Progress ring SVG ── */}
+        {isActive && (
+          <svg
+            className="absolute inset-0 w-full h-full pointer-events-none"
+            viewBox="0 0 64 64"
+            style={{ transform: 'rotate(-90deg)', zIndex: 2 }}
+          >
+            {/* Track (dim) */}
+            <circle
+              cx="32" cy="32" r={RING_R}
+              fill="none"
+              stroke={tutor.color}
+              strokeWidth="2"
+              strokeOpacity="0.14"
+            />
+            {/* Progress fill */}
+            <motion.circle
+              key={`ring-${tutor.id}-${ringKey}`}
+              cx="32" cy="32" r={RING_R}
+              fill="none"
+              stroke={tutor.color}
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeDasharray={RING_C}
+              initial={{ strokeDashoffset: RING_C }}
+              animate={ringActive
+                ? { strokeDashoffset: 0 }
+                : { strokeDashoffset: RING_C }}
+              transition={ringActive
+                ? { duration: CYCLE_DELAY_MS / 1000, ease: 'linear' }
+                : { duration: 0.2 }}
+              style={{ filter: `drop-shadow(0 0 4px ${tutor.color}90)` }}
+            />
+          </svg>
+        )}
+
+        {/* ── Expanding pulse rings (outside overflow-hidden) ── */}
         {isActive && (
           <>
             <motion.div
               className="absolute inset-0 rounded-full pointer-events-none"
-              style={{ boxShadow: `0 0 0 3px ${tutor.color}50, 0 0 22px ${tutor.color}70, 0 0 44px ${tutor.color}30` }}
-              animate={{ opacity: [0.55, 1, 0.55] }}
-              transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
-            />
-            <motion.div
-              className="absolute rounded-full pointer-events-none"
-              style={{ inset: -10, border: `1.5px solid ${tutor.color}70` }}
-              animate={{ opacity: [0.7, 0], scale: [0.88, 1.45] }}
+              style={{ border: `1.5px solid ${tutor.color}70`, zIndex: 1 }}
+              animate={{ opacity: [0.7, 0], scale: [0.88, 1.5] }}
               transition={{ duration: 1.4, repeat: Infinity, ease: 'easeOut' }}
             />
             <motion.div
-              className="absolute rounded-full pointer-events-none"
-              style={{ inset: -10, border: `1px solid ${tutor.color}45` }}
-              animate={{ opacity: [0.5, 0], scale: [0.88, 1.7] }}
+              className="absolute inset-0 rounded-full pointer-events-none"
+              style={{ border: `1px solid ${tutor.color}45`, zIndex: 1 }}
+              animate={{ opacity: [0.5, 0], scale: [0.88, 1.75] }}
               transition={{ duration: 1.4, repeat: Infinity, ease: 'easeOut', delay: 0.55 }}
             />
           </>
         )}
-      </motion.div>
-      <p
-        className="text-[11px] font-semibold leading-tight transition-colors duration-200"
-        style={{ color: isActive ? '#fff' : 'rgba(255,255,255,0.38)' }}
-      >
+
+        {/* ── Avatar circle (inset 4px to sit inside the ring) ── */}
+        <motion.div
+          className="absolute rounded-full overflow-hidden"
+          style={{
+            inset: 4,
+            background: '#0d0a1e',
+            border: `2px solid rgba(255,255,255,0.1)`,
+            zIndex: 3,
+          }}
+          animate={{
+            borderColor: isActive ? tutor.color : 'rgba(255,255,255,0.1)',
+            boxShadow:   isActive ? `0 0 14px ${tutor.color}50` : '0 0 0px transparent',
+          }}
+          transition={{ duration: 0.25 }}
+        >
+          <Image
+            src={tutor.avatar}
+            alt={tutor.name}
+            width={56}
+            height={56}
+            className="w-full h-full object-cover"
+            unoptimized
+          />
+          {/* Inner aura */}
+          {isActive && (
+            <motion.div
+              className="absolute inset-0 rounded-full pointer-events-none"
+              style={{ boxShadow: `0 0 0 3px ${tutor.color}45, 0 0 18px ${tutor.color}60` }}
+              animate={{ opacity: [0.5, 1, 0.5] }}
+              transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
+            />
+          )}
+        </motion.div>
+      </div>
+
+      <p className="text-[11px] font-semibold leading-tight transition-colors duration-200"
+        style={{ color: isActive ? '#fff' : 'rgba(255,255,255,0.38)' }}>
         {lastName}
       </p>
-      <p
-        className="text-[9px] leading-tight font-medium transition-colors duration-200"
-        style={{ color: isActive ? tutor.color : 'rgba(255,255,255,0.2)' }}
-      >
+      <p className="text-[9px] leading-tight font-medium transition-colors duration-200"
+        style={{ color: isActive ? tutor.color : 'rgba(255,255,255,0.2)' }}>
         {tutor.subject}
       </p>
     </button>
@@ -230,51 +287,66 @@ function TutorAvatar({ tutor, isActive, onClick }: {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 export default function AiTutorsSection() {
-  const [activeId, setActiveId] = useState(TUTORS[0].id);
-  // 0 = blank  1 = user message  2 = typing  3 = tutor reply  4 = tip card
-  const [phase, setPhase] = useState(0);
+  const [activeId,    setActiveId]    = useState(TUTORS[0].id);
+  // 0=blank  1=user msg  2=typing  3=reply  4=tip+idle
+  const [phase,       setPhase]       = useState(0);
+  const [autoCycling, setAutoCycling] = useState(true);
+  // ringKey resets the SVG progress animation on each new tutor
+  const [ringKey,     setRingKey]     = useState(0);
 
-  const tutor = TUTORS.find(t => t.id === activeId)!;
+  const pauseRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  function selectTutor(id: string) {
-    if (id === activeId) return;
-    setActiveId(id);
-  }
+  // Cleanup pause timer on unmount
+  useEffect(() => {
+    return () => { if (pauseRef.current) clearTimeout(pauseRef.current); };
+  }, []);
 
+  // ── Chat animation phases (resets on activeId change) ─────────────────────
   useEffect(() => {
     setPhase(0);
+    setRingKey(k => k + 1); // reset progress ring
     const t1 = setTimeout(() => setPhase(1), 350);
     const t2 = setTimeout(() => setPhase(2), 1700);
     const t3 = setTimeout(() => setPhase(3), 3600);
     const t4 = setTimeout(() => setPhase(4), 4500);
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-      clearTimeout(t3);
-      clearTimeout(t4);
-    };
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); };
   }, [activeId]);
+
+  // ── Auto-cycle: fires CYCLE_DELAY_MS after phase 4 ────────────────────────
+  useEffect(() => {
+    if (!autoCycling || phase < 4) return;
+    const idx  = TUTORS.findIndex(t => t.id === activeId);
+    const next = TUTORS[(idx + 1) % TUTORS.length];
+    const t    = setTimeout(() => setActiveId(next.id), CYCLE_DELAY_MS);
+    return () => clearTimeout(t);
+  }, [phase, autoCycling, activeId]);
+
+  // ── Manual selection — pauses auto-cycle for 30s ──────────────────────────
+  function selectTutor(id: string) {
+    if (id === activeId) return;
+    setAutoCycling(false);
+    if (pauseRef.current) clearTimeout(pauseRef.current);
+    pauseRef.current = setTimeout(() => setAutoCycling(true), MANUAL_PAUSE_MS);
+    setActiveId(id);
+  }
+
+  const tutor      = TUTORS.find(t => t.id === activeId)!;
+  const ringActive = autoCycling && phase >= 4;
 
   return (
     <section className="max-w-4xl mx-auto px-5 sm:px-10 pb-24">
 
       {/* ── Header ──────────────────────────────────────────────── */}
       <div className="text-center mb-10">
-        <p
-          className="text-xs font-bold tracking-widest uppercase mb-3"
-          style={{ color: VIOLET }}
-        >
+        <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: VIOLET }}>
           Banca Examinadora IA
         </p>
         <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">
           O seu exército pessoal de{' '}
-          <span
-            style={{
-              background: `linear-gradient(90deg, ${NEON}, ${VIOLET})`,
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}
-          >
+          <span style={{
+            background: `linear-gradient(90deg, ${NEON}, ${VIOLET})`,
+            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+          }}>
             10 Especialistas.
           </span>
         </h2>
@@ -296,6 +368,8 @@ export default function AiTutorsSection() {
             key={t.id}
             tutor={t}
             isActive={t.id === activeId}
+            ringActive={ringActive && t.id === activeId}
+            ringKey={ringKey}
             onClick={() => selectTutor(t.id)}
           />
         ))}
@@ -306,11 +380,11 @@ export default function AiTutorsSection() {
         className="relative rounded-3xl overflow-hidden"
         animate={{
           borderColor: `${tutor.color}30`,
-          boxShadow: `0 0 48px ${tutor.color}14, 0 0 0 1px ${tutor.color}10`,
+          boxShadow:   `0 0 48px ${tutor.color}14, 0 0 0 1px ${tutor.color}10`,
         }}
         transition={{ duration: 0.4 }}
         style={{
-          background: 'rgba(9,9,11,0.5)',      /* zinc-950/50 */
+          background: 'rgba(9,9,11,0.5)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
           border: '1px solid transparent',
@@ -347,6 +421,19 @@ export default function AiTutorsSection() {
               <span className="text-slate-600 text-xs">{tutor.statusText}</span>
             </div>
           </div>
+
+          {/* Auto-cycle pause indicator */}
+          {!autoCycling && (
+            <motion.div
+              className="ml-auto flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full"
+              style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.30)', border: '1px solid rgba(255,255,255,0.08)' }}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+            >
+              ⏸ manual
+            </motion.div>
+          )}
         </div>
 
         {/* Messages area */}
@@ -359,8 +446,8 @@ export default function AiTutorsSection() {
                 key={`user-${activeId}`}
                 className="flex justify-end"
                 initial={{ opacity: 0, x: 24, scale: 0.96 }}
-                animate={{ opacity: 1, x: 0, scale: 1 }}
-                exit={{ opacity: 0, x: 16, scale: 0.95 }}
+                animate={{ opacity: 1, x: 0,  scale: 1 }}
+                exit={{    opacity: 0, x: 16,  scale: 0.95 }}
                 transition={{ duration: 0.3, ease: 'easeOut' }}
               >
                 <div
@@ -386,10 +473,8 @@ export default function AiTutorsSection() {
                 exit={{ opacity: 0, x: -10, transition: { duration: 0.18 } }}
                 transition={{ duration: 0.28, ease: 'easeOut' }}
               >
-                <div
-                  className="w-9 h-9 rounded-full overflow-hidden shrink-0 mt-0.5"
-                  style={{ border: `1px solid ${tutor.color}40`, background: '#0d0a1e' }}
-                >
+                <div className="w-9 h-9 rounded-full overflow-hidden shrink-0 mt-0.5"
+                  style={{ border: `1px solid ${tutor.color}40`, background: '#0d0a1e' }}>
                   <Image src={tutor.avatar} alt="" width={36} height={36} className="w-full h-full object-cover" unoptimized />
                 </div>
                 <div
@@ -411,14 +496,12 @@ export default function AiTutorsSection() {
                 key={`reply-${activeId}`}
                 className="flex items-start gap-3"
                 initial={{ opacity: 0, x: -20, scale: 0.97 }}
-                animate={{ opacity: 1, x: 0, scale: 1 }}
+                animate={{ opacity: 1, x: 0,   scale: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.38, ease: 'easeOut' }}
               >
-                <div
-                  className="w-9 h-9 rounded-full overflow-hidden shrink-0 mt-0.5"
-                  style={{ border: `1px solid ${tutor.color}40`, background: '#0d0a1e' }}
-                >
+                <div className="w-9 h-9 rounded-full overflow-hidden shrink-0 mt-0.5"
+                  style={{ border: `1px solid ${tutor.color}40`, background: '#0d0a1e' }}>
                   <Image src={tutor.avatar} alt="" width={36} height={36} className="w-full h-full object-cover" unoptimized />
                 </div>
                 <div
@@ -445,9 +528,7 @@ export default function AiTutorsSection() {
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.35, ease: 'easeOut' }}
                       >
-                        <span className="font-bold" style={{ color: tutor.color }}>
-                          💡 Macete ENEM:
-                        </span>
+                        <span className="font-bold" style={{ color: tutor.color }}>💡 Macete ENEM:</span>
                         <span className="text-slate-400 ml-1">{tutor.tip}</span>
                       </motion.div>
                     )}
