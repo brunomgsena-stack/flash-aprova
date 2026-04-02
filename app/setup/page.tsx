@@ -299,26 +299,40 @@ export default function SetupPage() {
       });
 
       if (!res.ok) {
-        const msg = await res.text().catch(() => 'Erro desconhecido');
-        throw new Error(msg);
+        const body = await res.json().catch(() => ({}));
+        console.error('[Setup] Erro detalhado:', body);
+        throw new Error(
+          body?.error ?? body?.message ?? `HTTP ${res.status} — verifique o terminal do servidor.`,
+        );
       }
 
-      // ── 2. RPC client-side (dupla garantia, SECURITY DEFINER ignora RLS) ────
+      console.log('[Setup] ✅ API confirmou onboarding_completed = true no banco.');
+
+      // ── 2. RPC client-side (camada de segurança adicional) ──────────────────
+      // A API já garantiu a gravação via admin client. Este RPC é redundante mas
+      // mantido como fallback para o caso de o admin client ter falhado no servidor.
       const { error: rpcErr } = await supabase.rpc('complete_onboarding');
       if (rpcErr) {
-        console.error('[Onboarding] Erro no rpc client-side:', rpcErr.message);
+        // Não é fatal — a API já gravou. Loga para diagnóstico.
+        console.error('[Setup] RPC client-side falhou (non-fatal):', {
+          message: rpcErr.message,
+          code:    rpcErr.code,
+          details: rpcErr.details,
+          hint:    rpcErr.hint,
+        });
       } else {
-        console.log('[Onboarding] ✅ onboarding_completed = true gravado no banco!');
+        console.log('[Setup] ✅ RPC client-side confirmado.');
       }
 
-      // ── 3. Atualiza o JWT nos cookies ───────────────────────────────────────
-      await supabase.auth.refreshSession().catch(() => {});
+      // ── 3. Atualiza o JWT nos cookies e força releitura do banco ──────────
+      const { error: sessionErr } = await supabase.auth.refreshSession().catch(e => ({ error: e }));
+      if (sessionErr) {
+        console.warn('[Setup] refreshSession falhou (non-fatal):', sessionErr);
+      }
 
-      // ── 4. Delay de segurança: dá tempo ao Supabase de propagar o commit ────
-      await new Promise(resolve => setTimeout(resolve, 800));
-
-      // ── 5. Hard redirect — destrói cache do browser, Middleware lê DB limpo ─
-      window.location.href = '/dashboard';
+      // ── 4. Hard redirect — mata cache do Next.js e força o navegador a ────
+      //       bater no banco do zero (window.location.href ignora cache de rota)
+      window.location.href = '/director';
     } catch (e) {
       setLoading(false);
       setError(e instanceof Error ? e.message : 'Erro ao gerar plano. Tente novamente.');

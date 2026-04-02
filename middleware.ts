@@ -31,6 +31,8 @@ export async function middleware(request: NextRequest) {
   );
 
   const { data: { user } } = await supabase.auth.getUser();
+  // Força leitura da sessão sem cache para garantir estado atualizado
+  await supabase.auth.getSession();
   const { pathname } = request.nextUrl;
 
   // ── Auth guards ─────────────────────────────────────────────────────────────
@@ -38,6 +40,9 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith(p),
   );
   const isSetup = pathname.startsWith('/setup');
+
+  // ── Exceção de emergência: /director e /dashboard nunca redirecionam para /setup ──
+  const isDirectorOrDashboard = pathname.startsWith('/director') || pathname.startsWith('/dashboard');
 
   // Rotas protegidas e /setup exigem login
   if ((isProtected || isSetup) && !user) {
@@ -50,22 +55,35 @@ export async function middleware(request: NextRequest) {
     let onboardingDone = false;
 
     if (isProtected || isSetup) {
-      const { data: profile } = await supabase
+      // maybeSingle() evita erro 406 quando a row ainda não existe (novo usuário
+      // cujo trigger de criação de perfil ainda não disparou). Com .single(),
+      // profile viria null + erro, fazendo onboardingDone = false incorretamente.
+      const { data: profile, error: profileErr } = await supabase
         .from('profiles')
-        .select('onboarding_completed')
+        .select('onboarding_completed', { count: 'exact' })
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
+
+      if (profileErr) {
+        console.error('[Middleware] Erro ao ler profile:', profileErr.message);
+      }
 
       onboardingDone = profile?.onboarding_completed === true;
     }
 
     // Usuário logado em rota protegida sem ter completado o setup → redireciona
-    if (!onboardingDone && isProtected) {
+    // Exceção: /director e /dashboard nunca são redirecionados para /setup
+    if (!onboardingDone && isProtected && !isDirectorOrDashboard) {
       return NextResponse.redirect(new URL('/setup', request.url));
     }
 
-    // Usuário que já completou o setup tentando acessar /setup → redireciona
-    if (onboardingDone && isSetup) {
+    // Usuário que já completou o setup tentando acessar /setup → redireciona.
+    // Exceção: se a requisição veio DE /setup (Referer header), o usuário pode
+    // estar em transição pós-submit. Deixa passar para evitar loop de redirect
+    // durante os ~800ms de propagação entre o commit do banco e o window.location.
+    const referer = request.headers.get('referer') ?? '';
+    const comingFromSetup = referer.includes('/setup');
+    if (onboardingDone && isSetup && !comingFromSetup) {
       return NextResponse.redirect(new URL('/dashboard', request.url));
     }
   }

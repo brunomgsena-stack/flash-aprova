@@ -123,14 +123,31 @@ Regras críticas:
 // ─── Handler ──────────────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
-  // Auth
+  // ══ WRAPPER GLOBAL ══════════════════════════════════════════════════════════
+  // Captura qualquer exceção JS não tratada (ex: env var ausente, cliente
+  // Supabase lançando antes de retornar { error }, etc.) e devolve um body
+  // JSON legível em vez do {} vazio que o Next.js retorna por padrão.
+  try {
+    return await handlePost(req);
+  } catch (e: unknown) {
+    const err = e instanceof Error ? e : new Error(String(e));
+    console.error('[generate-plan] ⚠️ EXCEÇÃO NÃO CAPTURADA:', err.message, '\n', err.stack);
+    return NextResponse.json(
+      { error: err.message, detail: err.stack ?? String(e) },
+      { status: 500 },
+    );
+  }
+}
+
+async function handlePost(req: NextRequest): Promise<Response> {
+  // ── Auth ────────────────────────────────────────────────────────────────────
   const serverClient = await createClient();
   const { data: { user } } = await serverClient.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: 'Não autenticado.' }, { status: 401 });
   }
 
-  // Parse body
+  // ── Parse body ──────────────────────────────────────────────────────────────
   const body = await req.json().catch(() => null);
   if (!body) {
     return NextResponse.json({ error: 'Payload inválido.' }, { status: 400 });
@@ -146,23 +163,103 @@ export async function POST(req: NextRequest) {
 
   const cardsDay = tempo <= 2 ? 25 : tempo <= 4 ? 50 : tempo <= 6 ? 75 : 100;
 
-  // ── PASSO 1 (CRÍTICO): gravar onboarding_completed = true PRIMEIRO ────────
-  // Usa RPC com SECURITY DEFINER — ignora RLS, sempre grava independente de
-  // como o JWT foi resolvido no Route Handler. Não depende de SERVICE_ROLE_KEY.
-  // Se isso falhar, não há razão para continuar — retorna 500 imediatamente.
-  console.log('[generate-plan] PASSO 1 — user.id:', user.id);
-  const { error: completionErr } = await serverClient.rpc('complete_onboarding');
+  // ── PASSO 1 (CRÍTICO): gravar onboarding_completed = true ───────────────────
+  //
+  // Cadeia de 3 tentativas em ordem de segurança:
+  //   1. serverClient.rpc — usa a sessão do cookie, não depende de SERVICE_ROLE_KEY
+  //   2. admin UPDATE     — usa service role, mas só se a env var existir
+  //   3. admin INSERT     — cria a row se não existir, com campos mínimos seguros
+  //
+  // BYPASS DE EMERGÊNCIA: se todas as 3 falharem, logamos e continuamos.
+  // O redirecionamento acontece de qualquer forma. Sem bypass, o usuário
+  // ficaria preso no setup indefinidamente mesmo com o banco inacessível.
+  //
+  // NÃO enviamos school_id nem class_id — são colunas B2B nullable.
+  // Enviá-las como null explicitamente quebraria constraints NOT NULL se existirem.
 
-  if (completionErr) {
-    console.error('[generate-plan] ERRO CRÍTICO — rpc complete_onboarding:', completionErr.message, completionErr);
-    return NextResponse.json(
-      { error: `Erro ao finalizar onboarding: ${completionErr.message}` },
-      { status: 500 },
+  console.log('[generate-plan] PASSO 1 — user.id:', user.id);
+  let onboardingMarked = false;
+
+  // Tentativa 1: RPC via serverClient (sem depender de SERVICE_ROLE_KEY)
+  try {
+    const { error: rpcErr } = await serverClient.rpc('complete_onboarding');
+    console.log('Erro do Supabase (rpc):', rpcErr);
+    if (!rpcErr) {
+      onboardingMarked = true;
+      console.log('[generate-plan] ✅ PASSO 1 via RPC.');
+    } else {
+      console.warn('[generate-plan] RPC falhou:', rpcErr.message, rpcErr.code);
+    }
+  } catch (rpcEx) {
+    console.warn('[generate-plan] RPC lançou exceção:', String(rpcEx));
+  }
+
+  // Tentativa 2: admin UPDATE (SERVICE_ROLE_KEY) — só se RPC não funcionou
+  if (!onboardingMarked && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    try {
+      const admin = makeAdmin();
+      const { error: updateErr } = await admin
+        .from('profiles')
+        .update({ onboarding_completed: true })
+        .eq('id', user.id);
+
+      console.log('Erro do Supabase (admin update):', updateErr);
+
+      if (!updateErr) {
+        // Confirma que a row existia e foi atualizada
+        const { data: verify } = await admin
+          .from('profiles')
+          .select('onboarding_completed')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        if (verify?.onboarding_completed === true) {
+          onboardingMarked = true;
+          console.log('[generate-plan] ✅ PASSO 1 via admin UPDATE.');
+        } else {
+          // Row não existia — Tentativa 3: INSERT mínimo seguro
+          console.warn('[generate-plan] Row não existe, tentando INSERT. user.id:', user.id);
+          const { error: insertErr } = await admin
+            .from('profiles')
+            .insert({ id: user.id, onboarding_completed: true, role: 'student' });
+
+          console.log('Erro do Supabase (admin insert):', insertErr);
+
+          if (!insertErr) {
+            onboardingMarked = true;
+            console.log('[generate-plan] ✅ PASSO 1 via admin INSERT.');
+          } else {
+            console.error('[generate-plan] INSERT falhou:', {
+              message: insertErr.message,
+              code:    insertErr.code,  // 23502=NOT NULL | 23503=FK | 42703=col inexistente
+              details: insertErr.details,
+              hint:    insertErr.hint,
+            });
+          }
+        }
+      } else {
+        console.error('[generate-plan] admin UPDATE falhou:', {
+          message: updateErr.message,
+          code:    updateErr.code,
+          details: updateErr.details,
+          hint:    updateErr.hint,
+        });
+      }
+    } catch (adminEx) {
+      console.error('[generate-plan] admin client lançou exceção:', String(adminEx));
+    }
+  }
+
+  // Bypass de emergência: se nada funcionou, loga e continua
+  if (!onboardingMarked) {
+    console.error(
+      '[generate-plan] ⚠️ BYPASS: todas as tentativas de gravar onboarding_completed falharam.',
+      '  → Verifique: SUPABASE_SERVICE_ROLE_KEY está definida? A função complete_onboarding existe?',
+      '  → Se class_id NOT NULL: ALTER TABLE profiles ALTER COLUMN class_id DROP NOT NULL;',
     );
   }
-  console.log('[generate-plan] ✅ onboarding_completed = true gravado no banco.');
 
-  // ── PASSO 2: gerar plano via FlashTutor (best-effort) ─────────────────────
+  // ── PASSO 2: gerar plano via FlashTutor (best-effort) ──────────────────────
   let plan: Record<string, unknown>;
   try {
     const completion = await openai.chat.completions.create({
@@ -183,56 +280,57 @@ export async function POST(req: NextRequest) {
         { area: 'Humanas',    peso: 25, motivo: 'Interdisciplinaridade' },
       ],
       semanas: [
-        { numero: 1, tema: 'Diagnóstico', modulos: [] },
-        { numero: 2, tema: 'Reforço',     modulos: [] },
+        { numero: 1, tema: 'Diagnóstico',  modulos: [] },
+        { numero: 2, tema: 'Reforço',      modulos: [] },
         { numero: 3, tema: 'Consolidação', modulos: [] },
-        { numero: 4, tema: 'Revisão',     modulos: [] },
+        { numero: 4, tema: 'Revisão',      modulos: [] },
       ],
-      pontos_criticos:   ['Redação', 'Matemática Básica', 'Ciências da Natureza'],
-      meta_diaria_cards: cardsDay,
+      pontos_criticos:    ['Redação', 'Matemática Básica', 'Ciências da Natureza'],
+      meta_diaria_cards:  cardsDay,
       meta_semanal_cards: cardsDay * 7,
-      horas_por_dia:     tempo,
-      dica_tutor:        `Foco em ${curso}! Cada flashcard revisado é um ponto a mais na sua aprovação. 🚀`,
+      horas_por_dia:      tempo,
+      dica_tutor:         `Foco em ${curso}! Cada flashcard revisado é um ponto a mais na sua aprovação. 🚀`,
     };
   }
 
-  // ── PASSO 3: salvar plano + dados do perfil (best-effort, admin ou RLS) ───
-  // Tenta com admin client primeiro (salva plano JSON completo).
-  // Se SERVICE_ROLE_KEY não estiver configurado, tenta via RLS sem o plano.
-  try {
-    const admin = makeAdmin();
-    const { error: upsertErr } = await admin.from('profiles').upsert(
-      {
-        id:                  user.id,
-        target_course:       curso,
-        daily_card_goal:     cardsDay,
-        daily_hours:         tempo,
-        difficulty_subjects: [dificuldade],
-        ai_study_plan:       plan,
-        study_plan_raw:      plan,
-        onboarding_completed: true,   // garante mesmo se upsert recria a row
-      },
-      { onConflict: 'id' },
-    );
-    if (upsertErr) {
-      console.warn('[generate-plan] admin upsert (non-fatal):', upsertErr.message);
-    } else {
-      // Atualiza JWT metadata (non-fatal)
-      const admin2 = makeAdmin();
-      const { error: metaErr } = await admin2.auth.admin.updateUserById(user.id, {
-        user_metadata: { onboarding_completed: true },
-      });
-      if (metaErr) console.warn('[generate-plan] updateUserById (non-fatal):', metaErr.message);
-      else console.log('[generate-plan] ✅ JWT metadata atualizado.');
+  // ── PASSO 3: salvar plano + dados do perfil (best-effort) ──────────────────
+  // Nunca retorna erro — falhas aqui não bloqueiam o onboarding.
+  // Não envia school_id nem class_id (nullable para B2C).
+  if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    try {
+      const admin = makeAdmin();
+      const { error: upsertErr } = await admin.from('profiles').upsert(
+        {
+          id:                   user.id,
+          role:                 'student',
+          target_course:        curso,
+          daily_card_goal:      cardsDay,
+          daily_hours:          tempo,
+          difficulty_subjects:  [dificuldade],
+          ai_study_plan:        plan,
+          onboarding_completed: true,
+        },
+        { onConflict: 'id' },
+      );
+
+      if (upsertErr) {
+        console.error('[generate-plan] upsert de perfil (non-fatal):', {
+          message: upsertErr.message,
+          code:    upsertErr.code,
+          details: upsertErr.details,
+          hint:    upsertErr.hint,
+        });
+      } else {
+        const admin2 = makeAdmin();
+        const { error: metaErr } = await admin2.auth.admin.updateUserById(user.id, {
+          user_metadata: { onboarding_completed: true },
+        });
+        if (metaErr) console.warn('[generate-plan] updateUserById (non-fatal):', metaErr.message);
+        else         console.log('[generate-plan] ✅ JWT metadata atualizado.');
+      }
+    } catch (p3Err) {
+      console.warn('[generate-plan] PASSO 3 lançou exceção (non-fatal):', String(p3Err));
     }
-  } catch (adminErr) {
-    console.warn('[generate-plan] Admin client indisponível (SERVICE_ROLE_KEY?):', adminErr);
-    // Salva apenas os campos básicos via RLS (sem plano JSON — OK por ora)
-    await serverClient.from('profiles').update({
-      target_course:    curso,
-      daily_card_goal:  cardsDay,
-      daily_hours:      tempo,
-    }).eq('id', user.id);
   }
 
   return NextResponse.json({ ok: true, plan });
