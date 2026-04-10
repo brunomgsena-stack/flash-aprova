@@ -157,13 +157,15 @@ export async function POST(req: NextRequest) {
   }
 
   // Body
-  let planId: string, cpf: string, bodyName: string | undefined, bodyWhatsapp: string | undefined;
+  let planId: string, cpf: string, bodyName: string | undefined, bodyEmail: string | undefined, bodyWhatsapp: string | undefined;
   try {
-    const b = await req.json() as { planId?: string; cpf?: string; name?: string; whatsapp?: string };
+    const b = await req.json() as { planId?: string; cpf?: string; name?: string; email?: string; whatsapp?: string };
+    console.log('[checkout] Corpo recebido na API:', b);
     planId        = (b.planId   ?? 'panteao_elite').trim();
     cpf           = (b.cpf      ?? '').replace(/\D/g, '');
-    bodyName      = b.name?.trim() || undefined;
-    bodyWhatsapp  = b.whatsapp?.replace(/\D/g, '') || undefined;
+    bodyName      = b.name?.trim()                   || undefined;
+    bodyEmail     = b.email?.trim().toLowerCase()    || undefined;
+    bodyWhatsapp  = b.whatsapp?.replace(/\D/g, '')   || undefined;
   } catch {
     return NextResponse.json({ error: 'Corpo da requisição inválido.' }, { status: 400 });
   }
@@ -177,15 +179,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Plano inválido.' }, { status: 422 });
   }
 
-  const name    = bodyName ?? (user.user_metadata?.name as string | undefined) ?? user.email?.split('@')[0] ?? 'Aluno';
-  const email   = user.email ?? '';
+  const name  = bodyName  ?? (user.user_metadata?.name as string | undefined) ?? user.email?.split('@')[0] ?? 'Aluno';
+  const email = bodyEmail ?? user.email ?? '';
+
+  if (!email) {
+    console.error('[checkout] E-mail ausente. bodyEmail:', bodyEmail, '| user.email:', user.email);
+    return NextResponse.json({ error: 'E-mail não encontrado. Preencha o formulário novamente.' }, { status: 400 });
+  }
   const baseUrl = process.env.NEXT_PUBLIC_URL ?? 'https://flashaprova.app';
 
   console.log('[checkout] criando cobrança para', { userId: user.id, email, planId });
 
   try {
     const url = await createBilling({
-      customer: { name, email, cpf, whatsapp: bodyWhatsapp },
+      customer: { name, email, cpf, whatsapp: bodyWhatsapp ?? undefined },
       userId:   user.id,
       planId,
       plan,

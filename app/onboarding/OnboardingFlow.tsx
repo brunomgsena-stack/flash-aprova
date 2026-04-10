@@ -348,6 +348,9 @@ export default function OnboardingFlow() {
       results:      finalData!.results,
       memoryHealth: finalData!.health,
       radar,
+      name:         name.trim(),
+      email:        email.trim().toLowerCase(),
+      whatsapp:     whatsapp.replace(/\D/g, ''),
     }));
 
     router.push('/checkout');

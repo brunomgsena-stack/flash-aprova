@@ -246,24 +246,33 @@ function formatCpf(raw: string): string {
   return `${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6,9)}-${d.slice(9,11)}`;
 }
 
-// ─── Quiz data (nome/whatsapp capturados no onboarding) ───────────────────────
+// ─── Chave do localStorage (deve ser igual ao OnboardingFlow.tsx) ─────────────
 
-function readQuizData(): { name?: string; whatsapp?: string } {
+const LS_KEY = 'flashAprovaOnboarding';
+
+// ─── Quiz data (nome/email/whatsapp capturados no onboarding) ─────────────────
+
+function readQuizData(): { name?: string; email?: string; whatsapp?: string } {
   try {
-    const raw = typeof window !== 'undefined' ? localStorage.getItem('flashAprovaOnboarding') : null;
+    const raw = typeof window !== 'undefined' ? localStorage.getItem(LS_KEY) : null;
     if (!raw) return {};
-    const parsed = JSON.parse(raw) as { name?: string; whatsapp?: string };
-    return { name: parsed.name, whatsapp: parsed.whatsapp };
+    const parsed = JSON.parse(raw) as { name?: string; email?: string; whatsapp?: string };
+    return {
+      name:     parsed.name     || undefined,
+      email:    parsed.email    || undefined,
+      whatsapp: parsed.whatsapp || undefined,
+    };
   } catch { return {}; }
 }
 
 // ─── Checkout handler hook ─────────────────────────────────────────────────────
 
 function useCheckout() {
-  const [loading,  setLoading]  = useState<string | null>(null);
-  const [error,    setError]    = useState<string | null>(null);
-  const [cpf,      setCpf]      = useState('');
-  const [cpfError, setCpfError] = useState<string | null>(null);
+  const [loading,      setLoading]      = useState<string | null>(null);
+  const [error,        setError]        = useState<string | null>(null);
+  const [cpf,          setCpf]          = useState('');
+  const [cpfError,     setCpfError]     = useState<string | null>(null);
+  const [contactError, setContactError] = useState<string | null>(null);
 
   const checkout = useCallback(async (planId: string) => {
     const digits = cpf.replace(/\D/g, '');
@@ -272,16 +281,25 @@ function useCheckout() {
       return;
     }
     setCpfError(null);
+
+    const { name, email, whatsapp } = readQuizData();
+
+    if (!email) {
+      setContactError('Dados de contato não encontrados. Por favor, preencha o formulário novamente.');
+      return;
+    }
+    setContactError(null);
     setLoading(planId);
     setError(null);
 
-    const { name, whatsapp } = readQuizData();
+    const payload = { planId, cpf: digits, name, email, whatsapp };
+    console.log('Dados enviados para o checkout:', payload);
 
     try {
       const res = await fetch('/api/checkout', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ planId, cpf: digits, name, whatsapp }),
+        body:    JSON.stringify(payload),
       });
 
       if (res.status === 401) {
@@ -309,13 +327,13 @@ function useCheckout() {
     setCpfError(null);
   }, []);
 
-  return { checkout, loading, error, cpf, cpfError, onCpfChange };
+  return { checkout, loading, error, cpf, cpfError, onCpfChange, contactError };
 }
 
 // ─── Sales page (non-subscribers) ─────────────────────────────────────────────
 
 function SalesPage({ userPlan, currentPlan }: { userPlan: PlanInfo | null; currentPlan: Plan }) {
-  const { checkout, loading, error, cpf, cpfError, onCpfChange } = useCheckout();
+  const { checkout, loading, error, cpf, cpfError, onCpfChange, contactError } = useCheckout();
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -372,6 +390,9 @@ function SalesPage({ userPlan, currentPlan }: { userPlan: PlanInfo | null; curre
         />
         {cpfError && (
           <p className="text-xs text-red-400 mt-1.5">{cpfError}</p>
+        )}
+        {contactError && (
+          <p className="text-xs text-amber-400 mt-2 text-center leading-snug">{contactError}</p>
         )}
       </div>
 
