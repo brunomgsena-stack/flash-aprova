@@ -11,24 +11,13 @@ const WA_MESSAGE = encodeURIComponent(
 const WA_URL = `https://wa.me/${WA_NUMBER}?text=${WA_MESSAGE}`;
 
 // ── Shake keyframes via Framer Motion ─────────────────────────────────────
-const shakeVariants = {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const shakeVariants: any = {
   idle: { rotate: 0, x: 0 },
   shake: {
     rotate: [0, -8, 8, -6, 6, -3, 3, 0],
     x: [0, -4, 4, -3, 3, -1, 1, 0],
     transition: { duration: 0.55, ease: 'easeInOut' },
-  },
-};
-
-// ── Glow pulse keyframes ───────────────────────────────────────────────────
-const glowPulse = {
-  animate: {
-    boxShadow: [
-      '0 0 12px 2px rgba(16,185,129,0.45)',
-      '0 0 28px 8px rgba(16,185,129,0.75)',
-      '0 0 12px 2px rgba(16,185,129,0.45)',
-    ],
-    transition: { duration: 2, repeat: Infinity, ease: 'easeInOut' },
   },
 };
 
@@ -58,6 +47,13 @@ export default function WhatsAppFloat() {
 
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+      <style>{`
+        @keyframes wa-glow {
+          0%, 100% { box-shadow: 0 0 12px 2px rgba(16,185,129,0.45); }
+          50%       { box-shadow: 0 0 28px 8px rgba(16,185,129,0.75); }
+        }
+        .wa-glow { animation: wa-glow 2s ease-in-out infinite; }
+      `}</style>
 
       {/* ── Tooltip ─────────────────────────────────────────────────────── */}
       <AnimatePresence>
@@ -99,8 +95,7 @@ export default function WhatsAppFloat() {
         aria-label="Falar com consultor no WhatsApp"
         variants={shakeVariants}
         animate={shaking ? 'shake' : 'idle'}
-        {...glowPulse}
-        className="relative flex h-[58px] w-[58px] items-center justify-center rounded-full border border-emerald-500/40 bg-emerald-500/10 backdrop-blur-lg transition-transform hover:scale-105 active:scale-95"
+        className="wa-glow relative flex h-[58px] w-[58px] items-center justify-center rounded-full border border-emerald-500/40 bg-emerald-500/10 backdrop-blur-lg transition-transform hover:scale-105 active:scale-95"
         onClick={() => setShowTooltip(false)}
       >
         {/* Ícone WhatsApp SVG */}
