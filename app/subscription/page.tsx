@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
 import { fetchUserPlan, type Plan, type PlanInfo } from '@/lib/plan';
@@ -61,8 +61,8 @@ function Feature({ text, color, dim = false }: { text: string; color: string; di
 // ─── Active plan banner ────────────────────────────────────────────────────────
 
 function ActiveBanner({ info, plan }: { info: PlanInfo; plan: Plan }) {
-  const color  = plan === 'proai_plus' ? '#06b6d4' : '#7C3AED';
-  const label  = plan === 'proai_plus' ? 'AiPro+' : 'Flash';
+  const color  = plan === 'panteao_elite' ? '#06b6d4' : '#7C3AED';
+  const label  = plan === 'panteao_elite' ? 'Panteão Elite' : 'Aceleração';
   const days   = info.expiresAt
     ? `${info.daysLeft} dia${info.daysLeft !== 1 ? 's' : ''} restante${info.daysLeft !== 1 ? 's' : ''}`
     : 'Plano ativo';
@@ -77,7 +77,7 @@ function ActiveBanner({ info, plan }: { info: PlanInfo; plan: Plan }) {
       <div className="flex items-center gap-3">
         <div className="w-9 h-9 rounded-xl flex items-center justify-center"
           style={{ background: `${color}18`, border: `1px solid ${color}33`, color }}>
-          {plan === 'proai_plus' ? <RobotIcon size={18} stroke="currentColor" /> : <LightningIcon />}
+          {plan === 'panteao_elite' ? <RobotIcon size={18} stroke="currentColor" /> : <LightningIcon />}
         </div>
         <div>
           <span className="text-white font-bold text-sm">Você está no Plano {label}</span>
@@ -150,7 +150,7 @@ function SubscriberPanel({ info }: { info: PlanInfo }) {
                   textShadow: '0 0 20px rgba(6,182,212,0.4)',
                 }}
               >
-                AiPro+
+                Panteão Elite
               </span>
             </div>
           </div>
@@ -210,7 +210,7 @@ function SubscriberPanel({ info }: { info: PlanInfo }) {
               border: '1px solid rgba(255,255,255,0.12)',
             }}
           >
-            Alterar para Plano Flash
+            Alterar para Plano Aceleração
           </button>
 
           <button
@@ -225,9 +225,98 @@ function SubscriberPanel({ info }: { info: PlanInfo }) {
   );
 }
 
+// ─── Shield icon ──────────────────────────────────────────────────────────────
+
+function ShieldIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    </svg>
+  );
+}
+
+// ─── CPF formatter ────────────────────────────────────────────────────────────
+
+function formatCpf(raw: string): string {
+  const d = raw.replace(/\D/g, '').slice(0, 11);
+  if (d.length <= 3)  return d;
+  if (d.length <= 6)  return `${d.slice(0,3)}.${d.slice(3)}`;
+  if (d.length <= 9)  return `${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6)}`;
+  return `${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6,9)}-${d.slice(9,11)}`;
+}
+
+// ─── Quiz data (nome/whatsapp capturados no onboarding) ───────────────────────
+
+function readQuizData(): { name?: string; whatsapp?: string } {
+  try {
+    const raw = typeof window !== 'undefined' ? localStorage.getItem('flashAprovaOnboarding') : null;
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as { name?: string; whatsapp?: string };
+    return { name: parsed.name, whatsapp: parsed.whatsapp };
+  } catch { return {}; }
+}
+
+// ─── Checkout handler hook ─────────────────────────────────────────────────────
+
+function useCheckout() {
+  const [loading,  setLoading]  = useState<string | null>(null);
+  const [error,    setError]    = useState<string | null>(null);
+  const [cpf,      setCpf]      = useState('');
+  const [cpfError, setCpfError] = useState<string | null>(null);
+
+  const checkout = useCallback(async (planId: string) => {
+    const digits = cpf.replace(/\D/g, '');
+    if (digits.length !== 11) {
+      setCpfError('Informe seu CPF completo (11 dígitos) para continuar.');
+      return;
+    }
+    setCpfError(null);
+    setLoading(planId);
+    setError(null);
+
+    const { name, whatsapp } = readQuizData();
+
+    try {
+      const res = await fetch('/api/checkout', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ planId, cpf: digits, name, whatsapp }),
+      });
+
+      if (res.status === 401) {
+        window.location.href = '/login?next=/subscription';
+        return;
+      }
+
+      const json = await res.json() as { url?: string; error?: string; redirect?: string };
+
+      if (json.redirect && !json.url) {
+        window.location.href = json.redirect;
+        return;
+      }
+
+      if (!res.ok || !json.url) throw new Error(json.error ?? 'Erro ao gerar link de pagamento.');
+      window.location.href = json.url;
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Erro inesperado. Tente novamente.');
+      setLoading(null);
+    }
+  }, [cpf]);
+
+  const onCpfChange = useCallback((v: string) => {
+    setCpf(formatCpf(v));
+    setCpfError(null);
+  }, []);
+
+  return { checkout, loading, error, cpf, cpfError, onCpfChange };
+}
+
 // ─── Sales page (non-subscribers) ─────────────────────────────────────────────
 
 function SalesPage({ userPlan, currentPlan }: { userPlan: PlanInfo | null; currentPlan: Plan }) {
+  const { checkout, loading, error, cpf, cpfError, onCpfChange } = useCheckout();
+
   return (
     <div className="max-w-4xl mx-auto">
 
@@ -261,6 +350,31 @@ function SalesPage({ userPlan, currentPlan }: { userPlan: PlanInfo | null; curre
       {/* ── Active plan banner ─────────────────────────────────────────── */}
       {userPlan && <ActiveBanner info={userPlan} plan={currentPlan} />}
 
+      {/* ── CPF input — obrigatório para gerar cobrança ───────────────── */}
+      <div className="max-w-sm mx-auto mb-8">
+        <label className="block text-xs font-semibold text-slate-400 mb-1.5 tracking-wide">
+          CPF <span className="text-slate-600 font-normal">(necessário para o pagamento)</span>
+        </label>
+        <input
+          type="text"
+          inputMode="numeric"
+          placeholder="000.000.000-00"
+          value={cpf}
+          onChange={e => onCpfChange(e.target.value)}
+          maxLength={14}
+          className="w-full rounded-xl px-4 py-3 text-sm font-mono text-white placeholder-slate-600 outline-none transition-all"
+          style={{
+            background: 'rgba(255,255,255,0.04)',
+            border: cpfError
+              ? '1px solid rgba(248,113,113,0.60)'
+              : '1px solid rgba(255,255,255,0.10)',
+          }}
+        />
+        {cpfError && (
+          <p className="text-xs text-red-400 mt-1.5">{cpfError}</p>
+        )}
+      </div>
+
       {/* ── Plan cards ────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12 items-start">
 
@@ -284,7 +398,7 @@ function SalesPage({ userPlan, currentPlan }: { userPlan: PlanInfo | null; curre
           </div>
 
           <p className="text-xs font-semibold tracking-widest uppercase mb-1" style={{ color: '#a78bfa' }}>
-            Plano Flash
+            Plano Aceleração
           </p>
 
           <div className="mb-1">
@@ -305,7 +419,7 @@ function SalesPage({ userPlan, currentPlan }: { userPlan: PlanInfo | null; curre
             <Feature color="#a78bfa" text="Heatmap de consistência de estudos" />
           </div>
 
-          {currentPlan === 'flash' ? (
+          {currentPlan === 'aceleracao' ? (
             <div
               className="w-full py-3 rounded-xl text-center text-sm font-semibold"
               style={{ color: '#a78bfa', background: 'rgba(124,58,237,0.12)', border: '1px solid rgba(124,58,237,0.28)' }}
@@ -313,12 +427,19 @@ function SalesPage({ userPlan, currentPlan }: { userPlan: PlanInfo | null; curre
               ✓ Seu plano atual
             </div>
           ) : (
-            <button
-              className="w-full py-3 rounded-xl text-sm font-bold text-white transition-all duration-200 hover:opacity-80"
-              style={{ background: 'rgba(124,58,237,0.25)', border: '1px solid rgba(124,58,237,0.40)' }}
-            >
-              Selecionar Flash
-            </button>
+            <>
+              {error && loading === null && (
+                <p className="text-xs text-red-400 text-center mb-2">{error}</p>
+              )}
+              <button
+                onClick={() => checkout('aceleracao')}
+                disabled={loading !== null}
+                className="w-full py-3 rounded-xl text-sm font-bold text-white transition-all duration-200 hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ background: 'rgba(124,58,237,0.25)', border: '1px solid rgba(124,58,237,0.40)' }}
+              >
+                {loading === 'aceleracao' ? 'Redirecionando…' : 'Selecionar Aceleração'}
+              </button>
+            </>
           )}
         </div>
 
@@ -380,7 +501,7 @@ function SalesPage({ userPlan, currentPlan }: { userPlan: PlanInfo | null; curre
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
             }}>
-            Plano AiPro+
+            Plano Panteão Elite
           </p>
 
           <div className="mb-1">
@@ -389,14 +510,17 @@ function SalesPage({ userPlan, currentPlan }: { userPlan: PlanInfo | null; curre
               <span className="text-5xl font-black text-white">R$&nbsp;29</span>
               <span className="text-3xl font-black text-white">,90</span>
             </div>
-            <p className="text-slate-600 text-xs mt-1">R$ 358,80 / ano · sem juros</p>
+            <p className="text-sm font-semibold italic mt-1" style={{ color: '#06b6d4' }}>
+              Menos de R$ 1,91 por dia
+            </p>
+            <p className="text-slate-600 text-xs mt-0.5">R$ 358,80 / ano · sem juros</p>
           </div>
 
           <div className="h-px my-5"
             style={{ background: 'linear-gradient(90deg, rgba(124,58,237,0.40), rgba(6,182,212,0.40), rgba(236,72,153,0.20))' }} />
 
           <div className="space-y-0.5 mb-7">
-            <Feature color="#67e8f9" text="Tudo do Plano Flash" />
+            <Feature color="#67e8f9" text="Tudo do Plano Aceleração" />
             <Feature color="#67e8f9" text="Resumos Storytelling por deck" />
             <Feature color="#67e8f9" text="Tabelas Comparativas + Macetes & Mnemonics" />
             <Feature color="#67e8f9" text="Áudio-Resumos narrados por IA" />
@@ -404,8 +528,14 @@ function SalesPage({ userPlan, currentPlan }: { userPlan: PlanInfo | null; curre
             <Feature color="#ec4899" text="Geração de Flashcards via Foto ou PDF" />
           </div>
 
+          {error && loading === null && (
+            <p className="text-xs text-red-400 text-center mb-3">{error}</p>
+          )}
+
           <button
-            className="relative w-full py-4 rounded-xl font-black text-white text-base transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.99]"
+            onClick={() => checkout('panteao_elite')}
+            disabled={loading !== null}
+            className="relative w-full py-4 rounded-xl font-black text-white text-base transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:scale-100"
             style={{
               background: 'linear-gradient(135deg, #7C3AED 0%, #06b6d4 60%, #ec4899 100%)',
               boxShadow:  '0 0 32px rgba(124,58,237,0.55), 0 4px 20px rgba(0,0,0,0.45)',
@@ -416,8 +546,13 @@ function SalesPage({ userPlan, currentPlan }: { userPlan: PlanInfo | null; curre
               <span className="absolute inset-0"
                 style={{ background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.15) 50%, transparent 70%)' }} />
             </span>
-            Garantir minha Aprovação (12x sem juros)
+            {loading === 'panteao_elite' ? 'Redirecionando…' : 'Garantir minha Aprovação (12x sem juros)'}
           </button>
+
+          <div className="flex items-center justify-center gap-2 mt-4 text-sm font-bold" style={{ color: '#06b6d4' }}>
+            <ShieldIcon />
+            <strong>Garantia Incondicional de 7 Dias — Risco Zero</strong>
+          </div>
         </div>
       </div>
 
@@ -427,14 +562,14 @@ function SalesPage({ userPlan, currentPlan }: { userPlan: PlanInfo | null; curre
 
         <div className="grid grid-cols-3 px-6 py-4 border-b border-white/5">
           <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Recurso</span>
-          <span className="text-xs font-semibold text-center uppercase tracking-wider" style={{ color: '#a78bfa' }}>Flash</span>
+          <span className="text-xs font-semibold text-center uppercase tracking-wider" style={{ color: '#a78bfa' }}>Aceleração</span>
           <span className="text-xs font-semibold text-center uppercase tracking-widest"
             style={{
               background: 'linear-gradient(90deg, #a78bfa, #67e8f9)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
             }}>
-            AiPro+
+            Panteão Elite
           </span>
         </div>
 
@@ -493,8 +628,8 @@ export default function SubscriptionPage() {
     load();
   }, []);
 
-  const currentPlan = userPlan?.plan ?? 'flash';
-  const isSubscriber = currentPlan === 'proai_plus';
+  const currentPlan = userPlan?.plan ?? 'aceleracao';
+  const isSubscriber = currentPlan === 'panteao_elite';
 
   return (
     <main
