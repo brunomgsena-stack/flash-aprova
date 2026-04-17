@@ -1,6 +1,6 @@
 import { supabase } from './supabaseClient';
 
-export type Plan = 'flash' | 'proai_plus';
+export type Plan = 'aceleracao' | 'panteao_elite';
 
 export type PlanInfo = {
   plan:      Plan;
@@ -10,8 +10,8 @@ export type PlanInfo = {
 };
 
 const PLAN_LABEL: Record<Plan, string> = {
-  flash:      'Flash',
-  proai_plus: 'AiPro+',
+  aceleracao:    'Aceleração',
+  panteao_elite: 'Panteão Elite',
 };
 
 export function planLabel(plan: Plan): string {
@@ -35,17 +35,17 @@ export async function fetchUserPlan(userId: string): Promise<PlanInfo> {
 
   // Admin bypass: acesso total independente do plano cadastrado
   if (profileResult.data?.role === 'admin') {
-    return { plan: 'proai_plus', expiresAt: null, daysLeft: null };
+    return { plan: 'panteao_elite', expiresAt: null, daysLeft: null };
   }
 
   const data     = statsResult.data;
-  const rawPlan  = (data?.plan as Plan | undefined) ?? 'flash';
+  const rawPlan  = (data?.plan as Plan | undefined) ?? 'aceleracao';
   const expiresAt = data?.plan_expires_at ? new Date(data.plan_expires_at) : null;
 
-  // Plano expirado → rebaixa para 'flash'
+  // Plano expirado → rebaixa para 'aceleracao'
   const now = new Date();
   if (expiresAt && expiresAt < now) {
-    return { plan: 'flash', expiresAt, daysLeft: 0 };
+    return { plan: 'aceleracao', expiresAt, daysLeft: 0 };
   }
 
   let daysLeft: number | null = null;

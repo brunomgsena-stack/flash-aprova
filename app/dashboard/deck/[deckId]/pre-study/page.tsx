@@ -68,7 +68,7 @@ export default async function DeckPreStudyPage({ params }: Props) {
   const serverClient = await createClient();
   const { data: { user } } = await serverClient.auth.getUser();
   const planInfo = user ? await fetchUserPlan(user.id) : null;
-  const plan = planInfo?.plan ?? 'flash';
+  const plan = planInfo?.plan ?? 'aceleracao';
 
   return (
     <main className="min-h-screen px-4 py-12 sm:px-8">

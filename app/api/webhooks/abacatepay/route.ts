@@ -27,7 +27,7 @@ const PAID_STATUSES = new Set(['PAID', 'CONFIRMED']);
 
 // ── Tipos de plano suportados ─────────────────────────────────────────────────
 
-type PlanSlug = 'flash' | 'proai_plus';
+type PlanSlug = 'aceleracao' | 'panteao_elite';
 
 interface PlanInfo {
   slug:     PlanSlug;
@@ -36,26 +36,30 @@ interface PlanInfo {
 }
 
 const PLANS: Record<PlanSlug, PlanInfo> = {
-  flash:      { slug: 'flash',      name: 'Flash',   metaKey: 'flash'      },
-  proai_plus: { slug: 'proai_plus', name: 'ProAI+',  metaKey: 'proai_plus' },
+  aceleracao:    { slug: 'aceleracao',    name: 'Aceleração',    metaKey: 'aceleracao'    },
+  panteao_elite: { slug: 'panteao_elite', name: 'Panteão Elite', metaKey: 'panteao_elite' },
 };
 
-// ── Resolve plano a partir do productId ──────────────────────────────────────
-// Se o productId não corresponder a nenhum produto conhecido,
-// retorna null para que o evento seja ignorado com log de aviso.
+// ── Resolve plano a partir do metadata.plan_slug ou productId ─────────────────
 
-function resolvePlan(productId: string | null | undefined): PlanInfo | null {
+function resolvePlan(
+  productId: string | null | undefined,
+  planSlug:  string | null | undefined,
+): PlanInfo | null {
+  // Preferência: plan_slug enviado no metadata pelo checkout
+  if (planSlug && PLANS[planSlug as PlanSlug]) {
+    return PLANS[planSlug as PlanSlug];
+  }
+
   const flashId = process.env.ABACATEPAY_PRODUCT_ID_FLASH;
   const aiproId = process.env.ABACATEPAY_PRODUCT_ID_AIPRO;
 
-  if (flashId && productId === flashId) return PLANS.flash;
-  if (aiproId && productId === aiproId) return PLANS.proai_plus;
+  if (flashId && productId === flashId) return PLANS.aceleracao;
+  if (aiproId && productId === aiproId) return PLANS.panteao_elite;
 
-  // Fallback: se os IDs não estiverem configurados, mantém comportamento
-  // legado (qualquer pagamento = AiPro+).
+  // Fallback: se os IDs de produto não estiverem configurados
   if (!flashId && !aiproId) {
-    console.warn('[webhook/abacate] IDs de produto não configurados — assumindo AiPro+ (legado).');
-    return PLANS.proai_plus;
+    return PLANS.panteao_elite;
   }
 
   return null;
@@ -80,6 +84,10 @@ interface AbacatePayload {
   status?:     string;
   externalId?: string;
   productId?:  string;
+  metadata?: {
+    plan_slug?:  string;
+    expires_at?: string;
+  };
   customer?: {
     email?: string;
     name?:  string;
@@ -89,6 +97,10 @@ interface AbacatePayload {
     status?:     string;
     externalId?: string;
     productId?:  string;
+    metadata?: {
+      plan_slug?:  string;
+      expires_at?: string;
+    };
     customer?: {
       email?: string;
       name?:  string;
@@ -99,20 +111,25 @@ interface AbacatePayload {
 // ── Normaliza campos independente da estrutura ────────────────────────────────
 
 function extractFields(p: AbacatePayload): {
-  status:    string;
-  email:     string;
-  name:      string;
-  productId: string | null;
+  status:     string;
+  email:      string;
+  name:       string;
+  productId:  string | null;
+  planSlug:   string | null;
+  expiresAt:  string | null;
 } {
   const status     = (p.data?.status     ?? p.status     ?? '').toUpperCase();
   const externalId =  p.data?.externalId ?? p.externalId ?? '';
   const customer   =  p.data?.customer   ?? p.customer;
   const productId  =  p.data?.productId  ?? p.productId  ?? null;
+  const metadata   =  p.data?.metadata   ?? p.metadata;
 
-  const email = (externalId.includes('@') ? externalId : customer?.email ?? '').trim().toLowerCase();
-  const name  = (customer?.name ?? email.split('@')[0]).trim();
+  const email     = (externalId.includes('@') ? externalId : customer?.email ?? '').trim().toLowerCase();
+  const name      = (customer?.name ?? email.split('@')[0]).trim();
+  const planSlug  = metadata?.plan_slug  ?? null;
+  const expiresAt = metadata?.expires_at ?? null;
 
-  return { status, email, name, productId };
+  return { status, email, name, productId, planSlug, expiresAt };
 }
 
 // ── Localiza user_id pelo e-mail ──────────────────────────────────────────────
@@ -137,11 +154,13 @@ async function findUserIdByEmail(
 // ── Grava o plano em user_stats + profiles ───────────────────────────────────
 
 async function grantPlan(
-  adminClient: ReturnType<typeof makeAdminClient>,
-  userId:      string,
-  plan:        PlanInfo,
+  adminClient:       ReturnType<typeof makeAdminClient>,
+  userId:            string,
+  plan:              PlanInfo,
+  expiresAtOverride: string | null = null,
 ): Promise<void> {
-  const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+  // Usa a data de expiração do metadata (enviada pelo checkout) ou fallback de +365 dias
+  const expiresAt = expiresAtOverride ?? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
 
   const { error: statsError } = await adminClient.from('user_stats').upsert(
     { user_id: userId, plan: plan.slug, plan_expires_at: expiresAt },
@@ -172,7 +191,7 @@ export async function POST(req: NextRequest) {
   const secretOk = !!secret && secret.length === expectedSecret.length &&
     timingSafeEqual(Buffer.from(secret), Buffer.from(expectedSecret));
   if (!secretOk) {
-    console.warn('[webhook/abacate] Segredo inválido.');
+    console.error('[webhook/abacate] Tentativa com segredo inválido.');
     return NextResponse.json({ error: 'Não autorizado.' }, { status: 401 });
   }
 
@@ -184,23 +203,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Payload inválido.' }, { status: 400 });
   }
 
-  const { status, email, name, productId } = extractFields(payload);
+  const { status, email, name, productId, planSlug, expiresAt } = extractFields(payload);
 
   // 3. Ignora eventos que não são pagamento confirmado ─────────────────────────
   if (!PAID_STATUSES.has(status)) {
-    console.log(`[webhook/abacate] Status "${status}" ignorado.`);
     return NextResponse.json({ received: true, action: 'ignored' });
   }
 
-  // 4. Resolve o plano pelo productId ─────────────────────────────────────────
-  const plan = resolvePlan(productId);
+  // 4. Resolve o plano pelo metadata.plan_slug ou productId ────────────────────
+  const plan = resolvePlan(productId, planSlug);
   if (!plan) {
-    console.warn(`[webhook/abacate] productId desconhecido: "${productId}". Evento ignorado.`);
+    console.error(`[webhook/abacate] productId desconhecido: "${productId}".`);
     return NextResponse.json({ received: true, action: 'unknown_product' });
   }
 
   if (!email) {
-    console.warn('[webhook/abacate] E-mail ausente no payload.', { productId, status });
+    console.error('[webhook/abacate] E-mail ausente no payload.');
     return NextResponse.json({ error: 'E-mail do comprador não encontrado.' }, { status: 400 });
   }
 
@@ -223,13 +241,10 @@ export async function POST(req: NextRequest) {
 
     if (insertError) {
       if (insertError.code === '23505') {
-        console.log(`[webhook/abacate] Evento ${eventId} já processado. Ignorando.`);
         return NextResponse.json({ received: true, action: 'already_processed' });
       }
       console.error('[webhook/abacate] Erro ao registrar webhook_event:', insertError.message);
     }
-  } else {
-    console.warn('[webhook/abacate] Payload sem id — idempotência não garantida.', { email, status });
   }
 
   const baseUrl = process.env.NEXT_PUBLIC_URL ?? 'https://flashaprova.app';
@@ -238,11 +253,10 @@ export async function POST(req: NextRequest) {
     const existingId = await findUserIdByEmail(adminClient, email);
 
     if (existingId) {
-      await grantPlan(adminClient, existingId, plan);
+      await grantPlan(adminClient, existingId, plan, expiresAt);
       sendWelcomeEmail(email, name).catch(err =>
-        console.error('[webhook/abacate] Falha ao enviar welcome email:', err),
+        console.error('[webhook/abacate] Falha ao enviar welcome email:', err instanceof Error ? err.message : String(err)),
       );
-      console.log(`[webhook/abacate] ✅ Plano "${plan.slug}" aplicado — usuário existente ${existingId} (${email})`);
       return NextResponse.json({ received: true, action: 'plan_updated', plan: plan.slug, userId: existingId });
     }
 
@@ -256,12 +270,12 @@ export async function POST(req: NextRequest) {
     );
 
     if (inviteError) {
-      console.warn('[webhook/abacate] Invite falhou, tentando fallback:', inviteError.message);
+      // Invite falhou — tenta buscar user criado em paralelo (race condition)
       const fallbackId = await findUserIdByEmail(adminClient, email);
       if (fallbackId) {
-        await grantPlan(adminClient, fallbackId, plan);
+        await grantPlan(adminClient, fallbackId, plan, expiresAt);
         sendWelcomeEmail(email, name).catch(err =>
-          console.error('[webhook/abacate] Falha ao enviar welcome email (fallback):', err),
+          console.error('[webhook/abacate] Falha ao enviar welcome email (fallback):', err instanceof Error ? err.message : String(err)),
         );
         return NextResponse.json({ received: true, action: 'plan_updated_fallback', plan: plan.slug, userId: fallbackId });
       }
@@ -269,17 +283,16 @@ export async function POST(req: NextRequest) {
     }
 
     const newUserId = inviteData.user.id;
-    await grantPlan(adminClient, newUserId, plan);
+    await grantPlan(adminClient, newUserId, plan, expiresAt);
     sendWelcomeEmail(email, name).catch(err =>
-      console.error('[webhook/abacate] Falha ao enviar welcome email (new user):', err),
+      console.error('[webhook/abacate] Falha ao enviar welcome email (new user):', err instanceof Error ? err.message : String(err)),
     );
 
-    console.log(`[webhook/abacate] ✅ Conta criada + plano "${plan.slug}" + invite para ${email} (${newUserId})`);
     return NextResponse.json({ received: true, action: 'user_created', plan: plan.slug, userId: newUserId });
 
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e);
-    console.error('[webhook/abacate] Erro ao processar plano:', msg, { email, plan: plan.slug });
+    console.error('[webhook/abacate] Erro ao processar plano:', msg);
     return NextResponse.json({ error: `Falha ao processar plano: ${msg}` }, { status: 500 });
   }
 }

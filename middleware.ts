@@ -36,13 +36,14 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // ── Auth guards ─────────────────────────────────────────────────────────────
-  const isProtected = ['/dashboard', '/admin', '/study', '/subscription'].some((p) =>
+  const isProtected = ['/dashboard', '/admin', '/study'].some((p) =>
     pathname.startsWith(p),
   );
   const isSetup = pathname.startsWith('/setup');
 
-  // ── Exceção de emergência: /director e /dashboard nunca redirecionam para /setup ──
-  const isDirectorOrDashboard = pathname.startsWith('/director') || pathname.startsWith('/dashboard');
+  // ── Exceção: /director, /dashboard e /study nunca redirecionam para /setup ──
+  // /study deve ser permissivo: se o aluno está logado, pode estudar independente do onboarding.
+  const isDirectorOrDashboard = pathname.startsWith('/director') || pathname.startsWith('/dashboard') || pathname.startsWith('/study');
 
   // Rotas protegidas e /setup exigem login
   if ((isProtected || isSetup) && !user) {
@@ -65,14 +66,14 @@ export async function middleware(request: NextRequest) {
         .maybeSingle();
 
       if (profileErr) {
-        console.error('[Middleware] Erro ao ler profile:', profileErr.message);
+        console.error('[Middleware] Erro ao ler profile:', profileErr.message, '| code:', profileErr.code);
       }
 
       onboardingDone = profile?.onboarding_completed === true;
     }
 
     // Usuário logado em rota protegida sem ter completado o setup → redireciona
-    // Exceção: /director e /dashboard nunca são redirecionados para /setup
+    // Exceção: /director, /dashboard e /study nunca são redirecionados para /setup
     if (!onboardingDone && isProtected && !isDirectorOrDashboard) {
       return NextResponse.redirect(new URL('/setup', request.url));
     }

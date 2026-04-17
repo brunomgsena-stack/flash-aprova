@@ -492,7 +492,7 @@ export default function PantheonInsights() {
   useEffect(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { setState({ status: 'ready', data: { insight: fallbackInsight(), maturePct: 0, streak: 0, plan: 'flash', profile: {}, areaScores: {}, topLapseInfo: null, totalDue: 0 } }); return; }
+      if (!user) { setState({ status: 'ready', data: { insight: fallbackInsight(), maturePct: 0, streak: 0, plan: 'aceleracao', profile: {}, areaScores: {}, topLapseInfo: null, totalDue: 0 } }); return; }
 
       // Fetch plan + data + profile in parallel
       const [planInfo, cardsRes, progressRes, countRes, profileRes] = await Promise.all([
@@ -600,8 +600,8 @@ export default function PantheonInsights() {
 
       setState({ status: 'ready', data: { insight, maturePct, streak, plan, profile, areaScores: areaScoresObj, topLapseInfo, totalDue } });
 
-      // AiPro+ → busca briefing IA em background após montar o estado
-      if (plan === 'proai_plus') {
+      // Panteão Elite → busca briefing IA em background após montar o estado
+      if (plan === 'panteao_elite') {
         setBriefingLoading(true);
         fetch('/api/insights/briefing', {
           method:  'POST',
@@ -620,7 +620,7 @@ export default function PantheonInsights() {
   if (state.status === 'loading') return <Skeleton />;
 
   const { insight, maturePct, streak, plan, profile, areaScores } = state.data;
-  const isPro       = plan === 'proai_plus';
+  const isPro       = plan === 'panteao_elite';
   const flashTutor  = getFlashTutor();
   const borderColor = isPro ? `${NEON_PURPLE}55` : `${NEON_PURPLE}28`;
 

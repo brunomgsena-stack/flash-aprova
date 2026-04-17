@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { useTheme } from '@/components/ThemeProvider';
 import { buildDomainMap } from '@/lib/domain';
 import { getCategoryInfo, ENEM_AREAS } from '@/lib/categories';
 import MasteryRadarChart, { type RadarPoint }      from './charts/MasteryRadarChart';
@@ -20,14 +21,18 @@ function dayLabel(iso: string, index: number): string {
 
 // ── Skeleton ──────────────────────────────────────────────────────────────────
 
-function Skeleton() {
+function Skeleton({ isLight }: { isLight: boolean }) {
   return (
     <div className="max-w-5xl mx-auto mb-6 grid grid-cols-1 md:grid-cols-2 gap-5">
       {[0, 1].map(i => (
         <div
           key={i}
           className="rounded-2xl animate-pulse"
-          style={{ height: '240px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
+          style={{
+            height:     '240px',
+            background: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.03)',
+            border:     isLight ? '1px solid rgba(0,0,0,0.06)' : '1px solid rgba(255,255,255,0.06)',
+          }}
         />
       ))}
     </div>
@@ -39,6 +44,9 @@ function Skeleton() {
 type SubjectRow = { id: string; category: string | null };
 
 export default function ChartsRow({ subjects }: { subjects: SubjectRow[] }) {
+  const { theme } = useTheme();
+  const isLight   = theme === 'light';
+
   const [radarData,    setRadarData]    = useState<RadarPoint[]>([]);
   const [retentionData, setRetentionData] = useState<RetentionPoint[]>([]);
   const [ready,        setReady]        = useState(false);
@@ -85,14 +93,14 @@ export default function ChartsRow({ subjects }: { subjects: SubjectRow[] }) {
         const dom = domainMap.get(subj.id);
         if (dom) {
           const s = shortScore.get(short)!;
-          s.sum   += dom.level;
+          s.sum   += dom.coverage;   // cards revisados / total cards (0–1)
           s.count += 1;
         }
       }
 
       const radar: RadarPoint[] = ENEM_AREAS.map(info => {
         const s = shortScore.get(info.short);
-        const mastery = s && s.count > 0 ? Math.round((s.sum / s.count / 5) * 100) : 0;
+        const mastery = s && s.count > 0 ? Math.round((s.sum / s.count) * 100) : 0;
         return { area: info.short, mastery, fullMark: 100 };
       });
 
@@ -120,13 +128,14 @@ export default function ChartsRow({ subjects }: { subjects: SubjectRow[] }) {
     load();
   }, [subjects]);
 
-  if (!ready) return <Skeleton />;
+  if (!ready) return <Skeleton isLight={isLight} />;
 
   const cardStyle = {
-    background:           'rgba(255,255,255,0.04)',
-    backdropFilter:       'blur(20px)',
-    WebkitBackdropFilter: 'blur(20px)',
-    border:               '1px solid rgba(255,255,255,0.08)',
+    background:           isLight ? '#FFFFFF' : 'rgba(255,255,255,0.04)',
+    backdropFilter:       isLight ? 'none' : 'blur(20px)',
+    WebkitBackdropFilter: isLight ? 'none' : 'blur(20px)',
+    border:               isLight ? '1px solid rgba(0,0,0,0.06)' : '1px solid rgba(255,255,255,0.08)',
+    boxShadow:            isLight ? '0 1px 3px rgba(15,23,42,0.08), 0 4px 16px rgba(15,23,42,0.06)' : 'none',
   };
 
   return (

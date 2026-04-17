@@ -13,7 +13,7 @@ type ComparativeTable = { headers: string[]; rows: TableRow[] };
 
 type Props = {
   color:                  string;
-  plan:                   'flash' | 'proai_plus';
+  plan:                   'aceleracao' | 'panteao_elite';
   subjectTitle:           string | null;
   deckTitle:              string;
   summary_markdown:       string | null;
@@ -62,8 +62,8 @@ function parseTable(raw: unknown): ComparativeTable | null {
 
 // ─── Tutor card ───────────────────────────────────────────────────────────────
 
-function TutorCard({ tutor, plan, subjectTitle, onStartChat, onUpgradeClick }: { tutor: Tutor; plan: 'flash' | 'proai_plus'; subjectTitle: string | null; onStartChat: () => void; onUpgradeClick: () => void }) {
-  const isPro   = plan === 'proai_plus';
+function TutorCard({ tutor, plan, subjectTitle, onStartChat, onUpgradeClick }: { tutor: Tutor; plan: 'aceleracao' | 'panteao_elite'; subjectTitle: string | null; onStartChat: () => void; onUpgradeClick: () => void }) {
+  const isPro   = plan === 'panteao_elite';
   const VIOLET  = '#a855f7';
 
   return (
@@ -774,7 +774,7 @@ export default function DeckContent({ color, plan, subjectTitle, deckTitle, summ
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [view, setView]                         = useState<'knowledge' | 'chat'>('knowledge');
   const table   = parseTable(comparative_table_json);
-  const isFlash = plan === 'flash';
+  const isFlash = plan === 'aceleracao';
   const tutor   = getTutor(subjectTitle);
 
   if (view === 'chat' && tutor) {

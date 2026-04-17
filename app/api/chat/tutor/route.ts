@@ -40,9 +40,9 @@ export async function POST(req: NextRequest) {
     serverClient.from('profiles').select('role').eq('id', user.id).maybeSingle(),
   ]);
   const hasAccess =
-    planInfo.plan === 'proai_plus' || profileResult.data?.role === 'admin';
+    planInfo.plan === 'panteao_elite' || profileResult.data?.role === 'admin';
   if (!hasAccess) {
-    return NextResponse.json({ error: 'Recurso exclusivo do plano AiPro+.' }, { status: 403 });
+    return NextResponse.json({ error: 'Recurso exclusivo do Plano Panteão Elite.' }, { status: 403 });
   }
 
   // ── Payload ─────────────────────────────────────────────────────────────────

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
 import { fetchUserPlan, type Plan, type PlanInfo } from '@/lib/plan';
@@ -236,104 +236,30 @@ function ShieldIcon() {
   );
 }
 
-// ─── CPF formatter ────────────────────────────────────────────────────────────
+// ─── AbacatePay direct links ───────────────────────────────────────────────────
 
-function formatCpf(raw: string): string {
-  const d = raw.replace(/\D/g, '').slice(0, 11);
-  if (d.length <= 3)  return d;
-  if (d.length <= 6)  return `${d.slice(0,3)}.${d.slice(3)}`;
-  if (d.length <= 9)  return `${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6)}`;
-  return `${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6,9)}-${d.slice(9,11)}`;
-}
+const ABACATE_LINKS: Record<string, string> = {
+  aceleracao:    'https://www.asaas.com/c/49ydadcmmrrzmigg',
+  panteao_elite: 'https://www.asaas.com/c/7tv0nhdilq1frb4s',
+};
 
-// ─── Chave do localStorage (deve ser igual ao OnboardingFlow.tsx) ─────────────
-
-const LS_KEY = 'flashAprovaOnboarding';
-
-// ─── Quiz data (nome/email/whatsapp capturados no onboarding) ─────────────────
-
-function readQuizData(): { name?: string; email?: string; whatsapp?: string } {
+function goToCheckout(planId: string) {
   try {
-    const raw = typeof window !== 'undefined' ? localStorage.getItem(LS_KEY) : null;
-    if (!raw) return {};
-    const parsed = JSON.parse(raw) as { name?: string; email?: string; whatsapp?: string };
-    return {
-      name:     parsed.name     || undefined,
-      email:    parsed.email    || undefined,
-      whatsapp: parsed.whatsapp || undefined,
-    };
-  } catch { return {}; }
-}
-
-// ─── Checkout handler hook ─────────────────────────────────────────────────────
-
-function useCheckout() {
-  const [loading,      setLoading]      = useState<string | null>(null);
-  const [error,        setError]        = useState<string | null>(null);
-  const [cpf,          setCpf]          = useState('');
-  const [cpfError,     setCpfError]     = useState<string | null>(null);
-  const [contactError, setContactError] = useState<string | null>(null);
-
-  const checkout = useCallback(async (planId: string) => {
-    const digits = cpf.replace(/\D/g, '');
-    if (digits.length !== 11) {
-      setCpfError('Informe seu CPF completo (11 dígitos) para continuar.');
-      return;
-    }
-    setCpfError(null);
-
-    const { name, email, whatsapp } = readQuizData();
-
-    if (!email) {
-      setContactError('Dados de contato não encontrados. Por favor, preencha o formulário novamente.');
-      return;
-    }
-    setContactError(null);
-    setLoading(planId);
-    setError(null);
-
-    const payload = { planId, cpf: digits, name, email, whatsapp };
-    console.log('Dados enviados para o checkout:', payload);
-
-    try {
-      const res = await fetch('/api/checkout', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify(payload),
-      });
-
-      if (res.status === 401) {
-        window.location.href = '/login?next=/subscription';
-        return;
-      }
-
-      const json = await res.json() as { url?: string; error?: string; redirect?: string };
-
-      if (json.redirect && !json.url) {
-        window.location.href = json.redirect;
-        return;
-      }
-
-      if (!res.ok || !json.url) throw new Error(json.error ?? 'Erro ao gerar link de pagamento.');
-      window.location.href = json.url;
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Erro inesperado. Tente novamente.');
-      setLoading(null);
-    }
-  }, [cpf]);
-
-  const onCpfChange = useCallback((v: string) => {
-    setCpf(formatCpf(v));
-    setCpfError(null);
-  }, []);
-
-  return { checkout, loading, error, cpf, cpfError, onCpfChange, contactError };
+    const raw = localStorage.getItem('flashAprovaOnboarding');
+    const parsed = raw ? JSON.parse(raw) as { name?: string; email?: string } : {};
+    const params = new URLSearchParams();
+    if (parsed.email) params.set('email', parsed.email);
+    if (parsed.name)  params.set('name',  parsed.name);
+    const query = params.toString();
+    window.location.href = query ? `${ABACATE_LINKS[planId]}?${query}` : ABACATE_LINKS[planId];
+  } catch {
+    window.location.href = ABACATE_LINKS[planId];
+  }
 }
 
 // ─── Sales page (non-subscribers) ─────────────────────────────────────────────
 
 function SalesPage({ userPlan, currentPlan }: { userPlan: PlanInfo | null; currentPlan: Plan }) {
-  const { checkout, loading, error, cpf, cpfError, onCpfChange, contactError } = useCheckout();
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -367,34 +293,6 @@ function SalesPage({ userPlan, currentPlan }: { userPlan: PlanInfo | null; curre
 
       {/* ── Active plan banner ─────────────────────────────────────────── */}
       {userPlan && <ActiveBanner info={userPlan} plan={currentPlan} />}
-
-      {/* ── CPF input — obrigatório para gerar cobrança ───────────────── */}
-      <div className="max-w-sm mx-auto mb-8">
-        <label className="block text-xs font-semibold text-slate-400 mb-1.5 tracking-wide">
-          CPF <span className="text-slate-600 font-normal">(necessário para o pagamento)</span>
-        </label>
-        <input
-          type="text"
-          inputMode="numeric"
-          placeholder="000.000.000-00"
-          value={cpf}
-          onChange={e => onCpfChange(e.target.value)}
-          maxLength={14}
-          className="w-full rounded-xl px-4 py-3 text-sm font-mono text-white placeholder-slate-600 outline-none transition-all"
-          style={{
-            background: 'rgba(255,255,255,0.04)',
-            border: cpfError
-              ? '1px solid rgba(248,113,113,0.60)'
-              : '1px solid rgba(255,255,255,0.10)',
-          }}
-        />
-        {cpfError && (
-          <p className="text-xs text-red-400 mt-1.5">{cpfError}</p>
-        )}
-        {contactError && (
-          <p className="text-xs text-amber-400 mt-2 text-center leading-snug">{contactError}</p>
-        )}
-      </div>
 
       {/* ── Plan cards ────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12 items-start">
@@ -448,19 +346,13 @@ function SalesPage({ userPlan, currentPlan }: { userPlan: PlanInfo | null; curre
               ✓ Seu plano atual
             </div>
           ) : (
-            <>
-              {error && loading === null && (
-                <p className="text-xs text-red-400 text-center mb-2">{error}</p>
-              )}
-              <button
-                onClick={() => checkout('aceleracao')}
-                disabled={loading !== null}
-                className="w-full py-3 rounded-xl text-sm font-bold text-white transition-all duration-200 hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ background: 'rgba(124,58,237,0.25)', border: '1px solid rgba(124,58,237,0.40)' }}
-              >
-                {loading === 'aceleracao' ? 'Redirecionando…' : 'Selecionar Aceleração'}
-              </button>
-            </>
+            <button
+              onClick={() => goToCheckout('aceleracao')}
+              className="w-full py-3 rounded-xl text-sm font-bold text-white transition-all duration-200 hover:opacity-80"
+              style={{ background: 'rgba(124,58,237,0.25)', border: '1px solid rgba(124,58,237,0.40)' }}
+            >
+              Garantir Vaga — Aceleração
+            </button>
           )}
         </div>
 
@@ -549,14 +441,9 @@ function SalesPage({ userPlan, currentPlan }: { userPlan: PlanInfo | null; curre
             <Feature color="#ec4899" text="Geração de Flashcards via Foto ou PDF" />
           </div>
 
-          {error && loading === null && (
-            <p className="text-xs text-red-400 text-center mb-3">{error}</p>
-          )}
-
           <button
-            onClick={() => checkout('panteao_elite')}
-            disabled={loading !== null}
-            className="relative w-full py-4 rounded-xl font-black text-white text-base transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:scale-100"
+            onClick={() => goToCheckout('panteao_elite')}
+            className="relative w-full py-4 rounded-xl font-black text-white text-base transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.99]"
             style={{
               background: 'linear-gradient(135deg, #7C3AED 0%, #06b6d4 60%, #ec4899 100%)',
               boxShadow:  '0 0 32px rgba(124,58,237,0.55), 0 4px 20px rgba(0,0,0,0.45)',
@@ -567,7 +454,7 @@ function SalesPage({ userPlan, currentPlan }: { userPlan: PlanInfo | null; curre
               <span className="absolute inset-0"
                 style={{ background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.15) 50%, transparent 70%)' }} />
             </span>
-            {loading === 'panteao_elite' ? 'Redirecionando…' : 'Garantir minha Aprovação (12x sem juros)'}
+            Garantir Vaga — Panteão Elite (12x sem juros)
           </button>
 
           <div className="flex items-center justify-center gap-2 mt-4 text-sm font-bold" style={{ color: '#06b6d4' }}>

@@ -159,7 +159,24 @@ export default async function SubjectPage({ params }: Props) {
           </>
         )}
 
-        {/* Orphan decks removidos — todos os decks devem estar em módulos */}
+        {/* ── Orphan decks (fallback) ────────────────────────────────── */}
+        {orphanDecks.length > 0 && (
+          <>
+            <p className="text-xs font-semibold tracking-widest uppercase text-slate-500 mb-4 mt-8">
+              {hasModules ? 'Outros Decks' : 'Introdução'}
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {orphanDecks.map(deck => (
+                <DeckCard
+                  key={deck.id}
+                  id={deck.id}
+                  title={deck.title}
+                  color={color}
+                />
+              ))}
+            </div>
+          </>
+        )}
 
         {/* ── Empty state ───────────────────────────────────────────── */}
         {!hasModules && orphanDecks.length === 0 && (

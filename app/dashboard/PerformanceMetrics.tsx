@@ -13,13 +13,17 @@ import {
   getSpecialistForArea,
 } from '@/lib/tutor-config';
 import AiProUpgradeModal from '@/components/AiProUpgradeModal';
+import { useTheme } from '@/components/ThemeProvider';
 
-// ─── Colors ───────────────────────────────────────────────────────────────────
+// ─── Paleta "Copiloto Amigável" ───────────────────────────────────────────────
+// Zero vermelho. Cores transmitem propulsão, não perigo.
 
-const NEON_GREEN  = '#00ff80';
-const NEON_PURPLE = '#a855f7';
-const NEON_CYAN   = '#22d3ee';
-const RED_ALERT   = '#ef4444';
+const EMERALD   = '#10B981';   // progresso, conquista
+const OCEAN     = '#0EA5E9';   // foco, informação neutra
+const AMBER     = '#F59E0B';   // atenção suave (sem urgência)
+const NEON_CYAN = '#22d3ee';   // detalhe gráfico (heatmap)
+const NEON_GREEN = EMERALD;    // alias para heatmap (sem quebrar lógica existente)
+const NEON_PURPLE = OCEAN;     // alias legado — evita alterar refs internas
 
 // ─── Heatmap ──────────────────────────────────────────────────────────────────
 
@@ -54,7 +58,7 @@ function heatColor(count: number): { bg: string; glow: string } {
 
 const WEEK_LABELS = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
 
-function Heatmap({ dailyCounts }: { dailyCounts: Map<string, number> }) {
+function Heatmap({ dailyCounts, isLight }: { dailyCounts: Map<string, number>; isLight: boolean }) {
   const grid     = useMemo(buildHeatmapGrid, []);
   const todayISO = new Date().toISOString().split('T')[0];
   const numWeeks = (grid[grid.length - 1]?.weekIndex ?? 0) + 1;
@@ -67,7 +71,7 @@ function Heatmap({ dailyCounts }: { dailyCounts: Map<string, number> }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: `${GAP}px`, marginRight: '4px' }}>
             {WEEK_LABELS.map((l, i) => (
               <div key={i} style={{ width: '14px', height: `${CELL}px`, display: 'flex', alignItems: 'center',
-                justifyContent: 'flex-end', fontSize: '7px', color: 'rgba(255,255,255,0.22)' }}>
+                justifyContent: 'flex-end', fontSize: '7px', color: isLight ? 'rgba(0,0,0,0.35)' : 'rgba(255,255,255,0.22)' }}>
                 {i % 2 === 0 ? l : ''}
               </div>
             ))}
@@ -93,11 +97,11 @@ function Heatmap({ dailyCounts }: { dailyCounts: Map<string, number> }) {
           })}
         </div>
         <div className="flex items-center gap-2 mt-2.5" style={{ paddingLeft: '18px' }}>
-          <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.22)' }}>Menos</span>
+          <span style={{ fontSize: '9px', color: isLight ? 'rgba(0,0,0,0.35)' : 'rgba(255,255,255,0.22)' }}>Menos</span>
           {[0, 5, 20, 50, 100].map((n, i) => (
             <div key={i} style={{ width: CELL, height: CELL, borderRadius: '3px', background: heatColor(n).bg }} />
           ))}
-          <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.22)' }}>Mais</span>
+          <span style={{ fontSize: '9px', color: isLight ? 'rgba(0,0,0,0.35)' : 'rgba(255,255,255,0.22)' }}>Mais</span>
         </div>
       </div>
     </div>
@@ -106,7 +110,7 @@ function Heatmap({ dailyCounts }: { dailyCounts: Map<string, number> }) {
 
 // ─── Arsenal Status (two horizontal progress bars) ───────────────────────────
 
-function ProgressBar({ label, description, pct, gradFrom, gradTo, glowColor, delay = 0 }: {
+function ProgressBar({ label, description, pct, gradFrom, gradTo, glowColor, delay = 0, isLight = false }: {
   label:       string;
   description: string;
   pct:         number;
@@ -114,6 +118,7 @@ function ProgressBar({ label, description, pct, gradFrom, gradTo, glowColor, del
   gradTo:      string;
   glowColor:   string;
   delay?:      number;
+  isLight?:    boolean;
 }) {
   const [anim, setAnim] = useState(0);
   useEffect(() => {
@@ -138,7 +143,7 @@ function ProgressBar({ label, description, pct, gradFrom, gradTo, glowColor, del
 
       {/* Bar track */}
       <div className="relative h-1.5 rounded-full overflow-hidden"
-        style={{ background: 'rgba(255,255,255,0.06)' }}>
+        style={{ background: isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.06)' }}>
         {/* Scanline texture on track */}
         <div className="absolute inset-0"
           style={{ backgroundImage: 'repeating-linear-gradient(90deg, transparent 0px, transparent 6px, rgba(0,0,0,0.15) 6px, rgba(0,0,0,0.15) 7px)' }} />
@@ -163,17 +168,17 @@ function ProgressBar({ label, description, pct, gradFrom, gradTo, glowColor, del
       </div>
 
       {/* Description */}
-      <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.25)', fontFamily: 'ui-monospace, monospace' }}>
+      <p style={{ fontSize: '10px', color: isLight ? 'rgba(0,0,0,0.45)' : 'rgba(255,255,255,0.25)', fontFamily: 'ui-monospace, monospace' }}>
         {description}
       </p>
     </div>
   );
 }
 
-function ArsenalStatus({ maturePct, reviewedPct }: { maturePct: number; reviewedPct: number }) {
+function ArsenalStatus({ maturePct, reviewedPct, isLight = false }: { maturePct: number; reviewedPct: number; isLight?: boolean }) {
   return (
     <div className="flex flex-col gap-4 pt-3"
-      style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+      style={{ borderTop: `1px solid ${isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.06)'}` }}>
       <ProgressBar
         label="DOMÍNIO DO EDITAL"
         description="% de cards maduros · Memória de longo prazo"
@@ -182,6 +187,7 @@ function ArsenalStatus({ maturePct, reviewedPct }: { maturePct: number; reviewed
         gradTo={NEON_CYAN}
         glowColor={NEON_GREEN}
         delay={0}
+        isLight={isLight}
       />
       <ProgressBar
         label="ALCANCE DA REVISÃO"
@@ -191,6 +197,7 @@ function ArsenalStatus({ maturePct, reviewedPct }: { maturePct: number; reviewed
         gradTo={NEON_CYAN}
         glowColor={NEON_PURPLE}
         delay={180}
+        isLight={isLight}
       />
     </div>
   );
@@ -245,28 +252,28 @@ function generateReport(p: {
 
   for (const area of ENEM_AREAS) {
     const score = areaScores.get(area.short) ?? 0;
-    if (score >= 60) strengths.push({ emoji: area.icon, text: `${area.short} com ${score}% de domínio. Continue revisando para blindar essa frente.`, badge: `${score}%` });
+    if (score >= 60) strengths.push({ emoji: area.icon, text: `${area.short} com ${score}% de domínio — continue consolidando essa conquista!`, badge: `${score}%` });
   }
-  if (streak >= 5) strengths.push({ emoji: '🔥', text: `${streak} dias consecutivos. Você está entre os 10% mais disciplinados.`, badge: `${streak} dias` });
-  if (maturePct >= 30) strengths.push({ emoji: '🧠', text: `${maturePct}% dos cards com intervalo maduro. Memória de longo prazo ativa.`, badge: `${maturePct}%` });
-  if (totalDue === 0 && totalReviews > 0) strengths.push({ emoji: '🛡️', text: 'Fila limpa: todos os cards estão revisados.', badge: '100%' });
-  if (strengths.length === 0) strengths.push({ emoji: '🔍', text: 'Nenhuma fortaleza consolidada ainda. Você está na fase de construção de base.', badge: 'Em progresso' });
+  if (streak >= 5) strengths.push({ emoji: '🔥', text: `${streak} dias em sequência. Constância é o que separa quem aprova.`, badge: `${streak} dias` });
+  if (maturePct >= 30) strengths.push({ emoji: '🧠', text: `${maturePct}% dos cards com memória de longo prazo ativa. Ótimo progresso!`, badge: `${maturePct}%` });
+  if (totalDue === 0 && totalReviews > 0) strengths.push({ emoji: '✅', text: 'Em dia com todas as revisões — excelente disciplina!', badge: '100%' });
+  if (strengths.length === 0) strengths.push({ emoji: '🌱', text: 'Você está na fase de construção de base. Cada card revisado é um tijolo a mais.', badge: 'Em progresso' });
 
   for (const area of ENEM_AREAS) {
     const score = areaScores.get(area.short) ?? 0;
     if (score > 0 && score < 25) {
       const spec = getSpecialistForArea(area.short);
-      weaknesses.push({ emoji: '⚠️', text: `${area.short}: apenas ${score}% de domínio.${spec ? ` Especialista indicado: ${spec.name}.` : ''}`, badge: `${score}%` });
+      weaknesses.push({ emoji: '💡', text: `${area.short}: ${score}% de domínio — grande oportunidade de ganho de pontos aqui.${spec ? ` ${spec.name} pode te ajudar a avançar rápido.` : ''}`, badge: `${score}%` });
     }
   }
-  if (streak === 0 && totalReviews > 0) weaknesses.push({ emoji: '💤', text: 'Sequência quebrada. Cada dia sem revisão acelera o esquecimento.', badge: 'Crítico' });
-  if (topLapseDeck && topLapseDeck.lapses >= 3) weaknesses.push({ emoji: '🔁', text: `"${topLapseDeck.deckTitle}" acumulou ${topLapseDeck.lapses} lapsos — alta resistência ao SRS.`, badge: `${topLapseDeck.lapses} lapsos` });
-  if (totalDue > 50) weaknesses.push({ emoji: '🚨', text: `${totalDue} cards acumulados. Cada dia sem revisar aumenta o débito.`, badge: `${totalDue} cards` });
-  if (maturePct === 0 && totalReviews > 0) weaknesses.push({ emoji: '🔴', text: 'Nenhum card com intervalo maduro ainda. Consistência é necessária.', badge: '0%' });
-  if (weaknesses.length === 0 && totalReviews === 0) weaknesses.push({ emoji: '🔍', text: 'Sem dados suficientes. Comece a revisar para gerar análise.', badge: 'Sem dados' });
-  else if (weaknesses.length === 0) weaknesses.push({ emoji: '✅', text: 'Nenhuma fraqueza crítica detectada. Mantenha o ritmo.', badge: 'Saudável' });
+  if (streak === 0 && totalReviews > 0) weaknesses.push({ emoji: '🌅', text: 'Que tal retomar hoje? Uma sessão curta já reativa a sua sequência.', badge: 'Retomar' });
+  if (topLapseDeck && topLapseDeck.lapses >= 3) weaknesses.push({ emoji: '🔁', text: `"${topLapseDeck.deckTitle}" pediu ${topLapseDeck.lapses} reforços — isso mostra que o conteúdo quer atenção.`, badge: `${topLapseDeck.lapses} revisões` });
+  if (totalDue > 50) weaknesses.push({ emoji: '📈', text: `Há ${totalDue} cards aguardando. Uma sessão por dia resolve isso tranquilamente.`, badge: `${totalDue} cards` });
+  if (maturePct === 0 && totalReviews > 0) weaknesses.push({ emoji: '🌱', text: 'Ainda sem cards maduros — a memória de longo prazo começa a se formar nas próximas sessões.', badge: 'Construindo' });
+  if (weaknesses.length === 0 && totalReviews === 0) weaknesses.push({ emoji: '🔍', text: 'Sem dados ainda. Complete a primeira revisão para ativar a análise.', badge: 'Sem dados' });
+  else if (weaknesses.length === 0) weaknesses.push({ emoji: '✅', text: 'Nenhuma oportunidade crítica de melhora no momento. Continue assim!', badge: 'Saudável' });
 
-  if (topDecks.length > 0) attackPlan.push({ emoji: '⚔️', text: `Ataque imediato: "${topDecks[0].deckTitle}" — ${topDecks[0].dueCount} cards esperando.`, badge: 'Prioridade 1' });
+  if (topDecks.length > 0) attackPlan.push({ emoji: '🎯', text: `Começar por "${topDecks[0].deckTitle}" é uma ótima escolha — ${topDecks[0].dueCount} cards prontos para revisão.`, badge: 'Sugerido' });
   let weakestArea: string | null = null, weakestScore = 101;
   for (const area of ENEM_AREAS) {
     const score = areaScores.get(area.short) ?? 0;
@@ -274,11 +281,11 @@ function generateReport(p: {
   }
   if (weakestArea) {
     const spec = getSpecialistForArea(weakestArea);
-    attackPlan.push({ emoji: '🎯', text: spec ? `Consulte ${spec.name} para atacar ${weakestArea} antes do próximo simulado.` : `Foque em ${weakestArea} nas próximas sessões.`, badge: weakestArea });
+    attackPlan.push({ emoji: '🚀', text: spec ? `${weakestArea} é sua maior oportunidade de ganho agora. ${spec.name} tem exatamente o que você precisa.` : `Uma sessão focada em ${weakestArea} pode mover bastante sua média.`, badge: weakestArea });
   }
-  if (topLapseDeck && topLapseDeck.lapses >= 3) attackPlan.push({ emoji: '🔁', text: `Revise "${topLapseDeck.deckTitle}" no pré-estudo para atacar ${topLapseDeck.lapses} lapsos.`, badge: 'Reforço' });
-  if (streak < 3) attackPlan.push({ emoji: '📅', text: 'Meta imediata: 7 dias consecutivos. Isso ativa o SRS no modo ótimo.', badge: 'Meta 7 dias' });
-  if (attackPlan.length === 0) attackPlan.push({ emoji: '🚀', text: 'Continue revisando diariamente. O SRS está trabalhando — confie no processo.', badge: 'Em dia' });
+  if (topLapseDeck && topLapseDeck.lapses >= 3) attackPlan.push({ emoji: '🔁', text: `Revisar "${topLapseDeck.deckTitle}" vai consolidar o que o seu cérebro ainda está processando.`, badge: 'Reforço' });
+  if (streak < 3) attackPlan.push({ emoji: '📅', text: 'Objetivo de curto prazo: 7 dias seguidos. Quando isso vira hábito, tudo flui.', badge: 'Próximo passo' });
+  if (attackPlan.length === 0) attackPlan.push({ emoji: '🚀', text: 'Continue revisando diariamente. O SRS está trabalhando por você — confie no processo.', badge: 'Em dia' });
 
   return { strengths, weaknesses, attackPlan };
 }
@@ -310,55 +317,59 @@ function getLiveBriefing(p: {
   }
 
   if (totalDue > 100) return {
-    tone: 'alert',
+    tone: 'calm',
     lines: [
-      `${totalDue} cards acumulados — situação de crise detectada.`,
-      'Ative o FlashTurbo para gestão de danos em múltiplas frentes.',
-      weakestArea ? `${weakestArea} é a brecha mais vulnerável agora.` : 'Priorize as áreas com menor domínio primeiro.',
+      weakestArea
+        ? `Que tal começarmos por ${weakestArea} hoje? É sua maior oportunidade de ganho agora. 💡`
+        : 'Que tal uma sessão de 15 minutinhos para retomar o ritmo?',
+      `Há ${totalDue} revisões disponíveis — sem pressa, vá no seu ritmo.`,
+      'Cada card revisado hoje é memória que fica para o dia da prova.',
     ],
   };
 
   if (totalDue > 20) return {
-    tone: 'alert',
+    tone: 'calm',
     lines: [
-      `${totalDue} cards aguardando revisão — não deixe acumular.`,
-      isMorning ? 'Ataque o mais difícil enquanto a mente está fresca.' : 'Use o FlashTurbo para liquidar a fila de uma vez.',
-      weakestArea ? `Foco em ${weakestArea} — é onde você mais perde pontos.` : 'Distribua a sessão pelas áreas mais urgentes.',
+      weakestArea
+        ? `${weakestArea} tem muito potencial de crescimento agora. Uma sessão curta já faz diferença!`
+        : isMorning ? 'Boa hora para revisar! A mente está descansada.' : 'Uma sessão agora consolida o que você aprendeu hoje.',
+      `${totalDue} revisões disponíveis — comece por qualquer área e o ritmo vem.`,
+      'Sem pressão: cada revisão, mesmo pequena, já vale.',
     ],
   };
 
   if (avgScore >= 60 && scores.length >= 2) return {
     tone: 'victory',
     lines: [
-      `Domínio médio de ${avgScore}% — operação em zona de excelência.`,
-      strongestArea ? `${strongestArea} está blindada. Hora de avançar para novas fronteiras.` : 'Suas fortalezas estão consolidadas.',
-      'Expanda o banco de cards para converter domínio em pontuação real.',
+      `Domínio médio de ${avgScore}% — você está indo muito bem! 🏆`,
+      strongestArea ? `${strongestArea} está consolidada. Hora de expandir para mais conteúdos.` : 'Suas conquistas estão sólidas.',
+      'Continue revisando para converter esse domínio em pontos reais na prova.',
     ],
   };
 
   if (streak >= 7) return {
     tone: 'victory',
     lines: [
-      `${streak} dias consecutivos — ritmo de aprovação confirmado.`,
-      'Consistência é o que separa os aprovados dos eliminados.',
-      totalDue > 0 ? `Mantenha o ritmo: ${totalDue} cards aguardam hoje.` : 'Fila limpa. Você está no controle.',
+      `${streak} dias em sequência — isso é consistência de verdade! 🔥`,
+      'Quem mantém a constância, aprova. Você está no caminho certo.',
+      totalDue > 0 ? `Ainda há ${totalDue} revisões disponíveis para hoje se quiser ir além.` : 'Em dia com tudo. Excelente trabalho!',
     ],
   };
 
   if (isMorning && totalReviews > 0) return {
     tone: 'calm',
     lines: [
-      'Janela cognitiva de pico ativa. Bom momento para atacar.',
-      weakestArea ? `Priorize ${weakestArea} agora — dificuldade alta, recompensa máxima.` : 'Comece pelos cards mais difíceis.',
-      'A manhã é sua vantagem tática. Use-a antes da fadiga chegar.',
+      'Bom dia! Ótimo momento para revisar — a mente está fresca. ☀️',
+      weakestArea ? `${weakestArea} é uma ótima escolha para começar o dia.` : 'Escolha a área que mais está te chamando agora.',
+      'Uma sessão pela manhã define o tom do dia inteiro.',
     ],
   };
 
   if (totalReviews === 0) return {
     tone: 'calm',
     lines: [
-      'Operação iniciada. Aguardando primeiros dados de batalha.',
-      'Complete sua primeira sessão de revisão para ativar o diagnóstico.',
+      'Tudo pronto para começar! Uma primeira sessão ativa o diagnóstico completo.',
+      'Não precisa ser longa — 10 minutinhos já trazem resultado.',
       'O SRS começa a trabalhar a partir do primeiro card revisado.',
     ],
   };
@@ -366,9 +377,9 @@ function getLiveBriefing(p: {
   return {
     tone: 'calm',
     lines: [
-      isAfternoon ? 'Período de consolidação. Revise o que foi aprendido.' : 'Missão noturna: grave o que mais pesou hoje.',
-      totalDue > 0 ? `${totalDue} cards na fila — liquide antes de encerrar o dia.` : 'Fila limpa. Bom trabalho hoje.',
-      streak > 1 ? `Sequência de ${streak} dias ativa. Não quebre agora.` : 'Uma nova sequência começa com a próxima sessão.',
+      isAfternoon ? 'Boa tarde! Uma revisão agora consolida o que você aprendeu hoje.' : 'Última sessão do dia? Grave o conteúdo que mais pesou.',
+      totalDue > 0 ? `${totalDue} revisões disponíveis — mesmo uma sessão curta já vale muito.` : 'Em dia com tudo. Bom trabalho hoje! ✅',
+      streak > 1 ? `Sequência de ${streak} dias — você está construindo um hábito real.` : 'Uma nova sequência começa com a próxima sessão.',
     ],
   };
 }
@@ -381,24 +392,25 @@ function computeMicroKPIs(p: {
   const scores   = [...p.areaScores.values()].filter(s => s > 0);
   const avgScore = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null;
 
-  const carga = p.totalDue > 100 ? { v: 'Crítica', c: RED_ALERT }
-              : p.totalDue > 30  ? { v: 'Alta',    c: '#f97316' }
-              : p.totalDue > 10  ? { v: 'Média',   c: '#facc15' }
-              :                    { v: 'Baixa',   c: NEON_GREEN };
+  // "Nível de Desafio" substitui "Carga Cognitiva" — framing de crescimento, não de crise
+  const desafio = p.totalDue > 100 ? { v: 'Alto',   c: AMBER   }
+                : p.totalDue > 30  ? { v: 'Médio',  c: AMBER   }
+                : p.totalDue > 10  ? { v: 'Leve',   c: OCEAN   }
+                :                    { v: 'Mínimo', c: EMERALD };
 
   const domColor = avgScore === null ? 'rgba(255,255,255,0.30)'
-                 : avgScore >= 50    ? NEON_GREEN
-                 : avgScore < 30     ? RED_ALERT
+                 : avgScore >= 50    ? EMERALD
+                 : avgScore < 30     ? OCEAN
                  : NEON_CYAN;
 
-  const memColor = p.maturePct >= 30 ? NEON_GREEN
+  const memColor = p.maturePct >= 30 ? EMERALD
                  : p.maturePct === 0 ? 'rgba(255,255,255,0.30)'
                  : NEON_CYAN;
 
   return [
-    { label: 'Domínio Médio',    value: avgScore !== null ? `${avgScore}%` : '—', color: domColor },
-    { label: 'Carga Cognitiva',  value: carga.v,                                   color: carga.c  },
-    { label: 'Memória Sólida',   value: `${p.maturePct}%`,                         color: memColor },
+    { label: 'Domínio Médio',       value: avgScore !== null ? `${avgScore}%` : '—', color: domColor  },
+    { label: 'Nível de Desafio',    value: desafio.v,                                color: desafio.c },
+    { label: 'Memória Sólida',      value: `${p.maturePct}%`,                        color: memColor  },
   ];
 }
 
@@ -456,12 +468,12 @@ function IntelReportModal({ report, isPro, flashTutorAvatar, onClose, onUpgrade 
             <div className="flex items-center gap-2">
               <span className="text-base font-black text-white">FlashTutor</span>
               <span className="text-xs font-bold px-2 py-0.5 rounded-full"
-                style={{ background: `${NEON_PURPLE}22`, color: NEON_PURPLE, border: `1px solid ${NEON_PURPLE}44` }}>
-                ⚡ Estrategista
+                style={{ background: `${EMERALD}22`, color: EMERALD, border: `1px solid ${EMERALD}44` }}>
+                ✨ Mentor IA
               </span>
             </div>
             <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>
-              Relatório de Inteligência · {dateStr}
+              Relatório de Progresso · {dateStr}
             </p>
           </div>
           <button onClick={onClose}
@@ -473,16 +485,16 @@ function IntelReportModal({ report, isPro, flashTutorAvatar, onClose, onUpgrade 
         {isPro ? (
           <div className="relative overflow-y-auto flex flex-col gap-5 p-6">
             <section>
-              <SectionLabel color={NEON_GREEN}>Fortalezas</SectionLabel>
-              <div className="flex flex-col gap-2">{report.strengths.map((item, i) => <ReportCard key={i} item={item} badgeColor={NEON_GREEN} />)}</div>
+              <SectionLabel color={EMERALD}>Suas Conquistas</SectionLabel>
+              <div className="flex flex-col gap-2">{report.strengths.map((item, i) => <ReportCard key={i} item={item} badgeColor={EMERALD} />)}</div>
             </section>
             <section>
-              <SectionLabel color={RED_ALERT}>Fraquezas</SectionLabel>
-              <div className="flex flex-col gap-2">{report.weaknesses.map((item, i) => <ReportCard key={i} item={item} badgeColor={RED_ALERT} />)}</div>
+              <SectionLabel color={AMBER}>Oportunidades de Crescimento 💡</SectionLabel>
+              <div className="flex flex-col gap-2">{report.weaknesses.map((item, i) => <ReportCard key={i} item={item} badgeColor={AMBER} />)}</div>
             </section>
             <section>
-              <SectionLabel color={NEON_CYAN}>Plano de Ataque Imediato</SectionLabel>
-              <div className="flex flex-col gap-2">{report.attackPlan.map((item, i) => <ReportCard key={i} item={item} badgeColor={NEON_CYAN} />)}</div>
+              <SectionLabel color={OCEAN}>Próximos Passos 🚀</SectionLabel>
+              <div className="flex flex-col gap-2">{report.attackPlan.map((item, i) => <ReportCard key={i} item={item} badgeColor={OCEAN} />)}</div>
             </section>
             <p className="text-center text-xs pb-1" style={{ color: 'rgba(255,255,255,0.18)' }}>
               Análise gerada com base nos dados de revisão SRS.
@@ -493,12 +505,12 @@ function IntelReportModal({ report, isPro, flashTutorAvatar, onClose, onUpgrade 
             <div style={{ filter: 'blur(5px)', opacity: 0.4, pointerEvents: 'none', userSelect: 'none' }}
               className="w-full flex flex-col gap-4">
               <div>
-                <div className="text-xs font-bold uppercase mb-2" style={{ color: NEON_GREEN }}>Fortalezas</div>
-                {[...Array(2)].map((_, i) => <div key={i} className="h-12 rounded-xl mb-2" style={{ background: 'rgba(0,255,128,0.08)', border: '1px solid rgba(0,255,128,0.15)' }} />)}
+                <div className="text-xs font-bold uppercase mb-2" style={{ color: EMERALD }}>Suas Conquistas</div>
+                {[...Array(2)].map((_, i) => <div key={i} className="h-12 rounded-xl mb-2" style={{ background: `${EMERALD}08`, border: `1px solid ${EMERALD}18` }} />)}
               </div>
               <div>
-                <div className="text-xs font-bold uppercase mb-2" style={{ color: RED_ALERT }}>Fraquezas</div>
-                {[...Array(2)].map((_, i) => <div key={i} className="h-12 rounded-xl mb-2" style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)' }} />)}
+                <div className="text-xs font-bold uppercase mb-2" style={{ color: AMBER }}>Oportunidades de Crescimento</div>
+                {[...Array(2)].map((_, i) => <div key={i} className="h-12 rounded-xl mb-2" style={{ background: `${AMBER}08`, border: `1px solid ${AMBER}18` }} />)}
               </div>
             </div>
             <div className="absolute inset-x-6 top-1/4 flex flex-col items-center gap-4 text-center p-6 rounded-2xl"
@@ -576,28 +588,28 @@ function FlashTurboModal({ suggestions, onClose }: {
       onClick={onClose}>
       <div className="relative w-full max-w-md rounded-3xl overflow-hidden flex flex-col"
         style={{ background: 'linear-gradient(160deg, #0c091e 0%, #0e0b20 100%)',
-          border: `1px solid ${NEON_PURPLE}40`,
-          boxShadow: `0 0 0 1px ${NEON_PURPLE}18, 0 0 60px ${NEON_PURPLE}18` }}
+          border: `1px solid ${OCEAN}40`,
+          boxShadow: `0 0 0 1px ${OCEAN}18, 0 0 60px ${OCEAN}18` }}
         onClick={e => e.stopPropagation()}>
 
         <div className="absolute inset-x-0 top-0 h-px pointer-events-none"
-          style={{ background: `linear-gradient(90deg, transparent, ${NEON_PURPLE}, ${NEON_CYAN}, transparent)` }} />
+          style={{ background: `linear-gradient(90deg, transparent, ${OCEAN}, ${NEON_CYAN}, transparent)` }} />
         <div className="absolute inset-0 pointer-events-none"
-          style={{ background: `radial-gradient(ellipse at top right, ${NEON_PURPLE}0D 0%, transparent 60%)` }} />
+          style={{ background: `radial-gradient(ellipse at top right, ${OCEAN}0D 0%, transparent 60%)` }} />
 
         {/* Header */}
         <div className="relative flex items-center justify-between px-6 pt-6 pb-4"
           style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
           <div>
             <div className="flex items-center gap-2 mb-0.5">
-              <span className="text-lg font-black text-white">⚡ FlashTurbo</span>
+              <span className="text-lg font-black text-white">🚀 Sessão Focada</span>
               <span className="text-xs font-bold px-2 py-0.5 rounded-full"
-                style={{ background: `${NEON_PURPLE}22`, color: NEON_PURPLE, border: `1px solid ${NEON_PURPLE}44` }}>
+                style={{ background: `${EMERALD}22`, color: EMERALD, border: `1px solid ${EMERALD}44` }}>
                 AiPro+
               </span>
             </div>
             <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
-              Mix de Combate Sugerido pela IA
+              Mix de Estudos Sugerido pelo Mentor
             </p>
           </div>
           <button onClick={onClose}
@@ -614,21 +626,21 @@ function FlashTurboModal({ suggestions, onClose }: {
           ) : suggestions.map((s) => {
             const isChecked  = selected.has(s.deckId);
             const isWeak     = s.priority === 'weak';
-            const badgeColor = isWeak ? RED_ALERT : '#f97316';
-            const badgeLabel = isWeak ? '⚠️ Área fraca' : '🚨 Urgente';
+            const badgeColor = isWeak ? AMBER : OCEAN;
+            const badgeLabel = isWeak ? '💡 Oportunidade de Ganho' : '⚡ Ativar Foco';
 
             return (
               <button key={s.deckId} onClick={() => toggle(s.deckId)}
                 className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all duration-150"
                 style={{
-                  background: isChecked ? `${NEON_PURPLE}12` : 'rgba(255,255,255,0.03)',
-                  border:     `1px solid ${isChecked ? NEON_PURPLE + '44' : 'rgba(255,255,255,0.08)'}`,
+                  background: isChecked ? `${OCEAN}12` : 'rgba(255,255,255,0.03)',
+                  border:     `1px solid ${isChecked ? OCEAN + '44' : 'rgba(255,255,255,0.08)'}`,
                 }}>
                 {/* Custom checkbox */}
                 <div className="w-5 h-5 rounded-md shrink-0 flex items-center justify-center transition-all"
                   style={{
-                    background: isChecked ? NEON_PURPLE : 'rgba(255,255,255,0.08)',
-                    border:     `1.5px solid ${isChecked ? NEON_PURPLE : 'rgba(255,255,255,0.20)'}`,
+                    background: isChecked ? OCEAN : 'rgba(255,255,255,0.08)',
+                    border:     `1.5px solid ${isChecked ? OCEAN : 'rgba(255,255,255,0.20)'}`,
                   }}>
                   {isChecked && <span style={{ fontSize: '11px', color: 'white', fontWeight: 800 }}>✓</span>}
                 </div>
@@ -665,10 +677,10 @@ function FlashTurboModal({ suggestions, onClose }: {
           <button onClick={handleStart} disabled={selected.size === 0}
             className="w-full py-3.5 rounded-xl font-black text-white text-sm transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0"
             style={{
-              background: `linear-gradient(135deg, ${NEON_PURPLE} 0%, ${NEON_CYAN}CC 100%)`,
-              boxShadow:  `0 0 28px ${NEON_PURPLE}44`,
+              background: `linear-gradient(135deg, ${OCEAN} 0%, ${NEON_CYAN}CC 100%)`,
+              boxShadow:  `0 0 28px ${OCEAN}44`,
             }}>
-            ⚡ Iniciar Sequência Turbo
+            🚀 Começar Sessão
             {totalCards > 0 && (
               <span className="ml-2 text-xs font-semibold opacity-80">· {totalCards} cards</span>
             )}
@@ -722,11 +734,15 @@ type Metrics = {
   topLapseDeck:     TopLapseDeck | null;
   totalReviews:     number;
   turboSuggestions: TurboSuggestion[];
+  areaCardsDue:     Record<string, number>;
 };
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function PerformanceMetrics() {
+  const { theme } = useTheme();
+  const isLight   = theme === 'light';
+
   const [metrics,     setMetrics]     = useState<Metrics | null>(null);
   const [loading,     setLoading]     = useState(true);
   const [showUpgrade, setShowUpgrade] = useState(false);
@@ -809,11 +825,11 @@ export default function PerformanceMetrics() {
       for (const [sid, domain] of domainMap.entries()) {
         const area = subjAreaMap.get(sid); if (!area) continue;
         const s    = shortScore.get(area) ?? { sum: 0, count: 0 };
-        s.sum += domain.level; s.count++;
+        s.sum += domain.coverage; s.count++;   // coverage = cards revisados / total (0–1)
         shortScore.set(area, s);
       }
       const areaScores = new Map<string, number>(
-        Array.from(shortScore.entries()).map(([a, s]) => [a, s.count > 0 ? Math.round((s.sum / s.count / 5) * 100) : 0]),
+        Array.from(shortScore.entries()).map(([a, s]) => [a, s.count > 0 ? Math.round((s.sum / s.count) * 100) : 0]),
       );
 
       // ── Top lapse deck ────────────────────────────────────────────────────
@@ -829,6 +845,17 @@ export default function PerformanceMetrics() {
       for (const [deckId, agg] of deckLapseMap.entries()) {
         if (!topLapseDeck || agg.lapses > topLapseDeck.lapses) topLapseDeck = { deckId, ...agg };
       }
+
+      // ── Cards due per ENEM area ───────────────────────────────────────────
+      const areaCardsDueMap = new Map<string, number>();
+      for (const c of normCards) {
+        const prog  = progMap.get(c.id);
+        const isDue = !prog || (prog.next_review !== null && prog.next_review <= today);
+        if (!isDue) continue;
+        const area = getCategoryShort(c.subjectCategory);
+        areaCardsDueMap.set(area, (areaCardsDueMap.get(area) ?? 0) + 1);
+      }
+      const areaCardsDue = Object.fromEntries(areaCardsDueMap);
 
       // ── FlashTurbo suggestions ────────────────────────────────────────────
       const deckAreaMap = new Map<string, string>();
@@ -849,7 +876,7 @@ export default function PerformanceMetrics() {
         })
         .slice(0, 6);
 
-      setMetrics({ totalDue, topDecks, maturePct, reviewedPct, dailyCounts, streak, maxStreak, plan: planInfo.plan, areaScores, topLapseDeck, totalReviews, turboSuggestions });
+      setMetrics({ totalDue, topDecks, maturePct, reviewedPct, dailyCounts, streak, maxStreak, plan: planInfo.plan, areaScores, topLapseDeck, totalReviews, turboSuggestions, areaCardsDue });
       setLoading(false);
     }
     load();
@@ -859,7 +886,7 @@ export default function PerformanceMetrics() {
   if (!metrics) return null;
 
   const flashTutor = getFlashTutor();
-  const isPro      = metrics.plan === 'proai_plus';
+  const isPro      = metrics.plan === 'panteao_elite';
 
   const report = generateReport({
     areaScores: metrics.areaScores, streak: metrics.streak, maturePct: metrics.maturePct,
@@ -877,7 +904,7 @@ export default function PerformanceMetrics() {
   });
 
   const toneColor: Record<BriefingTone, string> = {
-    alert:   RED_ALERT,
+    alert:   AMBER,
     victory: NEON_GREEN,
     calm:    NEON_CYAN,
   };
@@ -897,59 +924,55 @@ export default function PerformanceMetrics() {
       <div className="max-w-5xl mx-auto mb-10 grid grid-cols-1 md:grid-cols-2 gap-5">
 
         {/* ╔══════════════════════════════════════════════╗ */}
-        {/* ║  CARD 3 — CENTRAL DE COMBATE ⚡             ║ */}
+        {/* ║  CARD 3 — MEU MOMENTO DE FOCO ✨            ║ */}
         {/* ╚══════════════════════════════════════════════╝ */}
-        <div className="relative rounded-2xl p-4 flex flex-col gap-3 overflow-hidden"
-          style={{ background: 'rgba(255,255,255,0.035)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-            border: `1px solid ${NEON_PURPLE}28`, boxShadow: `0 0 50px ${NEON_PURPLE}0A` }}>
+        <div className="relative rounded-2xl p-4 flex flex-col gap-3 overflow-hidden fa-card fa-shimmer-top"
+          style={{ background: 'var(--fa-card)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+            border: '1px solid var(--fa-border)', boxShadow: 'var(--fa-shadow)' }}>
           <div className="absolute inset-0 pointer-events-none"
-            style={{ background: `radial-gradient(ellipse at top left, ${NEON_PURPLE}0D 0%, transparent 65%)` }} />
+            style={{ background: `radial-gradient(ellipse at top left, var(--fa-iris-b) 0%, transparent 65%)` }} />
           <div className="absolute inset-x-0 top-0 h-px pointer-events-none"
-            style={{ background: `linear-gradient(90deg, transparent, ${NEON_PURPLE}55, ${NEON_CYAN}22, transparent)` }} />
+            style={{ background: 'var(--fa-shimmer)' }} />
 
           {/* Header */}
-          <p className="text-xs font-semibold tracking-widest uppercase relative z-10" style={{ color: NEON_GREEN }}>
-            Central de Combate ⚡
+          <p className="text-xs font-semibold tracking-widest uppercase relative z-10" style={{ color: EMERALD }}>
+            Meu Momento de Foco ✨
           </p>
 
           {/* ── Top row: FlashTurbo (left) + Heatmap (right) ── */}
           <div className="relative z-10 flex gap-3 items-stretch">
-            {/* FlashTurbo CTA — left col */}
-            <div className="shrink-0 w-[42%] flex flex-col justify-center">
-              {metrics.totalDue > 0 ? (
-                <button
-                  onClick={() => isPro ? setShowTurbo(true) : setShowUpgrade(true)}
-                  className="relative flex flex-col justify-between rounded-xl px-3 py-3 w-full h-full text-left transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110 active:scale-[0.99]"
-                  style={{
-                    background: `linear-gradient(135deg, ${NEON_PURPLE}28 0%, ${NEON_CYAN}18 100%)`,
-                    border:     `1px solid ${NEON_PURPLE}50`,
-                    boxShadow:  `0 0 24px ${NEON_PURPLE}18, inset 0 1px 0 rgba(255,255,255,0.06)`,
-                  }}>
-                  <p className="text-xs font-semibold tracking-wide uppercase mb-1" style={{ color: NEON_PURPLE }}>
-                    ⚡ FlashTurbo{!isPro && ' 🔒'}
-                  </p>
-                  <div className="flex items-end justify-between">
-                    <div>
-                      <p className="text-2xl font-black tabular-nums leading-none text-white"
-                        style={{ textShadow: `0 0 20px ${NEON_PURPLE}66` }}>
-                        {metrics.totalDue}
-                      </p>
-                      <p className="text-xs" style={{ color: 'rgba(255,255,255,0.38)' }}>cards</p>
-                    </div>
-                    <span className="text-2xl" style={{ filter: `drop-shadow(0 0 8px ${NEON_PURPLE}88)` }}>⚠️</span>
-                  </div>
-                  <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.28)' }}>
-                    {metrics.turboSuggestions.length} decks na fila
-                  </p>
-                </button>
-              ) : (
-                <div className="relative flex flex-col justify-center gap-1 rounded-xl px-3 py-3 h-full"
-                  style={{ background: 'rgba(0,255,128,0.06)', border: '1px solid rgba(0,255,128,0.18)' }}>
-                  <span className="text-xl">🛡️</span>
-                  <p className="text-xs font-bold text-white">Fila limpa!</p>
-                  <p className="text-xs" style={{ color: 'rgba(255,255,255,0.38)' }}>0 cards pendentes</p>
-                </div>
-              )}
+            {/* 4-Area selector — left col */}
+            <div className="shrink-0 w-[44%] flex flex-col gap-1.5">
+              <p className="text-xs font-semibold tracking-wide uppercase" style={{ color: OCEAN, fontSize: '9px' }}>
+                🚀 Sessão Focada{!isPro && ' 🔒'}
+              </p>
+              <div className="grid grid-cols-2 gap-1 flex-1">
+                {ENEM_AREAS.slice(0, 4).map(area => {
+                  const due     = metrics.areaCardsDue[area.short] ?? 0;
+                  const mins    = Math.max(1, Math.ceil(due * 35 / 60));
+                  const hasCards = due > 0;
+                  return (
+                    <button key={area.short}
+                      onClick={() => hasCards ? (isPro ? setShowTurbo(true) : setShowUpgrade(true)) : undefined}
+                      disabled={!hasCards}
+                      className="rounded-lg px-1.5 py-1.5 text-left transition-all duration-150 hover:brightness-110 active:scale-[0.97] disabled:opacity-50 disabled:cursor-default"
+                      style={{
+                        background: hasCards ? `${OCEAN}14` : 'rgba(255,255,255,0.03)',
+                        border: `1px solid ${hasCards ? OCEAN + '40' : 'rgba(255,255,255,0.07)'}`,
+                      }}>
+                      <p className="font-bold text-white truncate leading-tight" style={{ fontSize: '8px' }}>{area.short}</p>
+                      {hasCards ? (
+                        <>
+                          <p className="font-black tabular-nums text-white leading-tight" style={{ fontSize: '12px' }}>{due}</p>
+                          <p style={{ fontSize: '8px', color: 'rgba(255,255,255,0.38)' }}>~{mins}min</p>
+                        </>
+                      ) : (
+                        <p style={{ fontSize: '8px', color: 'rgba(255,255,255,0.28)' }}>✓ em dia</p>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Heatmap — right col */}
@@ -962,44 +985,44 @@ export default function PerformanceMetrics() {
                 <div className="w-px h-3 mx-0.5" style={{ background: 'rgba(255,255,255,0.08)' }} />
                 <span style={{ fontSize: '12px' }}>🏆</span>
                 <span className="text-xs font-bold text-white">{metrics.maxStreak}</span>
-                <span className="text-xs" style={{ color: 'rgba(255,255,255,0.22)' }}>recorde</span>
+                <span className="text-xs" style={{ color: isLight ? 'rgba(0,0,0,0.35)' : 'rgba(255,255,255,0.22)' }}>recorde</span>
               </div>
-              <Heatmap dailyCounts={metrics.dailyCounts} />
+              <Heatmap dailyCounts={metrics.dailyCounts} isLight={isLight} />
             </div>
           </div>
 
           {/* ── Arsenal Status ── */}
-          <div className="relative z-10 pt-2" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-            <ArsenalStatus maturePct={metrics.maturePct} reviewedPct={metrics.reviewedPct} />
+          <div className="relative z-10 pt-2" style={{ borderTop: `1px solid ${isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.06)'}` }}>
+            <ArsenalStatus maturePct={metrics.maturePct} reviewedPct={metrics.reviewedPct} isLight={isLight} />
           </div>
         </div>
 
         {/* ╔══════════════════════════════════════════════╗ */}
-        {/* ║  CARD 4 — O PANTEÃO 🏛️                     ║ */}
+        {/* ║  CARD 4 — MEU MENTOR IA 💡                  ║ */}
         {/* ╚══════════════════════════════════════════════╝ */}
-        <div className="relative rounded-2xl p-4 flex flex-col gap-3 overflow-hidden"
-          style={{ background: 'rgba(255,255,255,0.035)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-            border: '1px solid rgba(168,85,247,0.22)', boxShadow: '0 0 50px rgba(168,85,247,0.07)' }}>
+        <div className="relative rounded-2xl p-4 flex flex-col gap-3 overflow-hidden fa-card fa-shimmer-top"
+          style={{ background: 'var(--fa-card)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+            border: '1px solid var(--fa-border)', boxShadow: 'var(--fa-shadow)' }}>
           <div className="absolute inset-0 pointer-events-none"
-            style={{ background: 'radial-gradient(ellipse at top right, rgba(168,85,247,0.10) 0%, transparent 65%)' }} />
+            style={{ background: `radial-gradient(ellipse at top right, var(--fa-iris-b) 0%, transparent 65%)` }} />
           <div className="absolute inset-x-0 top-0 h-px pointer-events-none"
-            style={{ background: 'linear-gradient(90deg, transparent, rgba(168,85,247,0.50), rgba(34,211,238,0.20), transparent)' }} />
+            style={{ background: 'var(--fa-shimmer)' }} />
 
-          <p className="text-xs font-semibold tracking-widest uppercase relative z-10" style={{ color: NEON_PURPLE }}>
-            O Panteão 🏛️
+          <p className="text-xs font-semibold tracking-widest uppercase relative z-10" style={{ color: OCEAN }}>
+            Meu Mentor IA 💡
           </p>
 
           {/* FlashTutor identity — compact row */}
           <div className="flex items-center gap-2 relative z-10">
             <div className="rounded-full overflow-hidden shrink-0"
-              style={{ width: 32, height: 32, border: `2px solid ${isPro ? NEON_PURPLE + 'AA' : NEON_PURPLE + '44'}`,
-                boxShadow: isPro ? `0 0 12px ${NEON_PURPLE}44` : 'none' }}>
+              style={{ width: 32, height: 32, border: `2px solid ${isPro ? OCEAN + 'AA' : OCEAN + '44'}`,
+                boxShadow: isPro ? `0 0 12px ${OCEAN}44` : 'none' }}>
               <Image src={flashTutor.avatar_url} alt="FlashTutor" width={32} height={32} unoptimized />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-bold text-white leading-tight">FlashTutor</p>
-              <p className="leading-tight truncate" style={{ color: isPro ? NEON_PURPLE : 'rgba(255,255,255,0.28)', letterSpacing: '0.04em', fontSize: '10px' }}>
-                {isPro ? '⚡ ESTRATEGISTA GERAL' : '🔒 AIPRO+ EXCLUSIVO'}
+              <p className="leading-tight truncate" style={{ color: isPro ? OCEAN : 'rgba(255,255,255,0.28)', letterSpacing: '0.04em', fontSize: '10px' }}>
+                {isPro ? '✨ Mentor IA' : '🔒 AIPRO+ EXCLUSIVO'}
               </p>
             </div>
             <div className="flex items-center gap-1 shrink-0">
@@ -1016,7 +1039,7 @@ export default function PerformanceMetrics() {
             <div className="flex-1 flex flex-col gap-1.5">
               <p style={{ fontSize: '9px', letterSpacing: '0.10em', fontFamily: 'ui-monospace,monospace',
                 color: toneColor[briefing.tone], textTransform: 'uppercase', fontWeight: 700 }}>
-                ▶ BRIEFING ATIVO
+                💡 SUGESTÃO DO MENTOR
               </p>
               {briefing.lines.map((line, i) => (
                 <p key={i} style={{
@@ -1055,7 +1078,7 @@ export default function PerformanceMetrics() {
             style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
             <button onClick={() => setShowReport(true)}
               className="flex items-center gap-1.5 transition-all duration-150 hover:brightness-125 active:scale-95"
-              style={{ fontSize: '10px', color: isPro ? NEON_PURPLE : 'rgba(255,255,255,0.30)',
+              style={{ fontSize: '10px', color: isPro ? OCEAN : 'rgba(255,255,255,0.30)',
                 fontFamily: 'ui-monospace,monospace', fontWeight: 700, letterSpacing: '0.04em' }}>
               {isPro ? '📊' : '🔒'} Relatório Profundo (Deep Dive)
               <span style={{ fontSize: '9px', opacity: 0.6 }}>→</span>

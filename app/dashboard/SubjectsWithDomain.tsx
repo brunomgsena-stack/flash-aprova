@@ -85,7 +85,7 @@ export default function SubjectsWithDomain({ subjects }: Props) {
         fetchUserPlan(user.id),
       ]);
 
-      setIsFlash(planInfo.plan === 'flash');
+      setIsFlash(planInfo.plan === 'aceleracao');
 
       if (!allCards || !progress) return;
 

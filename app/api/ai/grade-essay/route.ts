@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
     serverClient.from('profiles').select('role').eq('id', user.id).maybeSingle(),
   ]);
   const hasAccess =
-    planInfo.plan === 'proai_plus' || profileResult.data?.role === 'admin';
+    planInfo.plan === 'panteao_elite' || profileResult.data?.role === 'admin';
   if (!hasAccess) {
     return NextResponse.json(
       { error: 'Recurso exclusivo do plano AiPro+.' },

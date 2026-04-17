@@ -81,13 +81,14 @@ async function devFallbackUser(): Promise<User | null> {
 // ── Cria cobrança com customer inline ─────────────────────────────────────────
 
 async function createBilling(opts: {
-  customer: { name: string; email: string; cpf: string; whatsapp?: string };
+  customer: { name: string; email: string; cpf?: string; whatsapp?: string };
   userId:   string;
   planId:   string;
   plan:     typeof PLAN_CONFIG[string];
   baseUrl:  string;
 }): Promise<string> {
   const { customer, userId, planId, plan, baseUrl } = opts;
+  const hasCpf = customer.cpf && customer.cpf.length === 11 && customer.cpf !== '00000000000';
 
   const body = {
     frequency:     'ONE_TIME',
@@ -95,14 +96,13 @@ async function createBilling(opts: {
     customer: {
       name:  customer.name,
       email: customer.email,
-      taxId: { number: customer.cpf, type: 'CPF' },
+      ...(hasCpf && { taxId: { number: customer.cpf, type: 'CPF' } }),
       ...(customer.whatsapp && { cellphone: customer.whatsapp }),
     },
     externalId:    userId,
     amount:        plan.priceCents,
     returnUrl:     `${baseUrl}/dashboard`,
     completionUrl: `${baseUrl}/dashboard?payment=success`,
-    metadata:      { plan_slug: planId },
     products: [{
       externalId:  planId,
       name:        plan.name,
@@ -111,6 +111,8 @@ async function createBilling(opts: {
       price:       plan.priceCents,
     }],
   };
+
+  console.log('[AbacatePay] Enviando billing/create →', JSON.stringify(body, null, 2));
 
   const res = await fetch(`${ABACATE_BASE}/billing/create`, {
     method:  'POST',
@@ -123,11 +125,12 @@ async function createBilling(opts: {
   try   { json = JSON.parse(text) as AbacateBillingResponse; }
   catch { throw new Error(`AbacatePay billing/create — resposta inesperada (HTTP ${res.status}): ${text}`); }
 
-  console.log(`[checkout] billing/create → HTTP ${res.status}:`, JSON.stringify(json));
-
   if (!res.ok || json.error || !json.data?.url) {
+    console.error('[AbacatePay Error] HTTP', res.status, '| Resposta completa:', JSON.stringify(json, null, 2));
     throw new Error(`Falha ao criar cobrança: ${json.error ?? `HTTP ${res.status}`}`);
   }
+
+  console.log(`[AbacatePay] billing/create OK → ${json.data.url}`);
   return json.data.url;
 }
 
@@ -152,10 +155,6 @@ export async function POST(req: NextRequest) {
     user = await devFallbackUser();
   }
 
-  if (!user) {
-    return NextResponse.json({ error: 'Autenticação necessária.', redirect: '/login?next=/subscription' }, { status: 401 });
-  }
-
   // Body
   let planId: string, cpf: string, bodyName: string | undefined, bodyEmail: string | undefined, bodyWhatsapp: string | undefined;
   try {
@@ -170,30 +169,30 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Corpo da requisição inválido.' }, { status: 400 });
   }
 
-  if (!cpf || cpf.length !== 11) {
-    return NextResponse.json({ error: 'CPF inválido. Informe os 11 dígitos.' }, { status: 422 });
-  }
-
   const plan = PLAN_CONFIG[planId];
   if (!plan) {
     return NextResponse.json({ error: 'Plano inválido.' }, { status: 422 });
   }
 
-  const name  = bodyName  ?? (user.user_metadata?.name as string | undefined) ?? user.email?.split('@')[0] ?? 'Aluno';
-  const email = bodyEmail ?? user.email ?? '';
+  const name  = bodyName  ?? (user?.user_metadata?.name as string | undefined) ?? bodyEmail?.split('@')[0] ?? 'Aluno';
+  const email = bodyEmail ?? user?.email ?? '';
 
   if (!email) {
-    console.error('[checkout] E-mail ausente. bodyEmail:', bodyEmail, '| user.email:', user.email);
-    return NextResponse.json({ error: 'E-mail não encontrado. Preencha o formulário novamente.' }, { status: 400 });
+    console.error('[checkout] E-mail ausente. bodyEmail:', bodyEmail, '| user.email:', user?.email);
+    return NextResponse.json({ error: 'E-mail não encontrado. Informe seu e-mail para continuar.' }, { status: 400 });
   }
+
+  // userId para rastreamento: usa o id do Supabase se autenticado, senão usa o email como identificador.
+  const userId = user?.id ?? `anon:${email}`;
+
   const baseUrl = process.env.NEXT_PUBLIC_URL ?? 'https://flashaprova.app';
 
-  console.log('[checkout] criando cobrança para', { userId: user.id, email, planId });
+  console.log('[checkout] criando cobrança para', { userId, email, planId, authenticated: !!user });
 
   try {
     const url = await createBilling({
-      customer: { name, email, cpf, whatsapp: bodyWhatsapp ?? undefined },
-      userId:   user.id,
+      customer: { name, email, cpf: cpf || undefined, whatsapp: bodyWhatsapp ?? undefined },
+      userId,
       planId,
       plan,
       baseUrl,

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { useTheme } from '@/components/ThemeProvider';
 
 // ─── Design tokens ─────────────────────────────────────────────────────────────
 const VIOLET = '#7C3AED';
@@ -34,6 +35,9 @@ type Props = {
 };
 
 export default function DeckCard({ id, title, color }: Props) {
+  const { theme }  = useTheme();
+  const isLight    = theme === 'light';
+
   const [hovered,     setHovered]     = useState(false);
   const [progressPct, setProgressPct] = useState<number | null>(null);
   const [totalCards,  setTotalCards]  = useState<number | null>(null);
@@ -76,13 +80,17 @@ export default function DeckCard({ id, title, color }: Props) {
       href={`/dashboard/deck/${id}/pre-study`}
       className="group relative block rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] overflow-hidden"
       style={{
-        background:           'rgba(255,255,255,0.04)',
-        backdropFilter:       'blur(16px)',
-        WebkitBackdropFilter: 'blur(16px)',
-        border:     `1px solid ${hovered ? `${VIOLET}cc` : `${VIOLET}40`}`,
+        background:           isLight ? '#FFFFFF' : 'rgba(255,255,255,0.04)',
+        backdropFilter:       isLight ? 'none' : 'blur(16px)',
+        WebkitBackdropFilter: isLight ? 'none' : 'blur(16px)',
+        border:     `1px solid ${hovered ? `${VIOLET}cc` : isLight ? `${VIOLET}30` : `${VIOLET}40`}`,
         boxShadow:  hovered
-          ? `0 0 28px ${VIOLET}40, 0 0 56px ${VIOLET}18, inset 0 1px 0 rgba(255,255,255,0.06)`
-          : `inset 0 1px 0 rgba(255,255,255,0.04)`,
+          ? isLight
+            ? `0 4px 24px ${VIOLET}28, 0 1px 4px rgba(0,0,0,0.08)`
+            : `0 0 28px ${VIOLET}40, 0 0 56px ${VIOLET}18`
+          : isLight
+            ? '0 1px 3px rgba(15,23,42,0.08), 0 4px 16px rgba(15,23,42,0.06)'
+            : 'none',
       }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -128,7 +136,7 @@ export default function DeckCard({ id, title, color }: Props) {
       </div>
 
       {/* ── Title ───────────────────────────────────────────────────────── */}
-      <h2 className="text-base font-bold text-white mb-4 relative z-10 leading-snug">
+      <h2 className="text-base font-bold mb-4 relative z-10 leading-snug" style={{ color: isLight ? '#0A0A0A' : '#ffffff' }}>
         {title}
       </h2>
 
@@ -142,7 +150,7 @@ export default function DeckCard({ id, title, color }: Props) {
               </span>
               <span className="text-xs text-slate-600">{progressPct}%</span>
             </div>
-            <div className="w-full h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
+            <div className="w-full h-1.5 rounded-full" style={{ background: isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.06)' }}>
               <div
                 className="h-full rounded-full transition-all duration-700"
                 style={{
@@ -157,7 +165,7 @@ export default function DeckCard({ id, title, color }: Props) {
           /* Skeleton enquanto carrega */
           <div
             className="w-full h-1.5 rounded-full animate-pulse"
-            style={{ background: 'rgba(255,255,255,0.06)' }}
+            style={{ background: isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.06)' }}
           />
         )}
       </div>

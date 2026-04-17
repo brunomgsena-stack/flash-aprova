@@ -1,10 +1,212 @@
 @import "tailwindcss";
 @import "katex/dist/katex.min.css";
 
+/* ── Theme tokens — dark (default) ──────────────────────────────────────────── */
 :root {
-  --bg-deep: #121212;
+  --bg-deep:    #121212;
   --grid-color: rgba(124, 58, 237, 0.04);
+
+  /* FlashAprova theme variables */
+  --fa-bg:          #050b14;
+  --fa-card:        rgba(255,255,255,0.035);
+  --fa-card-solid:  rgba(10,10,20,0.95);
+  --fa-border:      rgba(255,255,255,0.08);
+  --fa-border-dim:  rgba(255,255,255,0.05);
+  --fa-text:        #ffffff;
+  --fa-text-2:      rgba(255,255,255,0.45);
+  --fa-text-3:      rgba(255,255,255,0.22);
+  --fa-shadow:      none;
+  --fa-shimmer:     linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+  --fa-modal-bg:    rgba(0,0,0,0.82);
+  --fa-modal-blur:  blur(14px);
+  --fa-iris-a:      rgba(52,211,153,0.14);    /* MINT fill */
+  --fa-iris-b:      rgba(14,165,233,0.10);    /* OCEAN fill */
+  --fa-iris-stroke: #34D399;
 }
+
+/* ── Theme tokens — Clean & Airy Light ──────────────────────────────────────── */
+html.light {
+  /* Canvas */
+  --fa-bg:          #F8FAFC;              /* off-white — no eye fatigue */
+  --fa-card:        #FFFFFF;              /* pure white cards */
+  --fa-card-solid:  #FFFFFF;
+  --fa-border:      rgba(0,0,0,0.06);     /* subtle 1px border for card definition */
+  --fa-border-dim:  rgba(0,0,0,0.05);
+
+  /* Typography — WCAG AA / AAA */
+  --fa-text:        #0A0A0A;              /* near-black  — headings/labels  (21:1) */
+  --fa-text-2:      #334155;              /* Slate-700   — body text        (10:1) */
+  --fa-text-3:      #64748B;              /* Slate-500   — captions/support  (5:1) */
+
+  /* Depth — lavender-tinted soft shadow, never harsh */
+  --fa-shadow:      0 1px 3px rgba(15,23,42,0.08),
+                    0 4px 16px rgba(15,23,42,0.06),
+                    0 8px 32px rgba(15,23,42,0.04);
+
+  /* Shimmer — whisper rule at top of cards */
+  --fa-shimmer:     linear-gradient(90deg,
+                      transparent,
+                      rgba(148,163,184,0.12),
+                      transparent);
+
+  --fa-modal-bg:    rgba(15,23,42,0.50);
+  --fa-modal-blur:  blur(28px);
+  --fa-iris-a:      rgba(90,200,250,0.06);
+  --fa-iris-b:      rgba(175,82,222,0.04);
+  --fa-iris-stroke: #007AFF;              /* Apple system blue */
+
+  /* Elegant near-invisible grid */
+  --grid-color:     rgba(148, 163, 184, 0.06);   /* Slate-300 @ 6% */
+}
+
+/* ── Light mode: body ────────────────────────────────────────────────────────── */
+html.light body {
+  background-color: #F8FAFC;
+  background-image:
+    linear-gradient(var(--grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+  color: #0A0A0A;
+}
+
+/* ── Light mode: inputs / textareas / selects ────────────────────────────── */
+html.light input,
+html.light textarea,
+html.light select {
+  color: #0A0A0A !important;
+  background-color: #FFFFFF !important;
+  border-color: rgba(0,0,0,0.12) !important;
+}
+html.light input::placeholder,
+html.light textarea::placeholder {
+  color: #94A3B8 !important;   /* Slate-400 — clearly secondary, not primary */
+  opacity: 1;
+}
+
+/* Clean & Airy: no ambient orbs — let the white breathe */
+html.light body::before { display: none; }
+
+/* ── Light mode: clean white card ────────────────────────────────────────────── */
+html.light .fa-card {
+  background:              #FFFFFF !important;
+  backdrop-filter:         none !important;
+  -webkit-backdrop-filter: none !important;
+  border:                  1px solid rgba(0,0,0,0.06) !important;
+  border-radius:           1.5rem !important;   /* rounded-3xl */
+  box-shadow:              0 1px 3px rgba(15,23,42,0.08),
+                           0 4px 16px rgba(15,23,42,0.06),
+                           0 8px 32px rgba(15,23,42,0.04) !important;
+}
+
+html.light .fa-card:hover {
+  box-shadow:              0 2px 6px rgba(15,23,42,0.10),
+                           0 8px 28px rgba(15,23,42,0.08),
+                           0 16px 48px rgba(15,23,42,0.06) !important;
+  transition:              box-shadow 0.25s ease;
+}
+
+/* ── Shimmer: iridescent 1px accent at top of special cards ─────────────────── */
+html.light .fa-shimmer-top::before {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(0,122,255,0.20),
+    rgba(175,82,222,0.15),
+    transparent
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ── Mentor IA card: gradient border accent ──────────────────────────────────── */
+/*    Uses padding-box / border-box trick — border is transparent,               */
+/*    background paints iridescent gradient only in the border zone.             */
+html.light .fa-mentor-card {
+  background:   linear-gradient(#FFFFFF, #FFFFFF) padding-box,
+                linear-gradient(135deg,
+                  rgba(90,200,250,0.70)  0%,
+                  rgba(175,82,222,0.55) 50%,
+                  rgba(52,199,89,0.45) 100%
+                ) border-box !important;
+  border:       1.5px solid transparent !important;
+  border-radius: 1.5rem !important;
+  box-shadow:   0 2px 4px rgba(148,163,184,0.06),
+                0 8px 24px rgba(148,163,184,0.14),
+                0 0 0 4px rgba(90,200,250,0.04) !important;
+}
+
+/* Mentor card: no shimmer-top rule (gradient border already provides accent) */
+html.light .fa-mentor-card.fa-shimmer-top::before { display: none; }
+
+/* ── Typography: WCAG AA/AAA compliant ───────────────────────────────────────── */
+html.light .fa-text   { color: #0A0A0A !important; }
+html.light .fa-text-2 { color: #334155 !important; }
+html.light .fa-text-3 { color: #64748B !important; }
+
+/* Global Tailwind text overrides for light mode — broad coverage */
+html.light .text-white                           { color: #0A0A0A !important; }
+html.light .text-slate-100, html.light .text-slate-200,
+html.light .text-slate-300, html.light .text-slate-400 { color: #475569 !important; }
+html.light .text-slate-500                       { color: #334155 !important; }
+html.light .text-slate-600, html.light .text-slate-700 { color: #1E293B !important; }
+
+/* Gray variants */
+html.light .text-gray-100, html.light .text-gray-200,
+html.light .text-gray-300, html.light .text-gray-400 { color: #4B5563 !important; }
+html.light .text-gray-500                        { color: #374151 !important; }
+html.light .text-gray-600, html.light .text-gray-700 { color: #1F2937 !important; }
+
+/* Zinc / Neutral variants */
+html.light .text-zinc-300, html.light .text-zinc-400,
+html.light .text-neutral-300, html.light .text-neutral-400 { color: #52525B !important; }
+
+/* Functional semantic — keep accent colors as-is (green, blue, amber, red) */
+/* but remove any transparent text that was designed for dark backgrounds */
+html.light .text-transparent { color: #0A0A0A !important; }
+
+/* Deck count / caption labels */
+html.light .text-slate-500 { color: #334155 !important; }
+html.light .text-slate-600 { color: #1E293B !important; }
+
+/* Card backgrounds stuck in dark glassmorphism */
+html.light [class*="backdrop-blur"] {
+  background: #FFFFFF !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* ── Light mode: block gradient text (illegible on white) ─────────────────── */
+html.light .bg-clip-text,
+html.light [class*="bg-clip-text"] {
+  -webkit-text-fill-color: #0A0A0A !important;
+  background-image:        none !important;
+}
+
+/* ── Buttons: lift-shadow instead of glow ────────────────────────────────────── */
+html.light .fa-btn-primary {
+  box-shadow: 0 2px 8px rgba(0,122,255,0.18), 0 1px 2px rgba(0,0,0,0.06) !important;
+}
+html.light .fa-btn-primary:hover {
+  box-shadow: 0 6px 20px rgba(0,122,255,0.26), 0 2px 4px rgba(0,0,0,0.08) !important;
+  transform:  translateY(-1px);
+}
+
+/* ── Progress bars: soft airy gradient ──────────────────────────────────────── */
+html.light .fa-progress-bar {
+  background: linear-gradient(90deg, #34C759, #007AFF, #5AC8FA) !important;
+  box-shadow: none !important;
+  opacity: 0.9;
+}
+
+/* ── Sun/Moon toggle animation ───────────────────────────────────────────────── */
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.theme-spin { animation: spin-slow 8s linear infinite; }
 
 /* ── Pulsing neon borders ───────────────────────────────────────────────── */
 @keyframes pulse-violet {
@@ -99,7 +301,7 @@
 }
 
 body {
-  background-color: #121212;
+  background-color: #050b14;
   background-image:
     linear-gradient(var(--grid-color) 1px, transparent 1px),
     linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);

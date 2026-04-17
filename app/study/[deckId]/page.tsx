@@ -127,18 +127,21 @@ export default function StudyPage() {
   const { deckId } = useParams<{ deckId: string }>();
   const router     = useRouter();
 
-  const [queue,        setQueue]        = useState<Card[]>([]);
-  const [initialTotal, setInitialTotal] = useState(0);
-  const [progressMap,  setProgressMap]  = useState<Record<string, UserProgress>>({});
-  const [index,        setIndex]        = useState(0);
-  const [flipped,      setFlipped]      = useState(false);
-  const [loading,      setLoading]      = useState(true);
-  const [saving,       setSaving]       = useState(false);
-  const [userId,       setUserId]       = useState<string | null>(null);
-  const [deckTitle,    setDeckTitle]    = useState('');
-  const [subjectTitle, setSubjectTitle] = useState('');
-  const [subjectId,    setSubjectId]    = useState('');
-  const [done,         setDone]         = useState(false);
+  const [queue,          setQueue]          = useState<Card[]>([]);
+  const [initialTotal,   setInitialTotal]   = useState(0);
+  const [progressMap,    setProgressMap]    = useState<Record<string, UserProgress>>({});
+  const [index,          setIndex]          = useState(0);
+  const [flipped,        setFlipped]        = useState(false);
+  const [loading,        setLoading]        = useState(true);
+  const [saving,         setSaving]         = useState(false);
+  const [userId,         setUserId]         = useState<string | null>(null);
+  const [deckTitle,      setDeckTitle]      = useState('');
+  const [subjectTitle,   setSubjectTitle]   = useState('');
+  const [subjectId,      setSubjectId]      = useState('');
+  const [done,           setDone]           = useState(false);
+  const [sessionStart]                      = useState(() => Date.now());
+  const [correctCount,   setCorrectCount]   = useState(0);
+  const [incorrectCount, setIncorrectCount] = useState(0);
 
   // ── Update streak once when session finishes ───────────────────────────────
   useEffect(() => {
@@ -224,6 +227,10 @@ export default function StudyPage() {
 
     const history = [...(prevProg?.history ?? []), newEntry];
 
+    // Track correct/incorrect for session summary
+    if (rating === 1) setIncorrectCount(c => c + 1);
+    else              setCorrectCount(c => c + 1);
+
     if (userId) {
       await supabase.from('user_progress').upsert(
         {
@@ -284,41 +291,131 @@ export default function StudyPage() {
     );
   }
 
-  // ── Done screen ────────────────────────────────────────────────────────────
+  // ── Done screen — Achievement Modal ────────────────────────────────────────
   if (done) {
+    const elapsedSec  = Math.round((Date.now() - sessionStart) / 1000);
+    const elapsedMin  = Math.floor(elapsedSec / 60);
+    const elapsedRem  = elapsedSec % 60;
+    const timeLabel   = elapsedMin > 0
+      ? `${elapsedMin}min ${elapsedRem}s`
+      : `${elapsedSec}s`;
+    const totalRated  = correctCount + incorrectCount;
+    const accuracyPct = totalRated > 0 ? Math.round((correctCount / totalRated) * 100) : 0;
+
+    const NEON  = '#00FF73';
+    const OCEAN = '#0EA5E9';
+    const AMBER = '#F59E0B';
+
+    const badge =
+      accuracyPct >= 90 ? { emoji: '🏆', label: 'Excelência!',    color: NEON }
+      : accuracyPct >= 70 ? { emoji: '🥇', label: 'Ótimo trabalho!', color: OCEAN }
+      : accuracyPct >= 50 ? { emoji: '🥈', label: 'Bom esforço!',    color: AMBER }
+      : totalRated === 0  ? { emoji: '📭', label: 'Sem novidades!',   color: OCEAN }
+      :                     { emoji: '💪', label: 'Continue assim!',  color: AMBER };
+
     return (
-      <main className="min-h-screen flex flex-col items-center justify-center px-4 gap-8">
+      <main className="min-h-screen flex items-center justify-center px-4"
+        style={{ background: '#050b14' }}>
+
+        {/* Overlay glow */}
         <div
-          className="w-28 h-28 rounded-full flex items-center justify-center text-5xl"
+          className="fixed inset-0 pointer-events-none"
+          style={{ background: `radial-gradient(ellipse at center, ${badge.color}08 0%, transparent 65%)` }}
+        />
+
+        <div
+          className="relative w-full max-w-md rounded-3xl p-8 flex flex-col items-center gap-6 card-in"
           style={{
-            background: 'rgba(0,255,128,0.08)',
-            border: '2px solid rgba(0,255,128,0.5)',
-            boxShadow: '0 0 40px 8px rgba(0,255,128,0.2)',
+            background:           'rgba(255,255,255,0.04)',
+            backdropFilter:       'blur(24px)',
+            WebkitBackdropFilter: 'blur(24px)',
+            border:               `1px solid ${badge.color}30`,
+            boxShadow:            `0 0 60px ${badge.color}14, 0 24px 80px rgba(0,0,0,0.5)`,
           }}
         >
-          🎉
-        </div>
+          {/* Top shimmer */}
+          <div
+            className="absolute inset-x-0 top-0 h-px rounded-t-3xl"
+            style={{ background: `linear-gradient(90deg, transparent, ${badge.color}80, transparent)` }}
+          />
 
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-white mb-2">Sessão concluída!</h1>
-          <p className="text-slate-400 text-lg">
-            {initialTotal > 0
-              ? `Você revisou ${initialTotal} card${initialTotal !== 1 ? 's' : ''} hoje.`
-              : 'Nenhum card para revisar hoje. Volte amanhã!'}
-          </p>
-        </div>
+          {/* Medal */}
+          <div
+            className="w-28 h-28 rounded-full flex items-center justify-center text-5xl"
+            style={{
+              background: `${badge.color}10`,
+              border:     `2px solid ${badge.color}50`,
+              boxShadow:  `0 0 40px ${badge.color}30, 0 0 80px ${badge.color}10`,
+            }}
+          >
+            {badge.emoji}
+          </div>
 
-        <button
-          onClick={() => router.push('/dashboard')}
-          className="px-8 py-3 rounded-xl font-semibold text-white transition-all duration-200 hover:-translate-y-0.5"
-          style={{
-            background: 'rgba(0,255,128,0.12)',
-            border: '1px solid rgba(0,255,128,0.4)',
-            boxShadow: '0 0 20px rgba(0,255,128,0.15)',
-          }}
-        >
-          Voltar ao Dashboard
-        </button>
+          {/* Title */}
+          <div className="text-center">
+            <p className="text-xs font-bold tracking-widest uppercase mb-1" style={{ color: badge.color }}>
+              Sessão Concluída
+            </p>
+            <h1 className="text-2xl font-black text-white">{badge.label}</h1>
+            {deckTitle && (
+              <p className="text-slate-500 text-sm mt-1">{deckTitle}</p>
+            )}
+          </div>
+
+          {/* Stats grid */}
+          <div className="w-full grid grid-cols-3 gap-3">
+            {[
+              { label: 'Tempo',         value: timeLabel,              icon: '⏱',  color: OCEAN },
+              { label: 'Cards',         value: `${initialTotal}`,      icon: '🃏',  color: badge.color },
+              { label: 'Acerto',        value: `${accuracyPct}%`,      icon: '🎯',  color: accuracyPct >= 70 ? NEON : AMBER },
+            ].map(stat => (
+              <div
+                key={stat.label}
+                className="rounded-2xl p-3 flex flex-col items-center gap-1"
+                style={{
+                  background: `${stat.color}08`,
+                  border:     `1px solid ${stat.color}22`,
+                }}
+              >
+                <span className="text-xl">{stat.icon}</span>
+                <span className="text-lg font-black" style={{ color: stat.color }}>{stat.value}</span>
+                <span className="text-xs text-slate-500">{stat.label}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Accuracy bar */}
+          {totalRated > 0 && (
+            <div className="w-full">
+              <div className="flex justify-between text-xs text-slate-500 mb-1.5">
+                <span>✅ {correctCount} certos</span>
+                <span>❌ {incorrectCount} erros</span>
+              </div>
+              <div className="w-full h-2 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                <div
+                  className="h-full rounded-full transition-all duration-700"
+                  style={{
+                    width:      `${accuracyPct}%`,
+                    background: `linear-gradient(90deg, ${NEON}, ${OCEAN})`,
+                    boxShadow:  `0 0 8px ${NEON}60`,
+                  }}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* CTA */}
+          <button
+            onClick={() => router.push('/dashboard')}
+            className="w-full py-3.5 rounded-2xl font-black text-white text-sm transition-all duration-200 hover:-translate-y-0.5"
+            style={{
+              background: `linear-gradient(135deg, ${badge.color}cc, ${OCEAN}99)`,
+              boxShadow:  `0 0 20px ${badge.color}40, 0 4px 16px rgba(0,0,0,0.4)`,
+            }}
+          >
+            Concluir e Voltar ao Dashboard →
+          </button>
+        </div>
       </main>
     );
   }

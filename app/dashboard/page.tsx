@@ -1,13 +1,9 @@
-import { supabase } from '@/lib/supabaseClient';
-import { getSubjectIcon } from '@/lib/iconMap';
-import PerformanceMetrics from './PerformanceMetrics';
-import UserMenu from './UserMenu';
-import StreakBadge from './StreakBadge';
-import EnemCountdown from './EnemCountdown';
-import ChartsRow from './ChartsRow';
-import SubjectsWithDomain from './SubjectsWithDomain';
-import DynamicStatus from './DynamicStatus';
-import PantheonInsights from './PantheonInsights';
+import { supabase }          from '@/lib/supabaseClient';
+import { getSubjectIcon }    from '@/lib/iconMap';
+import StudentDashboard      from '@/components/StudentDashboard';
+import PerformanceMetrics    from './PerformanceMetrics';
+import ChartsRow             from './ChartsRow';
+import SubjectsWithDomain    from './SubjectsWithDomain';
 
 type Subject = {
   id:       string;
@@ -38,47 +34,30 @@ export default async function DashboardPage() {
     category: s.category ?? null,
   }));
 
-  // Synthetic subject injected on the frontend until DB entry is created
   const allSubjects = [
     ...mapped,
     { id: 'redacao-flash', title: 'Redação Flash+', icon: '✒️', color: '#06b6d4', category: 'Redação' },
   ];
 
   return (
-    <main className="min-h-screen px-4 py-12 sm:px-8">
+    <main className="min-h-screen px-4 py-12 sm:px-8 flex flex-col items-center">
+      <div className="w-full max-w-5xl">
 
-      {/* ── Header ──────────────────────────────────────────────────────── */}
-      <div className="max-w-5xl mx-auto mb-8">
-        <div className="flex items-center justify-between mb-2">
-          <p className="text-emerald-400 text-sm font-semibold tracking-widest uppercase">
-            FlashAprova
-          </p>
-          <div className="flex items-center gap-3">
-            <StreakBadge />
-            <EnemCountdown />
-            <UserMenu />
-          </div>
-        </div>
-        <h1 className="text-4xl font-bold text-white leading-tight">
-          Central de Operações
-        </h1>
-        <DynamicStatus />
+        {/* Header + Mentor Card (Zen Focus) */}
+        <StudentDashboard>
+
+          {/* Charts: Radar ENEM + Retenção */}
+          <ChartsRow subjects={mapped.map(s => ({ id: s.id, category: s.category }))} />
+
+          {/* Métricas de Performance */}
+          <PerformanceMetrics />
+
+          {/* Matérias agrupadas por categoria */}
+          <SubjectsWithDomain subjects={allSubjects} />
+
+        </StudentDashboard>
+
       </div>
-
-      {/* ── Panteão: Insights + botões de ação ──────────────────────────── */}
-      <PantheonInsights />
-
-      {/* ── Charts: Radar ENEM + Retenção ────────────────────────────────── */}
-      <ChartsRow subjects={mapped.map(s => ({ id: s.id, category: s.category }))} />
-
-      {/* ── Métricas de Performance ───────────────────────────────────────── */}
-      <PerformanceMetrics />
-
-      {/* ── Matérias agrupadas por categoria ─────────────────────────────── */}
-      <div className="max-w-5xl mx-auto">
-        <SubjectsWithDomain subjects={allSubjects} />
-      </div>
-
     </main>
   );
 }

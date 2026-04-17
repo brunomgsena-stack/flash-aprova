@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import DeckCard from './DeckCard';
+import { useTheme } from '@/components/ThemeProvider';
 
 type Deck = {
   id:    string;
@@ -26,6 +27,8 @@ const MODULE_ICONS: Record<number, string> = {
 };
 
 export default function ModuleAccordion({ modules, color }: Props) {
+  const { theme } = useTheme();
+  const isLight   = theme === 'light';
   const [open, setOpen] = useState<string | null>(modules[0]?.id ?? null);
 
   if (modules.length === 0) {
@@ -49,9 +52,15 @@ export default function ModuleAccordion({ modules, color }: Props) {
             key={mod.id}
             className="rounded-2xl overflow-hidden transition-all duration-300"
             style={{
-              background: isOpen ? `${color}08` : 'rgba(255,255,255,0.03)',
-              border:     `1px solid ${isOpen ? `${color}44` : 'rgba(255,255,255,0.08)'}`,
-              boxShadow:  isOpen ? `0 0 24px ${color}14` : 'none',
+              background: isOpen
+                ? `${color}08`
+                : isLight ? 'rgba(0,0,0,0.02)' : 'rgba(255,255,255,0.03)',
+              border: `1px solid ${isOpen
+                ? `${color}44`
+                : isLight ? 'rgba(0,0,0,0.07)' : 'rgba(255,255,255,0.08)'}`,
+              boxShadow: isOpen
+                ? isLight ? `0 2px 12px ${color}18` : `0 0 24px ${color}14`
+                : isLight ? '0 1px 3px rgba(15,23,42,0.06)' : 'none',
             }}
           >
             {/* ── Module header ──────────────────────────────────────── */}
@@ -63,9 +72,13 @@ export default function ModuleAccordion({ modules, color }: Props) {
               <div
                 className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 transition-all duration-300"
                 style={{
-                  background: isOpen ? `${color}22` : 'rgba(255,255,255,0.06)',
-                  border:     `1px solid ${isOpen ? `${color}55` : 'rgba(255,255,255,0.12)'}`,
-                  color:      isOpen ? color : 'rgba(255,255,255,0.4)',
+                  background: isOpen
+                    ? `${color}22`
+                    : isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.06)',
+                  border: `1px solid ${isOpen
+                    ? `${color}55`
+                    : isLight ? 'rgba(0,0,0,0.10)' : 'rgba(255,255,255,0.12)'}`,
+                  color: isOpen ? color : isLight ? '#64748B' : 'rgba(255,255,255,0.4)',
                 }}
               >
                 {String(idx + 1).padStart(2, '0')}
@@ -77,7 +90,7 @@ export default function ModuleAccordion({ modules, color }: Props) {
                 <span
                   className="font-bold tracking-wide truncate transition-colors duration-200"
                   style={{
-                    color:    isOpen ? color : 'rgba(255,255,255,0.85)',
+                    color:    isOpen ? color : isLight ? '#1E293B' : 'rgba(255,255,255,0.85)',
                     fontSize: '0.95rem',
                   }}
                 >
@@ -95,7 +108,7 @@ export default function ModuleAccordion({ modules, color }: Props) {
                 className="shrink-0 transition-transform duration-300"
                 style={{
                   transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                  color:     isOpen ? color : 'rgba(255,255,255,0.25)',
+                  color:     isOpen ? color : isLight ? 'rgba(0,0,0,0.25)' : 'rgba(255,255,255,0.25)',
                 }}
                 width="16" height="16" viewBox="0 0 16 16" fill="none"
               >
@@ -118,8 +131,8 @@ export default function ModuleAccordion({ modules, color }: Props) {
                   <div
                     className="flex items-center gap-4 rounded-2xl px-5 py-4"
                     style={{
-                      background: 'rgba(255,255,255,0.02)',
-                      border:     '1px dashed rgba(255,255,255,0.10)',
+                      background: isLight ? 'rgba(0,0,0,0.02)' : 'rgba(255,255,255,0.02)',
+                      border:     isLight ? '1px dashed rgba(0,0,0,0.10)' : '1px dashed rgba(255,255,255,0.10)',
                     }}
                   >
                     <span className="text-2xl">🤖</span>

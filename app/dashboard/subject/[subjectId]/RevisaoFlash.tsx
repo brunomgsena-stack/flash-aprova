@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { useTheme } from '@/components/ThemeProvider';
 
 // ─── Design tokens ─────────────────────────────────────────────────────────────
 const VIOLET = '#8B5CF6';
@@ -24,6 +25,9 @@ type Props = {
 
 export default function RevisaoFlash({ subjectId, color }: Props) {
   const router    = useRouter();
+  const { theme } = useTheme();
+  const isLight   = theme === 'light';
+
   const [size, setSize]   = useState<number>(50);
   const [hovered, setHovered] = useState(false);
 
@@ -87,9 +91,9 @@ export default function RevisaoFlash({ subjectId, color }: Props) {
                       boxShadow:  `0 0 10px ${VIOLET}40`,
                     }
                   : {
-                      background: 'rgba(255,255,255,0.04)',
-                      border:     '1px solid rgba(255,255,255,0.10)',
-                      color:      'rgba(255,255,255,0.40)',
+                      background: isLight ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.04)',
+                      border:     isLight ? '1px solid rgba(0,0,0,0.10)' : '1px solid rgba(255,255,255,0.10)',
+                      color:      isLight ? '#475569' : 'rgba(255,255,255,0.40)',
                     }
               }
             >
@@ -102,10 +106,10 @@ export default function RevisaoFlash({ subjectId, color }: Props) {
         <div
           className="relative px-3.5 py-2 rounded-xl text-xs font-semibold text-white flex-1 min-w-0"
           style={{
-            background:     'rgba(255,255,255,0.04)',
-            border:         `1px solid ${NEON}25`,
+            background:     isLight ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.04)',
+            border:         isLight ? `1px solid ${NEON}40` : `1px solid ${NEON}25`,
             color:          NEON,
-            backdropFilter: 'blur(10px)',
+            backdropFilter: isLight ? 'none' : 'blur(10px)',
           }}
         >
           {/* Arrow */}

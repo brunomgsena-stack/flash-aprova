@@ -566,7 +566,7 @@ export default function EssayEvolutionSection() {
 
               {/* CTA button with pulsing arrow */}
               <Link
-                href="/checkout?plan=proai_plus"
+                href="/checkout?plan=panteao_elite"
                 className="flex items-center gap-2.5 px-6 py-3.5 rounded-xl font-black text-sm
                            shrink-0 transition-all duration-200 hover:-translate-y-0.5
                            hover:scale-[1.04] active:scale-[0.97]"

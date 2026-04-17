@@ -7,7 +7,7 @@ import HistoricoList, { type EssayRecord } from '@/components/redacao/HistoricoL
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type Plan = 'flash' | 'proai_plus';
+type Plan = 'aceleracao' | 'panteao_elite';
 
 // Mirrors NormaResult from lib/agents/norma.ts
 type CompetenciaResult = {
@@ -80,7 +80,7 @@ function SpinnerIcon() {
 // ─── Norma Hero Card ─────────────────────────────────────────────────────────
 
 function NormaHeroCard({ plan, onOpenModal }: { plan: Plan; onOpenModal: () => void }) {
-  const isPro = plan === 'proai_plus';
+  const isPro = plan === 'panteao_elite';
 
   return (
     <div
@@ -181,7 +181,7 @@ function EssayModal({
 }) {
   const [tema, setTema]   = useState('');
   const [texto, setTexto] = useState('');
-  const isPro             = plan === 'proai_plus';
+  const isPro             = plan === 'panteao_elite';
 
   const wordCount = texto.trim() ? texto.trim().split(/\s+/).length : 0;
   const canSubmit = isPro && tema.trim().length > 3 && wordCount >= 50;
@@ -801,7 +801,7 @@ export default function RedacaoClient({ plan }: { plan: Plan }) {
   const [historico,   setHistorico]   = useState<EssayRecord[]>([]);
   const [loadingHist, setLoadingHist] = useState(false);
 
-  const isPro = plan === 'proai_plus';
+  const isPro = plan === 'panteao_elite';
   const color = CYAN;
 
   // ── Fetch histórico do Supabase ───────────────────────────────────────────

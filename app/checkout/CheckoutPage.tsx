@@ -253,53 +253,6 @@ function InsightsPanel({ health }: { health: number }) {
   );
 }
 
-// ─── Expiry Timer ─────────────────────────────────────────────────────────────
-function ExpiryTimer() {
-  const [secs, setSecs] = useState(600);
-  useEffect(() => {
-    const t = setInterval(() => setSecs(s => Math.max(0, s - 1)), 1000);
-    return () => clearInterval(t);
-  }, []);
-  const m = Math.floor(secs / 60).toString().padStart(2, '0');
-  const s = (secs % 60).toString().padStart(2, '0');
-  const urgent = secs < 120;
-  return (
-    <div className="flex flex-col sm:flex-row items-center justify-center gap-3 py-3 px-4 rounded-xl mb-4 text-sm font-semibold"
-      style={{
-        background: urgent ? 'rgba(239,68,68,0.10)' : 'rgba(249,115,22,0.08)',
-        border: `1px solid ${urgent ? RED : ORANGE}30`,
-      }}>
-      <div className="flex items-center gap-2" style={{ color: urgent ? RED : ORANGE }}>
-        <span className="inline-block w-2 h-2 rounded-full animate-pulse" style={{ background: urgent ? RED : ORANGE }} />
-        Seu diagnóstico expira em:
-      </div>
-      <span className="font-black text-white text-lg tabular-nums font-mono tracking-widest"
-        style={{
-          textShadow: `0 0 16px ${urgent ? RED : ORANGE}80`,
-          color: urgent ? RED : 'white',
-        }}>
-        {m}:{s}
-      </span>
-    </div>
-  );
-}
-
-// ─── Urgency Strip ────────────────────────────────────────────────────────────
-function UrgencyStrip() {
-  const [count, setCount] = useState(7);
-  useEffect(() => {
-    const t = setInterval(() => setCount(c => (c > 3 ? c - 1 : 3)), 45000);
-    return () => clearInterval(t);
-  }, []);
-  return (
-    <div className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-semibold mb-6"
-      style={{ background: 'rgba(239,68,68,0.08)', border: `1px solid ${RED}25`, color: RED }}>
-      <span className="inline-block w-2 h-2 rounded-full animate-pulse" style={{ background: RED }} />
-      Apenas <strong className="mx-1">{count} vagas</strong> restantes para acesso ao Exército de IA nesta sessão
-    </div>
-  );
-}
-
 // ─── Evidence Carousel ────────────────────────────────────────────────────────
 const EVIDENCE_VIDEOS = [
   { id: 1, name: 'Ana Clara M.',    city: 'SP', score: '960 pts', quote: 'Medicina USP na 1ª chamada!',              accent: EMERALD },
@@ -388,71 +341,6 @@ function EvidenceCarousel() {
   );
 }
 
-// ─── Status Ticker ────────────────────────────────────────────────────────────
-const TICKER_ITEMS = [
-  '🟢 Beatriz F. (Recife-PE) garantiu o Panteão Elite',
-  '🟢 Lucas T. (BH-MG) desbloqueou o Plano Aceleração',
-  '🟢 Camila R. (Curitiba-PR) garantiu o Panteão Elite',
-  '🟢 Gabriel S. (Salvador-BA) ativou Acesso Imediato',
-  '🟢 Fernanda M. (Porto Alegre-RS) garantiu o Panteão Elite',
-  '🟢 Thiago A. (Fortaleza-CE) desbloqueou o Plano Aceleração',
-  '🟢 Julia P. (Goiânia-GO) garantiu o Panteão Elite',
-  '🟢 Rafael C. (Manaus-AM) ativou Acesso Imediato',
-  '🟢 Larissa O. (Natal-RN) garantiu o Panteão Elite',
-  '🟢 Diego V. (Belém-PA) desbloqueou o Plano Aceleração',
-  '🟢 Amanda K. (Florianópolis-SC) garantiu o Panteão Elite',
-  '🟢 Marcelo B. (Maceió-AL) ativou Acesso Imediato',
-  '🟢 Isabela N. (João Pessoa-PB) garantiu o Panteão Elite',
-  '🟢 Bruno H. (Vitória-ES) desbloqueou o Plano Aceleração',
-  '🟢 Natália Q. (Teresina-PI) garantiu o Panteão Elite',
-  '🟢 Vinicius L. (Campo Grande-MS) ativou Acesso Imediato',
-  '🟢 Letícia W. (Aracaju-SE) garantiu o Panteão Elite',
-  '🟢 Henrique D. (Macapá-AP) desbloqueou o Plano Aceleração',
-  '🟢 Carolina E. (Palmas-TO) garantiu o Panteão Elite',
-  '🟢 Rodrigo X. (Rio Branco-AC) ativou Acesso Imediato',
-];
-
-function StatusTicker() {
-  const doubled = [...TICKER_ITEMS, ...TICKER_ITEMS];
-  return (
-    <div className="mb-8 overflow-hidden rounded-xl"
-      style={{ background: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.15)' }}>
-      <div className="flex items-center gap-3 px-4 py-2 border-b" style={{ borderColor: 'rgba(16,185,129,0.10)' }}>
-        <span className="inline-block w-2 h-2 rounded-full animate-pulse" style={{ background: EMERALD }} />
-        <span className="text-xs font-bold tracking-widest uppercase" style={{ color: EMERALD }}>
-          Ao Vivo — Novos Alunos Entrando Agora
-        </span>
-      </div>
-      <div className="py-2 overflow-hidden">
-        <div
-          className="flex gap-8 whitespace-nowrap"
-          style={{
-            animation: 'ticker-scroll 40s linear infinite',
-          }}
-        >
-          {doubled.map((item, i) => (
-            <span key={i} className="text-xs font-medium shrink-0" style={{ color: 'rgba(255,255,255,0.55)' }}>
-              {item}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      <style>{`
-        @keyframes ticker-scroll {
-          0%   { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-        @keyframes emerald-pulse {
-          0%, 100% { box-shadow: 0 0 0 1px ${EMERALD}88, 0 0 28px ${EMERALD}30, 0 0 60px ${EMERALD}14; }
-          50%       { box-shadow: 0 0 0 1px ${EMERALD}, 0 0 48px ${EMERALD}55, 0 0 100px ${EMERALD}22; }
-        }
-        .elite-card { animation: emerald-pulse 2.8s ease-in-out infinite; }
-      `}</style>
-    </div>
-  );
-}
-
 // ─── Main ─────────────────────────────────────────────────────────────────────
 interface OnboardingData {
   subject: SubjectId;
@@ -463,7 +351,12 @@ interface OnboardingData {
   name?:  string;
 }
 
-type PlanId = 'flash' | 'proai_plus';
+type PlanId = 'aceleracao' | 'panteao_elite';
+
+const ABACATE_LINKS: Record<PlanId, string> = {
+  aceleracao:    'https://www.asaas.com/c/49ydadcmmrrzmigg',
+  panteao_elite: 'https://www.asaas.com/c/7tv0nhdilq1frb4s',
+};
 
 const cardStyle = {
   background: 'rgba(10,5,20,0.88)',
@@ -472,41 +365,21 @@ const cardStyle = {
 } as React.CSSProperties;
 
 export default function CheckoutPage() {
-  const [data,       setData]       = useState<OnboardingData | null>(null);
-  const [email,      setEmail]      = useState('');
-  const [activePlan, setActivePlan] = useState<PlanId | null>(null);
-  const [buyLoading, setBuyLoading] = useState(false);
-  const [buyError,   setBuyError]   = useState<string | null>(null);
+  const [data, setData] = useState<OnboardingData | null>(null);
 
   useEffect(() => {
     try {
       const raw = localStorage.getItem('flashAprovaOnboarding');
-      if (raw) {
-        const parsed = JSON.parse(raw) as OnboardingData;
-        setData(parsed);
-        if (parsed.email) setEmail(parsed.email);
-      }
+      if (raw) setData(JSON.parse(raw) as OnboardingData);
     } catch { /* ignore */ }
   }, []);
 
-  async function handleBuy(planId: PlanId) {
-    setActivePlan(planId);
-    setBuyLoading(true);
-    setBuyError(null);
-
-    try {
-      const res  = await fetch('/api/checkout', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ email, planId }),
-      });
-      const json = await res.json() as { url?: string; error?: string };
-      if (!res.ok || !json.url) throw new Error(json.error ?? 'Erro ao gerar link de pagamento.');
-      window.location.href = json.url;
-    } catch (err: unknown) {
-      setBuyError(err instanceof Error ? err.message : 'Erro inesperado. Tente novamente.');
-      setBuyLoading(false);
-    }
+  function handleBuy(planId: PlanId) {
+    const params = new URLSearchParams();
+    if (data?.email) params.set('email', data.email);
+    if (data?.name)  params.set('name',  data.name);
+    const query = params.toString();
+    window.location.href = query ? `${ABACATE_LINKS[planId]}?${query}` : ABACATE_LINKS[planId];
   }
 
   const health      = data?.memoryHealth ?? 62;
@@ -533,6 +406,13 @@ export default function CheckoutPage() {
 
   return (
     <>
+    <style>{`
+      @keyframes emerald-pulse {
+        0%, 100% { box-shadow: 0 0 0 1px ${EMERALD}88, 0 0 28px ${EMERALD}30, 0 0 60px ${EMERALD}14; }
+        50%       { box-shadow: 0 0 0 1px ${EMERALD}, 0 0 48px ${EMERALD}55, 0 0 100px ${EMERALD}22; }
+      }
+      .elite-card { animation: emerald-pulse 2.8s ease-in-out infinite; }
+    `}</style>
     <div className="min-h-screen px-4 py-10 sm:px-8 relative overflow-hidden"
       style={{ background: 'radial-gradient(ellipse at 30% 0%, #0a0514 0%, #050505 65%)' }}>
 
@@ -605,10 +485,6 @@ export default function CheckoutPage() {
         {/* ── Visual Insights ── */}
         <InsightsPanel health={health} />
 
-        {/* ── Urgency ── */}
-        <ExpiryTimer />
-        <UrgencyStrip />
-
         {/* ── Plan cards ── */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8 items-start">
 
@@ -632,14 +508,13 @@ export default function CheckoutPage() {
             </div>
 
             {/* Price */}
-            <div className="mb-1">
-              <span className="text-slate-600 text-sm line-through">De R$ 797</span>
+            <div className="mb-3">
+              <div className="flex items-baseline gap-1">
+                <span className="text-4xl font-black text-white">12x de R$&nbsp;59,16</span>
+              </div>
+              <p className="text-xs font-semibold mt-0.5" style={{ color: '#8b5cf6' }}>no cartão de crédito</p>
             </div>
-            <div className="flex items-baseline gap-1 mb-1">
-              <span className="text-4xl font-black text-slate-200">R$&nbsp;597</span>
-              <span className="text-xl font-black text-slate-200">,00</span>
-            </div>
-            <p className="text-slate-500 text-xs mb-6">à vista · ou 12x no cartão</p>
+            <p className="text-slate-600 text-sm mb-6">ou R$ 710,00 à vista</p>
 
             <div className="h-px mb-5" style={{ background:'rgba(255,255,255,0.05)' }} />
 
@@ -656,16 +531,11 @@ export default function CheckoutPage() {
               ))}
             </div>
 
-            {buyError && activePlan === 'flash' && (
-              <p className="text-xs text-red-400 text-center mb-3">{buyError}</p>
-            )}
-
             <button
-              onClick={() => handleBuy('flash')}
-              disabled={buyLoading && activePlan === 'flash'}
-              className="block w-full py-3 rounded-xl text-center text-sm font-bold transition-all hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={() => handleBuy('aceleracao')}
+              className="block w-full py-3 rounded-xl text-center text-sm font-bold transition-all hover:opacity-80"
               style={{ background:'rgba(124,58,237,0.14)', border:'1px solid rgba(124,58,237,0.30)', color:'#a78bfa' }}>
-              {buyLoading && activePlan === 'flash' ? 'Redirecionando…' : 'Garantir Minha Vaga no ENEM →'}
+              Garantir Minha Vaga no ENEM →
             </button>
           </div>
 
@@ -711,14 +581,18 @@ export default function CheckoutPage() {
             </div>
 
             {/* Price */}
-            <div className="mb-1">
-              <span className="text-slate-600 text-sm line-through">De R$ 1.297</span>
+            <div className="mb-3 relative">
+              <div className="flex items-baseline gap-1">
+                <span className="text-4xl font-black text-white">
+                  12x de R$&nbsp;66,41
+                </span>
+              </div>
+              <p className="text-xs font-semibold mt-0.5" style={{ color: EMERALD }}>no cartão de crédito</p>
             </div>
-            <div className="flex items-baseline gap-1 mb-1 relative">
-              <span className="text-5xl font-black text-white">R$&nbsp;697</span>
-              <span className="text-2xl font-black text-white">,00</span>
-            </div>
-            <p className="text-slate-400 text-xs mb-6 relative">à vista · ou 12x no cartão</p>
+            <p className="text-slate-600 text-sm mb-1 relative">ou R$ 797,00 à vista</p>
+            <p className="text-sm font-semibold italic mb-6 relative" style={{ color: EMERALD }}>
+              Menos de R$ 1,09 por dia
+            </p>
 
             <div className="h-px mb-5 relative"
               style={{ background:`linear-gradient(90deg,${EMERALD}55,${CYAN}55)` }} />
@@ -745,14 +619,9 @@ export default function CheckoutPage() {
               ))}
             </div>
 
-            {buyError && activePlan === 'proai_plus' && (
-              <p className="text-xs text-red-400 text-center mb-3">{buyError}</p>
-            )}
-
             <button
-              onClick={() => handleBuy('proai_plus')}
-              disabled={buyLoading && activePlan === 'proai_plus'}
-              className="relative block w-full py-4 rounded-xl text-center font-black text-white text-base transition-all duration-200 hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+              onClick={() => handleBuy('panteao_elite')}
+              className="relative block w-full py-4 rounded-xl text-center font-black text-white text-base transition-all duration-200 hover:-translate-y-0.5"
               style={{
                 background:`linear-gradient(135deg,${EMERALD} 0%,${CYAN} 60%,#a78bfa 100%)`,
                 boxShadow:`0 0 40px ${EMERALD}55, 0 4px 20px rgba(0,0,0,0.50)`,
@@ -761,21 +630,18 @@ export default function CheckoutPage() {
                 <span className="absolute inset-0"
                   style={{ background:'linear-gradient(105deg,transparent 30%,rgba(255,255,255,0.12) 50%,transparent 70%)' }} />
               </span>
-              {buyLoading && activePlan === 'proai_plus'
-                ? 'Redirecionando para pagamento…'
-                : 'Garantir Minha Vaga no ENEM →'}
+              Garantir Minha Vaga no ENEM →
             </button>
 
             {/* Micro trust */}
-            <p className="text-center text-xs mt-3 relative" style={{ color:`${EMERALD}80` }}>
-              🛡️ Garantia Incondicional de 7 Dias · Risco Zero
+            <p className="text-center text-sm font-black mt-4 relative" style={{ color: EMERALD, textShadow: `0 0 12px ${EMERALD}60` }}>
+              🛡️ Garantia Incondicional de 7 Dias • Risco Zero
             </p>
           </div>
         </div>
 
         {/* ── A MURALHA — Prova Social ── */}
         <EvidenceCarousel />
-        <StatusTicker />
 
         {/* ── Guarantee ── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">

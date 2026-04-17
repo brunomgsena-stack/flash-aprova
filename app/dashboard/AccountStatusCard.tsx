@@ -152,7 +152,7 @@ export default function AccountStatusCard() {
 
   if (!info) return null;
 
-  return info.plan === 'flash'
+  return info.plan === 'aceleracao'
     ? <UpgradeBanner />
     : <ActivePlanStrip info={info} />;
 }
