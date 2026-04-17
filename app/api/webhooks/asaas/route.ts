@@ -1,0 +1,333 @@
+/**
+ * POST /api/webhooks/asaas
+ *
+ * Recebe eventos do Asaas e ativa o plano correto para o comprador.
+ *
+ * Fluxo ao receber PAYMENT_RECEIVED / PAYMENT_CONFIRMED:
+ *  1. Valida o token no header `asaas-access-token` (timing-safe)
+ *  2. Extrai dados do pagamento (paymentLink, customer, externalReference)
+ *  3. Resolve qual plano corresponde ao paymentLink ou descrição
+ *  4. Obtém o e-mail do cliente (externalReference → Asaas API)
+ *  5. Se usuário JÁ existe → atualiza plano em user_stats + profiles
+ *  6. Se NÃO existe → cria conta via invite + define plano
+ *
+ * Variáveis de ambiente necessárias:
+ *   ASAAS_WEBHOOK_TOKEN   — token configurado no painel do Asaas
+ *   ASAAS_API_KEY         — chave de acesso à API Asaas (production ou sandbox)
+ *   ASAAS_API_URL         — (opcional) base URL da API; padrão: https://api.asaas.com/v3
+ *   NEXT_PUBLIC_SUPABASE_URL
+ *   SUPABASE_SERVICE_ROLE_KEY
+ *   NEXT_PUBLIC_URL
+ */
+
+import { NextRequest, NextResponse } from 'next/server';
+import { createClient }              from '@supabase/supabase-js';
+import { timingSafeEqual }           from 'crypto';
+
+export const runtime = 'nodejs';
+
+const PAID_EVENTS = new Set(['PAYMENT_RECEIVED', 'PAYMENT_CONFIRMED']);
+
+// ── Tipos de plano ────────────────────────────────────────────────────────────
+
+type PlanSlug = 'aceleracao' | 'panteao_elite';
+
+interface PlanInfo {
+  slug: PlanSlug;
+  name: string;
+}
+
+const PLANS: Record<PlanSlug, PlanInfo> = {
+  aceleracao:    { slug: 'aceleracao',    name: 'Aceleração'    },
+  panteao_elite: { slug: 'panteao_elite', name: 'Panteão Elite' },
+};
+
+// Mapeamento dos IDs dos payment links do Asaas → plano
+const PAYMENT_LINK_PLANS: Record<string, PlanSlug> = {
+  '49ydadcmmrrzmigg': 'aceleracao',
+  '7tv0nhdilq1frb4s': 'panteao_elite',
+};
+
+// ── Admin client — ignora RLS ─────────────────────────────────────────────────
+
+function makeAdminClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) throw new Error('Supabase env vars não configuradas.');
+  return createClient(url, key, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+}
+
+// ── Busca e-mail + nome do cliente na API do Asaas ───────────────────────────
+
+async function fetchAsaasCustomer(customerId: string): Promise<{ email: string; name: string } | null> {
+  const apiKey  = process.env.ASAAS_API_KEY;
+  const baseUrl = process.env.ASAAS_API_URL ?? 'https://api.asaas.com/v3';
+
+  if (!apiKey) {
+    console.error('[webhook/asaas] ASAAS_API_KEY não configurada — não foi possível buscar cliente.');
+    return null;
+  }
+
+  try {
+    const res = await fetch(`${baseUrl}/customers/${customerId}`, {
+      headers: { access_token: apiKey },
+    });
+
+    if (!res.ok) {
+      console.error(`[webhook/asaas] Asaas API retornou HTTP ${res.status} para customer ${customerId}`);
+      return null;
+    }
+
+    const data = (await res.json()) as { email?: string; name?: string };
+    const email = data.email?.trim().toLowerCase() ?? '';
+    const name  = data.name?.trim() ?? email.split('@')[0];
+
+    if (!email) {
+      console.error(`[webhook/asaas] E-mail vazio na resposta da Asaas API. customerId=${customerId}`);
+      return null;
+    }
+
+    return { email, name };
+  } catch (err) {
+    console.error('[webhook/asaas] Erro ao chamar Asaas API:', err instanceof Error ? err.message : String(err));
+    return null;
+  }
+}
+
+// ── Resolve o plano pelo paymentLink ou descrição ─────────────────────────────
+
+function resolvePlan(
+  paymentLinkId: string | null | undefined,
+  description:   string | null | undefined,
+): PlanInfo | null {
+  // 1. Pelo ID do payment link (mais confiável)
+  if (paymentLinkId) {
+    const slug = PAYMENT_LINK_PLANS[paymentLinkId];
+    if (slug) return PLANS[slug];
+  }
+
+  // 2. Pela descrição do pagamento como fallback
+  if (description) {
+    const d = description.toLowerCase();
+    if (d.includes('panteao') || d.includes('panteão') || d.includes('elite')) return PLANS.panteao_elite;
+    if (d.includes('aceleracao') || d.includes('aceleração'))                   return PLANS.aceleracao;
+  }
+
+  return null;
+}
+
+// ── Localiza user_id pelo e-mail ──────────────────────────────────────────────
+
+async function findUserIdByEmail(
+  adminClient: ReturnType<typeof makeAdminClient>,
+  email: string,
+): Promise<string | null> {
+  let page = 1;
+  const perPage = 1000;
+  while (true) {
+    const { data: { users }, error } = await adminClient.auth.admin.listUsers({ page, perPage });
+    if (error || !users.length) break;
+    const found = users.find(u => u.email?.toLowerCase() === email);
+    if (found) return found.id;
+    if (users.length < perPage) break;
+    page++;
+  }
+  return null;
+}
+
+// ── Grava o plano em user_stats + profiles ────────────────────────────────────
+
+async function grantPlan(
+  adminClient: ReturnType<typeof makeAdminClient>,
+  userId: string,
+  plan:   PlanInfo,
+): Promise<void> {
+  const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+
+  const { error: statsError } = await adminClient
+    .from('user_stats')
+    .upsert({ user_id: userId, plan: plan.slug, plan_expires_at: expiresAt }, { onConflict: 'user_id' });
+
+  if (statsError) {
+    console.error(`[webhook/asaas] Falha ao gravar user_stats. userId=${userId}`, statsError);
+    throw new Error(`Falha ao gravar user_stats: ${statsError.message}`);
+  }
+
+  const { error: profileError } = await adminClient
+    .from('profiles')
+    .upsert({ id: userId, plan: plan.slug, plan_name: plan.name }, { onConflict: 'id' });
+
+  if (profileError) {
+    console.error(`[webhook/asaas] Falha ao gravar profiles. userId=${userId}`, profileError);
+    throw new Error(`Falha ao gravar profiles: ${profileError.message}`);
+  }
+
+  console.log(`[webhook/asaas] Plano "${plan.slug}" gravado com sucesso. userId=${userId} expires=${expiresAt}`);
+}
+
+// ── Handler principal ─────────────────────────────────────────────────────────
+
+export async function POST(req: NextRequest) {
+
+  // 1. Valida token ─────────────────────────────────────────────────────────────
+  const token         = req.headers.get('asaas-access-token');
+  const expectedToken = process.env.ASAAS_WEBHOOK_TOKEN;
+
+  if (!expectedToken) {
+    console.error('[webhook/asaas] ASAAS_WEBHOOK_TOKEN não configurado.');
+    return NextResponse.json({ error: 'Configuração interna incompleta.' }, { status: 500 });
+  }
+
+  const tokenOk =
+    !!token &&
+    token.length === expectedToken.length &&
+    timingSafeEqual(Buffer.from(token), Buffer.from(expectedToken));
+
+  if (!tokenOk) {
+    console.error(
+      '[webhook/asaas] Token inválido.',
+      token ? `Recebido: ${token.slice(0, 4)}… (${token.length} chars)` : 'Header ausente.',
+    );
+    return NextResponse.json({ error: 'Não autorizado.' }, { status: 401 });
+  }
+
+  // 2. Parse do payload ──────────────────────────────────────────────────────────
+  let payload: Record<string, unknown>;
+  try {
+    payload = (await req.json()) as Record<string, unknown>;
+  } catch {
+    console.error('[webhook/asaas] Corpo da requisição não é JSON válido.');
+    return NextResponse.json({ error: 'Payload inválido.' }, { status: 400 });
+  }
+
+  const event = ((payload.event as string | undefined) ?? '').toUpperCase();
+  console.log(`[webhook/asaas] Evento recebido: ${event}`, JSON.stringify(payload));
+
+  // 3. Ignora eventos que não são pagamento confirmado ───────────────────────────
+  if (!PAID_EVENTS.has(event)) {
+    console.log(`[webhook/asaas] Evento "${event}" ignorado (não é pagamento confirmado).`);
+    return NextResponse.json({ received: true, action: 'ignored', event });
+  }
+
+  // 4. Extrai dados do pagamento ─────────────────────────────────────────────────
+  const payment       = (payload.payment as Record<string, unknown> | undefined) ?? {};
+  const paymentId     = (payment.id            as string | undefined) ?? null;
+  const customerId    = (payment.customer      as string | undefined) ?? null;
+  const paymentLinkId = (payment.paymentLink   as string | undefined) ?? null;
+  const description   = (payment.description   as string | undefined) ?? null;
+  const externalRef   = (payment.externalReference as string | undefined) ?? null;
+
+  console.log(
+    `[webhook/asaas] Dados extraídos: paymentId=${paymentId} customerId=${customerId}` +
+    ` paymentLink=${paymentLinkId} externalRef=${externalRef}`,
+  );
+
+  // 5. Resolve o plano ───────────────────────────────────────────────────────────
+  const plan = resolvePlan(paymentLinkId, description);
+  if (!plan) {
+    console.error(
+      `[webhook/asaas] Plano não identificado. paymentLink="${paymentLinkId}" description="${description}"` +
+      ` — adicione o ID ao mapa PAYMENT_LINK_PLANS ou verifique a descrição do pagamento.`,
+    );
+    return NextResponse.json({ received: true, action: 'unknown_plan' });
+  }
+
+  // 6. Obtém e-mail do cliente ───────────────────────────────────────────────────
+  let email = '';
+  let name  = '';
+
+  // Tenta externalReference primeiro (enviado via parâmetro ?email= na URL do Asaas)
+  if (externalRef && externalRef.includes('@')) {
+    email = externalRef.trim().toLowerCase();
+    name  = email.split('@')[0];
+    console.log(`[webhook/asaas] E-mail obtido via externalReference: ${email}`);
+  }
+
+  // Se não encontrou, busca na Asaas API usando o customerId
+  if (!email && customerId) {
+    console.log(`[webhook/asaas] Buscando cliente na Asaas API. customerId=${customerId}`);
+    const customer = await fetchAsaasCustomer(customerId);
+    if (customer) {
+      email = customer.email;
+      name  = customer.name;
+      console.log(`[webhook/asaas] E-mail obtido via Asaas API: ${email}`);
+    }
+  }
+
+  if (!email) {
+    console.error(
+      `[webhook/asaas] E-mail do cliente não encontrado.` +
+      ` customerId=${customerId} externalRef=${externalRef}` +
+      ` — verifique se o ?email= está sendo enviado na URL de checkout.`,
+    );
+    return NextResponse.json({ error: 'E-mail do comprador não encontrado.' }, { status: 400 });
+  }
+
+  console.log(`[webhook/asaas] Processando plano="${plan.slug}" para email="${email}"`);
+
+  // 7. Admin client ──────────────────────────────────────────────────────────────
+  let adminClient: ReturnType<typeof makeAdminClient>;
+  try {
+    adminClient = makeAdminClient();
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e);
+    console.error('[webhook/asaas]', msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
+  }
+
+  // 8. Idempotência ──────────────────────────────────────────────────────────────
+  if (paymentId) {
+    const eventKey = `asaas_${paymentId}`;
+    const { error: insertError } = await adminClient
+      .from('webhook_events')
+      .insert({ event_id: eventKey, payload });
+
+    if (insertError) {
+      if (insertError.code === '23505') {
+        console.log(`[webhook/asaas] Evento já processado anteriormente: ${eventKey}`);
+        return NextResponse.json({ received: true, action: 'already_processed' });
+      }
+      // Não-fatal: loga mas continua o processamento
+      console.error('[webhook/asaas] Erro ao registrar webhook_event (não-fatal):', insertError.message);
+    }
+  }
+
+  // 9. Atualiza ou cria o usuário ────────────────────────────────────────────────
+  try {
+    const existingId = await findUserIdByEmail(adminClient, email);
+
+    if (existingId) {
+      await grantPlan(adminClient, existingId, plan);
+      return NextResponse.json({ received: true, action: 'plan_updated', plan: plan.slug, userId: existingId });
+    }
+
+    // Usuário novo: cria conta via invite
+    const baseUrl = process.env.NEXT_PUBLIC_URL ?? 'https://flashaprova.app';
+    const { data: inviteData, error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(email, {
+      data:       { name, plan: plan.slug },
+      redirectTo: `${baseUrl}/dashboard`,
+    });
+
+    if (inviteError) {
+      // Race condition: usuário pode ter sido criado entre o find e o invite
+      console.error(`[webhook/asaas] inviteUserByEmail falhou: ${inviteError.message}. Tentando fallback…`);
+      const fallbackId = await findUserIdByEmail(adminClient, email);
+      if (fallbackId) {
+        await grantPlan(adminClient, fallbackId, plan);
+        return NextResponse.json({ received: true, action: 'plan_updated_fallback', plan: plan.slug, userId: fallbackId });
+      }
+      throw inviteError;
+    }
+
+    const newUserId = inviteData.user.id;
+    await grantPlan(adminClient, newUserId, plan);
+    return NextResponse.json({ received: true, action: 'user_created', plan: plan.slug, userId: newUserId });
+
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e);
+    console.error('[webhook/asaas] Erro ao processar plano:', msg);
+    return NextResponse.json({ error: `Falha ao processar plano: ${msg}` }, { status: 500 });
+  }
+}

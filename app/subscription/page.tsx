@@ -236,30 +236,46 @@ function ShieldIcon() {
   );
 }
 
-// ─── AbacatePay direct links ───────────────────────────────────────────────────
+// ─── Asaas direct links ───────────────────────────────────────────────────────
 
-const ABACATE_LINKS: Record<string, string> = {
+const ASAAS_LINKS: Record<string, string> = {
   aceleracao:    'https://www.asaas.com/c/49ydadcmmrrzmigg',
   panteao_elite: 'https://www.asaas.com/c/7tv0nhdilq1frb4s',
 };
 
-function goToCheckout(planId: string) {
+function goToCheckout(planId: string, userEmail?: string, userName?: string) {
   try {
-    const raw = localStorage.getItem('flashAprovaOnboarding');
-    const parsed = raw ? JSON.parse(raw) as { name?: string; email?: string } : {};
+    // Prioridade: dados do usuário autenticado → localStorage → sem pré-preenchimento
+    const raw    = localStorage.getItem('flashAprovaOnboarding');
+    const cached = raw ? JSON.parse(raw) as { name?: string; email?: string } : {};
+
+    const email = userEmail || cached.email || '';
+    const name  = userName  || cached.name  || '';
+
     const params = new URLSearchParams();
-    if (parsed.email) params.set('email', parsed.email);
-    if (parsed.name)  params.set('name',  parsed.name);
+    if (email) params.set('email', email);
+    if (name)  params.set('name',  name);
+
     const query = params.toString();
-    window.location.href = query ? `${ABACATE_LINKS[planId]}?${query}` : ABACATE_LINKS[planId];
+    window.location.href = query ? `${ASAAS_LINKS[planId]}?${query}` : ASAAS_LINKS[planId];
   } catch {
-    window.location.href = ABACATE_LINKS[planId];
+    window.location.href = ASAAS_LINKS[planId];
   }
 }
 
 // ─── Sales page (non-subscribers) ─────────────────────────────────────────────
 
-function SalesPage({ userPlan, currentPlan }: { userPlan: PlanInfo | null; currentPlan: Plan }) {
+function SalesPage({
+  userPlan,
+  currentPlan,
+  userEmail,
+  userName,
+}: {
+  userPlan:    PlanInfo | null;
+  currentPlan: Plan;
+  userEmail?:  string;
+  userName?:   string;
+}) {
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -347,7 +363,7 @@ function SalesPage({ userPlan, currentPlan }: { userPlan: PlanInfo | null; curre
             </div>
           ) : (
             <button
-              onClick={() => goToCheckout('aceleracao')}
+              onClick={() => goToCheckout('aceleracao', userEmail, userName)}
               className="w-full py-3 rounded-xl text-sm font-bold text-white transition-all duration-200 hover:opacity-80"
               style={{ background: 'rgba(124,58,237,0.25)', border: '1px solid rgba(124,58,237,0.40)' }}
             >
@@ -442,7 +458,7 @@ function SalesPage({ userPlan, currentPlan }: { userPlan: PlanInfo | null; curre
           </div>
 
           <button
-            onClick={() => goToCheckout('panteao_elite')}
+            onClick={() => goToCheckout('panteao_elite', userEmail, userName)}
             className="relative w-full py-4 rounded-xl font-black text-white text-base transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.99]"
             style={{
               background: 'linear-gradient(135deg, #7C3AED 0%, #06b6d4 60%, #ec4899 100%)',
@@ -525,18 +541,29 @@ function SalesPage({ userPlan, currentPlan }: { userPlan: PlanInfo | null; curre
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function SubscriptionPage() {
-  const [userPlan, setUserPlan] = useState<PlanInfo | null>(null);
+  const [userPlan,  setUserPlan]  = useState<PlanInfo | null>(null);
+  const [userEmail, setUserEmail] = useState<string | undefined>(undefined);
+  const [userName,  setUserName]  = useState<string | undefined>(undefined);
 
   useEffect(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
+
+      // Armazena email e nome para pré-preencher o checkout do Asaas
+      setUserEmail(user.email ?? undefined);
+      setUserName(
+        (user.user_metadata?.name as string | undefined) ||
+        (user.user_metadata?.full_name as string | undefined) ||
+        undefined,
+      );
+
       setUserPlan(await fetchUserPlan(user.id));
     }
     load();
   }, []);
 
-  const currentPlan = userPlan?.plan ?? 'aceleracao';
+  const currentPlan  = userPlan?.plan ?? 'aceleracao';
   const isSubscriber = currentPlan === 'panteao_elite';
 
   return (
@@ -547,7 +574,12 @@ export default function SubscriptionPage() {
       {isSubscriber && userPlan ? (
         <SubscriberPanel info={userPlan} />
       ) : (
-        <SalesPage userPlan={userPlan} currentPlan={currentPlan} />
+        <SalesPage
+          userPlan={userPlan}
+          currentPlan={currentPlan}
+          userEmail={userEmail}
+          userName={userName}
+        />
       )}
     </main>
   );
