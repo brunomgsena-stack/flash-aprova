@@ -56,11 +56,20 @@ const EVOLUTION = [580, 620, 640, 700, 720, 740, 780, 960];
 const ESSAY_TEXT =
   'O analfabetismo funcional no Brasil configura uma ferida estrutural que, ao privar milhões de cidadãos da leitura crítica do mundo, perpetua ciclos de exclusão social e econômica. Segundo o Indicador de Alfabetismo Funcional (INAF), cerca de 29% dos brasileiros adultos não conseguem interpretar textos além do nível mais elementar — cifra que expõe a fragilidade de décadas de política educacional.\n\nDo ponto de vista histórico, a pedagogia de Paulo Freire demonstrou que a leitura da palavra é inseparável da leitura do mundo. Quando o sistema escolar reduz o letramento a decodificação mecânica, reproduz a lógica que o sociólogo Florestan Fernandes chamou de "modernização conservadora": moderniza-se a economia sem redistribuir o capital cultural, mantendo as camadas populares à margem do poder simbólico e político.\n\nSob a ótica econômica, o analfabetismo funcional impacta diretamente a produtividade nacional. Pesquisas do Banco Mundial estimam que cada ano adicional de escolaridade efetiva eleva o PIB per capita em até 10%, evidenciando que o letramento pleno não é apenas direito individual, mas alavanca do desenvolvimento coletivo.\n\nDiante do exposto, é imperativo que o Estado brasileiro enfrente o problema em suas múltiplas dimensões. Urge que o Ministério da Educação, em parceria com municípios, implemente programas de letramento continuado para jovens e adultos, com material contextualizado à realidade local e avaliação diagnóstica semestral, a fim de garantir progressão real de habilidades. Paralelamente, plataformas digitais de acesso público — a exemplo da TV Escola expandida — devem ser fortalecidas para alcançar populações rurais e periféricas, assegurando que o direito à leitura crítica transcenda fronteiras geográficas e socioeconômicas.';
 
-const SCAN_ERRORS = [
-  { id: 'WRN_001', topPct: 28, side: 'right' as const, code: 'C2 · REP-007', label: 'Dado sem precisão da fonte', detail: 'INAF citado sem edição/ano explícito', severity: 'WARNING',  color: ORANGE },
-  { id: 'OK_002',  topPct: 52, side: 'left'  as const, code: 'C3 · EST-001', label: 'Estrutura dissertativa ✓',   detail: 'Intro · 3 Des. · Conclusão OK',      severity: 'OK',       color: EMERALD },
-  { id: 'OK_003',  topPct: 76, side: 'right' as const, code: 'C5 · INT-001', label: 'Intervenção completa',        detail: 'Agente · Ação · Finalidade ✓',       severity: 'OK',       color: EMERALD },
-] as const;
+const SCAN_ERRORS: Array<{
+  id: string;
+  topPct: number;
+  side: 'left' | 'right';
+  code: string;
+  label: string;
+  detail: string;
+  severity: 'WARNING' | 'OK' | 'CRITICAL';
+  color: string;
+}> = [
+  { id: 'WRN_001', topPct: 28, side: 'right', code: 'C2 · REP-007', label: 'Dado sem precisão da fonte', detail: 'INAF citado sem edição/ano explícito', severity: 'WARNING',  color: ORANGE },
+  { id: 'OK_002',  topPct: 52, side: 'left',  code: 'C3 · EST-001', label: 'Estrutura dissertativa ✓',   detail: 'Intro · 3 Des. · Conclusão OK',      severity: 'OK',       color: EMERALD },
+  { id: 'OK_003',  topPct: 76, side: 'right', code: 'C5 · INT-001', label: 'Intervenção completa',        detail: 'Agente · Ação · Finalidade ✓',       severity: 'OK',       color: EMERALD },
+];
 
 const PROCESS_LOG = [
   { text: '> init motor TRI v4.2...',              color: 'dim'    },
