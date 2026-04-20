@@ -1,502 +1,382 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { motion, useInView } from 'framer-motion';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  motion, useInView, useMotionValue, useSpring, useTransform,
+} from 'framer-motion';
 
-// ─── Design tokens ──────────────────────────────────────────────────────────
-const NEON    = '#00FF73';
-const EMERALD = '#10b981';
-const CYAN    = '#06b6d4';
-const VIOLET  = '#7C3AED';
-const SILVER  = '#cbd5e1';
+// ── Design tokens ──────────────────────────────────────────────────────────────
+const NEON   = '#00FF73';
+const CYAN   = '#06b6d4';
+const VIOLET = '#7C3AED';
+const MONO   = "'JetBrains Mono', ui-monospace, monospace";
 
-// ─── Radar config ────────────────────────────────────────────────────────────
-const CX = 100, CY = 100, R_MAX = 72;
-const toRad = (d: number) => (d * Math.PI) / 180;
-const polarPt = (r: number, deg: number) => ({
-  x: CX + r * Math.cos(toRad(deg)),
-  y: CY + r * Math.sin(toRad(deg)),
-});
-const AXES = [
-  { label: 'LING', deg: -90, v: 0.72 },
-  { label: 'MAT',  deg: -18, v: 0.58 },
-  { label: 'CN',   deg:  54, v: 0.65 },
-  { label: 'CH',   deg: 126, v: 0.85 },
-  { label: 'RED',  deg: 198, v: 0.90 },
-];
-const toPoly  = (pts: { x: number; y: number }[]) =>
-  pts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
-const dataPts  = AXES.map(a => polarPt(a.v * R_MAX, a.deg));
-const ringPts  = (r: number) => AXES.map(a => polarPt(r, a.deg));
-const axisEnds = AXES.map(a => polarPt(R_MAX, a.deg));
-const labelPts = AXES.map(a => polarPt(R_MAX + 14, a.deg));
-
-// ─── Bar data ────────────────────────────────────────────────────────────────
-const BARS = [
-  { day: 'S', v: 0.65 },
-  { day: 'T', v: 0.82 },
-  { day: 'Q', v: 0.48 },
-  { day: 'Q', v: 0.91 },
-  { day: 'S', v: 0.73 },
-  { day: 'S', v: 0.58 },
-  { day: 'D', v: 0.78 },
-];
-const MAX_BAR_H = 68;
-
-// ─── Metrics ─────────────────────────────────────────────────────────────────
-const METRICS = [
-  { label: 'Cards',   sub: 'estudados', value: 2847, suffix: '',  icon: '🃏', color: SILVER,  borderT: `${SILVER}45`  },
-  { label: 'Domínio', sub: 'TRI',       value: 73,   suffix: '%', icon: '🧠', color: EMERALD, borderT: `${EMERALD}60` },
-  { label: 'Top',     sub: 'vagas',     value: 12,   suffix: '%', icon: '🏆', color: VIOLET,  borderT: `${VIOLET}60`  },
-];
-
-// ─── Right-panel blocks ───────────────────────────────────────────────────────
-type Bullet = { icon: string; bold: string; rest: string };
-type Block  = { icon: string; tag: string; color: string; widget: string | null; bullets: Bullet[] };
-
-const BLOCKS: Block[] = [
-  {
-    icon: '⚡', tag: 'SÍNTESE DE DOMÍNIO', color: NEON, widget: 'radar',
-    bullets: [
-      { icon: '🎯', bold: 'Foco no Erro',  rest: 'Identificamos exatamente onde a TRI te penaliza.' },
-      { icon: '🧠', bold: 'Mapeamento',    rest: 'O sistema prioriza a correção de lacunas fatais.' },
-      { icon: '🛡️', bold: 'Blindagem',     rest: 'Estudo focado em coerência pedagógica.' },
-    ],
-  },
-  {
-    icon: '🔄', tag: 'CALIBRAGEM RECURSIVA', color: CYAN, widget: 'bars',
-    bullets: [
-      { icon: '📈', bold: 'Frequência Inteligente', rest: 'Algoritmo ajustado à sua memória.'                      },
-      { icon: '⏱️', bold: 'Timing Perfeito',        rest: 'Cards revisados no momento exato do esquecimento.'      },
-      { icon: '🚀', bold: 'Zero Sobrecarga',         rest: 'Só o que você precisa para evoluir hoje.'              },
-    ],
-  },
-  {
-    icon: '📈', tag: 'PREVISÃO DE MATURIDADE', color: VIOLET, widget: 'metrics',
-    bullets: [
-      { icon: '🧬', bold: 'Previsão Matemática', rest: 'Saiba quando estará pronto para Medicina.'                  },
-      { icon: '🏆', bold: 'Posicionamento',      rest: 'Gráficos de evolução comparativos de elite.'               },
-      { icon: '💎', bold: 'Rumo ao Topo',         rest: 'Acompanhe sua subida para o 1% dos candidatos.'           },
-    ],
-  },
-  {
-    icon: '🎯', tag: 'SISTEMA PRONTO', color: NEON, widget: null,
-    bullets: [
-      { icon: '⚡', bold: 'Setup Flash', rest: 'Seu painel personalizado em menos de 60 segundos.' },
-    ],
-  },
-];
-
-// ─── Particles ───────────────────────────────────────────────────────────────
-const PARTICLES: { x: string[]; y: string[]; c: string; d: number; delay: number }[] = [
-  { x: ['7%',  '50%', '7%'],  y: ['18%', '58%', '18%'], c: NEON,    d: 3.8, delay: 0.0 },
-  { x: ['68%', '15%', '68%'], y: ['12%', '68%', '12%'], c: CYAN,    d: 3.2, delay: 1.1 },
-  { x: ['84%', '36%', '84%'], y: ['74%', '22%', '74%'], c: VIOLET,  d: 4.5, delay: 0.5 },
-  { x: ['25%', '80%', '25%'], y: ['82%', '14%', '82%'], c: EMERALD, d: 2.9, delay: 2.0 },
-  { x: ['72%', '10%', '72%'], y: ['44%', '82%', '44%'], c: CYAN,    d: 3.6, delay: 1.7 },
-  { x: ['42%', '88%', '42%'], y: ['90%', '35%', '90%'], c: VIOLET,  d: 4.1, delay: 0.9 },
-];
-
-// ─── Status pill ─────────────────────────────────────────────────────────────
-function StatusPill({ label, color, delay = 0 }: { label: string; color: string; delay?: number }) {
-  return (
-    <div className="flex items-center gap-1.5">
-      <motion.span
-        className="w-1.5 h-1.5 rounded-full shrink-0"
-        style={{ background: color }}
-        animate={{ opacity: [1, 0.15, 1] }}
-        transition={{ duration: 1.3, repeat: Infinity, ease: 'easeInOut', delay }}
-      />
-      <span
-        className="text-[9px] tracking-widest uppercase hidden sm:inline"
-        style={{ fontFamily: 'ui-monospace, monospace', color, opacity: 0.65 }}
-      >
-        {label}
-      </span>
-    </div>
-  );
-}
-
-// ─── CountUp ─────────────────────────────────────────────────────────────────
-function CountUp({ to, suffix = '', duration = 1500 }: { to: number; suffix?: string; duration?: number }) {
-  const ref  = useRef<HTMLSpanElement>(null);
-  const seen = useInView(ref, { once: true });
-  const [val, setVal] = useState(0);
+// ── Particle stream — purple light data flow ───────────────────────────────────
+function ParticleStream() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const raf       = useRef(0);
 
   useEffect(() => {
-    if (!seen) return;
-    const start = performance.now();
-    const tick  = (now: number) => {
-      const p = Math.min((now - start) / duration, 1);
-      setVal(Math.round((1 - (1 - p) ** 3) * to));
-      if (p < 1) requestAnimationFrame(tick);
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const setup = () => {
+      canvas.width  = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
     };
-    requestAnimationFrame(tick);
-  }, [seen, to, duration]);
 
-  return <span ref={ref}>{val.toLocaleString('pt-BR')}{suffix}</span>;
+    type P = { x: number; y: number; vx: number; vy: number; life: number; max: number; r: number; c: string };
+    const pool: P[] = [];
+    const COLS = [VIOLET, '#9333ea', '#a855f7', CYAN, '#6d28d9'];
+
+    const spawn = () => {
+      const W = canvas.width, H = canvas.height;
+      if (!W || !H) return;
+      pool.push({
+        x: Math.random() * W * 0.5,
+        y: H * (0.4 + Math.random() * 0.6),
+        vx: 0.5 + Math.random() * 0.7,
+        vy: -(0.15 + Math.random() * 0.45),
+        life: 0,
+        max: 110 + Math.random() * 90,
+        r: Math.random() * 1.4 + 0.6,
+        c: COLS[Math.floor(Math.random() * COLS.length)],
+      });
+    };
+
+    let frame = 0;
+    const tick = () => {
+      const W = canvas.width, H = canvas.height;
+      if (!W || !H) { raf.current = requestAnimationFrame(tick); return; }
+
+      ctx.clearRect(0, 0, W, H);
+      if (frame % 3 === 0 && pool.length < 70) spawn();
+      frame++;
+
+      for (let i = pool.length - 1; i >= 0; i--) {
+        const p = pool[i];
+        p.x += p.vx; p.y += p.vy; p.life++;
+        if (p.life > p.max || p.x > W + 20 || p.y < -20) { pool.splice(i, 1); continue; }
+
+        const t = p.life / p.max;
+        const a = t < 0.2 ? t / 0.2 : t > 0.75 ? (1 - t) / 0.25 : 1;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle   = p.c;
+        ctx.globalAlpha = a * 0.45;
+        ctx.shadowColor = p.c;
+        ctx.shadowBlur  = 10;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        ctx.shadowBlur  = 0;
+      }
+
+      raf.current = requestAnimationFrame(tick);
+    };
+
+    let started = false;
+    const ro = new ResizeObserver(() => {
+      setup();
+      if (!started) { started = true; tick(); }
+    });
+    ro.observe(canvas);
+
+    return () => { cancelAnimationFrame(raf.current); ro.disconnect(); };
+  }, []);
+
+  return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full block" />;
 }
 
-// ─── Radar chart ─────────────────────────────────────────────────────────────
-function RadarChart({ inView, glowing }: { inView: boolean; glowing: boolean }) {
+// ── Flickering live metric ────────────────────────────────────────────────────
+function LiveMetric({ label, value, color }: { label: string; value: string; color: string }) {
   return (
-    <svg viewBox="0 0 200 200" className="w-full h-full" style={{ overflow: 'visible' }}>
-      {[0.25, 0.5, 0.75, 1.0].map((r, i) => (
-        <polygon key={i} points={toPoly(ringPts(r * R_MAX))}
-          fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="0.8" />
-      ))}
-      {axisEnds.map((end, i) => (
-        <line key={i} x1={CX} y1={CY} x2={end.x} y2={end.y}
-          stroke="rgba(255,255,255,0.07)" strokeWidth="0.8" />
-      ))}
-
-      {/* Data polygon */}
-      <motion.polygon
-        points={toPoly(dataPts)}
-        fill={glowing ? `${EMERALD}30` : `${EMERALD}18`}
-        stroke={EMERALD}
-        strokeWidth={glowing ? 2 : 1.5}
-        strokeLinejoin="round"
-        initial={{ opacity: 0, scale: 0 }}
-        animate={inView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0 }}
-        transition={{ duration: 0.9, ease: 'easeOut', delay: 0.3 }}
-        style={{ transformOrigin: `${CX}px ${CY}px`, transition: 'fill 0.35s, stroke-width 0.35s' }}
-      />
-
-      {/* Pulse overlay */}
-      <motion.polygon
-        points={toPoly(dataPts)} fill="none"
-        stroke={`${NEON}90`} strokeWidth="0.8"
-        animate={{ opacity: glowing ? [0.7, 0.1, 0.7] : [0.45, 0, 0.45] }}
-        transition={{ duration: glowing ? 1.2 : 2.8, repeat: Infinity, ease: 'easeInOut', delay: 1.4 }}
-      />
-
-      {/* Data-point dots */}
-      {dataPts.map((p, i) => (
-        <motion.circle key={i} cx={p.x} cy={p.y} r={3} fill={EMERALD}
-          initial={{ r: 0, opacity: 0 }}
-          animate={inView ? { r: glowing ? 4 : 3, opacity: 1 } : { r: 0, opacity: 0 }}
-          transition={{ delay: 0.55 + i * 0.1, duration: 0.4, ease: 'easeOut' }}
-          style={{ filter: `drop-shadow(0 0 ${glowing ? 8 : 4}px ${EMERALD})` }}
-        />
-      ))}
-
-      {/* Axis labels */}
-      {AXES.map((axis, i) => (
-        <text key={i} x={labelPts[i].x} y={labelPts[i].y}
-          textAnchor="middle" dominantBaseline="middle"
-          fontSize="8" fill="rgba(255,255,255,0.35)"
-          fontFamily="ui-monospace, monospace">
-          {axis.label}
-        </text>
-      ))}
-
-      {/* Center pulse */}
-      <motion.circle cx={CX} cy={CY} r={3} fill={NEON}
-        animate={{ r: [3, 5, 3], opacity: [1, 0.3, 1] }}
-        transition={{ duration: 2.0, repeat: Infinity, ease: 'easeInOut' }}
-        style={{ filter: `drop-shadow(0 0 8px ${NEON})` }}
-      />
-    </svg>
+    <motion.div
+      key={value}
+      className="text-right"
+      initial={{ opacity: 0.3 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4 }}
+    >
+      <span className="text-[10px]" style={{ fontFamily: MONO, color: 'rgba(255,255,255,0.22)' }}>
+        {label}
+      </span>
+      <span className="text-[10px]" style={{ fontFamily: MONO, color: 'rgba(255,255,255,0.22)' }}>
+        {': '}
+      </span>
+      <span className="text-[10px] font-semibold tabular-nums" style={{ fontFamily: MONO, color }}>
+        {value}
+      </span>
+    </motion.div>
   );
 }
 
-// ─── Bar chart ────────────────────────────────────────────────────────────────
-function BarChart({ inView, glowing }: { inView: boolean; glowing: boolean }) {
-  return (
-    <div className="flex gap-1.5" style={{ height: 88 }}>
-      {BARS.map((bar, i) => (
-        <div key={i} className="flex-1 flex flex-col items-center gap-0.5">
-          <div className="flex-1 w-full flex items-end">
-            <motion.div
-              className="w-full rounded-sm"
-              style={{
-                background: `linear-gradient(to top, ${CYAN}${glowing ? 'ee' : 'cc'}, #3b82f6${glowing ? '40' : '22'})`,
-                boxShadow:  `0 0 ${glowing ? 12 : 6}px ${CYAN}${glowing ? '60' : '35'}`,
-                transition: 'box-shadow 0.35s, background 0.35s',
-              }}
-              initial={{ height: 0 }}
-              animate={{ height: inView ? bar.v * MAX_BAR_H : 0 }}
-              transition={{ duration: 0.7, delay: 0.45 + i * 0.07, ease: [0.34, 1.56, 0.64, 1] }}
-            />
-          </div>
-          <span className="text-[9px] shrink-0"
-            style={{ fontFamily: 'ui-monospace, monospace', color: 'rgba(255,255,255,0.25)' }}>
-            {bar.day}
-          </span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// ─── Main export ──────────────────────────────────────────────────────────────
+// ── Main export ───────────────────────────────────────────────────────────────
 export default function TacticalOperations() {
-  const sectionRef   = useRef<HTMLDivElement>(null);
-  const inView       = useInView(sectionRef, { once: true, margin: '-80px' });
-  const [activeWidget, setActiveWidget] = useState<string | null>(null);
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const inView     = useInView(sectionRef, { once: true, margin: '-100px' });
 
-  const radarGlow   = activeWidget === 'radar';
-  const barsGlow    = activeWidget === 'bars';
-  const metricsGlow = activeWidget === 'metrics';
+  // 3D tilt
+  const mx = useMotionValue(0);
+  const my = useMotionValue(0);
+  const rotateX = useSpring(useTransform(my, [-200, 200], [3.5, -3.5]), { stiffness: 100, damping: 28 });
+  const rotateY = useSpring(useTransform(mx, [-400, 400], [-3.5, 3.5]), { stiffness: 100, damping: 28 });
+
+  // Spotlight
+  const [spot, setSpot] = useState({ x: 0, y: 0, on: false });
+
+  const onPanelMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    mx.set(x - rect.width  / 2);
+    my.set(y - rect.height / 2);
+    setSpot({ x, y, on: true });
+  }, [mx, my]);
+
+  const onPanelLeave = useCallback(() => {
+    mx.set(0); my.set(0);
+    setSpot(s => ({ ...s, on: false }));
+  }, [mx, my]);
+
+  // Live metrics
+  const [m, setM] = useState({
+    retention: '97.4%',
+    latency:   '0.021ms',
+    sync:      '99.1%',
+  });
+
+  useEffect(() => {
+    const iv = setInterval(() => {
+      setM({
+        retention: `${(97 + Math.random() * 0.9).toFixed(1)}%`,
+        latency:   `${(0.017 + Math.random() * 0.009).toFixed(3)}ms`,
+        sync:      `${(98.7 + Math.random() * 0.6).toFixed(1)}%`,
+      });
+    }, 2400);
+    return () => clearInterval(iv);
+  }, []);
+
+  const FUNCS = [
+    { name: 'INTERCEPTAÇÃO NEURAL', dot: NEON,   label: 'Retention_Rate', val: m.retention, color: `${NEON}cc` },
+    { name: 'FILTRO TRI 80/20',     dot: CYAN,   label: 'Latency',        val: m.latency,   color: `${CYAN}cc` },
+    { name: 'APROVAÇÃO PREVISÍVEL', dot: VIOLET, label: 'Neural_Sync',    val: m.sync,      color: `${VIOLET}ee` },
+  ];
 
   return (
-    <section ref={sectionRef} className="max-w-7xl mx-auto px-5 sm:px-10 pb-28 pt-4">
-
-      {/* ── Header ──────────────────────────────────────────────────────────── */}
-      <div className="text-center mb-14">
-        <p className="text-xs font-bold tracking-widest uppercase mb-3"
-          style={{ color: EMERALD, fontFamily: 'ui-monospace, monospace' }}>
-          &gt; O Painel
-        </p>
-        <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">
-          A Central de Operações{' '}
-          <span style={{
-            background: `linear-gradient(90deg, ${EMERALD}, ${NEON})`,
-            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-          }}>
-            da Sua Aprovação.
-          </span>
-        </h2>
-        <p className="text-slate-500 text-base max-w-2xl mx-auto">
-          Enquanto outros apps te dão estatísticas mortas, o{' '}
-          <span className="text-slate-300 font-medium">Panteão de Elite</span>
-          {' '}executa um Comando Tático de Dados em tempo real, calibrado pela TRI.
-        </p>
+    <section
+      ref={sectionRef}
+      className="relative max-w-7xl mx-auto px-5 sm:px-10 pb-32 pt-4 overflow-hidden"
+    >
+      {/* Ambient blobs */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
+        <div style={{ position: 'absolute', top: '0%', left: '15%', width: 700, height: 700, borderRadius: '50%', background: `radial-gradient(circle, ${VIOLET}06 0%, transparent 65%)` }} />
+        <div style={{ position: 'absolute', bottom: '0%', right: '10%', width: 500, height: 500, borderRadius: '50%', background: `radial-gradient(circle, ${CYAN}05 0%, transparent 65%)` }} />
       </div>
 
-      {/* ── Main grid ───────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8 items-start">
+      {/* ── Header ────────────────────────────────────────────────────────── */}
+      <motion.div
+        className="mb-20 relative"
+        style={{ zIndex: 1 }}
+        initial={{ opacity: 0, y: 32 }}
+        animate={inView ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+      >
+        {/* Label pill */}
+        <div className="flex items-center gap-2.5 mb-10">
+          <motion.span
+            className="w-1.5 h-1.5 rounded-full"
+            style={{ background: CYAN, boxShadow: `0 0 6px ${CYAN}` }}
+            animate={{ opacity: [1, 0.15, 1] }}
+            transition={{ duration: 1.1, repeat: Infinity }}
+          />
+          <span
+            className="text-[10px] font-bold tracking-[0.28em] uppercase"
+            style={{ color: CYAN, fontFamily: MONO }}
+          >
+            ⚡ ALGORITMO DE BLINDAGEM
+          </span>
+        </div>
 
-        {/* ── Dashboard console ─────────────────────────────────────────────── */}
-        <motion.div
-          className="lg:col-span-3 rounded-2xl relative overflow-hidden"
-          style={{
-            background:           'rgba(255,255,255,0.025)',
-            backdropFilter:       'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-            border:               '1px solid rgba(255,255,255,0.08)',
-            boxShadow:            `0 0 60px rgba(16,185,129,0.07), 0 0 120px rgba(16,185,129,0.03)`,
-          }}
-          initial={{ opacity: 0, y: 28 }}
-          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 28 }}
-          transition={{ duration: 0.7, ease: 'easeOut' }}
+        {/* Massive headline */}
+        <h2 className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tighter leading-[0.9] mb-7 text-white">
+          Sua memória no<br />
+          <span style={{
+            background: `linear-gradient(125deg, ${NEON} 0%, ${CYAN} 45%, ${VIOLET} 100%)`,
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+          }}>
+            piloto automático.
+          </span>
+        </h2>
+
+        {/* Single-line subtext */}
+        <p
+          className="text-[11px] tracking-[0.18em] uppercase"
+          style={{ fontFamily: MONO, color: 'rgba(255,255,255,0.28)' }}
         >
-          {/* Top shimmer */}
-          <div className="absolute inset-x-0 top-0 h-px pointer-events-none"
-            style={{ background: `linear-gradient(90deg, transparent, ${EMERALD}55, transparent)` }} />
+          Enquanto você descansa — o sistema processa, prioriza e blinda.
+        </p>
+      </motion.div>
 
-          {/* Scan line */}
-          <motion.div
-            className="absolute inset-x-0 h-px pointer-events-none z-10"
-            style={{ background: `linear-gradient(90deg, transparent, ${NEON}28, transparent)` }}
-            animate={{ top: ['0%', '100%', '0%'] }}
-            transition={{ duration: 7, repeat: Infinity, ease: 'linear', repeatDelay: 1.5 }}
+      {/* ── 3D Processing Unit Panel ─────────────────────────────────────── */}
+      <motion.div
+        style={{ perspective: 1400, zIndex: 1, position: 'relative' }}
+        initial={{ opacity: 0, y: 40 }}
+        animate={inView ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.9, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <motion.div
+          className="relative rounded-3xl overflow-hidden"
+          style={{
+            rotateX,
+            rotateY,
+            transformStyle: 'preserve-3d',
+            background: 'linear-gradient(160deg, rgba(8,6,22,0.97) 0%, rgba(4,4,14,0.99) 55%, rgba(8,5,20,0.97) 100%)',
+            backdropFilter: 'blur(40px)',
+            WebkitBackdropFilter: 'blur(40px)',
+            border: '0.5px solid rgba(255,255,255,0.09)',
+            boxShadow: `
+              inset 0 0.5px 0 rgba(255,255,255,0.07),
+              inset 0 -0.5px 0 rgba(255,255,255,0.03),
+              0 50px 140px rgba(0,0,0,0.7),
+              0 0 100px ${VIOLET}0a
+            `,
+          }}
+          onMouseMove={onPanelMove}
+          onMouseLeave={onPanelLeave}
+        >
+          {/* Grain noise */}
+          <div className="absolute inset-0 pointer-events-none" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23n)'/%3E%3C/svg%3E")`,
+            opacity: 0.03,
+            zIndex: 1,
+            mixBlendMode: 'overlay',
+          }} />
+
+          {/* Spotlight — illuminates border nearest to cursor */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: spot.on
+                ? `radial-gradient(480px circle at ${spot.x}px ${spot.y}px, rgba(124,58,237,0.07), transparent 55%)`
+                : 'none',
+              zIndex: 2,
+              transition: 'background 0.08s',
+            }}
           />
 
-          {/* Corner accents */}
-          <div className="absolute top-0 left-0 w-5 h-5 pointer-events-none">
-            <div className="absolute top-0 left-0 w-full h-px" style={{ background: NEON, opacity: 0.4 }} />
-            <div className="absolute top-0 left-0 w-px h-full" style={{ background: NEON, opacity: 0.4 }} />
+          {/* Hairline top shimmer */}
+          <div className="absolute inset-x-0 top-0 h-px pointer-events-none" style={{
+            background: `linear-gradient(90deg, transparent 0%, ${VIOLET}55 25%, ${CYAN}45 65%, transparent 100%)`,
+            zIndex: 3,
+          }} />
+
+          {/* Particle stream */}
+          <div className="absolute inset-0" style={{ zIndex: 0 }}>
+            <ParticleStream />
           </div>
-          <div className="absolute bottom-0 right-0 w-5 h-5 pointer-events-none">
-            <div className="absolute bottom-0 right-0 w-full h-px" style={{ background: EMERALD, opacity: 0.4 }} />
-            <div className="absolute bottom-0 right-0 w-px h-full" style={{ background: EMERALD, opacity: 0.4 }} />
-          </div>
 
-          {/* Floating particles */}
-          {PARTICLES.map((p, i) => (
-            <motion.div key={i}
-              className="absolute w-1 h-1 rounded-full pointer-events-none z-20"
-              style={{ background: p.c, boxShadow: `0 0 5px ${p.c}` }}
-              animate={{ left: p.x, top: p.y, opacity: [0, 0.65, 0] }}
-              transition={{ duration: p.d, delay: p.delay, repeat: Infinity, ease: 'easeInOut' }}
-            />
-          ))}
+          {/* Corner brackets */}
+          <div className="absolute top-5 left-5 w-7 h-7 pointer-events-none" style={{ zIndex: 4, borderTop: `0.5px solid ${CYAN}80`, borderLeft: `0.5px solid ${CYAN}80` }} />
+          <div className="absolute top-5 right-5 w-7 h-7 pointer-events-none" style={{ zIndex: 4, borderTop: `0.5px solid ${VIOLET}65`, borderRight: `0.5px solid ${VIOLET}65` }} />
+          <div className="absolute bottom-5 left-5 w-7 h-7 pointer-events-none" style={{ zIndex: 4, borderBottom: `0.5px solid ${VIOLET}55`, borderLeft: `0.5px solid ${VIOLET}55` }} />
+          <div className="absolute bottom-5 right-5 w-7 h-7 pointer-events-none" style={{ zIndex: 4, borderBottom: `0.5px solid ${CYAN}45`, borderRight: `0.5px solid ${CYAN}45` }} />
 
-          <div className="p-5 sm:p-6 relative z-0">
+          {/* Content */}
+          <div className="relative px-8 sm:px-14 lg:px-20 py-14 sm:py-20" style={{ zIndex: 5 }}>
 
-            {/* Status bar */}
-            <div className="flex items-center gap-4 mb-5 pb-4"
-              style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-              <StatusPill label="SISTEMA ATIVO"  color={NEON}    delay={0}   />
-              <StatusPill label="TRI CALIBRANDO" color={EMERALD} delay={0.4} />
-              <StatusPill label="SINCRONIZANDO"  color={CYAN}    delay={0.8} />
-              <div className="ml-auto">
-                <span className="text-[9px] tabular-nums"
-                  style={{ fontFamily: 'ui-monospace, monospace', color: 'rgba(255,255,255,0.18)' }}>
-                  v2.4.1 · LIVE
+            {/* System status top bar */}
+            <div className="flex items-center justify-between mb-16 sm:mb-20">
+              <div className="flex items-center gap-2.5">
+                <motion.span
+                  className="w-1.5 h-1.5 rounded-full"
+                  style={{ background: NEON, boxShadow: `0 0 6px ${NEON}` }}
+                  animate={{ opacity: [1, 0.08, 1] }}
+                  transition={{ duration: 0.85, repeat: Infinity }}
+                />
+                <span className="text-[9px] tracking-[0.22em] uppercase" style={{ fontFamily: MONO, color: 'rgba(255,255,255,0.25)' }}>
+                  SISTEMA ATIVO
                 </span>
               </div>
+              <span className="text-[9px] tabular-nums" style={{ fontFamily: MONO, color: 'rgba(255,255,255,0.15)' }}>
+                v3.1.0 · PROD
+              </span>
             </div>
 
-            {/* Top row: Radar + Bar chart */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-
-              {/* ── Radar widget ── */}
-              <div
-                className="rounded-xl p-3 relative overflow-hidden"
-                style={{
-                  background:  'rgba(255,255,255,0.02)',
-                  border:      `1px solid ${radarGlow ? EMERALD + '45' : 'rgba(255,255,255,0.06)'}`,
-                  boxShadow:   radarGlow ? `0 0 28px ${EMERALD}30, inset 0 0 20px ${EMERALD}06` : 'none',
-                  transition:  'border-color 0.35s ease, box-shadow 0.35s ease',
-                }}
-              >
-                {/* Emerald top accent */}
-                <div className="absolute inset-x-0 top-0 h-0.5 pointer-events-none"
-                  style={{ background: `linear-gradient(90deg, transparent, ${EMERALD}${radarGlow ? 'cc' : '55'}, transparent)`, transition: 'opacity 0.35s' }} />
-
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-bold tracking-widest uppercase"
-                    style={{ color: EMERALD, fontFamily: 'ui-monospace, monospace' }}>
-                    Radar de Competências
-                  </span>
-                  <motion.span className="w-1.5 h-1.5 rounded-full"
-                    style={{ background: EMERALD }}
-                    animate={{ opacity: [1, 0.15, 1] }}
-                    transition={{ duration: radarGlow ? 0.6 : 1.4, repeat: Infinity }} />
-                </div>
-                <div className="w-full aspect-square max-w-[175px] mx-auto">
-                  <RadarChart inView={inView} glowing={radarGlow} />
-                </div>
-              </div>
-
-              {/* ── Bar chart widget ── */}
-              <div
-                className="rounded-xl p-3 flex flex-col relative overflow-hidden"
-                style={{
-                  background: 'rgba(255,255,255,0.02)',
-                  border:     `1px solid ${barsGlow ? CYAN + '45' : 'rgba(255,255,255,0.06)'}`,
-                  boxShadow:  barsGlow ? `0 0 28px ${CYAN}30, inset 0 0 20px ${CYAN}06` : 'none',
-                  transition: 'border-color 0.35s ease, box-shadow 0.35s ease',
-                }}
-              >
-                {/* Cyan top accent */}
-                <div className="absolute inset-x-0 top-0 h-0.5 pointer-events-none"
-                  style={{ background: `linear-gradient(90deg, transparent, ${CYAN}${barsGlow ? 'cc' : '55'}, transparent)`, transition: 'opacity 0.35s' }} />
-
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[10px] font-bold tracking-widest uppercase"
-                    style={{ color: CYAN, fontFamily: 'ui-monospace, monospace' }}>
-                    Evolução Semanal
-                  </span>
-                  <motion.span className="w-1.5 h-1.5 rounded-full"
-                    style={{ background: CYAN }}
-                    animate={{ opacity: [1, 0.15, 1] }}
-                    transition={{ duration: barsGlow ? 0.6 : 1.6, repeat: Infinity, delay: 0.4 }} />
-                </div>
-                <div className="flex-1 flex items-end">
-                  <div className="w-full">
-                    <BarChart inView={inView} glowing={barsGlow} />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* ── Metric cards ── */}
-            <div
-              className="grid grid-cols-3 gap-3 rounded-xl p-1"
-              style={{
-                boxShadow:  metricsGlow ? `0 0 30px ${VIOLET}20` : 'none',
-                transition: 'box-shadow 0.35s ease',
-              }}
-            >
-              {METRICS.map((m, i) => (
+            {/* ── Function rows ── */}
+            <div className="flex flex-col">
+              {FUNCS.map((fn, i) => (
                 <motion.div
-                  key={i}
-                  className="rounded-xl p-3 text-center relative overflow-hidden"
-                  style={{
-                    background:      `${m.color}07`,
-                    borderLeft:      `1px solid ${m.color}18`,
-                    borderRight:     `1px solid ${m.color}18`,
-                    borderBottom:    `1px solid ${m.color}18`,
-                    borderTop:       `2px solid ${metricsGlow ? m.borderT.replace(/[0-9a-f]{2}$/, 'aa') : m.borderT}`,
-                    transition:      'border-top-color 0.35s ease',
-                  }}
-                  initial={{ opacity: 0, y: 14 }}
-                  animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
-                  transition={{ duration: 0.5, delay: 0.65 + i * 0.1, ease: 'easeOut' }}
+                  key={fn.name}
+                  initial={{ opacity: 0, x: -16 }}
+                  animate={inView ? { opacity: 1, x: 0 } : {}}
+                  transition={{ duration: 0.7, delay: 0.5 + i * 0.18, ease: [0.16, 1, 0.3, 1] }}
                 >
-                  <div className="text-base mb-1.5">{m.icon}</div>
-                  <div
-                    className="text-xl sm:text-2xl font-black tabular-nums leading-none mb-1"
-                    style={{ color: m.color, filter: `drop-shadow(0 0 ${metricsGlow ? 12 : 8}px ${m.color}60)`, transition: 'filter 0.35s' }}
-                  >
-                    <CountUp to={m.value} suffix={m.suffix} />
-                  </div>
-                  <div className="text-[10px] text-white/40 leading-tight"
-                    style={{ fontFamily: 'ui-monospace, monospace' }}>
-                    {m.label}<br />{m.sub}
+                  {i > 0 && (
+                    <div className="h-px my-10 sm:my-14" style={{ background: 'rgba(255,255,255,0.04)' }} />
+                  )}
+                  <div className="flex items-center justify-between gap-4">
+                    {/* Dot + function name */}
+                    <div className="flex items-center gap-5 min-w-0">
+                      <div className="relative shrink-0 flex items-center justify-center w-3 h-3">
+                        <div
+                          className="w-2 h-2 rounded-full"
+                          style={{ background: fn.dot, boxShadow: `0 0 10px ${fn.dot}, 0 0 20px ${fn.dot}50` }}
+                        />
+                        <motion.div
+                          className="absolute inset-0 rounded-full"
+                          style={{ background: fn.dot, opacity: 0.3 }}
+                          animate={{ scale: [1, 2.8, 1], opacity: [0.3, 0, 0.3] }}
+                          transition={{ duration: 2.8, repeat: Infinity, delay: i * 0.8 }}
+                        />
+                      </div>
+                      <span
+                        className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tight"
+                        style={{ color: 'rgba(255,255,255,0.90)' }}
+                      >
+                        {fn.name}
+                      </span>
+                    </div>
+
+                    {/* Live metric */}
+                    <div className="shrink-0">
+                      <LiveMetric label={fn.label} value={fn.val} color={fn.color} />
+                    </div>
                   </div>
                 </motion.div>
               ))}
             </div>
 
+            {/* Bottom strip */}
+            <div
+              className="mt-14 sm:mt-20 pt-6 flex items-center justify-between"
+              style={{ borderTop: '0.5px solid rgba(255,255,255,0.05)' }}
+            >
+              <span
+                className="text-[9px] tracking-[0.2em] uppercase"
+                style={{ fontFamily: MONO, color: 'rgba(255,255,255,0.18)' }}
+              >
+                Ebbinghaus Engine · TRI-Calibrated
+              </span>
+              <div className="flex items-center gap-2.5">
+                {[NEON, CYAN, VIOLET].map((c, i) => (
+                  <motion.div
+                    key={i}
+                    className="w-1 h-1 rounded-full"
+                    style={{ background: c, boxShadow: `0 0 4px ${c}` }}
+                    animate={{ opacity: [0.25, 1, 0.25] }}
+                    transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.45 }}
+                  />
+                ))}
+              </div>
+            </div>
+
           </div>
         </motion.div>
-
-        {/* ── Right panel — Command blocks ─────────────────────────────── */}
-        <div className="lg:col-span-2 flex flex-col gap-3">
-          {BLOCKS.map((b, i) => (
-            <motion.div
-              key={i}
-              className="rounded-xl p-4 cursor-default"
-              style={{
-                background:           activeWidget === b.widget && b.widget
-                  ? `${b.color}08`
-                  : 'rgba(255,255,255,0.025)',
-                backdropFilter:       'blur(12px)',
-                WebkitBackdropFilter: 'blur(12px)',
-                borderStyle:         'solid',
-                borderTopWidth:      '2px',
-                borderTopColor:      `${b.color}40`,
-                borderLeftWidth:     '1px',
-                borderRightWidth:    '1px',
-                borderBottomWidth:   '1px',
-                borderLeftColor:     activeWidget === b.widget && b.widget ? `${b.color}30` : `${b.color}15`,
-                borderRightColor:    activeWidget === b.widget && b.widget ? `${b.color}30` : `${b.color}15`,
-                borderBottomColor:   activeWidget === b.widget && b.widget ? `${b.color}30` : `${b.color}15`,
-                boxShadow:           activeWidget === b.widget && b.widget ? `0 0 20px ${b.color}15` : 'none',
-                transition:          'background 0.3s, border-color 0.3s, box-shadow 0.3s',
-              }}
-              initial={{ opacity: 0, x: 24 }}
-              animate={inView ? { opacity: 1, x: 0 } : { opacity: 0, x: 24 }}
-              transition={{ duration: 0.6, delay: 0.3 + i * 0.12, ease: 'easeOut' }}
-              onMouseEnter={() => b.widget && setActiveWidget(b.widget)}
-              onMouseLeave={() => setActiveWidget(null)}
-            >
-              {/* Terminal tag */}
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-sm leading-none">{b.icon}</span>
-                <span className="text-[10px] font-bold tracking-widest uppercase"
-                  style={{ color: b.color, fontFamily: 'ui-monospace, monospace' }}>
-                  [ {b.tag} ]
-                </span>
-              </div>
-
-              {/* Bullet list */}
-              <ul className="flex flex-col gap-2">
-                {b.bullets.map((bullet, j) => (
-                  <li key={j} className="flex items-start gap-2">
-                    <span className="text-sm shrink-0 leading-snug">{bullet.icon}</span>
-                    <span className="text-xs leading-snug">
-                      <span className="text-white/80 font-semibold">{bullet.bold}:</span>
-                      {' '}
-                      <span className="text-slate-500">{bullet.rest}</span>
-                    </span>
-                  </li>
-                ))}
-              </ul>
-
-              {/* Bottom accent */}
-              <div className="mt-3 h-px"
-                style={{ background: `linear-gradient(90deg, ${b.color}30, transparent)` }} />
-            </motion.div>
-          ))}
-        </div>
-
-      </div>
+      </motion.div>
     </section>
   );
 }

@@ -1,554 +1,644 @@
 'use client';
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Target, Zap, RefreshCw } from 'lucide-react';
+import { useRef, useState, useEffect, useCallback } from 'react';
+import {
+  motion,
+  useMotionValue,
+  useSpring,
+  useTransform,
+  useInView,
+} from 'framer-motion';
 
 // ─── Tokens ───────────────────────────────────────────────────────────────────
-const NEON    = '#00FF73';
 const VIOLET  = '#7C3AED';
-const EMERALD = '#10b981';
+const NEON    = '#00FF73';
+const V_LIGHT = '#a78bfa';
+const ORANGE  = '#FF8A00';
 
-// Hex SVG viewBox: 100×88 units — wide flat-top hex
-const HEX_POINTS = '12,2 88,2 98,44 88,86 12,86 2,44';
+// ─── Ring config ──────────────────────────────────────────────────────────────
+interface Ring {
+  id:       string;
+  number:   string;
+  label:    string;
+  sublabel: string;
+  color:    string;
+  size:     number;
+  tiltX:    number;
+  tiltZ:    number;
+  duration: number;
+}
 
-// ─── Column config ────────────────────────────────────────────────────────────
-const COLUMNS = [
+const RINGS: Ring[] = [
   {
-    id:      'input',
-    number:  '01',
-    header:  '🎯 O INPUT',
-    label:   'O Diagnóstico',
-    Icon:    Target,
-    color:   VIOLET,
-    tag:     'ESTADO: MAPEANDO',
-    bullets: [
-      { icon: '🧠', text: 'Scan de Nível: A IA entende onde você está.' },
-      { icon: '⚖️', text: 'Ponderação Sisu: Pesos de Medicina/Direito.' },
-      { icon: '📉', text: 'Detecção de Gaps: Mapeamento das suas falhas.' },
-    ],
-    flowIcons: ['📡', '🧬'],
+    id:       'radar',
+    number:   '01',
+    label:    'RADAR DE LACUNAS',
+    sublabel: 'Mapeamento de falhas invisíveis',
+    color:    ORANGE,
+    size:     200,
+    tiltX:    78,
+    tiltZ:    0,
+    duration: 8,
   },
   {
-    id:      'motor',
-    number:  '02',
-    header:  '⚡ O MOTOR',
-    label:   'Flashcards 80/20',
-    Icon:    Zap,
-    color:   NEON,
-    tag:     'ESTADO: PRIORIZANDO',
-    bullets: [
-      { icon: '📦', text: 'Decks Prontos: Zero esforço. Só estude.' },
-      { icon: '🧬', text: 'Conteúdo Curado: Só o que realmente cai.' },
-      { icon: '⏳', text: 'Repetição Espaçada: Blinda sua memória.' },
-    ],
-    flowIcons: ['⚡', '📊'],
+    id:       'blindagem',
+    number:   '02',
+    label:    'ALGORITMO DE BLINDAGEM',
+    sublabel: 'Fixação matemática de dados',
+    color:    NEON,
+    size:     295,
+    tiltX:    72,
+    tiltZ:    58,
+    duration: 13,
   },
   {
-    id:      'feedback',
-    number:  '03',
-    header:  '🔄 O FEEDBACK',
-    label:   'Inteligência Recursiva',
-    Icon:    RefreshCw,
-    color:   EMERALD,
-    tag:     'ESTADO: APRENDENDO',
-    bullets: [
-      { icon: '📡', text: 'Radar de Falhas: detecta onde você vacilou.' },
-      { icon: '🩺', text: 'Prescrição do Remédio: cards exatos para seu erro.' },
-      { icon: '🔁', text: 'Re-calibragem: edital dominado por correção automática.' },
-    ],
-    flowIcons: [],
+    id:       'resposta',
+    number:   '03',
+    label:    'RESPOSTA INSTANTÂNEA',
+    sublabel: "O fim do 'branco' no ENEM",
+    color:    V_LIGHT,
+    size:     380,
+    tiltX:    72,
+    tiltZ:    -58,
+    duration: 6.5,
   },
-] as const;
-
-// ─── Neural mesh background ───────────────────────────────────────────────────
-// Predefined node grid — no JS randomness, deterministic render
-const MESH_NODES: [number, number][] = [
-  [4,8],[14,18],[24,6],[36,14],[48,5],[60,17],[72,8],[84,22],[95,12],
-  [6,38],[18,48],[30,32],[42,52],[54,38],[66,55],[78,42],[90,35],
-  [3,70],[16,80],[28,65],[40,82],[52,70],[64,78],[76,62],[88,75],[96,85],
-  [22,26],[46,28],[70,30],[22,58],[68,60],
-];
-const MESH_EDGES: [number,number][] = [
-  [0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,8],
-  [9,10],[10,11],[11,12],[12,13],[13,14],[14,15],[15,16],
-  [17,18],[18,19],[19,20],[20,21],[21,22],[22,23],[23,24],[24,25],
-  [0,9],[1,9],[2,10],[3,11],[4,12],[5,13],[6,14],[7,15],[8,16],
-  [9,17],[10,18],[11,19],[12,20],[13,21],[14,22],[15,23],[16,25],
-  [26,10],[26,11],[27,12],[27,13],[28,14],[28,15],[29,20],[30,21],
 ];
 
-function NeuralMesh() {
+// viewBox dimensions for the connector SVG overlay
+const VW = 680;
+const VH = 500;
+const CX = VW / 2; // 340
+const CY = VH / 2; // 250
+
+// Chip connector anchor points (in SVG viewBox units)
+// These are the inner edges of each chip where lines terminate
+const ANCHORS = [
+  { x: 486, y: 112 },  // RADAR — top-right chip, left inner edge
+  { x: 194, y: 268 },  // BLINDAGEM — left chip, right inner edge
+  { x: 486, y: 368 },  // RESPOSTA — bottom-right chip, left inner edge
+];
+
+// ─── Orbital ring (3D-tilted SVG) ─────────────────────────────────────────────
+function OrbitalRing({ ring, isActive }: { ring: Ring; isActive: boolean }) {
+  const r    = ring.size / 2 - 2;
+  const c    = ring.size / 2;
+  const circ = 2 * Math.PI * r;
+  const dash = circ * 0.07;
+  const gap  = circ - dash;
+
+  return (
+    <div
+      aria-hidden
+      style={{
+        position:       'absolute',
+        width:          ring.size,
+        height:         ring.size,
+        left:           '50%',
+        top:            '50%',
+        marginLeft:     -ring.size / 2,
+        marginTop:      -ring.size / 2,
+        transform:      `rotateX(${ring.tiltX}deg) rotateZ(${ring.tiltZ}deg)`,
+        transformStyle: 'preserve-3d',
+        pointerEvents:  'none',
+      }}
+    >
+      <svg
+        width={ring.size}
+        height={ring.size}
+        viewBox={`0 0 ${ring.size} ${ring.size}`}
+        style={{ overflow: 'visible' }}
+      >
+        <defs>
+          <filter id={`glow-${ring.id}`} x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur stdDeviation="4" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+
+        {/* Static orbital path */}
+        <circle
+          cx={c} cy={c} r={r}
+          fill="none"
+          stroke={ring.color}
+          strokeWidth={isActive ? 1.2 : 0.5}
+          strokeOpacity={isActive ? 0.55 : 0.15}
+          style={{ transition: 'stroke-width 0.5s, stroke-opacity 0.5s' }}
+        />
+
+        {/* Traveling pulse */}
+        <motion.circle
+          cx={c} cy={c} r={r}
+          fill="none"
+          stroke={ring.color}
+          strokeWidth={isActive ? 4.5 : 2}
+          strokeLinecap="round"
+          strokeDasharray={`${dash} ${gap}`}
+          animate={{ strokeDashoffset: [0, -circ] }}
+          transition={{ duration: ring.duration, repeat: Infinity, ease: 'linear' }}
+          filter={`url(#glow-${ring.id})`}
+          strokeOpacity={isActive ? 1 : 0.3}
+          style={{ transition: 'stroke-width 0.5s, stroke-opacity 0.5s' }}
+        />
+      </svg>
+    </div>
+  );
+}
+
+// ─── Pulsing nucleus ──────────────────────────────────────────────────────────
+function Nucleus() {
+  return (
+    <div
+      style={{
+        position:     'absolute',
+        left:         '50%',
+        top:          '50%',
+        transform:    'translate(-50%, -50%)',
+        width:        88,
+        height:       88,
+        borderRadius: '50%',
+      }}
+    >
+      {[1.9, 1.45, 1.0].map((scale, i) => (
+        <motion.div
+          key={i}
+          style={{
+            position:     'absolute',
+            inset:        0,
+            borderRadius: '50%',
+            border:       `1px solid ${i === 0 ? V_LIGHT : VIOLET}`,
+            transform:    `scale(${scale})`,
+          }}
+          animate={{
+            opacity: [0.08, 0.28, 0.08],
+            scale:   [scale, scale * 1.06, scale],
+          }}
+          transition={{
+            duration: 3 + i * 0.8,
+            repeat:   Infinity,
+            ease:     'easeInOut',
+            delay:    i * 0.65,
+          }}
+        />
+      ))}
+
+      <div
+        style={{
+          position:     'absolute',
+          inset:        9,
+          borderRadius: '50%',
+          background:   `radial-gradient(circle at 35% 30%, ${V_LIGHT}70 0%, ${VIOLET}95 55%, #130820 100%)`,
+          boxShadow:    `0 0 32px ${VIOLET}90, 0 0 70px ${VIOLET}45, inset 0 0 18px ${V_LIGHT}25`,
+        }}
+      />
+
+      <motion.div
+        style={{
+          position:     'absolute',
+          inset:        0,
+          borderRadius: '50%',
+          background:   `radial-gradient(circle, ${V_LIGHT}35 0%, transparent 70%)`,
+        }}
+        animate={{ opacity: [0.3, 0.9, 0.3], scale: [0.88, 1.12, 0.88] }}
+        transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
+      />
+    </div>
+  );
+}
+
+// ─── Connector lines SVG overlay ─────────────────────────────────────────────
+function ConnectorLines({ active }: { active: number }) {
   return (
     <svg
-      className="absolute inset-0 w-full h-full pointer-events-none select-none"
-      viewBox="0 0 100 100"
-      preserveAspectRatio="xMidYMid slice"
+      className="absolute inset-0 pointer-events-none"
+      width="100%" height="100%"
+      viewBox={`0 0 ${VW} ${VH}`}
+      preserveAspectRatio="none"
       aria-hidden
     >
-      {/* Synaptic connections */}
-      {MESH_EDGES.map(([a, b], i) => (
-        <motion.line
-          key={i}
-          x1={MESH_NODES[a][0]} y1={MESH_NODES[a][1]}
-          x2={MESH_NODES[b][0]} y2={MESH_NODES[b][1]}
-          stroke="rgba(255,255,255,0.055)"
-          strokeWidth="0.18"
-          animate={{ opacity: [0.3, 1, 0.3] }}
-          transition={{
-            duration: 3 + (i % 4),
-            delay: (i % 7) * 0.4,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-        />
-      ))}
-      {/* Synaptic nodes */}
-      {MESH_NODES.map(([x, y], i) => (
-        <motion.circle
-          key={i}
-          cx={x} cy={y} r={0.5}
-          fill="rgba(255,255,255,0.20)"
-          animate={{ opacity: [0.1, 0.6, 0.1] }}
-          transition={{
-            duration: 2 + (i % 3),
-            delay: (i % 5) * 0.3,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-        />
-      ))}
+      <defs>
+        {RINGS.map((ring) => (
+          <filter key={ring.id} id={`ln-glow-${ring.id}`}
+            x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="2.5" result="b" />
+            <feMerge>
+              <feMergeNode in="b" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        ))}
+      </defs>
+
+      {RINGS.map((ring, i) => {
+        const { x: ex, y: ey } = ANCHORS[i];
+        const isActive = active === i;
+
+        return (
+          <g key={ring.id}>
+            {/* Dashed static line */}
+            <line
+              x1={CX} y1={CY}
+              x2={ex}  y2={ey}
+              stroke={ring.color}
+              strokeWidth={isActive ? 0.8 : 0.35}
+              strokeOpacity={isActive ? 0.45 : 0.12}
+              strokeDasharray="4 5"
+              style={{ transition: 'stroke-width 0.5s, stroke-opacity 0.5s' }}
+            />
+
+            {/* Traveling particle — only when active */}
+            {isActive && (
+              <motion.circle
+                r="3.5"
+                fill={ring.color}
+                filter={`url(#ln-glow-${ring.id})`}
+                animate={{
+                  cx: [CX, ex],
+                  cy: [CY, ey],
+                  opacity: [0, 1, 0],
+                }}
+                transition={{
+                  duration:    1.4,
+                  repeat:      Infinity,
+                  ease:        'easeOut',
+                  repeatDelay: 0.6,
+                }}
+              />
+            )}
+          </g>
+        );
+      })}
     </svg>
   );
 }
 
-// ─── Animated status tag ──────────────────────────────────────────────────────
-function StatusTag({ label, color }: { label: string; color: string }) {
-  return (
-    <div className="flex items-center gap-1.5 justify-center">
-      <motion.span
-        className="w-1.5 h-1.5 rounded-full shrink-0"
-        style={{ background: color }}
-        animate={{ opacity: [1, 0.15, 1] }}
-        transition={{ duration: 1.3, repeat: Infinity, ease: 'easeInOut' }}
-      />
-      <span
-        style={{
-          fontFamily:    'ui-monospace, monospace',
-          fontSize:      '9px',
-          color,
-          opacity:       0.72,
-          letterSpacing: '0.10em',
-        }}
-      >
-        [ {label} ]
-      </span>
-    </div>
-  );
-}
-
-// ─── Flow connector with travelling particles ─────────────────────────────────
-function FlowConnector({
-  fromColor,
-  toColor,
-  icons,
+// ─── Orbital chip (the prominent element) ─────────────────────────────────────
+function OrbitalChip({
+  ring,
+  isActive,
+  pos,
 }: {
-  fromColor: string;
-  toColor:   string;
-  icons:     readonly string[];
+  ring:     Ring;
+  isActive: boolean;
+  pos:      { top: string; left?: string; right?: string };
 }) {
-  const gradId = `fg-${fromColor.replace('#', '')}-${toColor.replace('#', '')}`;
-
-  return (
-    <div
-      className="hidden lg:flex items-center justify-center shrink-0 relative"
-      style={{ width: 72, marginTop: 120 }}
-    >
-      <svg width="72" height="32" viewBox="0 0 72 32" fill="none" overflow="visible">
-        <defs>
-          <linearGradient id={gradId} x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%"   stopColor={fromColor} stopOpacity="0.35" />
-            <stop offset="100%" stopColor={toColor}   stopOpacity="0.55" />
-          </linearGradient>
-        </defs>
-
-        {/* Static track */}
-        <path
-          d="M4 16 H62 M54 9 L62 16 L54 23"
-          stroke={`url(#${gradId})`}
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-
-        {/* Neon pulse dot */}
-        <motion.circle
-          r="3.5" cy="16" fill={toColor}
-          style={{ filter: `drop-shadow(0 0 5px ${toColor})` }}
-          animate={{ cx: [4, 62], opacity: [0, 1, 0] }}
-          transition={{
-            duration:    1.6,
-            repeat:      Infinity,
-            ease:        'linear',
-            repeatDelay: 0.9,
-          }}
-        />
-
-        {/* Emoji particles */}
-        {icons.map((emoji, i) => (
-          <motion.text
-            key={i}
-            fontSize="9"
-            textAnchor="middle"
-            dominantBaseline="middle"
-            cy="16"
-            fill="white"
-            opacity="0"
-            animate={{ x: [4, 62], opacity: [0, 0.85, 0] }}
-            transition={{
-              duration:    2.0,
-              repeat:      Infinity,
-              delay:       i * 1.1,
-              ease:        'linear',
-              repeatDelay: 0.6,
-            }}
-          >
-            {emoji}
-          </motion.text>
-        ))}
-      </svg>
-    </div>
-  );
-}
-
-// ─── Recursive arc (03 → 01) ──────────────────────────────────────────────────
-function RecursiveArc() {
-  // Points along the quadratic bezier M 92% 6 Q 92% 40 50% 40 Q 8% 40 8% 6
-  // For viewBox 0 0 1000 48, the path is:
-  // M 940 6 Q 940 42 500 42 Q 60 42 60 6
-  const dotKeyframes = {
-    cx: [940, 820, 500, 180, 60],
-    cy: [6, 40, 42, 40, 6],
-    opacity: [0, 0.9, 1, 0.9, 0],
-  };
-
-  return (
-    <div
-      className="hidden lg:block absolute -bottom-12 left-0 right-0 pointer-events-none"
-      aria-hidden
-    >
-      <svg
-        width="100%"
-        height="52"
-        viewBox="0 0 1000 52"
-        preserveAspectRatio="none"
-        overflow="visible"
-      >
-        <defs>
-          <linearGradient id="arc-ng" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%"   stopColor={VIOLET}  stopOpacity="0.7" />
-            <stop offset="45%"  stopColor={EMERALD} stopOpacity="0.9" />
-            <stop offset="100%" stopColor={VIOLET}  stopOpacity="0.7" />
-          </linearGradient>
-          <filter id="arc-blur">
-            <feGaussianBlur stdDeviation="1.5" result="b" />
-            <feComposite in="SourceGraphic" in2="b" operator="over" />
-          </filter>
-        </defs>
-
-        {/* Shadow glow arc */}
-        <path
-          d="M 940 6 Q 940 46 500 46 Q 60 46 60 6"
-          stroke={EMERALD}
-          strokeWidth="4"
-          strokeDasharray="8 5"
-          fill="none"
-          opacity="0.12"
-          filter="url(#arc-blur)"
-        />
-
-        {/* Main arc */}
-        <path
-          d="M 940 6 Q 940 42 500 42 Q 60 42 60 6"
-          stroke="url(#arc-ng)"
-          strokeWidth="1.5"
-          strokeDasharray="7 5"
-          fill="none"
-          opacity="0.65"
-          filter="url(#arc-blur)"
-        />
-
-        {/* Arrowhead: back into column 01 */}
-        <path
-          d="M48 12 L60 6 L72 12"
-          stroke={VIOLET}
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          opacity="0.75"
-        />
-
-        {/* Travelling emerald dot */}
-        <motion.circle
-          r="5"
-          fill={EMERALD}
-          style={{ filter: 'drop-shadow(0 0 7px #10b981)' }}
-          animate={dotKeyframes}
-          transition={{
-            duration:    3.8,
-            repeat:      Infinity,
-            ease:        'easeInOut',
-            repeatDelay: 1.2,
-          }}
-        />
-
-        {/* Loop label */}
-        <text
-          x="500" y="50"
-          textAnchor="middle"
-          fontSize="9"
-          fill={EMERALD}
-          opacity="0.38"
-          fontFamily="ui-monospace, monospace"
-          letterSpacing="4"
-        >
-          ↺ FEEDBACK LOOP RECURSIVO
-        </text>
-      </svg>
-    </div>
-  );
-}
-
-// ─── Hexagonal card ────────────────────────────────────────────────────────────
-function HexCard({
-  col,
-  hovered,
-  onEnter,
-  onLeave,
-  index,
-}: {
-  col:     typeof COLUMNS[number];
-  hovered: string | null;
-  onEnter: () => void;
-  onLeave: () => void;
-  index:   number;
-}) {
-  const isActive = hovered === col.id;
-  const isDimmed = hovered !== null && !isActive;
-  const isMotor  = col.id === 'motor';
+  const alignRight = pos.right !== undefined;
 
   return (
     <motion.div
-      className="flex-1 relative"
+      className="hidden sm:block"
       style={{
-        minHeight: 280,
-        // drop-shadow respects clip-path and gives the hex its outer glow
-        filter: isActive
-          ? isMotor
-            ? `drop-shadow(0 0 28px ${col.color}70) drop-shadow(0 0 55px ${col.color}30)`
-            : `drop-shadow(0 0 20px ${col.color}55)`
-          : `drop-shadow(0 0 6px ${col.color}20)`,
+        position: 'absolute',
+        top:      pos.top,
+        ...(pos.left  !== undefined ? { left:  pos.left  } : {}),
+        ...(pos.right !== undefined ? { right: pos.right } : {}),
+        width:    190,
       }}
-      animate={{ opacity: isDimmed ? 0.22 : 1, y: isActive ? -6 : 0 }}
-      transition={{ duration: 0.22, ease: 'easeOut' }}
-      initial={{ opacity: 0, y: 24 }}
-      whileInView={{ opacity: isDimmed ? 0.22 : 1, y: isActive ? -6 : 0 }}
-      viewport={{ once: true, amount: 0.3 }}
-      // stagger via transition delay on entrance
-      onAnimationComplete={() => {}}
-      onMouseEnter={onEnter}
-      onMouseLeave={onLeave}
+      animate={{ opacity: isActive ? 1 : 0.32 }}
+      transition={{ duration: 0.5 }}
     >
-      {/* ── SVG hex shell (border + fill) ───────────────────────── */}
-      <svg
-        className="absolute inset-0 w-full h-full"
-        viewBox="0 0 100 88"
-        preserveAspectRatio="none"
-        aria-hidden
+      <div
+        style={{
+          position:             'relative',
+          background:           isActive
+            ? `linear-gradient(135deg, rgba(8,4,20,0.92) 0%, ${ring.color}12 100%)`
+            : 'rgba(8,4,20,0.78)',
+          backdropFilter:       'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          border:               `1px solid ${ring.color}${isActive ? '55' : '22'}`,
+          borderRadius:         12,
+          padding:              '11px 14px 10px',
+          boxShadow:            isActive
+            ? `0 0 28px ${ring.color}22, 0 0 70px ${ring.color}0e, inset 0 1px 0 ${ring.color}35`
+            : 'none',
+          transition:           'all 0.5s ease',
+        }}
       >
-        {/* Top shimmer line — active only */}
-        {isActive && (
-          <motion.line
-            x1="12" y1="2" x2="88" y2="2"
-            stroke={col.color}
-            strokeWidth="0.8"
-            animate={{ opacity: [0.4, 1, 0.4] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
-          />
-        )}
-
-        {/* Border hex */}
-        <polygon
-          points={HEX_POINTS}
-          fill="rgba(9,9,11,0.88)"
-          stroke={col.color}
-          strokeWidth={isActive ? 0.8 : 0.4}
-          strokeOpacity={isActive ? 0.75 : 0.28}
+        {/* Top shimmer */}
+        <div
+          style={{
+            position:   'absolute',
+            insetInline: 0,
+            top:        0,
+            height:     1,
+            borderRadius:'12px 12px 0 0',
+            background: `linear-gradient(90deg, transparent, ${ring.color}${isActive ? '88' : '28'}, transparent)`,
+            transition: 'background 0.5s',
+          }}
         />
 
-        {/* Corner accent dots */}
-        {[
-          [12, 2], [88, 2], [98, 44], [88, 86], [12, 86], [2, 44],
-        ].map(([cx, cy], i) => (
-          <motion.circle
-            key={i}
-            cx={cx} cy={cy} r={isActive ? 1.4 : 0.7}
-            fill={col.color}
-            opacity={isActive ? 0.9 : 0.3}
-            animate={isActive ? { opacity: [0.5, 1, 0.5] } : {}}
-            transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.15 }}
-          />
-        ))}
-      </svg>
-
-      {/* ── Content (safe zone: px-[17%] keeps text inside hex) ─── */}
-      <div className="relative z-10 flex flex-col gap-3.5 py-7 px-[17%]" style={{ minHeight: 280 }}>
-
-        {/* Status tag */}
-        <StatusTag label={col.tag} color={col.color} />
-
-        {/* Number + icon + title */}
-        <div className="flex items-center gap-2.5">
-          <div
-            className="rounded-lg flex items-center justify-center shrink-0"
+        {/* Number + label */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 5 }}>
+          <span
             style={{
-              width:     38,
-              height:    38,
-              background:`${col.color}18`,
-              border:    `1px solid ${col.color}40`,
-              boxShadow: isActive ? `0 0 16px ${col.color}40` : 'none',
+              fontFamily:    'ui-monospace, monospace',
+              fontSize:      8,
+              color:         ring.color,
+              opacity:       0.65,
+              letterSpacing: '0.08em',
+              paddingTop:    2,
+              minWidth:      16,
+              lineHeight:    1,
             }}
           >
-            <col.Icon size={16} style={{ color: col.color }} strokeWidth={1.8} />
-          </div>
-          <div>
-            <p
-              style={{
-                fontFamily:    'ui-monospace, monospace',
-                fontSize:      '9px',
-                color:          col.color,
-                opacity:        0.48,
-                letterSpacing:  '0.08em',
-              }}
-            >
-              {col.number}
-            </p>
-            <p className="text-sm font-bold text-white leading-tight">{col.header}</p>
-          </div>
-        </div>
+            {ring.number}
+          </span>
 
-        {/* Bullets */}
-        <ul className="flex flex-col gap-2 mt-1">
-          {col.bullets.map((b, i) => (
-            <motion.li
-              key={i}
-              className="flex items-start gap-1.5"
-              initial={{ opacity: 0, x: -8 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.15 + i * 0.08 }}
-            >
-              <span className="text-sm shrink-0 leading-snug">{b.icon}</span>
-              <span className="text-xs text-slate-400 leading-snug">{b.text}</span>
-            </motion.li>
-          ))}
-        </ul>
-
-        {/* Footer divider + label */}
-        <div className="mt-auto pt-3 border-t border-white/5">
           <p
-            className="text-xs font-semibold text-center"
-            style={{ color: col.color, opacity: 0.42 }}
+            style={{
+              fontFamily:    'ui-monospace, monospace',
+              fontSize:      11,
+              letterSpacing: '0.10em',
+              color:         ring.color,
+              fontWeight:    800,
+              lineHeight:    1.25,
+              textShadow:    isActive ? `0 0 12px ${ring.color}70` : 'none',
+              transition:    'text-shadow 0.5s',
+            }}
           >
-            {col.label}
+            {ring.label}
           </p>
         </div>
+
+        {/* Sublabel */}
+        <p
+          style={{
+            fontFamily:    'ui-monospace, monospace',
+            fontSize:      9,
+            letterSpacing: '0.04em',
+            color:         isActive ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.22)',
+            lineHeight:    1.45,
+            paddingLeft:   24,
+            transition:    'color 0.5s',
+          }}
+        >
+          {ring.sublabel}
+        </p>
+
+        {/* Connector anchor dot (inner edge of chip) */}
+        <motion.div
+          style={{
+            position:     'absolute',
+            top:          '50%',
+            transform:    'translateY(-50%)',
+            [alignRight ? 'left' : 'right']: -5,
+            width:        10,
+            height:       10,
+            borderRadius: '50%',
+            background:   ring.color,
+            boxShadow:    `0 0 ${isActive ? 14 : 4}px ${ring.color}`,
+            transition:   'box-shadow 0.5s',
+          }}
+          animate={isActive
+            ? { opacity: [0.6, 1, 0.6] }
+            : { opacity: 0.35 }
+          }
+          transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
+        />
+
+        {/* Breathing border overlay */}
+        {isActive && (
+          <motion.div
+            style={{
+              position:     'absolute',
+              inset:        0,
+              borderRadius: 12,
+              border:       `1px solid ${ring.color}`,
+              pointerEvents:'none',
+            }}
+            animate={{ opacity: [0.15, 0.45, 0.15] }}
+            transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+          />
+        )}
       </div>
     </motion.div>
   );
 }
 
+// Chip layout positions in the visual container
+const CHIP_POSITIONS = [
+  { top: '14%', right: '0%' },   // RADAR
+  { top: '44%', left:  '0%' },   // BLINDAGEM
+  { top: '65%', right: '0%' },   // RESPOSTA
+];
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export default function NeuralEcosystemFlow() {
-  const [hovered, setHovered] = useState<string | null>(null);
+  const sectionRef = useRef<HTMLElement>(null);
+  const inView     = useInView(sectionRef, { once: true, amount: 0.25 });
+
+  // Mouse parallax
+  const mouseX  = useMotionValue(0);
+  const mouseY  = useMotionValue(0);
+  const springX = useSpring(mouseX, { stiffness: 38, damping: 22 });
+  const springY = useSpring(mouseY, { stiffness: 38, damping: 22 });
+  const rotY    = useTransform(springX, [-1, 1], [-16, 16]);
+  const rotX    = useTransform(springY, [-1, 1], [9, -9]);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLElement>) => {
+    const rect = sectionRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    mouseX.set((e.clientX - rect.left  - rect.width  / 2) / (rect.width  / 2));
+    mouseY.set((e.clientY - rect.top   - rect.height / 2) / (rect.height / 2));
+  }, [mouseX, mouseY]);
+
+  const handleMouseLeave = useCallback(() => {
+    mouseX.set(0);
+    mouseY.set(0);
+  }, [mouseX, mouseY]);
+
+  // Active ring cycling
+  const [active, setActive] = useState(0);
+
+  useEffect(() => {
+    if (!inView) return;
+    const iv = setInterval(() => setActive(a => (a + 1) % RINGS.length), 2800);
+    return () => clearInterval(iv);
+  }, [inView]);
 
   return (
-    <section className="max-w-6xl mx-auto px-5 sm:px-10 pb-28 pt-4">
+    <section
+      ref={sectionRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="max-w-6xl mx-auto px-5 sm:px-10 pb-28 pt-8"
+    >
 
-      {/* ── Header ─────────────────────────────────────────────────────────── */}
+      {/* ── Headline ─────────────────────────────────────────────────────────── */}
       <motion.div
-        className="text-center mb-16"
-        initial={{ opacity: 0, y: 20 }}
+        className="text-center mb-6"
+        initial={{ opacity: 0, y: 28 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.55 }}
       >
         <p
-          className="text-xs font-bold tracking-widest uppercase mb-3"
-          style={{ fontFamily: 'ui-monospace, monospace', color: NEON }}
+          style={{
+            fontFamily:    'ui-monospace, monospace',
+            fontSize:      10,
+            letterSpacing: '0.20em',
+            color:         VIOLET,
+            fontWeight:    700,
+            textTransform: 'uppercase',
+            marginBottom:  14,
+          }}
         >
-          &gt;_ O Processo
+          &gt;_ NEURAL CORE
         </p>
-        <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">
-          Do diagnóstico à aprovação:{' '}
-          <span
-            style={{
-              background:           `linear-gradient(90deg, ${NEON}, ${VIOLET})`,
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor:  'transparent',
-            }}
-          >
-            O Ciclo FlashAprova
-          </span>
+
+        <h2
+          className="text-4xl sm:text-5xl lg:text-6xl font-black text-white mb-5"
+          style={{ letterSpacing: '-0.025em', lineHeight: 1.05 }}
+        >
+          A Engenharia da{' '}
+          <span style={{ color: NEON, textShadow: `0 0 20px ${NEON}80, 0 0 40px ${NEON}40` }}>Memória.</span>
         </h2>
-        <p className="text-slate-500 text-base max-w-2xl mx-auto">
-          Enquanto outros apps são estáticos, nós construímos o seu{' '}
-          <span className="text-slate-300 font-semibold">Segundo Cérebro Pedagógico</span>.
-          Um ecossistema vivo que evolui com você.
+
+        <p className="text-slate-400 text-base sm:text-lg max-w-xl mx-auto leading-relaxed">
+          Conheça o{' '}
+          <span className="text-white font-semibold">Neural Core</span>
+          : a tecnologia do FlashAprova que garante que você{' '}
+          <span style={{ color: V_LIGHT }}>nunca mais perca</span>{' '}
+          o que estudou.
         </p>
       </motion.div>
 
-      {/* ── Engine wrapper: neural mesh + hexagons + arcs ──────────────────── */}
-      <div className="relative">
+      {/* ── Visual arena ─────────────────────────────────────────────────────── */}
+      <div
+        className="relative mx-auto"
+        style={{ height: 460, maxWidth: 680 }}
+      >
 
-        {/* Neural mesh lives behind everything */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl">
-          <NeuralMesh />
+        {/* Connector lines */}
+        <ConnectorLines active={active} />
+
+        {/* 3D core */}
+        <div
+          className="absolute inset-0 flex items-center justify-center"
+          style={{ perspective: '900px' }}
+        >
+          <motion.div
+            style={{
+              position:       'relative',
+              width:          420,
+              height:         420,
+              transformStyle: 'preserve-3d',
+              rotateY:        rotY,
+              rotateX:        rotX,
+            }}
+            initial={{ opacity: 0, scale: 0.75 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          >
+            {/* Ambient glow */}
+            <div
+              aria-hidden
+              style={{
+                position:     'absolute',
+                left:         '50%',
+                top:          '50%',
+                transform:    'translate(-50%, -50%)',
+                width:        220,
+                height:       220,
+                borderRadius: '50%',
+                background:   `radial-gradient(circle, ${VIOLET}28 0%, transparent 68%)`,
+                pointerEvents:'none',
+              }}
+            />
+
+            {RINGS.map((ring, i) => (
+              <OrbitalRing key={ring.id} ring={ring} isActive={active === i} />
+            ))}
+
+            <Nucleus />
+          </motion.div>
         </div>
 
-        {/* Hex grid row */}
-        <div className="relative flex flex-col lg:flex-row items-stretch gap-5 lg:gap-0 py-4 px-2">
-          {COLUMNS.map((col, i) => (
-            <div key={col.id} className="contents">
-              <HexCard
-                col={col}
-                hovered={hovered}
-                onEnter={() => setHovered(col.id)}
-                onLeave={() => setHovered(null)}
-                index={i}
-              />
-              {i < COLUMNS.length - 1 && (
-                <FlowConnector
-                  fromColor={col.color}
-                  toColor={COLUMNS[i + 1].color}
-                  icons={col.flowIcons}
-                />
-              )}
-            </div>
-          ))}
-        </div>
-
-        {/* Recursive arc under the hexagons */}
-        <RecursiveArc />
+        {/* Orbital chips */}
+        {RINGS.map((ring, i) => (
+          <OrbitalChip
+            key={ring.id}
+            ring={ring}
+            isActive={active === i}
+            pos={CHIP_POSITIONS[i]}
+          />
+        ))}
       </div>
 
-      {/* ── Loop hint label (mobile) ────────────────────────────────────────── */}
-      <p
-        className="lg:hidden text-center mt-6 text-xs"
-        style={{ fontFamily: 'ui-monospace, monospace', color: EMERALD, opacity: 0.40 }}
-      >
-        ↺ feedback loop recursivo — p3 alimenta p1 continuamente
-      </p>
+      {/* ── Ring selector dots ────────────────────────────────────────────────── */}
+      <div className="flex justify-center gap-3 mt-6">
+        {RINGS.map((ring, i) => (
+          <button
+            key={ring.id}
+            onClick={() => setActive(i)}
+            aria-label={ring.label}
+            style={{
+              height:     3,
+              width:      active === i ? 28 : 8,
+              borderRadius:2,
+              background: active === i ? ring.color : 'rgba(255,255,255,0.12)',
+              border:     'none',
+              cursor:     'pointer',
+              transition: 'width 0.4s ease, background 0.4s ease',
+              boxShadow:  active === i ? `0 0 8px ${ring.color}` : 'none',
+            }}
+          />
+        ))}
+      </div>
+
+      {/* ── Mobile list ──────────────────────────────────────────────────────── */}
+      <div className="sm:hidden mt-10 flex flex-col gap-3">
+        {RINGS.map((ring, i) => (
+          <div
+            key={ring.id}
+            style={{
+              border:       `1px solid ${ring.color}${active === i ? '50' : '22'}`,
+              borderRadius: 10,
+              padding:      '11px 14px',
+              background:   active === i ? `${ring.color}08` : 'rgba(255,255,255,0.02)',
+              transition:   'all 0.4s',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
+              <span
+                style={{
+                  fontFamily: 'ui-monospace, monospace',
+                  fontSize: 8,
+                  color: ring.color,
+                  opacity: 0.65,
+                  letterSpacing: '0.08em',
+                }}
+              >
+                {ring.number}
+              </span>
+              <p
+                style={{
+                  fontFamily:    'ui-monospace, monospace',
+                  fontSize:      11,
+                  letterSpacing: '0.10em',
+                  color:         ring.color,
+                  fontWeight:    800,
+                }}
+              >
+                {ring.label}
+              </p>
+            </div>
+            <p
+              style={{
+                fontFamily: 'ui-monospace, monospace',
+                fontSize:   9,
+                color:      'rgba(255,255,255,0.38)',
+                paddingLeft: 24,
+              }}
+            >
+              {ring.sublabel}
+            </p>
+          </div>
+        ))}
+      </div>
 
     </section>
   );

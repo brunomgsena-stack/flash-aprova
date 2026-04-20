@@ -25,12 +25,13 @@ interface Reel {
   floatDur:   number;
   floatDelay: number;
   stories:    [number, number, number, number];
+  noPlay?:    boolean;
 }
 
 // ─── 8 Cards ─────────────────────────────────────────────────────────────────
 const REELS: Reel[] = [
   {
-    img:       '/images/aprovado_1.jpg',
+    img:       '/images/ana.med.ufpe.avif',
     tag:       'MAPEADO',    tagColor: NEON,
     score:     '940/1000',   course:   'MEDICINA · UFPE',
     handle:    '@ana.med.ufpe',
@@ -50,11 +51,11 @@ const REELS: Reel[] = [
     stories:   [1, 1, 0, 0],
   },
   {
-    img:       '/images/aprovado_3.jpg',
+    img:       '/images/beatriz.dir.avif',
     tag:       'BLINDADO',   tagColor: VIOLET,
-    score:     '910/1000',   course:   'DIREITO · UNICAMP',
+    score:     '920/1000',   course:   'DIREITO · UNICAMP',
     handle:    '@beatriz.dir',
-    bullets:   ['✍️ 30 feedbacks de IA na Red.', '🛡️ Terror→880pts. Redação.', '⚖️ 1ª tentativa. Unicamp.'],
+    bullets:   ['✍️ 30 feedbacks de IA na Red.', '🛡️ Redação blindada com IA.', '⚖️ 1ª tentativa. Unicamp.'],
     gradA:     '#180e38',    gradB:    '#000810',
     floatY:    5,  floatRot:  0.5, floatDur: 6.2, floatDelay: 0.70,
     stories:   [1, 1, 1, 0],
@@ -62,7 +63,7 @@ const REELS: Reel[] = [
   {
     img:       '/images/aprovado_4.jpg',
     tag:       'DOMINADO',   tagColor: EMERALD,
-    score:     '935/1000',   course:   'MEDICINA · USP',
+    score:     '940/1000',   course:   'MEDICINA · USP',
     handle:    '@rafael.sisu1',
     bullets:   ['🔬 Bio+Quím zeradas na TRI.', '🧬 Memória neural blindada.', '🏆 Top 1% SISU — confirmado.'],
     gradA:     '#0a2818',    gradB:    '#000810',
@@ -70,7 +71,7 @@ const REELS: Reel[] = [
     stories:   [1, 1, 1, 1],
   },
   {
-    img:       '/images/aprovado_5.jpg',
+    img:       '/images/juliomed-ufrj.png',
     tag:       'DOMINADO',   tagColor: '#fbbf24',
     score:     '960/1000',   course:   'MEDICINA · UFRJ',
     handle:    '@juliomed.ufrj',
@@ -78,11 +79,12 @@ const REELS: Reel[] = [
     gradA:     '#2a1a0a',    gradB:    '#000810',
     floatY:    6,  floatRot:  0.3, floatDur: 5.9, floatDelay: 0.20,
     stories:   [1, 1, 1, 0],
+    noPlay:    true,
   },
   {
     img:       '/images/aprovado_6.jpg',
     tag:       'SINCRONIZADO', tagColor: '#00FF73',
-    score:     '915/1000',   course:   'ENG. AEROESPACIAL · ITA',
+    score:     '920/1000',   course:   'ENG. AEROESPACIAL · ITA',
     handle:    '@lucas.eng.ita',
     bullets:   ['⚛️ Mestre Newton: física cirúrgica.', '🚀 Radar de lacunas me salvou.', '🛸 ENG. AEROESPACIAL · ITA.'],
     gradA:     '#0a1a10',    gradB:    '#000810',
@@ -90,19 +92,19 @@ const REELS: Reel[] = [
     stories:   [1, 1, 0, 0],
   },
   {
-    img:       '/images/aprovado_7.jpg',
-    tag:       'MAPEADO',    tagColor: CYAN,
-    score:     '950/1000',   course:   'MEDICINA · UFRGS',
-    handle:    '@sofia.med.ufrgs',
-    bullets:   ['⚗️ Prof. Átomo: estequiometria 100%.', '🧬 Nunca mais travei na prova.', '💉 MEDICINA · UFRGS. 950pts.'],
-    gradA:     '#0a1828',    gradB:    '#000810',
+    img:       '/images/sofia-usp.avif',
+    tag:       'BLINDADO',   tagColor: VIOLET,
+    score:     '940/1000',   course:   'DIREITO · USP',
+    handle:    '@sofia.dir.usp',
+    bullets:   ['✍️ Redação: feedback de IA em cada versão.', '⚖️ 1ª tentativa. Direito USP.', '🛡️ Sistema blindou minha nota final.'],
+    gradA:     '#180e38',    gradB:    '#000810',
     floatY:    5,  floatRot:  0.4, floatDur: 5.3, floatDelay: 0.85,
     stories:   [1, 1, 1, 1],
   },
   {
     img:       '/images/aprovado_8.jpg',
     tag:       'BLENDADO',   tagColor: '#a78bfa',
-    score:     '925/1000',   course:   'DIREITO · USP',
+    score:     '940/1000',   course:   'DIREITO · USP',
     handle:    '@vitor.direitousp',
     bullets:   ['✍️ Prof. Norma: GPS da redação.', '⚖️ 900+ na Redação. Garantido.', '🏛️ DIREITO · USP. Alcançado.'],
     gradA:     '#16092e',    gradB:    '#000810',
@@ -229,31 +231,6 @@ function ReelCard({ reel }: { reel: Reel }) {
         </span>
       </div>
 
-      {/* Play button */}
-      <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
-        <div
-          style={{
-            width: 52, height: 52,
-            borderRadius: '50%',
-            background:     'rgba(0,0,0,0.48)',
-            backdropFilter: 'blur(4px)',
-            border:         hovered ? `1.5px solid ${reel.tagColor}` : '1.5px solid rgba(255,255,255,0.28)',
-            boxShadow:      hovered ? `0 0 28px ${reel.tagColor}80, 0 0 56px ${reel.tagColor}30` : 'none',
-            display:        'flex',
-            alignItems:     'center',
-            justifyContent: 'center',
-            transition:     'all 0.25s ease',
-          }}
-        >
-          <svg
-            width="18" height="18" viewBox="0 0 24 24"
-            fill={hovered ? reel.tagColor : 'white'}
-            style={{ marginLeft: 3, transition: 'fill 0.25s' }}
-          >
-            <polygon points="5,3 19,12 5,21" />
-          </svg>
-        </div>
-      </div>
 
       {/* Bottom caption */}
       <div className="absolute inset-x-0 bottom-2 px-3 pb-1 z-20">

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 
@@ -9,144 +9,169 @@ const NEON   = '#00FF73';
 const VIOLET = '#7C3AED';
 
 // ─── Timing ────────────────────────────────────────────────────────────────
-const CYCLE_DELAY_MS  = 4_500;  // wait after phase 4 before advancing
-const MANUAL_PAUSE_MS = 30_000; // pause auto-cycle after manual click
+const CYCLE_DELAY_MS  = 4_500;
+const MANUAL_PAUSE_MS = 30_000;
 
 // ─── Avatar factory ─────────────────────────────────────────────────────────
 function av(seed: string, extra = '') {
   return `https://api.dicebear.com/9.x/lorelei/svg?seed=${seed}&backgroundColor=0d0a1e${extra ? '&' + extra : ''}`;
 }
 
+// ─── Ring constants ──────────────────────────────────────────────────────────
+const RING_R = 30;
+const RING_C = 2 * Math.PI * RING_R;
+
 // ─── Types ───────────────────────────────────────────────────────────────────
-interface TutorDef {
-  id:         string;
-  name:       string;
-  subject:    string;
-  color:      string;
-  avatar:     string;
-  statusText: string;
-  userMsg:    string;
-  tutorMsg:   string;
-  tip:        string;
+interface AgentDef {
+  id:        string;
+  codename:  string;
+  specialty: string;
+  focus:     string;
+  color:     string;
+  avatar:    string;
+  userMsg:   string;
+  agentMsg:  string;
+  tip:       string;
 }
 
-// ─── Tutor roster ────────────────────────────────────────────────────────────
-const TUTORS: TutorDef[] = [
+// ─── Agent roster — Engenharia de Aprovação ──────────────────────────────────
+const AGENTS: AgentDef[] = [
   {
-    id:         'norma',
-    name:       'Prof. Norma',
-    subject:    'Redação',
-    color:      VIOLET,
-    avatar:     av('ProfNorma', 'hair=variant19&earrings=variant02'),
-    statusText: 'Corrigindo sua estrutura textual',
-    userMsg:    'Como subo minha nota de Redação de 600 para 1000?',
-    tutorMsg:   'Não passo a mão na cabeça. Você erra nos mesmos 3 pontos: coesão fraca, proposta de intervenção genérica e introdução sem gancho. Cada um desses te custa 40 pontos. Corrija os 3 e o 1000 é consequência — não sorte.',
-    tip:        'Foca em transformar um 600 em 1000. Diagnóstico preciso antes de correção.',
+    id:        'norma',
+    codename:  'NORMA',
+    specialty: 'Engenharia de Persuasão',
+    focus:     'Dissecação de teses e blindagem textual.',
+    color:     VIOLET,
+    avatar:    av('ProfNorma', 'hair=variant19&earrings=variant02'),
+    userMsg:   'Como subo minha nota de Redação de 600 para 1000?',
+    agentMsg:  'Não passo a mão na cabeça. Você erra nos mesmos 3 pontos: coesão fraca, proposta de intervenção genérica e introdução sem gancho. Cada um desses te custa 40 pontos. Corrija os 3 e o 1000 é consequência — não sorte.',
+    tip:       'Diagnóstico preciso antes de correção. Foca no padrão de erro.',
   },
   {
-    id:         'bio',
-    name:       'Dr. Bio',
-    subject:    'Biologia',
-    color:      '#22c55e',
-    avatar:     av('DrBioENEM', 'hair=variant04'),
-    statusText: 'Decodificando processos celulares',
-    userMsg:    'Fotossíntese parece complexo demais pra memorizar.',
-    tutorMsg:   'Imagina a folha como uma fábrica solar. Sol = energia da tomada. CO₂ = matéria-prima pela janela. H₂O = correia transportadora. Glicose = produto na esteira. A planta só juntou sol + gás + água e fabricou açúcar.',
-    tip:        'Analogia resolve mais rápido que decoreba. O ENEM ama lógica de processo.',
+    id:        'newton',
+    codename:  'NEWTON',
+    specialty: 'Otimização de Sistemas Físicos',
+    focus:     'Vetores de impacto e termodinâmica aplicada.',
+    color:     '#f97316',
+    avatar:    '/images/newton.avif',
+    userMsg:   'Preciso entender MRU e MRUV antes da prova.',
+    agentMsg:  'Menos conversa, mais vetores. MRU: v = s/t. Fim. MRUV: v = v₀ + at e s = v₀t + ½at². Plug and play. Memoriza as 2 equações e você resolve 80% das questões de cinemática.',
+    tip:       'As 2 equações do MRUV cobrem quase tudo no ENEM.',
   },
   {
-    id:         'newton',
-    name:       'Mestre Newton',
-    subject:    'Física',
-    color:      '#f97316',
-    avatar:     av('MestreNewtonFis', 'hair=variant09&glasses=variant01'),
-    statusText: 'Calculando vetores em tempo real',
-    userMsg:    'Preciso entender MRU e MRUV antes da prova.',
-    tutorMsg:   'Menos conversa, mais vetores. MRU: v = s/t. Fim. MRUV: v = v₀ + at e s = v₀t + ½at². Plug and play. Memoriza as 2 equações e você resolve 80% das questões de cinemática.',
-    tip:        'Direto ao ponto: as 2 equações do MRUV cobrem quase tudo no ENEM.',
+    id:        'chronos',
+    codename:  'CHRONOS',
+    specialty: 'Mapeamento de Ciclos de Poder',
+    focus:     'Análise de causalidade e rupturas sócio-políticas.',
+    color:     '#a78bfa',
+    avatar:    '/images/tutor-historia.avif',
+    userMsg:   'Era Vargas confunde. Como diferencio os 3 períodos?',
+    agentMsg:  '3 fases, 3 lógicas. ① 1930-37: poder provisório, jogo político. ② 1937-45: Estado Novo = ditadura + DIP + censura. ③ 1951-54: volta democrática, suicídio como ato político. O ENEM ama comparar as três.',
+    tip:       'Domine as características de cada fase e nunca mais confunde.',
   },
   {
-    id:         'atomo',
-    name:       'Prof. Átomo',
-    subject:    'Química',
-    color:      '#06b6d4',
-    avatar:     av('ProfAtomoQuim', 'hair=variant07&glasses=variant02'),
-    statusText: 'Balanceando equações químicas',
-    userMsg:    'Estequiometria sempre me trava na hora H.',
-    tutorMsg:   '3 passos. ① Equação balanceada — coeficiente = proporção em mol. ② Regra de 3 com massas molares (H=1, O=16, C=12). ③ Confere unidade — se pedir gramas, multiplica pelo peso molecular.',
-    tip:        'Coeficiente = proporção = regra de 3. Nunca mude esse fluxo.',
+    id:        'atlas',
+    codename:  'ATLAS',
+    specialty: 'Dinâmicas de Espaço e Geopolítica',
+    focus:     'Análise sistêmica de biomas e fluxos globais de poder.',
+    color:     '#34d399',
+    avatar:    av('DrAtlasGeo', 'hair=variant06'),
+    userMsg:   'Nunca lembro os 6 biomas brasileiros na prova.',
+    agentMsg:  'Ancora em característica única. Amazônia = densa, úmida, maior. Cerrado = raízes profundas pra seca. Caatinga = xerófita. Mata Atlântica = costeira, fragmentada. Pampa = subtropical. Pantanal = maior planície alagável.',
+    tip:       'O ENEM cruza bioma + clima + solo. Aprenda o trio, não o isolado.',
   },
   {
-    id:         'pi',
-    name:       'Mestre Pi',
-    subject:    'Matemática',
-    color:      NEON,
-    avatar:     av('MestrePiMat', 'hair=variant11'),
-    statusText: 'Dominando funções e inequações',
-    userMsg:    'Quando delta é negativo, o que acontece com a função?',
-    tutorMsg:   'Delta < 0 = sem raízes reais = parábola não toca o eixo x. Delta = 0 = uma raiz. Delta > 0 = duas raízes. Fluxo: calcula delta → classifica → decide o caminho. Sempre esse fluxo.',
-    tip:        'O ENEM ama delta em contexto (lucro, área, trajetória). O raciocínio é sempre igual.',
+    id:        'atomo',
+    codename:  'ÁTOMO',
+    specialty: 'Reatividade e Equilíbrio',
+    focus:     'Estequiometria avançada e engenharia molecular.',
+    color:     '#06b6d4',
+    avatar:    '/images/tutor-quimica.avif',
+    userMsg:   'Estequiometria sempre me trava na hora H.',
+    agentMsg:  '3 passos. ① Equação balanceada — coeficiente = proporção em mol. ② Regra de 3 com massas molares (H=1, O=16, C=12). ③ Confere unidade — se pedir gramas, multiplica pelo peso molecular.',
+    tip:       'Coeficiente = proporção = regra de 3. Nunca mude esse fluxo.',
   },
   {
-    id:         'chronos',
-    name:       'Dr. Chronos',
-    subject:    'História',
-    color:      '#a78bfa',
-    avatar:     av('DrChronos', 'hair=variant02&beard=variant01'),
-    statusText: 'Mapeando os eixos do tempo',
-    userMsg:    'Era Vargas confunde. Como diferencio os 3 períodos?',
-    tutorMsg:   '3 fases, 3 lógicas. ① 1930-37: poder provisório, jogo político. ② 1937-45: Estado Novo = ditadura + DIP + censura + Constituição de 37. ③ 1951-54: volta democrática, suicídio como ato político. O ENEM ama comparar as três.',
-    tip:        'Domine as características de cada fase e nunca mais confunde.',
+    id:        'pi',
+    codename:  'PI',
+    specialty: 'Lógica Analítica',
+    focus:     'Geometria de precisão e padrões estatísticos.',
+    color:     NEON,
+    avatar:    av('MestrePiMat', 'hair=variant11'),
+    userMsg:   'Quando delta é negativo, o que acontece com a função?',
+    agentMsg:  'Delta < 0 = sem raízes reais = parábola não toca o eixo x. Delta = 0 = uma raiz. Delta > 0 = duas raízes. Fluxo: calcula delta → classifica → decide o caminho. Sempre esse fluxo.',
+    tip:       'O ENEM ama delta em contexto (lucro, área, trajetória). O raciocínio é sempre igual.',
   },
   {
-    id:         'atlas',
-    name:       'Dr. Atlas',
-    subject:    'Geografia',
-    color:      '#34d399',
-    avatar:     av('DrAtlasGeo', 'hair=variant06'),
-    statusText: 'Analisando territórios e climas',
-    userMsg:    'Nunca lembro os 6 biomas brasileiros na prova.',
-    tutorMsg:   'Ancora em característica única. Amazônia = densa, úmida, maior. Cerrado = raízes profundas pra seca. Caatinga = xerófita. Mata Atlântica = costeira, fragmentada. Pampa = subtropical. Pantanal = maior planície alagável.',
-    tip:        'O ENEM cruza bioma + clima + solo. Aprenda o trio, não o isolado.',
+    id:        'bio',
+    codename:  'BIO',
+    specialty: 'Sistemas Vivos e Evolução',
+    focus:     'Genética molecular e ecossistemas complexos.',
+    color:     '#22c55e',
+    avatar:    av('DrBio', 'hair=variant01'),
+    userMsg:   'Fotossíntese parece complexo demais pra memorizar.',
+    agentMsg:  'Imagina a folha como uma fábrica solar. Sol = energia da tomada. CO₂ = matéria-prima pela janela. H₂O = correia transportadora. Glicose = produto na esteira. A planta só juntou sol + gás + água e fabricou açúcar.',
+    tip:       'Analogia resolve mais rápido que decoreba. O ENEM ama lógica de processo.',
   },
   {
-    id:         'sintaxe',
-    name:       'Prof. Sintaxe',
-    subject:    'Linguagens',
-    color:      '#f59e0b',
-    avatar:     av('ProfSintaxeLing', 'hair=variant05&glasses=variant01'),
-    statusText: 'Decodificando argumentos textuais',
-    userMsg:    'Interpretação de texto — sempre erro nas alternativas finais.',
-    tutorMsg:   'O ENEM não testa leitura — testa argumentação. Antes das alternativas, responde em uma frase qual a ideia central. Com essa âncora, as alternativas erradas se eliminam sozinhas. Você não lê o texto — você o interroga.',
-    tip:        'Tese antes de alternativa. Sempre. Sem exceção.',
+    id:        'sintaxe',
+    codename:  'SINTAXE',
+    specialty: 'Decodificação Textual',
+    focus:     'Argumentação, interpretação e semiótica.',
+    color:     '#f59e0b',
+    avatar:    av('ProfSintaxe', 'hair=variant03'),
+    userMsg:   'Interpretação de texto — sempre erro nas alternativas finais.',
+    agentMsg:  'O ENEM não testa leitura — testa argumentação. Antes das alternativas, responde em uma frase qual a ideia central. Com essa âncora, as alternativas erradas se eliminam sozinhas. Você não lê o texto — você o interroga.',
+    tip:       'Tese antes de alternativa. Sempre. Sem exceção.',
   },
   {
-    id:         'agora',
-    name:       'Mestra Ágora',
-    subject:    'Filosofia',
-    color:      '#e879f9',
-    avatar:     av('MestraAgora', 'hair=variant20&earrings=variant01'),
-    statusText: 'Tecendo o pensamento crítico',
-    userMsg:    'Filosofia no ENEM é só decoreba de filósofo?',
-    tutorMsg:   'Não. O ENEM usa Filosofia como lente crítica. Kant: separa fenômeno (o que você vê) de noumeno (o real). Rousseau: o homem é bom, a sociedade o corrompe. Cada filósofo é uma lente — o ENEM pede que você aplique em situações reais.',
-    tip:        'Filósofo = lente de análise. O ENEM dá o contexto, você aplica a lente certa.',
+    id:        'agora',
+    codename:  'ÁGORA',
+    specialty: 'Sistemas de Pensamento Crítico',
+    focus:     'Filosofia aplicada e ética como argumento.',
+    color:     '#e879f9',
+    avatar:    av('MestraAgora', 'hair=variant03&earrings=variant01'),
+    userMsg:   'Filosofia no ENEM é só decoreba de filósofo?',
+    agentMsg:  'Não. O ENEM usa Filosofia como lente crítica. Kant: separa fenômeno do noumeno. Rousseau: o homem é bom, a sociedade o corrompe. Cada filósofo é uma lente — o ENEM pede que você a aplique em situações reais.',
+    tip:       'Filósofo = lente de análise. O ENEM dá o contexto, você aplica a lente certa.',
   },
   {
-    id:         'vanguarda',
-    name:       'Sr. Vanguarda',
-    subject:    'Artes',
-    color:      '#fb7185',
-    avatar:     av('SrVanguardaArte', 'hair=variant08&glasses=variant03'),
-    statusText: 'Lendo imagens e movimentos artísticos',
-    userMsg:    'Como o ENEM cobra Artes? Parece impossível estudar.',
-    tutorMsg:   'Artes no ENEM é leitura de imagem + contexto histórico. Movimento artístico + o que ele representa politicamente. Uma tela não é decoração — é manifesto. Modernismo de 22? Ruptura com o academicismo, afirmação da identidade nacional.',
-    tip:        'Lê cada obra como um texto com argumento. Contexto histórico é sempre a chave.',
+    id:        'socius',
+    codename:  'SOCIUS',
+    specialty: 'Dinâmicas de Estratificação Social',
+    focus:     'Movimentos sociais e estruturas de poder.',
+    color:     '#60a5fa',
+    avatar:    av('DrSocios', 'hair=variant01'),
+    userMsg:   'Como abordar questões de Sociologia no ENEM?',
+    agentMsg:  'Sociologia no ENEM é sempre: identifique o fenômeno → localize no contexto → aplique o conceito. Durkheim = coesão social. Weber = dominação. Marx = conflito de classes. O enunciado sempre pede o conceito certo pra situação certa.',
+    tip:       'Mapeie: fenômeno → teórico → conceito. Essa é a equação da Sociologia no ENEM.',
+  },
+  {
+    id:        'vinci',
+    codename:  'VINCI',
+    specialty: 'Linguagem Visual e Cultura',
+    focus:     'Leitura de imagem e manifestos artísticos.',
+    color:     '#fb7185',
+    avatar:    av('ProfDaVinci', 'beard=variant02'),
+    userMsg:   'Como o ENEM cobra Artes? Parece impossível estudar.',
+    agentMsg:  'Artes no ENEM é leitura de imagem + contexto histórico. Movimento artístico + o que ele representa politicamente. Uma tela não é decoração — é manifesto. Modernismo de 22? Ruptura com o academicismo, afirmação da identidade nacional.',
+    tip:       'Lê cada obra como texto com argumento. Contexto histórico é sempre a chave.',
+  },
+  {
+    id:        'machado',
+    codename:  'MACHADO',
+    specialty: 'Literatura e Intertextualidade',
+    focus:     'Análise de obras e escolas literárias.',
+    color:     '#818cf8',
+    avatar:    av('ProfMachado', 'glasses=variant02'),
+    userMsg:   'Como estudo Literatura pra cair no ENEM?',
+    agentMsg:  'O ENEM cobra contexto, não decoreba de obra. Romantismo = idealização + nacionalismo. Realismo = crítica social + ironia. Modernismo = ruptura + identidade. Lê trechos curtos e identifica o movimento pelo tom — isso resolve 90% das questões.',
+    tip:       'Tom + vocabulário = movimento literário. O trecho sempre entrega a resposta.',
   },
 ];
 
-// ─── Ring constants ──────────────────────────────────────────────────────────
-const RING_R = 30;                       // radius inside 64×64 viewBox
-const RING_C = 2 * Math.PI * RING_R;    // ≈ 188.5
+// ─── Mono style helper ───────────────────────────────────────────────────────
+const MONO: React.CSSProperties = { fontFamily: "'JetBrains Mono', 'Fira Code', 'Courier New', monospace" };
 
 // ─── Typing dots ─────────────────────────────────────────────────────────────
 function TypingDots({ color }: { color: string }) {
@@ -165,146 +190,280 @@ function TypingDots({ color }: { color: string }) {
   );
 }
 
-// ─── Avatar with optional progress ring ──────────────────────────────────────
-function TutorAvatar({ tutor, isActive, ringActive, ringKey, onClick }: {
-  tutor:      TutorDef;
+// ─── Agent Card (Command Rail) ────────────────────────────────────────────────
+function AgentCard({ agent, isActive, ringActive, ringKey, onClick }: {
+  agent:      AgentDef;
   isActive:   boolean;
-  ringActive: boolean;   // animate progress ring
-  ringKey:    number;    // reset animation when incremented
+  ringActive: boolean;
+  ringKey:    number;
   onClick:    () => void;
 }) {
-  const lastName = tutor.name.split(' ').slice(-1)[0];
   return (
-    <button
+    <motion.button
       onClick={onClick}
-      className="flex flex-col items-center gap-1.5 shrink-0 transition-all duration-200"
-      style={{ minWidth: 72 }}
-      aria-label={`Selecionar ${tutor.name}`}
+      aria-label={`Selecionar agente ${agent.codename}`}
+      className="relative flex flex-col items-center shrink-0 rounded-2xl cursor-pointer select-none"
+      style={{
+        minWidth: 108,
+        padding: '14px 12px 12px',
+        background: isActive
+          ? `linear-gradient(145deg, ${agent.color}14 0%, ${agent.color}06 100%)`
+          : 'rgba(255,255,255,0.02)',
+        border: `0.5px solid ${isActive ? agent.color + '80' : 'rgba(255,255,255,0.07)'}`,
+        backdropFilter: 'blur(64px)',
+        WebkitBackdropFilter: 'blur(64px)',
+        transition: 'border-color 0.25s, background 0.25s',
+      }}
+      animate={{ scale: isActive ? 1.045 : 1 }}
+      whileHover={{ scale: isActive ? 1.045 : 1.025 }}
+      transition={{ duration: 0.22, ease: 'easeOut' }}
     >
-      {/* 64×64 container — ring lives here, avatar inset 4px */}
+      {/* Hairline top shimmer when active */}
+      {isActive && (
+        <motion.div
+          className="absolute inset-x-0 top-0 h-px rounded-full pointer-events-none"
+          style={{ background: `linear-gradient(90deg, transparent, ${agent.color}90, transparent)` }}
+          animate={{ opacity: [0.6, 1, 0.6] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        />
+      )}
+
+      {/* Avatar with progress ring ── */}
       <div className="relative" style={{ width: 64, height: 64 }}>
 
-        {/* ── Progress ring SVG ── */}
+        {/* Progress ring SVG */}
         {isActive && (
           <svg
-            className="absolute inset-0 w-full h-full pointer-events-none"
+            className="absolute inset-0 pointer-events-none"
             viewBox="0 0 64 64"
+            width={64} height={64}
             style={{ transform: 'rotate(-90deg)', zIndex: 2 }}
           >
-            {/* Track (dim) */}
-            <circle
-              cx="32" cy="32" r={RING_R}
-              fill="none"
-              stroke={tutor.color}
-              strokeWidth="2"
-              strokeOpacity="0.14"
-            />
-            {/* Progress fill */}
+            <circle cx="32" cy="32" r={RING_R} fill="none" stroke={agent.color} strokeWidth="2" strokeOpacity="0.15" />
             <motion.circle
-              key={`ring-${tutor.id}-${ringKey}`}
+              key={`ring-${agent.id}-${ringKey}`}
               cx="32" cy="32" r={RING_R}
-              fill="none"
-              stroke={tutor.color}
-              strokeWidth="2.5"
-              strokeLinecap="round"
+              fill="none" stroke={agent.color} strokeWidth="2.5" strokeLinecap="round"
               strokeDasharray={RING_C}
               initial={{ strokeDashoffset: RING_C }}
-              animate={ringActive
-                ? { strokeDashoffset: 0 }
-                : { strokeDashoffset: RING_C }}
-              transition={ringActive
-                ? { duration: CYCLE_DELAY_MS / 1000, ease: 'linear' }
-                : { duration: 0.2 }}
-              style={{ filter: `drop-shadow(0 0 4px ${tutor.color}90)` }}
+              animate={ringActive ? { strokeDashoffset: 0 } : { strokeDashoffset: RING_C }}
+              transition={ringActive ? { duration: CYCLE_DELAY_MS / 1000, ease: 'linear' } : { duration: 0.2 }}
+              style={{ filter: `drop-shadow(0 0 4px ${agent.color}90)` }}
             />
           </svg>
         )}
 
-        {/* ── Expanding pulse rings (outside overflow-hidden) ── */}
+        {/* Pulse rings */}
         {isActive && (
           <>
             <motion.div
               className="absolute inset-0 rounded-full pointer-events-none"
-              style={{ border: `1.5px solid ${tutor.color}70`, zIndex: 1 }}
-              animate={{ opacity: [0.7, 0], scale: [0.88, 1.5] }}
-              transition={{ duration: 1.4, repeat: Infinity, ease: 'easeOut' }}
+              style={{ border: `1px solid ${agent.color}55`, zIndex: 1 }}
+              animate={{ opacity: [0.8, 0], scale: [0.88, 1.55] }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: 'easeOut' }}
             />
             <motion.div
               className="absolute inset-0 rounded-full pointer-events-none"
-              style={{ border: `1px solid ${tutor.color}45`, zIndex: 1 }}
-              animate={{ opacity: [0.5, 0], scale: [0.88, 1.75] }}
-              transition={{ duration: 1.4, repeat: Infinity, ease: 'easeOut', delay: 0.55 }}
+              style={{ border: `1px solid ${agent.color}30`, zIndex: 1 }}
+              animate={{ opacity: [0.5, 0], scale: [0.88, 1.85] }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: 'easeOut', delay: 0.6 }}
             />
           </>
         )}
 
-        {/* ── Avatar circle (inset 4px to sit inside the ring) ── */}
+        {/* Avatar circle */}
         <motion.div
           className="absolute rounded-full overflow-hidden"
-          style={{
-            inset: 4,
-            background: '#0d0a1e',
-            border: `2px solid rgba(255,255,255,0.1)`,
-            zIndex: 3,
-          }}
+          style={{ inset: 4, background: '#0a0812', zIndex: 3 }}
           animate={{
-            borderColor: isActive ? tutor.color : 'rgba(255,255,255,0.1)',
-            boxShadow:   isActive ? `0 0 14px ${tutor.color}50` : '0 0 0px transparent',
+            borderWidth: isActive ? '1.5px' : '1px',
+            borderStyle: 'solid',
+            borderColor: isActive ? agent.color : 'rgba(255,255,255,0.1)',
+            boxShadow: isActive
+              ? `0 0 16px ${agent.color}60, 0 0 32px ${agent.color}28`
+              : '0 0 0 transparent',
           }}
-          transition={{ duration: 0.25 }}
+          transition={{ duration: 0.28 }}
         >
           <Image
-            src={tutor.avatar}
-            alt={tutor.name}
-            width={56}
-            height={56}
+            src={agent.avatar}
+            alt={agent.codename}
+            width={56} height={56}
             className="w-full h-full object-cover"
             unoptimized
           />
-          {/* Inner aura */}
+          {/* Inner glow aura */}
           {isActive && (
             <motion.div
               className="absolute inset-0 rounded-full pointer-events-none"
-              style={{ boxShadow: `0 0 0 3px ${tutor.color}45, 0 0 18px ${tutor.color}60` }}
+              style={{ background: `radial-gradient(circle, ${agent.color}28 0%, transparent 72%)` }}
               animate={{ opacity: [0.5, 1, 0.5] }}
-              transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
+              transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
             />
           )}
         </motion.div>
       </div>
 
-      <p className="text-[11px] font-semibold leading-tight transition-colors duration-200"
-        style={{ color: isActive ? '#fff' : 'rgba(255,255,255,0.38)' }}>
-        {lastName}
-      </p>
-      <p className="text-[9px] leading-tight font-medium transition-colors duration-200"
-        style={{ color: isActive ? tutor.color : 'rgba(255,255,255,0.2)' }}>
-        {tutor.subject}
-      </p>
-    </button>
+      {/* Codename + READY badge */}
+      <div className="flex items-center gap-1.5 mt-2.5 flex-wrap justify-center">
+        <p
+          className="text-[11px] font-bold tracking-widest leading-none"
+          style={{
+            ...MONO,
+            color: isActive ? '#fff' : 'rgba(255,255,255,0.38)',
+          }}
+        >
+          {agent.codename}
+        </p>
+        <span
+          className="text-[8px] font-bold px-1.5 py-0.5 rounded-sm leading-none"
+          style={{
+            ...MONO,
+            background: isActive ? `${agent.color}22` : 'rgba(255,255,255,0.04)',
+            color:      isActive ? agent.color : 'rgba(255,255,255,0.22)',
+            border:     `0.5px solid ${isActive ? agent.color + '55' : 'rgba(255,255,255,0.08)'}`,
+            letterSpacing: '0.04em',
+          }}
+        >
+          ONLINE
+        </span>
+      </div>
+
+      {/* Specs — only when active */}
+      <AnimatePresence>
+        {isActive && (
+          <motion.div
+            className="w-full mt-2 text-center overflow-hidden"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.22, ease: 'easeOut' }}
+          >
+            <p
+              className="text-[9px] leading-snug truncate"
+              style={{ ...MONO, color: agent.color + 'cc' }}
+            >
+              {agent.specialty}
+            </p>
+            <p
+              className="text-[8px] leading-snug mt-0.5"
+              style={{ ...MONO, color: 'rgba(255,255,255,0.32)', whiteSpace: 'normal' }}
+            >
+              {agent.focus}
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.button>
+  );
+}
+
+// ─── Command Rail ─────────────────────────────────────────────────────────────
+function CommandRail({ agents, activeId, onSelect, ringActive, ringKey }: {
+  agents:     AgentDef[];
+  activeId:   string;
+  onSelect:   (id: string) => void;
+  ringActive: boolean;
+  ringKey:    number;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [spot, setSpot] = useState({ x: 0, y: 0, visible: false });
+  const activeAgent = agents.find(a => a.id === activeId)!;
+
+  const onMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (!containerRef.current) return;
+    const r = containerRef.current.getBoundingClientRect();
+    setSpot({ x: e.clientX - r.left, y: e.clientY - r.top, visible: true });
+  }, []);
+
+  const onMouseLeave = useCallback(() => setSpot(s => ({ ...s, visible: false })), []);
+
+  return (
+    <div
+      ref={containerRef}
+      className="relative rounded-2xl mb-5 overflow-hidden"
+      onMouseMove={onMouseMove}
+      onMouseLeave={onMouseLeave}
+      style={{
+        background:         'rgba(9,9,11,0.5)',
+        border:             '0.5px solid rgba(255,255,255,0.06)',
+        backdropFilter:     'blur(32px)',
+        WebkitBackdropFilter: 'blur(32px)',
+        padding:            '14px 16px',
+      }}
+    >
+      {/* Spotlight glow following cursor */}
+      <AnimatePresence>
+        {spot.visible && (
+          <motion.div
+            className="absolute pointer-events-none"
+            style={{ inset: 0, zIndex: 0 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+          >
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                background: `radial-gradient(220px circle at ${spot.x}px ${spot.y}px, ${activeAgent.color}18, transparent 70%)`,
+              }}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Rail label */}
+      <div className="flex items-center gap-2 mb-3 relative" style={{ zIndex: 1 }}>
+        <div className="w-1 h-1 rounded-full animate-pulse" style={{ background: activeAgent.color }} />
+        <p className="text-[9px] font-bold tracking-[0.2em] uppercase" style={{ ...MONO, color: 'rgba(255,255,255,0.25)' }}>
+          Command Rail · Selecione o Agente
+        </p>
+        <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.04)' }} />
+        <p className="text-[9px]" style={{ ...MONO, color: activeAgent.color + '99' }}>
+          {agents.length} agentes online
+        </p>
+      </div>
+
+      {/* Scrollable cards */}
+      <div
+        className="flex gap-3 overflow-x-auto relative pb-1"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', zIndex: 1 }}
+      >
+        {agents.map(agent => (
+          <AgentCard
+            key={agent.id}
+            agent={agent}
+            isActive={agent.id === activeId}
+            ringActive={ringActive && agent.id === activeId}
+            ringKey={ringKey}
+            onClick={() => onSelect(agent.id)}
+          />
+        ))}
+      </div>
+    </div>
   );
 }
 
 // ─── Main component ───────────────────────────────────────────────────────────
 export default function AiTutorsSection() {
-  const [activeId,    setActiveId]    = useState(TUTORS[0].id);
+  const [activeId,    setActiveId]    = useState(AGENTS[0].id);
   // 0=blank  1=user msg  2=typing  3=reply  4=tip+idle
   const [phase,       setPhase]       = useState(0);
   const [autoCycling, setAutoCycling] = useState(true);
-  // ringKey resets the SVG progress animation on each new tutor
   const [ringKey,     setRingKey]     = useState(0);
 
   const pauseRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Cleanup pause timer on unmount
   useEffect(() => {
     return () => { if (pauseRef.current) clearTimeout(pauseRef.current); };
   }, []);
 
-  // ── Chat animation phases (resets on activeId change) ─────────────────────
+  // ── Chat animation phases ──────────────────────────────────────────────────
   useEffect(() => {
     setPhase(0);
-    setRingKey(k => k + 1); // reset progress ring
+    setRingKey(k => k + 1);
     const t1 = setTimeout(() => setPhase(1), 350);
     const t2 = setTimeout(() => setPhase(2), 1700);
     const t3 = setTimeout(() => setPhase(3), 3600);
@@ -312,17 +471,17 @@ export default function AiTutorsSection() {
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); };
   }, [activeId]);
 
-  // ── Auto-cycle: fires CYCLE_DELAY_MS after phase 4 ────────────────────────
+  // ── Auto-cycle ─────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!autoCycling || phase < 4) return;
-    const idx  = TUTORS.findIndex(t => t.id === activeId);
-    const next = TUTORS[(idx + 1) % TUTORS.length];
+    const idx  = AGENTS.findIndex(a => a.id === activeId);
+    const next = AGENTS[(idx + 1) % AGENTS.length];
     const t    = setTimeout(() => setActiveId(next.id), CYCLE_DELAY_MS);
     return () => clearTimeout(t);
   }, [phase, autoCycling, activeId]);
 
-  // ── Manual selection — pauses auto-cycle for 30s ──────────────────────────
-  function selectTutor(id: string) {
+  // ── Manual selection ───────────────────────────────────────────────────────
+  function selectAgent(id: string) {
     if (id === activeId) return;
     setAutoCycling(false);
     if (pauseRef.current) clearTimeout(pauseRef.current);
@@ -330,70 +489,58 @@ export default function AiTutorsSection() {
     setActiveId(id);
   }
 
-  const tutor      = TUTORS.find(t => t.id === activeId)!;
+  const agent      = AGENTS.find(a => a.id === activeId)!;
   const ringActive = autoCycling && phase >= 4;
 
   return (
     <section className="max-w-4xl mx-auto px-5 sm:px-10 pb-24">
 
       {/* ── Header ──────────────────────────────────────────────── */}
-      <div className="text-center mb-10">
+      <div className="text-center mb-8">
         <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: VIOLET }}>
-          Banca Examinadora IA
+          NÚCLEO ORÁCULO
         </p>
         <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">
-          O seu exército pessoal de{' '}
-          <span style={{
-            background: `linear-gradient(90deg, ${NEON}, ${VIOLET})`,
-            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-          }}>
-            10 Especialistas.
-          </span>
+          O seu Comando Tático 24/7
         </h2>
         <p className="text-slate-500 text-base max-w-xl mx-auto">
-          Não é apenas um chat. É uma banca examinadora completa, treinada nas provas do ENEM,
-          disponível{' '}
-          <span className="font-bold" style={{ color: NEON }}>24h</span>{' '}
-          para você.
+          Não pergunte a um robô. Consulte a{' '}
+          <span className="font-bold text-white">rede neural treinada</span>{' '}
+          para pensar como os{' '}
+          <span className="font-bold text-white">mestres do ENEM</span>.{' '}
+          <span className="font-bold text-white">Doze agentes especializados</span>{' '}
+          com acesso imediato à lógica dos aprovados.
         </p>
       </div>
 
-      {/* ── Tutor selector — horizontal scroll ──────────────────── */}
-      <div
-        className="flex gap-4 overflow-x-auto pb-4 mb-6 px-1"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-      >
-        {TUTORS.map(t => (
-          <TutorAvatar
-            key={t.id}
-            tutor={t}
-            isActive={t.id === activeId}
-            ringActive={ringActive && t.id === activeId}
-            ringKey={ringKey}
-            onClick={() => selectTutor(t.id)}
-          />
-        ))}
-      </div>
+      {/* ── Command Rail ─────────────────────────────────────────── */}
+      <CommandRail
+        agents={AGENTS}
+        activeId={activeId}
+        onSelect={selectAgent}
+        ringActive={ringActive}
+        ringKey={ringKey}
+      />
 
       {/* ── Chat container ───────────────────────────────────────── */}
       <motion.div
         className="relative rounded-3xl overflow-hidden"
         animate={{
-          borderColor: `${tutor.color}30`,
-          boxShadow:   `0 0 48px ${tutor.color}14, 0 0 0 1px ${tutor.color}10`,
+          borderColor: `${agent.color}30`,
+          boxShadow:   `0 0 48px ${agent.color}14, 0 0 0 0.5px ${agent.color}18`,
         }}
         transition={{ duration: 0.4 }}
         style={{
-          background: 'rgba(9,9,11,0.5)',
-          backdropFilter: 'blur(20px)',
+          background:         'rgba(9,9,11,0.5)',
+          backdropFilter:     'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
-          border: '1px solid transparent',
+          border:             '0.5px solid transparent',
         }}
       >
         {/* Shimmer top line */}
         <motion.div
           className="absolute inset-x-0 top-0 h-px"
-          animate={{ background: `linear-gradient(90deg, transparent, ${tutor.color}70, transparent)` }}
+          animate={{ background: `linear-gradient(90deg, transparent, ${agent.color}70, transparent)` }}
           transition={{ duration: 0.4 }}
         />
 
@@ -401,32 +548,37 @@ export default function AiTutorsSection() {
         <div className="flex items-center gap-3 px-5 py-4 border-b border-white/5">
           <div
             className="w-10 h-10 rounded-full overflow-hidden shrink-0"
-            style={{ background: '#0d0a1e', border: `1px solid ${tutor.color}45` }}
+            style={{ background: '#0a0812', border: `0.5px solid ${agent.color}55` }}
           >
-            <Image src={tutor.avatar} alt={tutor.name} width={40} height={40} className="w-full h-full object-cover" unoptimized />
+            <Image src={agent.avatar} alt={agent.codename} width={40} height={40} className="w-full h-full object-cover" unoptimized />
           </div>
           <div>
             <p className="text-white font-bold text-sm">
-              {tutor.name}
+              <span style={MONO}>{agent.codename}</span>
               <span className="text-slate-500 font-normal mx-1.5">·</span>
-              {tutor.subject}
+              <span className="text-slate-400 font-normal text-xs" style={MONO}>{agent.specialty}</span>
             </p>
             <div className="flex items-center gap-1.5 mt-0.5">
               <motion.div
                 className="w-1.5 h-1.5 rounded-full"
-                style={{ background: tutor.color }}
+                style={{ background: agent.color }}
                 animate={{ opacity: [1, 0.25, 1] }}
                 transition={{ duration: 1.8, repeat: Infinity }}
               />
-              <span className="text-slate-600 text-xs">{tutor.statusText}</span>
+              <span className="text-slate-600 text-xs" style={MONO}>{agent.focus}</span>
             </div>
           </div>
 
-          {/* Auto-cycle pause indicator */}
+          {/* Manual pause pill */}
           {!autoCycling && (
             <motion.div
               className="ml-auto flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full"
-              style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.30)', border: '1px solid rgba(255,255,255,0.08)' }}
+              style={{
+                background: 'rgba(255,255,255,0.04)',
+                color: 'rgba(255,255,255,0.28)',
+                border: '0.5px solid rgba(255,255,255,0.08)',
+                ...MONO,
+              }}
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
@@ -454,10 +606,10 @@ export default function AiTutorsSection() {
                   className="max-w-xs sm:max-w-sm rounded-2xl rounded-tr-sm px-4 py-3"
                   style={{
                     background: 'linear-gradient(135deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.05) 100%)',
-                    border: '1px solid rgba(255,255,255,0.10)',
+                    border: '0.5px solid rgba(255,255,255,0.10)',
                   }}
                 >
-                  <p className="text-slate-300 text-sm leading-relaxed">{tutor.userMsg}</p>
+                  <p className="text-slate-300 text-sm leading-relaxed">{agent.userMsg}</p>
                   <p className="text-slate-700 text-xs mt-1.5 text-right">Você · agora</p>
                 </div>
               </motion.div>
@@ -474,23 +626,23 @@ export default function AiTutorsSection() {
                 transition={{ duration: 0.28, ease: 'easeOut' }}
               >
                 <div className="w-9 h-9 rounded-full overflow-hidden shrink-0 mt-0.5"
-                  style={{ border: `1px solid ${tutor.color}40`, background: '#0d0a1e' }}>
-                  <Image src={tutor.avatar} alt="" width={36} height={36} className="w-full h-full object-cover" unoptimized />
+                  style={{ border: `0.5px solid ${agent.color}40`, background: '#0a0812' }}>
+                  <Image src={agent.avatar} alt="" width={36} height={36} className="w-full h-full object-cover" unoptimized />
                 </div>
                 <div
                   className="rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-3"
                   style={{
-                    background: `linear-gradient(135deg, ${tutor.color}1a 0%, ${tutor.color}08 100%)`,
-                    border: `1px solid ${tutor.color}28`,
+                    background: `linear-gradient(135deg, ${agent.color}1a 0%, ${agent.color}08 100%)`,
+                    border: `0.5px solid ${agent.color}28`,
                   }}
                 >
-                  <TypingDots color={tutor.color} />
-                  <span className="text-slate-500 text-xs">{tutor.name} está digitando…</span>
+                  <TypingDots color={agent.color} />
+                  <span className="text-slate-500 text-xs" style={MONO}>{agent.codename} processando…</span>
                 </div>
               </motion.div>
             )}
 
-            {/* Tutor response */}
+            {/* Agent response */}
             {phase >= 3 && (
               <motion.div
                 key={`reply-${activeId}`}
@@ -501,17 +653,17 @@ export default function AiTutorsSection() {
                 transition={{ duration: 0.38, ease: 'easeOut' }}
               >
                 <div className="w-9 h-9 rounded-full overflow-hidden shrink-0 mt-0.5"
-                  style={{ border: `1px solid ${tutor.color}40`, background: '#0d0a1e' }}>
-                  <Image src={tutor.avatar} alt="" width={36} height={36} className="w-full h-full object-cover" unoptimized />
+                  style={{ border: `0.5px solid ${agent.color}40`, background: '#0a0812' }}>
+                  <Image src={agent.avatar} alt="" width={36} height={36} className="w-full h-full object-cover" unoptimized />
                 </div>
                 <div
                   className="max-w-xs sm:max-w-md rounded-2xl rounded-tl-sm px-4 py-3"
                   style={{
-                    background: `linear-gradient(135deg, ${tutor.color}1c 0%, ${tutor.color}08 100%)`,
-                    border: `1px solid ${tutor.color}30`,
+                    background: `linear-gradient(135deg, ${agent.color}1c 0%, ${agent.color}08 100%)`,
+                    border: `0.5px solid ${agent.color}30`,
                   }}
                 >
-                  <p className="text-white text-sm leading-relaxed">{tutor.tutorMsg}</p>
+                  <p className="text-white text-sm leading-relaxed">{agent.agentMsg}</p>
 
                   {/* Tip card */}
                   <AnimatePresence>
@@ -520,21 +672,21 @@ export default function AiTutorsSection() {
                         key={`tip-${activeId}`}
                         className="mt-3 px-3 py-2 rounded-xl text-xs"
                         style={{
-                          background: 'rgba(255,255,255,0.04)',
-                          border: `1px solid ${tutor.color}22`,
+                          background: 'rgba(255,255,255,0.03)',
+                          border: `0.5px solid ${agent.color}22`,
                         }}
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.35, ease: 'easeOut' }}
                       >
-                        <span className="font-bold" style={{ color: tutor.color }}>💡 Macete ENEM:</span>
-                        <span className="text-slate-400 ml-1">{tutor.tip}</span>
+                        <span className="font-bold" style={{ color: agent.color }}>⚡ Operação ENEM:</span>
+                        <span className="text-slate-400 ml-1">{agent.tip}</span>
                       </motion.div>
                     )}
                   </AnimatePresence>
 
-                  <p className="text-slate-700 text-xs mt-2">{tutor.name} · agora</p>
+                  <p className="text-slate-700 text-xs mt-2" style={MONO}>{agent.codename} · agora</p>
                 </div>
               </motion.div>
             )}
@@ -547,21 +699,23 @@ export default function AiTutorsSection() {
           <div
             className="flex items-center gap-3 rounded-2xl px-4 py-3"
             style={{
-              background: 'rgba(255,255,255,0.03)',
-              border: '1px solid rgba(255,255,255,0.07)',
+              background: 'rgba(255,255,255,0.025)',
+              border: '0.5px solid rgba(255,255,255,0.07)',
             }}
           >
-            <p className="flex-1 text-sm text-slate-700 select-none">
-              Pergunte qualquer coisa sobre {tutor.subject}…
+            <p className="flex-1 text-sm text-slate-700 select-none" style={MONO}>
+              Transmitir mensagem para {agent.codename}…
             </p>
-            <div
+            <motion.div
               className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
-              style={{ background: `${tutor.color}20`, border: `1px solid ${tutor.color}40` }}
+              style={{ background: `${agent.color}20`, border: `0.5px solid ${agent.color}50` }}
+              animate={{ boxShadow: [`0 0 6px ${agent.color}30`, `0 0 14px ${agent.color}60`, `0 0 6px ${agent.color}30`] }}
+              transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
             >
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <path d="M2 6h8M7 3l3 3-3 3" stroke={tutor.color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M2 6h8M7 3l3 3-3 3" stroke={agent.color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
-            </div>
+            </motion.div>
           </div>
         </div>
       </motion.div>

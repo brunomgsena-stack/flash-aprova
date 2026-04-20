@@ -69,10 +69,16 @@ const SUBJECTS: Subject[] = [
     sysTag:   'VANGUARDA ESTÁVEL',
   },
   {
-    icon: '⏳', name: 'História',           area: 'Ciências Humanas',
-    count:  756, color: '#eab308',
-    topics:   ['Era Vargas', 'Revolução Francesa', 'Brasil Colonial'],
-    sysTag:   'LINHA TEMPORAL INTEGRADA',
+    icon: '🌍', name: 'História Geral',     area: 'Ciências Humanas',
+    count:  412, color: '#eab308',
+    topics:   ['Revolução Francesa', 'Guerra Fria', 'Imperialismo'],
+    sysTag:   'LINHA TEMPORAL GLOBAL',
+  },
+  {
+    icon: '🇧🇷', name: 'História do Brasil', area: 'Ciências Humanas',
+    count:  344, color: '#f97316',
+    topics:   ['Brasil Colonial', 'Era Vargas', 'Ditadura Militar'],
+    sysTag:   'CRONOLOGIA NACIONAL OK',
   },
   {
     icon: '🌐', name: 'Geografia',          area: 'Ciências Humanas',
@@ -340,7 +346,7 @@ export default function CardVaultSection() {
             className="text-[9px] tracking-[0.22em] uppercase whitespace-nowrap"
             style={{ fontFamily: 'ui-monospace, monospace', color: 'rgba(255,255,255,0.28)' }}
           >
-            11 MÓDULOS CARREGADOS
+            12 MÓDULOS CARREGADOS
           </span>
           <div className="h-px w-12 sm:w-20" style={{ background: 'rgba(255,255,255,0.07)' }} />
         </div>

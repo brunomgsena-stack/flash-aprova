@@ -32,7 +32,9 @@ const AiTutorsSection    = dynamic(() => import('@/components/AiTutorsSection'),
 const EssayEvolutionSection = dynamic(() => import('@/components/EssayEvolutionSection'), { ssr: false, loading: () => <SkeletonBlock h={460} /> });
 const FocusSection          = dynamic(() => import('@/components/FocusSection'),          { ssr: false, loading: () => <SkeletonBlock h={480} /> });
 const NeuralEcosystemFlow= dynamic(() => import('@/components/NeuralEcosystemFlow'),{ ssr: false, loading: () => <SkeletonBlock h={360} /> });
-const TacticalOperations = dynamic(() => import('@/components/TacticalOperations'), { ssr: false, loading: () => <SkeletonBlock h={400} /> });
+const BlindagemEngine    = dynamic(() => import('@/components/BlindagemEngine'),    { ssr: false, loading: () => <SkeletonBlock h={400} /> });
+const TacticalRecovery   = dynamic(() => import('@/components/TacticalRecovery'),   { ssr: false, loading: () => <SkeletonBlock h={400} /> });
+const ArsenalElite       = dynamic(() => import('@/components/ArsenalElite'),       { ssr: false, loading: () => <SkeletonBlock h={420} /> });
 const ReelsTestimonials  = dynamic(() => import('@/components/ReelsTestimonials'),  { ssr: false, loading: () => <SkeletonBlock h={340} /> });
 
 // ─── Lazy section wrapper ──────────────────────────────────────────────────────
@@ -448,6 +450,67 @@ const FAQ_ITEMS = [
   },
 ] as const;
 
+// ─── ENEM Countdown ────────────────────────────────────────────────────────────
+function ENEMCountdown() {
+  const ENEM = new Date('2026-11-08T08:00:00-03:00').getTime();
+  const [timeLeft, setTimeLeft] = useState({ d: 0, h: 0, m: 0, s: 0 });
+
+  useEffect(() => {
+    const calc = () => {
+      const diff = ENEM - Date.now();
+      if (diff <= 0) return;
+      setTimeLeft({
+        d: Math.floor(diff / 86400000),
+        h: Math.floor((diff % 86400000) / 3600000),
+        m: Math.floor((diff % 3600000) / 60000),
+        s: Math.floor((diff % 60000) / 1000),
+      });
+    };
+    calc();
+    const iv = setInterval(calc, 1000);
+    return () => clearInterval(iv);
+  }, []);
+
+  const pad = (n: number) => String(n).padStart(2, '0');
+
+  const units = [
+    { v: String(timeLeft.d), label: 'd' },
+    { v: pad(timeLeft.h),    label: 'h' },
+    { v: pad(timeLeft.m),    label: 'm' },
+    { v: pad(timeLeft.s),    label: 's' },
+  ];
+
+  return (
+    <div className="hidden sm:flex items-center gap-1.5"
+      style={{ fontFamily: "'JetBrains Mono', 'Courier New', ui-monospace, monospace" }}
+    >
+      <span className="text-[9px] font-bold tracking-[0.18em] uppercase mr-1"
+        style={{ color: 'rgba(255,255,255,0.2)' }}>
+        ENEM
+      </span>
+      {units.map(({ v, label }, i) => (
+        <span key={label} className="flex items-baseline gap-0.5">
+          <span
+            className="tabular-nums text-sm font-black"
+            style={{
+              color: '#e2e8f0',
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: 5,
+              padding: '1px 5px',
+              letterSpacing: '-0.02em',
+            }}
+          >{v}</span>
+          <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.22)' }}>{label}</span>
+          {i < units.length - 1 && (
+            <span className="text-xs mx-0.5" style={{ color: 'rgba(255,255,255,0.12)' }}>·</span>
+          )}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 // ─── FAQ Accordion ─────────────────────────────────────────────────────────────
 function FAQAccordion() {
   const [open, setOpen] = useState<number | null>(null);
@@ -559,14 +622,10 @@ export default function LandingPage() {
               WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
             }}>Aprova</span>
           </span>
+          <ENEMCountdown />
           <div className="flex items-center gap-4">
             <Link href="/login" className="text-sm text-slate-400 hover:text-white transition-colors font-medium hidden sm:block">
               Entrar
-            </Link>
-            <Link href="/onboarding"
-              className="text-sm px-4 py-2 rounded-xl font-bold text-black transition-all duration-200 hover:-translate-y-0.5"
-              style={{ background: NEON, boxShadow: `0 0 16px ${NEON}40` }}>
-              Começar grátis
             </Link>
           </div>
         </nav>
@@ -576,35 +635,50 @@ export default function LandingPage() {
 
         <AuthorityBanner />
 
-        {/* ════════════════════════════════ A DOR — Ebbinghaus ══ */}
-        <EbbinghausSection />
-
-        {/* ════════════════════════════ ANKI COMPARISON ══ */}
+        {/* ════════════════════════════ METHODS COMPARISON ══ */}
         <section className="max-w-5xl mx-auto px-6 sm:px-10 pb-24">
-          <div className="text-center mb-10">
-            <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: ORANGE }}>
-              Por que o Anki não é suficiente
-            </p>
-            <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">
-              Você já tentou o Anki.{' '}
-              <span style={{ color: ORANGE }}>Abandonou em 2 semanas.</span>
-            </h2>
-            <p className="text-slate-500 text-base max-w-xl mx-auto">
-              O problema não é você. É a ferramenta genérica que não foi feita para o ENEM — e nem para o seu cérebro.
-            </p>
-          </div>
+
+          <EbbinghausSection />
 
           <AnkiComparison />
+
         </section>
 
-        {/* ════════════════════════ A SOLUÇÃO — Neural Brain Map ══ */}
-        <LazySection minHeight={380}>
-          <NeuralBrainMap />
+
+
+        {/* ════════════════════════ ECOSSISTEMA — Neural Ciclo FlashAprova ══ */}
+        <LazySection minHeight={360}>
+          <NeuralEcosystemFlow />
+        </LazySection>
+
+        {/* ════════════════════ FOCO — Mapeamento de Fragilidades ══ */}
+        <LazySection minHeight={480}>
+          <FocusSection />
+        </LazySection>
+
+        {/* ════════════════════════ CENTRAL DE OPERAÇÕES ══ */}
+        <LazySection minHeight={400}>
+          <BlindagemEngine />
+        </LazySection>
+
+        {/* ════════════════════ RECUPERAÇÃO TÁTICA ══ */}
+        <LazySection minHeight={400}>
+          <TacticalRecovery />
+        </LazySection>
+
+        {/* ══════════════════════════ ARSENAL DE ELITE ══ */}
+        <LazySection minHeight={420}>
+          <ArsenalElite />
         </LazySection>
 
         {/* ═══════════════════════════ BIBLIOTECA ══ */}
         <LazySection minHeight={480}>
           <CardVaultSection />
+        </LazySection>
+
+        {/* ════════════════════════════ TUTOR IA ══ */}
+        <LazySection minHeight={480}>
+          <AiTutorsSection />
         </LazySection>
 
         {/* ═══════════════════════ NORMA · REDAÇÃO ══ */}
@@ -615,26 +689,6 @@ export default function LandingPage() {
         {/* ══════════════════ TRAJETÓRIA — Essay Evolution ══ */}
         <LazySection minHeight={460}>
           <EssayEvolutionSection />
-        </LazySection>
-
-        {/* ════════════════════════════ TUTOR IA ══ */}
-        <LazySection minHeight={480}>
-          <AiTutorsSection />
-        </LazySection>
-
-        {/* ════════════════════ FOCO — Mapeamento de Fragilidades ══ */}
-        <LazySection minHeight={480}>
-          <FocusSection />
-        </LazySection>
-
-        {/* ════════════════════════ ECOSSISTEMA — Neural Ciclo FlashAprova ══ */}
-        <LazySection minHeight={360}>
-          <NeuralEcosystemFlow />
-        </LazySection>
-
-        {/* ════════════════════════ CENTRAL DE OPERAÇÕES ══ */}
-        <LazySection minHeight={400}>
-          <TacticalOperations />
         </LazySection>
 
         {/* ═══════════════════ CTA mid-page ══ */}

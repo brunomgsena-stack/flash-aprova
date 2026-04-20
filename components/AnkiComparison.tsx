@@ -1,339 +1,507 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { motion, useInView, type Variants } from 'framer-motion';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
-const CYAN   = '#06b6d4';
-const VIOLET = '#7C3AED';
+const RED    = '#ff2d55';
+const PURPLE = '#7C3AED';
+const GREEN  = '#22c55e';
 
-// ─── CountUp hook ─────────────────────────────────────────────────────────────
-function useCountUp(
-  target: number,
-  durationMs: number,
-  started: boolean,
-  delayMs = 0,
-  fastEase = true,
-): number {
-  const [val, setVal] = useState(0);
-  useEffect(() => {
-    if (!started) return;
-    let raf: number;
-    const timer = setTimeout(() => {
-      let t0: number | null = null;
-      function tick(ts: number) {
-        if (!t0) t0 = ts;
-        const p = Math.min((ts - t0) / durationMs, 1);
-        // fastEase: cubic ease-out (snappy 97%); slow: quad ease-in-out (laboured 40%)
-        const e = fastEase
-          ? 1 - Math.pow(1 - p, 3)
-          : p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
-        setVal(Math.round(e * target));
-        if (p < 1) raf = requestAnimationFrame(tick);
-        else setVal(target);
-      }
-      raf = requestAnimationFrame(tick);
-    }, delayMs);
-    return () => { clearTimeout(timer); cancelAnimationFrame(raf); };
-  }, [started, target, durationMs, delayMs, fastEase]);
-  return val;
-}
-
-// ─── Stagger variants ─────────────────────────────────────────────────────────
-// Cast bezier tuples to satisfy strict Variants type
+// ─── Animation variants ───────────────────────────────────────────────────────
 type AnyEase = [number, number, number, number];
 const SWIFT: AnyEase = [0.22, 1, 0.36, 1];
 
+const fadeUp: Variants = {
+  hidden:  { opacity: 0, y: 20 },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: SWIFT as any } },
+};
+
 const listWrap: Variants = {
   hidden:  { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.10, delayChildren: 0.20 } },
+  visible: { opacity: 1, transition: { staggerChildren: 0.10, delayChildren: 0.15 } },
 };
 
-const rowAnki: Variants = {
-  hidden:  { opacity: 0, x: -14 },
+const rowItem: Variants = {
+  hidden:  { opacity: 0, x: -10 },
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  visible: { opacity: 1, x: 0, transition: { duration: 0.38, ease: SWIFT as any } },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.35, ease: SWIFT as any } },
 };
 
-const rowFlash: Variants = {
-  hidden:  { opacity: 0, x: 14, scale: 0.94 },
+const rowItemRight: Variants = {
+  hidden:  { opacity: 0, x: 10 },
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  visible: { opacity: 1, x: 0, scale: 1, transition: { duration: 0.40, ease: SWIFT as any } },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.35, ease: SWIFT as any } },
 };
 
-// Spring-pop for the 🧠🎯📚 icons — natural overshoot without keyframe arrays
-const iconPop: Variants = {
-  hidden:  { scale: 0, opacity: 0 },
-  visible: {
-    scale: 1, opacity: 1,
-    transition: { type: 'spring', stiffness: 420, damping: 13, mass: 0.6 },
-  },
+const cardPop: Variants = {
+  hidden:  { opacity: 0, y: 24, scale: 0.95 },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.42, ease: SWIFT as any } },
 };
 
-// ─── AnkiComparison ───────────────────────────────────────────────────────────
+// ─── Component ────────────────────────────────────────────────────────────────
 export default function AnkiComparison() {
   const wrapRef  = useRef<HTMLDivElement>(null);
-  const isInView = useInView(wrapRef, { once: true, margin: '-80px' });
+  const isInView = useInView(wrapRef, { once: true, margin: '-60px' });
 
-  // 40 %: slow quad ease-in-out, 300 ms delay
-  const ankiPct  = useCountUp(40,  1200, isInView, 300,  false);
-  // 97 %: fast cubic ease-out (spring feel), 500 ms delay
-  const flashPct = useCountUp(97,  750,  isInView, 500,  true);
-
-  const [ankiHover,  setAnkiHover]  = useState(false);
-  const [flashHover, setFlashHover] = useState(false);
+  const [leftHover,  setLeftHover]  = useState(false);
+  const [rightHover, setRightHover] = useState(false);
 
   return (
-    <div ref={wrapRef} className="relative">
+    <div ref={wrapRef} className="relative space-y-10">
 
       {/* ── CSS keyframes ── */}
       <style>{`
-        @keyframes anki-glitch {
-          0%, 88%, 100% { opacity: 1;    transform: translate(0,0)   skewX(0deg);   }
-          89%            { opacity: 0.82; transform: translate(-3px,0) skewX(-0.6deg); }
-          90%            { opacity: 0.94; transform: translate( 3px,0) skewX( 0.4deg); }
-          91%            { opacity: 0.88; transform: translate(-1px,-1px);             }
-          92%            { opacity: 1;    transform: translate(0,0);                   }
+        @keyframes glitch-h {
+          0%,90%,100% { clip-path: inset(0 0 100% 0); opacity: 0; }
+          91%          { clip-path: inset(12% 0 80% 0);  opacity: 0.55; transform: translate(-4px,0); }
+          92%          { clip-path: inset(55% 0 28% 0);  opacity: 0.40; transform: translate( 3px,0); }
+          93%          { clip-path: inset(72% 0 10% 0);  opacity: 0.55; transform: translate(-2px,0); }
+          94%          { clip-path: inset(0 0 100% 0);   opacity: 0; }
         }
-        @keyframes scanline-drift {
+        @keyframes scanlines {
           from { background-position: 0 0;    }
           to   { background-position: 0 48px; }
         }
+        @keyframes pulse-glow {
+          0%,100% { opacity: 0.55; }
+          50%     { opacity: 1;    }
+        }
+        @keyframes status-blink {
+          0%,49%  { opacity: 1;    }
+          50%,100%{ opacity: 0.35; }
+        }
       `}</style>
 
-      {/* ── VS badge — desktop only, floats in the gap ── */}
+      {/* ════════════ SECTION HEADER ════════════ */}
       <motion.div
-        className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20
-                   items-center justify-center"
-        initial={{ opacity: 0, scale: 0.3 }}
-        animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.3 }}
-        transition={{ delay: 0.68, type: 'spring', stiffness: 300, damping: 18 }}
+        className="flex flex-col items-center text-center gap-4"
+        variants={fadeUp}
+        initial="hidden"
+        animate={isInView ? 'visible' : 'hidden'}
       >
+        {/* Badge */}
         <div
-          className="w-11 h-11 rounded-full flex items-center justify-center
-                     text-[11px] font-black tracking-widest"
+          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest"
           style={{
-            background: 'rgba(10,10,16,0.98)',
-            border: '1px solid rgba(255,255,255,0.09)',
-            color: 'rgba(255,255,255,0.28)',
-            boxShadow: '0 0 0 5px rgba(0,0,0,0.55), 0 4px 20px rgba(0,0,0,0.7)',
+            background: `${RED}10`,
+            border: `1px solid ${RED}30`,
+            color: `${RED}cc`,
           }}
         >
-          VS
+          <span style={{
+            display: 'inline-block', width: 5, height: 5, borderRadius: '50%',
+            background: RED, boxShadow: `0 0 6px ${RED}`,
+            animation: 'status-blink 1.2s step-end infinite',
+          }} />
+          Método Tradicional
         </div>
+
+        {/* Headline */}
+        <h2 className="text-3xl md:text-4xl font-black tracking-tight leading-tight"
+          style={{ color: 'rgba(255,255,255,0.92)' }}>
+          A Fábrica de{' '}
+          <span style={{ color: RED, textShadow: `0 0 32px ${RED}60` }}>Reprovados</span>
+        </h2>
+
+        {/* Subtitle */}
+        <p className="text-sm md:text-base leading-relaxed max-w-xl"
+          style={{ color: 'rgba(255,255,255,0.42)' }}>
+          Não é falta de inteligência. É o uso de ferramentas obsoletas que{' '}
+          <span style={{ color: 'rgba(255,255,255,0.70)' }}>
+            ignoram como o seu cérebro realmente funciona.
+          </span>
+        </p>
       </motion.div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+      {/* ════════════ VERSUS GRID ════════════ */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 relative">
 
-        {/* ════════════════════ ANKI CARD ════════════════════ */}
+        {/* VS badge — desktop */}
+        <motion.div
+          className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-30
+                     items-center justify-center"
+          initial={{ opacity: 0, scale: 0.3 }}
+          animate={isInView ? { opacity: 1, scale: 1 } : {}}
+          transition={{ delay: 0.7, type: 'spring', stiffness: 320, damping: 20 }}
+        >
+          <div
+            className="w-12 h-12 rounded-full flex items-center justify-center
+                       text-[11px] font-black tracking-widest select-none"
+            style={{
+              background: '#080810',
+              border: '1px solid rgba(255,255,255,0.08)',
+              color: 'rgba(255,255,255,0.22)',
+              boxShadow: '0 0 0 6px rgba(0,0,0,0.6), 0 4px 24px rgba(0,0,0,0.8)',
+            }}
+          >
+            VS
+          </div>
+        </motion.div>
+
+        {/* ──────────── COLUNA ESQUERDA — ESTUDO AMADOR ──────────── */}
         <motion.div
           className="relative rounded-2xl p-6 overflow-hidden cursor-default"
           style={{
-            background: 'rgba(10,5,20,0.75)',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-            border: '1px solid rgba(124,58,237,0.18)',
-            // Hover: desaturate + dim to reinforce "obsolete"
-            filter: ankiHover
-              ? 'saturate(0.28) brightness(0.68)'
-              : 'saturate(1) brightness(1)',
-            transition: 'filter 0.35s ease',
+            background: 'rgba(8,4,12,0.92)',
+            backdropFilter: 'blur(24px)',
+            WebkitBackdropFilter: 'blur(24px)',
+            border: leftHover
+              ? `1px solid ${RED}55`
+              : '1px solid rgba(255,255,255,0.06)',
+            boxShadow: leftHover
+              ? `0 0 60px ${RED}18, 0 0 120px ${RED}08`
+              : 'none',
+            transition: 'border-color 0.3s ease, box-shadow 0.3s ease',
           }}
-          initial={{ opacity: 0, x: -32 }}
+          initial={{ opacity: 0, x: -28 }}
           animate={isInView ? { opacity: 1, x: 0 } : {}}
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          transition={{ duration: 0.55, ease: SWIFT as any }}
-          onMouseEnter={() => setAnkiHover(true)}
-          onMouseLeave={() => setAnkiHover(false)}
+          transition={{ duration: 0.52, ease: SWIFT as any }}
+          onMouseEnter={() => setLeftHover(true)}
+          onMouseLeave={() => setLeftHover(false)}
         >
-          {/* Ambient violet glow */}
-          <div className="absolute inset-0 pointer-events-none"
-            style={{ background: 'radial-gradient(ellipse at top left, rgba(124,58,237,0.07) 0%, transparent 65%)' }} />
-          <div className="absolute inset-x-0 top-0 h-px"
-            style={{ background: 'linear-gradient(90deg, transparent, rgba(124,58,237,0.30), transparent)' }} />
-
-          {/* ── Tactical noise / glitch layers ── */}
-          <div className="absolute inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 1 }}>
-            {/* Drifting CRT scanlines */}
+          {/* Scanlines overlay — always present */}
+          <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 1 }}>
             <div style={{
               position: 'absolute', inset: 0,
-              backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255,255,255,0.016) 3px, rgba(255,255,255,0.016) 4px)',
+              backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255,255,255,0.012) 3px, rgba(255,255,255,0.012) 4px)',
               backgroundSize: '100% 4px',
-              animation: 'scanline-drift 10s linear infinite',
-            }} />
-            {/* Horizontal glitch stripe (synced to keyframe) */}
-            <div style={{
-              position: 'absolute', inset: 0,
-              animation: 'anki-glitch 7s 1.5s infinite',
-              background: `linear-gradient(0deg, transparent 46%, rgba(124,58,237,0.045) 50%, transparent 54%)`,
+              animation: 'scanlines 12s linear infinite',
             }} />
           </div>
+
+          {/* Glitch bars — on hover */}
+          {leftHover && (
+            <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 2 }}>
+              <div style={{
+                position: 'absolute', inset: 0,
+                background: `linear-gradient(180deg, transparent 30%, ${RED}22 50%, transparent 70%)`,
+                animation: 'glitch-h 2.2s infinite',
+              }} />
+              <div style={{
+                position: 'absolute', inset: 0,
+                background: `linear-gradient(180deg, transparent 60%, ${RED}18 75%, transparent 90%)`,
+                animation: 'glitch-h 3.1s 0.4s infinite',
+              }} />
+            </div>
+          )}
+
+          {/* Red top line */}
+          <div className="absolute inset-x-0 top-0 h-px pointer-events-none" style={{ zIndex: 3,
+            background: `linear-gradient(90deg, transparent, ${RED}50, transparent)` }} />
 
           {/* Header */}
-          <div className="relative flex items-center gap-3 mb-5" style={{ zIndex: 2 }}>
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg"
-              style={{ background: 'rgba(124,58,237,0.12)', border: '1px solid rgba(124,58,237,0.22)' }}>
-              🃏
+          <div className="relative flex flex-col gap-3 mb-6" style={{ zIndex: 4 }}>
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center text-base"
+                style={{ background: `${RED}14`, border: `1px solid ${RED}28` }}>
+                💀
+              </div>
+              <div>
+                <p className="font-black text-base tracking-tight" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                  Estudo Amador
+                </p>
+                <p className="text-xs" style={{ color: 'rgba(255,255,255,0.22)' }}>
+                  Resumos · Apostilas · Intuição
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="text-white font-bold text-sm">Anki</p>
-              <p className="text-xs" style={{ color: 'rgba(124,58,237,0.60)' }}>Método tradicional</p>
+            {/* Status seal */}
+            <div className="inline-flex items-center gap-2 self-start px-3 py-1.5 rounded-lg"
+              style={{ background: `${RED}10`, border: `1px solid ${RED}28` }}>
+              <span style={{
+                display: 'inline-block', width: 6, height: 6, borderRadius: '50%',
+                background: RED, animation: 'status-blink 1.2s step-end infinite',
+                boxShadow: `0 0 6px ${RED}`,
+              }} />
+              <span className="text-[10px] font-black tracking-widest" style={{ color: RED }}>
+                STATUS: BAIXA RETENÇÃO
+              </span>
             </div>
-            <span
-              className="ml-auto text-[10px] font-black px-2.5 py-1 rounded-full"
-              style={{ background: 'rgba(239,68,68,0.12)', color: '#f87171', border: '1px solid rgba(239,68,68,0.20)' }}
-            >
-              MANUAL &amp; GENÉRICO
-            </span>
           </div>
 
-          {/* Staggered pain points */}
+          {/* Pain list */}
           <motion.div
             className="relative flex flex-col gap-3"
-            style={{ zIndex: 2 }}
+            style={{ zIndex: 4 }}
             variants={listWrap}
             initial="hidden"
             animate={isInView ? 'visible' : 'hidden'}
           >
             {[
-              { icon: '⏳', text: 'Horas configurando decks e intervalos manualmente' },
-              { icon: '😵', text: 'Nenhuma análise de lacunas — você não sabe o que está esquecendo' },
-              { icon: '📭', text: 'Sem conteúdo ENEM-específico. Você cria tudo do zero' },
-              { icon: '🔇', text: 'Sem tutor. Quando trava numa questão, fica sozinho' },
-              { icon: '📉', text: 'Taxa de abandono >60% após 2 semanas' },
-            ].map(({ icon, text }) => (
-              <motion.div key={text} variants={rowAnki} className="flex items-start gap-3">
-                <span className="text-base shrink-0 mt-0.5 opacity-50">{icon}</span>
-                <p className="text-slate-600 text-sm leading-snug">{text}</p>
+              { icon: '✏️', label: 'Resumos Manuais',     sub: 'Você escreve. Você esquece. Repete.' },
+              { icon: '📖', label: 'Apostilas Estáticas',  sub: 'Conteúdo morto, sem adaptação ao seu nível.' },
+              { icon: '🎲', label: 'Revisão por Intuição', sub: 'Sem dados. Sem plano. Sem resultado.' },
+            ].map(({ icon, label, sub }) => (
+              <motion.div
+                key={label}
+                variants={rowItem}
+                className="flex items-start gap-3 p-3 rounded-xl"
+                style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.04)' }}
+              >
+                <span className="text-lg shrink-0 mt-0.5 grayscale opacity-40">{icon}</span>
+                <div>
+                  <p className="text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                    {label}
+                  </p>
+                  <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.18)' }}>{sub}</p>
+                </div>
+                <span className="ml-auto shrink-0 text-xs font-bold mt-0.5" style={{ color: `${RED}70` }}>✕</span>
               </motion.div>
             ))}
           </motion.div>
 
-          {/* Retention score — slow counter */}
-          <div className="relative mt-6 pt-4 border-t" style={{ borderColor: 'rgba(255,255,255,0.05)', zIndex: 2 }}>
-            <p className="text-xs text-slate-700 uppercase tracking-wider mb-1">Retenção média</p>
-            <div className="flex items-end gap-2">
-              <p className="text-3xl font-black tabular-nums" style={{ color: 'rgba(239,68,68,0.58)' }}>
-                ~{ankiPct}%
-              </p>
-              <p className="text-slate-700 text-xs mb-1">após 1 semana sem revisão forçada</p>
-            </div>
+          {/* Bottom score */}
+          <div className="relative mt-5 pt-4" style={{ zIndex: 4, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+            <p className="text-[10px] uppercase tracking-widest mb-1" style={{ color: 'rgba(255,255,255,0.22)' }}>
+              Retenção real
+            </p>
+            <p className="text-3xl font-black tabular-nums" style={{ color: `${RED}80` }}>~35%</p>
+            <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.18)' }}>após 1 semana sem revisão</p>
           </div>
         </motion.div>
 
-        {/* ════════════════════ FLASHAPROVA CARD ════════════════════ */}
+        {/* ──────────── COLUNA DIREITA — ENGENHARIA FLASHAPROVA ──────────── */}
         <motion.div
           className="relative rounded-2xl p-6 overflow-hidden cursor-default"
           style={{
-            background: 'rgba(5,8,20,0.85)',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-            border: `1px solid ${flashHover ? CYAN + '65' : CYAN + '35'}`,
-            boxShadow: flashHover
-              ? `0 0 80px ${CYAN}30, 0 0 160px ${CYAN}14, 0 0 0 1px ${CYAN}22`
-              : `0 0 60px ${CYAN}12, 0 0 120px ${CYAN}06`,
-            transition: 'border-color 0.28s ease, box-shadow 0.28s ease',
+            background: 'rgba(5,4,18,0.95)',
+            backdropFilter: 'blur(24px)',
+            WebkitBackdropFilter: 'blur(24px)',
+            border: rightHover
+              ? `1px solid ${PURPLE}80`
+              : `1px solid ${PURPLE}35`,
+            boxShadow: rightHover
+              ? `0 0 80px ${PURPLE}35, 0 0 160px ${GREEN}10, 0 0 0 1px ${PURPLE}22`
+              : `0 0 40px ${PURPLE}15, 0 0 80px ${PURPLE}08`,
+            transition: 'border-color 0.3s ease, box-shadow 0.3s ease',
           }}
-          initial={{ opacity: 0, x: 32, scale: 0.92 }}
+          initial={{ opacity: 0, x: 28, scale: 0.93 }}
           animate={isInView ? { opacity: 1, x: 0, scale: 1 } : {}}
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          transition={{ duration: 0.55, ease: SWIFT as any, delay: 0.50 }}
-          whileHover={{
-            scale: 1.022,
-            transition: { type: 'spring', stiffness: 280, damping: 22 },
-          }}
-          onMouseEnter={() => setFlashHover(true)}
-          onMouseLeave={() => setFlashHover(false)}
+          transition={{ duration: 0.52, ease: SWIFT as any, delay: 0.18 }}
+          whileHover={{ scale: 1.018, transition: { type: 'spring', stiffness: 280, damping: 22 } }}
+          onMouseEnter={() => setRightHover(true)}
+          onMouseLeave={() => setRightHover(false)}
         >
-          {/* Ambient cyan glow */}
-          <div className="absolute inset-0 pointer-events-none"
-            style={{ background: `radial-gradient(ellipse at top right, ${CYAN}14 0%, transparent 65%)` }} />
-          <div className="absolute inset-x-0 top-0 h-px"
-            style={{ background: `linear-gradient(90deg, transparent, ${CYAN}70, ${VIOLET}40, transparent)` }} />
+          {/* Ambient glow */}
+          <div className="absolute inset-0 pointer-events-none" style={{
+            background: `radial-gradient(ellipse at top right, ${PURPLE}20 0%, transparent 60%)`,
+          }} />
+          <div className="absolute inset-0 pointer-events-none" style={{
+            background: `radial-gradient(ellipse at bottom left, ${GREEN}08 0%, transparent 60%)`,
+          }} />
 
-          {/* "System activated" pulsing border on hover */}
-          {flashHover && (
+          {/* Purple + green top accent */}
+          <div className="absolute inset-x-0 top-0 h-px pointer-events-none"
+            style={{ background: `linear-gradient(90deg, transparent, ${PURPLE}80, ${GREEN}60, transparent)` }} />
+
+          {/* Pulsing border ring on hover */}
+          {rightHover && (
             <motion.div
               className="absolute inset-0 rounded-2xl pointer-events-none"
-              style={{ border: `1px solid ${CYAN}55` }}
-              animate={{ opacity: [0.35, 0.85, 0.35] }}
-              transition={{ duration: 1.3, repeat: Infinity, ease: 'easeInOut' }}
+              style={{ border: `1px solid ${PURPLE}45` }}
+              animate={{ opacity: [0.3, 0.85, 0.3] }}
+              transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
             />
           )}
 
           {/* Header */}
-          <div className="relative flex items-center gap-3 mb-5">
-            <div
-              className="w-9 h-9 rounded-xl flex items-center justify-center text-lg"
-              style={{ background: `${CYAN}18`, border: `1px solid ${CYAN}35`, boxShadow: `0 0 12px ${CYAN}20` }}
-            >
-              ⚡
+          <div className="relative flex flex-col gap-3 mb-6" style={{ zIndex: 4 }}>
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center text-base"
+                style={{
+                  background: `${PURPLE}22`,
+                  border: `1px solid ${PURPLE}50`,
+                  boxShadow: `0 0 14px ${PURPLE}30`,
+                }}>
+                ⚡
+              </div>
+              <div>
+                <p className="font-black text-base tracking-tight text-white">
+                  Engenharia FlashAprova
+                </p>
+                <p className="text-xs" style={{ color: `${PURPLE}cc` }}>
+                  IA + SRS + Tutoria Adaptativa
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="text-white font-bold text-sm">FlashAprova</p>
-              <p className="text-xs" style={{ color: `${CYAN}90` }}>IA + SRS integrado</p>
-            </div>
-            <span
-              className="ml-auto text-[10px] font-black px-2.5 py-1 rounded-full"
+            {/* Status seal */}
+            <div className="inline-flex items-center gap-2 self-start px-3 py-1.5 rounded-lg"
               style={{
-                background: `linear-gradient(135deg, ${VIOLET}30, ${CYAN}25)`,
-                color: CYAN,
-                border: `1px solid ${CYAN}35`,
-                boxShadow: `0 0 8px ${CYAN}15`,
-              }}
-            >
-              IA ESPECIALISTA
-            </span>
+                background: `linear-gradient(135deg, ${PURPLE}18, ${GREEN}12)`,
+                border: `1px solid ${GREEN}40`,
+                boxShadow: `0 0 12px ${GREEN}15`,
+              }}>
+              <span style={{
+                display: 'inline-block', width: 6, height: 6, borderRadius: '50%',
+                background: GREEN, animation: 'pulse-glow 1.4s ease-in-out infinite',
+                boxShadow: `0 0 8px ${GREEN}`,
+              }} />
+              <span className="text-[10px] font-black tracking-widest" style={{ color: GREEN }}>
+                STATUS: MEMÓRIA BLINDADA
+              </span>
+            </div>
           </div>
 
-          {/* Staggered wins — icons 🧠🎯📚 spring-pop */}
+          {/* Win list */}
           <motion.div
             className="relative flex flex-col gap-3"
+            style={{ zIndex: 4 }}
             variants={listWrap}
             initial="hidden"
             animate={isInView ? 'visible' : 'hidden'}
           >
             {[
-              { icon: '🧠', text: 'Algoritmo SRS automático — zero configuração, máxima retenção', pop: true  },
-              { icon: '🎯', text: 'Radar de lacunas por IA: sabe exatamente o que revisar hoje',   pop: true  },
-              { icon: '📚', text: '+5.700 flashcards ENEM-específicos prontos para usar',           pop: true  },
-              { icon: '🤖', text: '7 tutores IA especialistas por disciplina — suporte 24h',        pop: false },
-              { icon: '📈', text: 'Heatmap de evolução: visualize seu progresso semana a semana',   pop: false },
-            ].map(({ icon, text, pop }) => (
-              <motion.div key={text} variants={rowFlash} className="flex items-start gap-3">
-                <motion.span
-                  className="text-base shrink-0 mt-0.5"
-                  variants={pop ? iconPop : undefined}
-                >
-                  {icon}
-                </motion.span>
-                <p className="text-slate-300 text-sm leading-snug">{text}</p>
+              { icon: '🧠', label: 'Algoritmo SRS IA',  sub: 'Zero configuração. Máxima retenção automática.' },
+              { icon: '📡', label: 'Radar de Lacunas',  sub: 'Sabe exatamente onde você está falhando.' },
+              { icon: '🤖', label: 'Tutoria 24h',       sub: '7 tutores IA por disciplina, disponíveis agora.' },
+            ].map(({ icon, label, sub }) => (
+              <motion.div
+                key={label}
+                variants={rowItemRight}
+                className="flex items-start gap-3 p-3 rounded-xl"
+                style={{
+                  background: `linear-gradient(135deg, ${PURPLE}12, ${GREEN}06)`,
+                  border: `1px solid ${PURPLE}25`,
+                  boxShadow: `0 0 20px ${PURPLE}08`,
+                }}
+              >
+                <span className="text-lg shrink-0 mt-0.5">{icon}</span>
+                <div>
+                  <p className="text-sm font-semibold text-white">{label}</p>
+                  <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.45)' }}>{sub}</p>
+                </div>
+                <span className="ml-auto shrink-0 text-xs font-black mt-0.5"
+                  style={{ color: GREEN, textShadow: `0 0 8px ${GREEN}` }}>✓</span>
               </motion.div>
             ))}
           </motion.div>
 
-          {/* Retention score — fast spring counter */}
-          <div className="relative mt-6 pt-4 border-t" style={{ borderColor: `${CYAN}15` }}>
-            <p className="text-xs uppercase tracking-wider mb-1" style={{ color: `${CYAN}60` }}>
+          {/* Bottom score */}
+          <div className="relative mt-5 pt-4" style={{ zIndex: 4, borderTop: `1px solid ${PURPLE}20` }}>
+            <p className="text-[10px] uppercase tracking-widest mb-1" style={{ color: `${PURPLE}90` }}>
               Retenção média
             </p>
-            <div className="flex items-end gap-2">
-              <p
-                className="text-3xl font-black tabular-nums"
-                style={{ color: CYAN, textShadow: `0 0 20px ${CYAN}70` }}
-              >
-                {flashPct}%
-              </p>
-              <p className="text-slate-500 text-xs mb-1">com revisões espaçadas por IA</p>
-            </div>
+            <p className="text-3xl font-black tabular-nums"
+              style={{ color: GREEN, textShadow: `0 0 24px ${GREEN}80` }}>
+              97%
+            </p>
+            <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>com revisões espaçadas por IA</p>
           </div>
 
-          {/* Bottom accent line */}
-          <div className="absolute inset-x-0 bottom-0 h-px"
-            style={{ background: `linear-gradient(90deg, transparent, ${CYAN}40, transparent)` }} />
+          {/* Bottom accent */}
+          <div className="absolute inset-x-0 bottom-0 h-px pointer-events-none"
+            style={{ background: `linear-gradient(90deg, transparent, ${GREEN}40, ${PURPLE}50, transparent)` }} />
         </motion.div>
-
       </div>
+
+      {/* ════════════ ENEMY CARDS ════════════ */}
+      <motion.div
+        className="grid grid-cols-1 md:grid-cols-3 gap-4"
+        variants={listWrap}
+        initial="hidden"
+        animate={isInView ? 'visible' : 'hidden'}
+      >
+        {[
+          {
+            icon: '✏️',
+            kill: 'Resumos Manuais',
+            quote: '"Resumos são terapia, não memória."',
+          },
+          {
+            icon: '📖',
+            kill: 'Apostilas Estáticas',
+            quote: '"Apostilas são depósitos de esquecimento."',
+          },
+          {
+            icon: '⚙️',
+            kill: 'Configuração Manual',
+            quote: '"Se você precisa configurar, você está perdendo tempo."',
+          },
+        ].map(({ icon, kill, quote }) => (
+          <motion.div
+            key={kill}
+            variants={cardPop}
+            className="group relative flex items-start gap-4 p-4 rounded-2xl cursor-default overflow-hidden"
+            style={{
+              background: 'rgba(255,45,85,0.04)',
+              border: '1px solid rgba(255,45,85,0.12)',
+              transition: 'background 0.3s ease, border-color 0.3s ease',
+            }}
+            whileHover={{
+              backgroundColor: 'rgba(255,45,85,0.08)',
+              borderColor: 'rgba(255,45,85,0.28)',
+              transition: { duration: 0.2 },
+            }}
+          >
+            {/* Crossed-out icon */}
+            <div className="relative shrink-0">
+              <span className="text-2xl grayscale opacity-35">{icon}</span>
+              <span className="absolute inset-0 flex items-center justify-center text-lg font-black"
+                style={{ color: RED, textShadow: `0 0 6px ${RED}` }}>
+                ✕
+              </span>
+            </div>
+            <div>
+              <p className="text-xs font-black uppercase tracking-widest mb-1"
+                style={{ color: `${RED}80` }}>
+                {kill} — eliminado
+              </p>
+              <p className="text-sm leading-snug" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                {quote}
+              </p>
+            </div>
+          </motion.div>
+        ))}
+      </motion.div>
+
+      {/* ════════════ CTA FINAL ════════════ */}
+      <motion.div
+        className="flex flex-col items-center gap-6 pt-2"
+        variants={fadeUp}
+        initial="hidden"
+        animate={isInView ? 'visible' : 'hidden'}
+      >
+        <p className="text-center text-base md:text-lg leading-relaxed max-w-xl"
+          style={{ color: 'rgba(255,255,255,0.45)' }}>
+          A escolha é sua: continuar no{' '}
+          <span className="font-bold" style={{ color: `${RED}cc` }}>balde furado</span>
+          {' '}ou assumir o controle da sua{' '}
+          <span className="font-bold" style={{ color: GREEN }}>aprovação</span>.
+        </p>
+
+        <motion.button
+          className="relative px-10 py-4 rounded-2xl font-black text-sm tracking-widest overflow-hidden"
+          style={{
+            background: `linear-gradient(135deg, ${PURPLE}, #5b21b6)`,
+            color: '#fff',
+            boxShadow: `0 0 0 1px ${PURPLE}60, 0 0 40px ${PURPLE}35, 0 8px 32px rgba(0,0,0,0.5)`,
+          }}
+          whileHover={{
+            scale: 1.04,
+            boxShadow: `0 0 0 1px ${PURPLE}90, 0 0 70px ${PURPLE}55, 0 0 120px ${GREEN}18, 0 8px 40px rgba(0,0,0,0.6)`,
+            transition: { duration: 0.2 },
+          }}
+          whileTap={{ scale: 0.97 }}
+        >
+          {/* Shimmer */}
+          <motion.div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: 'linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.12) 50%, transparent 65%)',
+              backgroundSize: '200% 100%',
+            }}
+            animate={{ backgroundPosition: ['200% 0', '-200% 0'] }}
+            transition={{ duration: 2.4, repeat: Infinity, ease: 'linear', repeatDelay: 0.8 }}
+          />
+          MIGRAR PARA O FLASHAPROVA →
+        </motion.button>
+      </motion.div>
+
     </div>
   );
 }

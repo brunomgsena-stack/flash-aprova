@@ -9,6 +9,7 @@ const EMERALD = '#10b981';
 const CYAN    = '#06b6d4';
 const VIOLET  = '#7C3AED';
 const ORANGE  = '#f97316';
+const JETBRAINS = "'JetBrains Mono', 'ui-monospace', monospace";
 
 // ─── Stagger variants ─────────────────────────────────────────────────────────
 const grid = {
@@ -204,13 +205,13 @@ function HeatmapRadar({ inView }: { inView: boolean }) {
 // Card 2 — Cronograma Preditivo
 // ─────────────────────────────────────────────────────────────────────────────
 const DAYS = [
-  { label: 'SEG', status: 'done',     subject: 'Bio',  color: EMERALD  },
-  { label: 'TER', status: 'done',     subject: 'Quím', color: CYAN     },
-  { label: 'QUA', status: 'done',     subject: 'Mat',  color: '#a78bfa'},
-  { label: 'QUI', status: 'done',     subject: 'Fís',  color: ORANGE   },
-  { label: 'SEX', status: 'deadline', subject: 'RED',  color: NEON     },
-  { label: 'SÁB', status: 'upcoming', subject: 'Hist', color: VIOLET   },
-  { label: 'DOM', status: 'upcoming', subject: 'Geo',  color: '#34d399'},
+  { label: 'SEG', status: 'done',     subject: 'Bio',  subject2: 'Mat',  subject3: 'Port', color: EMERALD  },
+  { label: 'TER', status: 'done',     subject: 'Quím', subject2: 'Hist', subject3: 'Fís',  color: CYAN     },
+  { label: 'QUA', status: 'done',     subject: 'Mat',  subject2: 'Geo',  subject3: 'Bio',  color: '#a78bfa'},
+  { label: 'QUI', status: 'done',     subject: 'Fís',  subject2: 'Bio',  subject3: 'Quím', color: ORANGE   },
+  { label: 'SEX', status: 'deadline', subject: 'RED',  subject2: 'Port', subject3: 'Mat',  color: NEON     },
+  { label: 'SÁB', status: 'upcoming', subject: 'Hist', subject2: 'Quím', subject3: 'Geo',  color: VIOLET   },
+  { label: 'DOM', status: 'upcoming', subject: 'Geo',  subject2: 'Fís',  subject3: 'Hist', color: '#34d399'},
 ] as const;
 
 function CalendarBlock({ day, index, inView }: {
@@ -222,7 +223,7 @@ function CalendarBlock({ day, index, inView }: {
 
   return (
     <motion.div
-      className="flex-1 flex flex-col items-center gap-1.5 relative"
+      className="flex-1 flex flex-col items-center gap-1.5"
       initial={{ opacity: 0, y: 10 }}
       animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
       transition={{ duration: 0.4, delay: 0.2 + index * 0.07, ease: 'easeOut' }}
@@ -230,52 +231,80 @@ function CalendarBlock({ day, index, inView }: {
       {/* Day label */}
       <span className="text-[9px] font-bold tracking-widest"
         style={{
-          fontFamily: 'ui-monospace, monospace',
+          fontFamily: JETBRAINS,
           color: deadline ? NEON : done ? 'rgba(255,255,255,0.45)' : 'rgba(255,255,255,0.18)',
         }}>
         {day.label}
       </span>
 
-      {/* Block */}
+      {/* Block 1 — subject */}
       <div
-        className="w-full rounded-lg flex items-center justify-center"
+        className="w-full rounded-lg flex items-center justify-center relative"
         style={{
-          height: 52,
-          background: done
-            ? `${day.color}22`
-            : deadline
-            ? `${NEON}18`
-            : 'rgba(255,255,255,0.02)',
-          border: done
-            ? `1px solid ${day.color}50`
-            : deadline
-            ? `1px solid ${NEON}70`
-            : '1px solid rgba(255,255,255,0.06)',
+          height: 44,
+          background: done ? `${day.color}22` : deadline ? `${NEON}18` : 'rgba(255,255,255,0.02)',
+          border: done ? `1px solid ${day.color}50` : deadline ? `1px solid ${NEON}70` : '1px solid rgba(255,255,255,0.06)',
           boxShadow: deadline ? `0 0 16px ${NEON}35` : 'none',
         }}
       >
         <span className="text-[10px] font-black"
           style={{
             color: done ? day.color : deadline ? NEON : 'rgba(255,255,255,0.14)',
-            fontFamily: 'ui-monospace, monospace',
-            filter: (done || deadline) ? `drop-shadow(0 0 4px ${day.color})` : 'none',
+            fontFamily: JETBRAINS,
+            filter: (done || deadline) ? `drop-shadow(0 0 4px ${done ? day.color : NEON})` : 'none',
           }}>
           {upcoming ? '···' : day.subject}
         </span>
+
+        {/* Done checkmark */}
+        {done && (
+          <motion.div
+            className="absolute -top-2 -right-1 w-4 h-4 rounded-full flex items-center justify-center"
+            style={{ background: day.color, fontSize: 8 }}
+            initial={{ scale: 0 }}
+            animate={inView ? { scale: 1 } : { scale: 0 }}
+            transition={{ delay: 0.35 + index * 0.07, type: 'spring', stiffness: 400, damping: 18 }}
+          >
+            ✓
+          </motion.div>
+        )}
       </div>
 
-      {/* Done checkmark */}
-      {done && (
-        <motion.div
-          className="absolute -top-1.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center"
-          style={{ background: day.color, fontSize: 8 }}
-          initial={{ scale: 0 }}
-          animate={inView ? { scale: 1 } : { scale: 0 }}
-          transition={{ delay: 0.35 + index * 0.07, type: 'spring', stiffness: 400, damping: 18 }}
-        >
-          ✓
-        </motion.div>
-      )}
+      {/* Block 2 — subject2 */}
+      <div
+        className="w-full rounded-lg flex items-center justify-center"
+        style={{
+          height: 44,
+          background: done ? `${day.color}12` : deadline ? `${NEON}0e` : 'rgba(255,255,255,0.02)',
+          border: done ? `1px solid ${day.color}30` : deadline ? `1px solid ${NEON}40` : '1px solid rgba(255,255,255,0.06)',
+        }}
+      >
+        <span className="text-[10px] font-black"
+          style={{
+            color: done ? `${day.color}bb` : deadline ? `${NEON}bb` : 'rgba(255,255,255,0.14)',
+            fontFamily: JETBRAINS,
+          }}>
+          {upcoming ? '···' : day.subject2}
+        </span>
+      </div>
+
+      {/* Block 3 — subject3 */}
+      <div
+        className="w-full rounded-lg flex items-center justify-center"
+        style={{
+          height: 44,
+          background: done ? `${day.color}08` : deadline ? `${NEON}08` : 'rgba(255,255,255,0.02)',
+          border: done ? `1px solid ${day.color}20` : deadline ? `1px solid ${NEON}28` : '1px solid rgba(255,255,255,0.06)',
+        }}
+      >
+        <span className="text-[10px] font-black"
+          style={{
+            color: done ? `${day.color}88` : deadline ? `${NEON}88` : 'rgba(255,255,255,0.14)',
+            fontFamily: JETBRAINS,
+          }}>
+          {upcoming ? '···' : day.subject3}
+        </span>
+      </div>
     </motion.div>
   );
 }
@@ -309,15 +338,15 @@ function CalendarWidget({ inView }: { inView: boolean }) {
       <div className="flex items-center gap-3 mt-3">
         <div className="flex items-center gap-1.5">
           <div className="w-2 h-2 rounded-sm" style={{ background: EMERALD }} />
-          <span className="text-[9px] text-slate-600" style={{ fontFamily: 'monospace' }}>Concluído</span>
+          <span className="text-[9px] text-slate-600" style={{ fontFamily: JETBRAINS }}>Concluído</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-2 h-2 rounded-sm" style={{ background: NEON }} />
-          <span className="text-[9px] text-slate-600" style={{ fontFamily: 'monospace' }}>Deadline IA</span>
+          <span className="text-[9px] text-slate-600" style={{ fontFamily: JETBRAINS }}>Deadline IA</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-2 h-2 rounded-sm" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)' }} />
-          <span className="text-[9px] text-slate-600" style={{ fontFamily: 'monospace' }}>Agendado</span>
+          <span className="text-[9px] text-slate-600" style={{ fontFamily: JETBRAINS }}>Agendado</span>
         </div>
       </div>
     </div>
@@ -368,11 +397,11 @@ function ProgressBar({ label, pct, color, level, index, inView }: {
         <span className="text-xs font-semibold text-slate-400 leading-tight">{label}</span>
         <div className="flex items-center gap-2">
           <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-md"
-            style={{ background: `${color}18`, color, fontFamily: 'ui-monospace, monospace' }}>
+            style={{ background: `${color}18`, color, fontFamily: JETBRAINS }}>
             {level}
           </span>
           <span className="text-sm font-black tabular-nums"
-            style={{ color, fontFamily: 'ui-monospace, monospace', minWidth: 38, textAlign: 'right',
+            style={{ color, fontFamily: JETBRAINS, minWidth: 38, textAlign: 'right',
               textShadow: `0 0 10px ${color}80` }}>
             {count}%
           </span>
@@ -408,27 +437,49 @@ export default function FocusSection() {
       {/* ── Header ── */}
       <div className="text-center mb-12">
         <p className="text-xs font-bold tracking-widest uppercase mb-3"
-          style={{ color: EMERALD, fontFamily: 'ui-monospace, monospace' }}>
-          &gt; Mapeamento de Fragilidades
+          style={{ color: EMERALD, fontFamily: JETBRAINS }}>
+          &gt; Mapeamento de Ameaças
         </p>
         <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">
-          A IA detecta o{' '}
+          Radar de{' '}
           <span style={{
             background: `linear-gradient(90deg, ${NEON}, ${EMERALD})`,
             WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
           }}>
-            ponto exato da falha.
+            Lacunas
           </span>
         </h2>
         <p className="text-slate-500 text-base max-w-2xl mx-auto">
-          Não é estudo aleatório. É um sistema que mapeia suas lacunas,
-          agenda revisões no tempo certo e te nivela semana a semana.
+          O fim do estudo às cegas. Estudar o que você já sabe é desperdício. O Radar utiliza a nossa Engenharia de Retenção para encontrar as falhas invisíveis que a TRI do ENEM não perdoa — antes que elas te reprovem.
         </p>
       </div>
 
       {/* ── 3-card grid ── */}
+      <div className="relative">
+        {/* Radar scan — purple horizontal beam cycling over the full grid */}
+        {inView && (
+          <motion.div
+            className="absolute inset-x-0 pointer-events-none z-20"
+            style={{
+              height: 2,
+              background: `linear-gradient(90deg, transparent 0%, ${VIOLET}30 20%, ${VIOLET}90 50%, ${VIOLET}30 80%, transparent 100%)`,
+              boxShadow: `0 0 18px 2px ${VIOLET}50, 0 0 40px 6px ${VIOLET}20`,
+              borderRadius: 1,
+            }}
+            initial={{ top: '-2px', opacity: 0 }}
+            animate={{ top: ['0%', '100%'], opacity: [0, 1, 1, 0] }}
+            transition={{
+              duration: 3.2,
+              repeat: Infinity,
+              ease: 'linear',
+              repeatDelay: 1.2,
+              times: [0, 0.05, 0.95, 1],
+            }}
+          />
+        )}
+
       <motion.div
-        className="grid grid-cols-1 md:grid-cols-3 gap-5 items-start"
+        className="grid grid-cols-1 md:grid-cols-3 gap-5 items-stretch"
         variants={grid}
         initial="hidden"
         animate={inView ? 'visible' : 'hidden'}
@@ -440,10 +491,10 @@ export default function FocusSection() {
             <span className="text-lg">🎯</span>
             <div>
               <p className="text-[11px] font-black tracking-widest uppercase"
-                style={{ color: ORANGE, fontFamily: 'ui-monospace, monospace' }}>
-                Heatmap de Fragilidades
+                style={{ color: ORANGE, fontFamily: JETBRAINS }}>
+                Visão de Raio-X
               </p>
-              <p className="text-[10px] text-slate-600 mt-0.5">Radar de competências ENEM</p>
+              <p className="text-[10px] text-slate-600 mt-0.5" style={{ fontFamily: JETBRAINS }}>Radar de competências ENEM</p>
             </div>
             {/* Live dot */}
             <motion.span className="ml-auto w-2 h-2 rounded-full shrink-0"
@@ -458,7 +509,7 @@ export default function FocusSection() {
             {FRAG_AXES.map(a => (
               <div key={a.label} className="flex flex-col items-center gap-0.5">
                 <div className="w-1.5 h-1.5 rounded-full" style={{ background: a.color }} />
-                <span className="text-[8px] text-slate-700" style={{ fontFamily: 'monospace' }}>
+                <span className="text-[8px] text-slate-700" style={{ fontFamily: JETBRAINS }}>
                   {Math.round(a.v * 100)}%
                 </span>
               </div>
@@ -472,10 +523,10 @@ export default function FocusSection() {
             <span className="text-lg">📅</span>
             <div>
               <p className="text-[11px] font-black tracking-widest uppercase"
-                style={{ color: NEON, fontFamily: 'ui-monospace, monospace' }}>
-                Cronograma Preditivo
+                style={{ color: NEON, fontFamily: JETBRAINS }}>
+                Diretriz de Ataque
               </p>
-              <p className="text-[10px] text-slate-600 mt-0.5">Agendamento tático pela IA</p>
+              <p className="text-[10px] text-slate-600 mt-0.5" style={{ fontFamily: JETBRAINS }}>Agendamento tático pela IA</p>
             </div>
             <motion.span className="ml-auto w-2 h-2 rounded-full shrink-0"
               style={{ background: NEON }}
@@ -499,10 +550,10 @@ export default function FocusSection() {
             <span className="text-lg">📈</span>
             <div>
               <p className="text-[11px] font-black tracking-widest uppercase"
-                style={{ color: CYAN, fontFamily: 'ui-monospace, monospace' }}>
-                Nivelamento Inteligente
+                style={{ color: CYAN, fontFamily: JETBRAINS }}>
+                Domínio do Edital
               </p>
-              <p className="text-[10px] text-slate-600 mt-0.5">Progresso por área ENEM</p>
+              <p className="text-[10px] text-slate-600 mt-0.5" style={{ fontFamily: JETBRAINS }}>Progresso por área ENEM</p>
             </div>
             <motion.span className="ml-auto w-2 h-2 rounded-full shrink-0"
               style={{ background: CYAN }}
@@ -530,6 +581,7 @@ export default function FocusSection() {
         </Card>
 
       </motion.div>
+      </div>
     </section>
   );
 }
