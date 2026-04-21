@@ -630,10 +630,10 @@ function AppScreen() {
           }}>⚡</div>
           {/* Nav items */}
           {[
-            { icon: '◈', label: 'Home', active: false },
-            { icon: '▦', label: 'Deck', active: true  },
-            { icon: '◑', label: 'Stats', active: false },
-            { icon: '⊕', label: 'IA', active: false },
+            { icon: '🏠', label: 'Home', active: false },
+            { icon: '📚', label: 'Deck', active: true  },
+            { icon: '📊', label: 'Stats', active: false },
+            { icon: '🤖', label: 'IA', active: false },
           ].map((n) => (
             <div key={n.label} style={{
               width: 40, height: 34, borderRadius: 8,
@@ -822,7 +822,7 @@ function MacBookMockup() {
         </div>
 
         {/* Screen bezel */}
-        <div style={{
+        <div className="macbook-screen" style={{
           background: '#050b14',
           borderRadius: 8,
           overflow: 'hidden',
@@ -920,6 +920,9 @@ export default function HeroSection() {
     >
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+        @media (max-width: 640px) {
+          .macbook-screen { height: 220px !important; }
+        }
       `}</style>
 
       {/* ── Particles ── */}
@@ -945,7 +948,7 @@ export default function HeroSection() {
 
         {/* Headline block */}
         <motion.div
-          className="text-center px-6 pt-14 pb-4 mx-auto"
+          className="text-center px-4 sm:px-6 pt-8 sm:pt-14 pb-2 sm:pb-4 mx-auto"
           style={{ maxWidth: 820 }}
           initial={{ opacity: 0, y: 32 }}
           animate={{ opacity: 1, y: 0 }}
@@ -953,11 +956,11 @@ export default function HeroSection() {
         >
           {/* Badge */}
           <div
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-8 text-xs font-bold tracking-widest uppercase"
+            className="inline-flex flex-wrap justify-center items-center gap-2 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full mb-4 sm:mb-8 text-[9px] sm:text-xs font-bold tracking-widest uppercase"
             style={{ background: 'rgba(0,255,115,0.08)', border: '1px solid rgba(0,255,115,0.28)', color: '#00FF73' }}
           >
-            <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#00FF73' }} />
-            PAINEL INTELIGENTE • TUTORES IA • ENGENHARIA DE RETENÇÃO
+            <span className="w-1.5 h-1.5 rounded-full animate-pulse flex-shrink-0" style={{ background: '#00FF73' }} />
+            PAINEL IA <span className="hidden sm:inline">INTELIGENTE</span> • TUTORES IA • <span className="hidden sm:inline">ENGENHARIA DE </span>RETENÇÃO
           </div>
 
           {/* Secondary header — Light / elegant */}
@@ -1047,7 +1050,7 @@ export default function HeroSection() {
 
           <div
             className="relative flex items-center justify-center"
-            style={{ minHeight: 540, zIndex: 1 }}
+            style={{ minHeight: 'clamp(280px, 55vw, 540px)', zIndex: 1 }}
           >
 
             {/* TL — Arsenal de Revisão */}
@@ -1181,14 +1184,14 @@ export default function HeroSection() {
 
         {/* Subheadline + CTA */}
         <motion.div
-          className="text-center px-6 pt-3 pb-12 mx-auto"
+          className="text-center px-4 sm:px-6 pt-2 pb-8 sm:pb-12 mx-auto"
           style={{ maxWidth: 720 }}
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.85, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
         >
           <p
-            className="text-lg leading-relaxed mx-auto mb-10"
+            className="text-base sm:text-lg leading-relaxed mx-auto mb-6 sm:mb-10"
             style={{ color: 'rgba(255,255,255,0.5)', maxWidth: 640 }}
           >
             Estudar por{' '}
@@ -1228,7 +1231,7 @@ export default function HeroSection() {
             `}</style>
             <button
               onClick={handleCtaClick}
-              className={`cta-scan-btn relative inline-flex items-center gap-3 overflow-hidden px-10 py-4 text-sm uppercase tracking-widest transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.97]${ctaState === 'loading' ? ' loading-state' : ''}`}
+              className={`cta-scan-btn relative inline-flex items-center gap-2 sm:gap-3 overflow-hidden px-5 sm:px-10 py-3 sm:py-4 text-xs sm:text-sm uppercase tracking-widest transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.97]${ctaState === 'loading' ? ' loading-state' : ''}`}
               style={{
                 fontFamily: "'JetBrains Mono', 'Fira Code', 'Courier New', monospace",
                 fontWeight: 700,
@@ -1275,9 +1278,9 @@ export default function HeroSection() {
         </motion.div>
 
         {/* Stats row */}
-        <div className="relative mx-auto px-4 pb-24" style={{ maxWidth: 1160 }}>
+        <div className="relative mx-auto px-4 pb-12 sm:pb-24" style={{ maxWidth: 1160 }}>
           <motion.div
-            className="flex flex-wrap justify-center gap-10"
+            className="flex flex-wrap justify-center gap-5 sm:gap-10"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 1.2 }}

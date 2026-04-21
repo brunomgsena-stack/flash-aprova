@@ -379,7 +379,7 @@ function AuthorityBanner() {
     { abbr: 'UFPE',    full: 'Univ. Federal de Pernambuco' },
   ];
   return (
-    <section className="max-w-6xl mx-auto px-6 sm:px-10 pb-16">
+    <section className="max-w-6xl mx-auto px-4 sm:px-10 pb-8 sm:pb-16">
       <div
         className="relative rounded-2xl overflow-hidden"
         style={{
@@ -404,7 +404,7 @@ function AuthorityBanner() {
 
           <div className="hidden sm:block w-px h-12 bg-white/10" />
 
-          <div className="flex items-center gap-10">
+          <div className="flex items-center gap-5 sm:gap-10">
             {universities.map(({ abbr, full }) => (
               <div key={abbr} className="flex flex-col items-center gap-1 opacity-40 hover:opacity-70 transition-opacity duration-200">
                 <span className="text-white font-black text-xl tracking-tight">{abbr}</span>
@@ -514,7 +514,7 @@ function ENEMCountdown() {
 function FAQAccordion() {
   const [open, setOpen] = useState<number | null>(null);
   return (
-    <section className="max-w-3xl mx-auto px-6 sm:px-10 pb-24">
+    <section className="max-w-3xl mx-auto px-4 sm:px-10 pb-12 sm:pb-24">
       <div className="text-center mb-10">
         <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: VIOLET }}>
           Dúvidas Frequentes
@@ -635,7 +635,7 @@ export default function LandingPage() {
         <AuthorityBanner />
 
         {/* ════════════════════════════ METHODS COMPARISON ══ */}
-        <section className="max-w-5xl mx-auto px-6 sm:px-10 pb-24">
+        <section className="max-w-5xl mx-auto px-4 sm:px-10 pb-12 sm:pb-24">
 
           <EbbinghausSection />
 
@@ -691,9 +691,9 @@ export default function LandingPage() {
         </div>
 
         {/* ════════════════════ AUDITORIA DE MERCADO ══ */}
-        <section className="max-w-4xl mx-auto px-6 sm:px-10 pb-16">
+        <section className="max-w-4xl mx-auto px-4 sm:px-10 pb-8 sm:pb-16">
           <div
-            className="relative rounded-2xl overflow-hidden p-8 sm:p-12"
+            className="relative rounded-2xl overflow-hidden p-4 sm:p-8 md:p-12"
             style={{
               background: '#0D0D0D',
               border: '1px solid #1a1a1a',
@@ -731,10 +731,16 @@ export default function LandingPage() {
             >
               {/* receipt header */}
               <div
-                className="px-6 py-3 text-xs tracking-widest text-center"
+                className="hidden sm:block px-6 py-3 text-xs tracking-widest text-center"
                 style={{ color: NEON, borderBottom: '1px dashed #222' }}
               >
                 ┌─ CUSTO MENSAL ESTIMADO ─────────────────────────────────────┐
+              </div>
+              <div
+                className="sm:hidden px-4 py-2 text-[10px] tracking-widest text-center"
+                style={{ color: NEON, borderBottom: '1px dashed #222' }}
+              >
+                CUSTO MENSAL ESTIMADO
               </div>
 
               {[
@@ -763,7 +769,7 @@ export default function LandingPage() {
               </div>
 
               <div
-                className="px-6 py-3 text-xs tracking-widest text-center"
+                className="hidden sm:block px-6 py-3 text-xs tracking-widest text-center"
                 style={{ color: '#333' }}
               >
                 └─────────────────────────────────────────────────────────────┘
@@ -792,9 +798,9 @@ export default function LandingPage() {
                   color: '#475569',
                 }}
               >
-                <div className="px-5">Atributo</div>
-                <div className="px-3" style={{ color: ORANGE }}>Cursinho Tradicional</div>
-                <div className="px-3" style={{ color: NEON }}>FlashAprova</div>
+                <div className="px-2 sm:px-5">Atributo</div>
+                <div className="px-1 sm:px-3" style={{ color: ORANGE }}>Cursinho</div>
+                <div className="px-1 sm:px-3" style={{ color: NEON }}>FlashAprova</div>
               </div>
 
               {[
@@ -826,9 +832,9 @@ export default function LandingPage() {
                     background: i % 2 === 0 ? 'rgba(255,255,255,0.01)' : 'transparent',
                   }}
                 >
-                  <div className="px-5" style={{ color: '#94a3b8' }}>{row.attr}</div>
-                  <div className="px-3" style={{ color: ORANGE, opacity: 0.85 }}>{row.trad}</div>
-                  <div className="px-3 font-bold" style={{ color: row.flashColor }}>{row.flash}</div>
+                  <div className="px-2 sm:px-5" style={{ color: '#94a3b8', overflowWrap: 'break-word' }}>{row.attr}</div>
+                  <div className="px-1 sm:px-3" style={{ color: ORANGE, opacity: 0.85, overflowWrap: 'break-word' }}>{row.trad}</div>
+                  <div className="px-1 sm:px-3 font-bold" style={{ color: row.flashColor, overflowWrap: 'break-word' }}>{row.flash}</div>
                 </div>
               ))}
             </div>
@@ -843,7 +849,8 @@ export default function LandingPage() {
               }}
             >
               <span style={{ fontSize: '1.1em' }}>⚠</span>
-              <span>[ CONCLUSÃO: O SISTEMA TRADICIONAL É FINANCEIRAMENTE INEFICIENTE ]</span>
+              <span className="hidden sm:inline">[ CONCLUSÃO: O SISTEMA TRADICIONAL É FINANCEIRAMENTE INEFICIENTE ]</span>
+              <span className="sm:hidden">SISTEMA TRADICIONAL: FINANCEIRAMENTE INEFICIENTE</span>
             </div>
 
             {/* transition line */}
