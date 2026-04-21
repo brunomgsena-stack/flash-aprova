@@ -115,7 +115,7 @@ function FloatWrapper({ children, delay = 0, intensity = 10 }: {
 }
 
 // ── AI Terminal widget (replaces Métricas de Retenção) ────────────────────────
-function TerminalWidget() {
+function TerminalWidget({ className = 'w-60' }: { className?: string }) {
   const [lines, setLines] = useState<string[]>([TERMINAL_LINES[0]]);
   const idxRef = useRef(1);
   useEffect(() => {
@@ -128,7 +128,7 @@ function TerminalWidget() {
   }, []);
 
   return (
-    <GlassCard className="w-60">
+    <GlassCard className={className}>
       <div className="text-xs font-bold mb-2" style={{ color: PURPLE_L }}>
         ⚙️ AI Memory Engine
       </div>
@@ -1116,8 +1116,8 @@ export default function HeroSection() {
 
             {/* MacBook center */}
             <motion.div
-              className="relative"
-              style={{ zIndex: 10, x: nbX, y: nbY, width: '100%', maxWidth: 560 }}
+              className="relative max-w-[260px] sm:max-w-[380px] lg:max-w-[560px]"
+              style={{ zIndex: 10, x: nbX, y: nbY, width: '100%' }}
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ duration: 1.1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
@@ -1178,6 +1178,103 @@ export default function HeroSection() {
                   <ConceptsWidget />
                 </GlassCard>
               </FloatWrapper>
+            </motion.div>
+          </div>
+
+          {/* ── Mobile floating blocks 2×2 grid — hidden on lg+ ── */}
+          <div className="lg:hidden grid grid-cols-2 gap-2 mt-3">
+            {/* Arsenal de Revisão */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.5 }}
+            >
+              <GlassCard className="w-full h-full">
+                <div className="text-[10px] font-bold mb-2" style={{ color: PURPLE_L }}>
+                  📚 Arsenal de Revisão
+                </div>
+                {[
+                  { name: 'Biologia', pct: 78, color: '#34d399' },
+                  { name: 'Química',  pct: 54, color: '#fb923c' },
+                  { name: 'Física',   pct: 91, color: PURPLE_L  },
+                ].map((s) => (
+                  <div key={s.name} className="mb-2">
+                    <div className="flex justify-between items-center mb-0.5">
+                      <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.72)' }}>{s.name}</span>
+                      <span className="text-[8px] px-1 py-0.5 rounded-full font-bold"
+                        style={{ background: `${s.color}1e`, color: s.color, border: `1px solid ${s.color}48` }}>
+                        Pendente
+                      </span>
+                    </div>
+                    <div className="h-0.5 rounded-full overflow-hidden"
+                      style={{ background: 'rgba(255,255,255,0.07)' }}>
+                      <motion.div
+                        className="h-full rounded-full"
+                        style={{ background: s.color }}
+                        initial={{ width: 0 }}
+                        animate={{ width: `${s.pct}%` }}
+                        transition={{ duration: 1.6, delay: 0.8, ease: 'easeOut' }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </GlassCard>
+            </motion.div>
+
+            {/* Agenda IA */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.6 }}
+            >
+              <GlassCard className="w-full h-full">
+                <div className="text-[10px] font-bold mb-2" style={{ color: PURPLE_L }}>
+                  🤖 Agenda IA
+                </div>
+                {[
+                  { time: '14:00', subject: 'Termodinâmica', icon: '⚛️' },
+                  { time: '16:30', subject: 'Genética',      icon: '🧬' },
+                  { time: '19:00', subject: 'Literatura',    icon: '📖' },
+                ].map((session) => (
+                  <div key={session.time}
+                    className="flex items-center gap-1.5 mb-1 p-1.5 rounded-xl"
+                    style={{ background: `${PURPLE}12`, border: '1px solid rgba(124,58,237,0.18)' }}
+                  >
+                    <span className="text-sm">{session.icon}</span>
+                    <div>
+                      <div className="text-[9px] font-semibold" style={{ color: '#ffffff' }}>
+                        {session.subject}
+                      </div>
+                      <div className="text-[8px]" style={{ color: PURPLE_L }}>
+                        {session.time} · IA
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </GlassCard>
+            </motion.div>
+
+            {/* AI Memory Engine */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.7 }}
+            >
+              <TerminalWidget className="w-full h-full" />
+            </motion.div>
+
+            {/* Conceitos Blindados */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.8 }}
+            >
+              <GlassCard className="w-full h-full">
+                <div className="text-[10px] font-bold mb-2" style={{ color: PURPLE_L }}>
+                  🔒 Conceitos Blindados
+                </div>
+                <ConceptsWidget />
+              </GlassCard>
             </motion.div>
           </div>
         </div>
