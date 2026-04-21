@@ -8,11 +8,11 @@ type Props = { onClose: () => void };
 const BENEFITS = [
   {
     emoji: '✅',
-    text: 'Os 12 Especialistas: Consultoria ilimitada com Dr. Chronos, Mestre Newton e todo o Panteão.',
+    text: 'Os 15 Especialistas: Consultoria ilimitada com Prof. Chronos, Prof. Vektor e todo o Panteão.',
   },
   {
     emoji: '✅',
-    text: 'Prof. Norma: Correção de redações ilimitada com feedback técnico padrão ENEM.',
+    text: 'Prof.ª Norma: Correção de redações ilimitada com feedback técnico padrão ENEM.',
   },
   {
     emoji: '✅',

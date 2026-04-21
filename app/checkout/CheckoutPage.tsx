@@ -1,9 +1,11 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
+import { motion, useMotionValue, useAnimationFrame } from 'framer-motion';
 import Link from 'next/link';
 import { type SubjectId, SUBJECT_META } from '../onboarding/flashcardData';
 import WhatsAppFloat from '@/components/WhatsAppFloat';
+import { REELS } from '@/lib/reels-data';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const GREEN   = '#22c55e';
@@ -77,12 +79,13 @@ function NarrativeReport({
         background: 'rgba(10,5,20,0.85)',
         border: '1px solid rgba(124,58,237,0.22)',
         backdropFilter: 'blur(20px)',
+        fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
       }}>
       <div className="absolute inset-x-0 top-0 h-px"
         style={{ background: `linear-gradient(90deg, transparent, ${VIOLET}60, transparent)` }} />
 
       <p className="text-xs font-bold tracking-widest uppercase mb-4" style={{ color: VIOLET }}>
-        // ANÁLISE · TUTOR IA ESPECIALISTA
+        // LATÊNCIA DE RESGATE DETECTADA · TUTOR IA
       </p>
 
       <p className="text-slate-300 leading-relaxed text-sm mb-4">
@@ -104,20 +107,21 @@ function NarrativeReport({
       </p>
 
       <p className="text-slate-500 text-sm leading-relaxed mb-4">
-        A IA detectou um padrão de <strong className="text-slate-400">retenção fragmentada</strong>:{' '}
-        você reconhece o conceito superficialmente, mas não consegue recuperá-lo sob pressão de tempo —
-        exatamente o cenário de uma prova do{' '}
-        <span style={{ color: GREEN, fontWeight: 700, textShadow: `0 0 10px ${GREEN}60` }}>ENEM</span>.
-        Este é o{' '}
-        <strong className="text-white">&quot;Efeito de Fluência Ilusória&quot;</strong>:{' '}
-        você acha que sabe, mas a memória falha na hora H.
+        IA detectou:{' '}
+        <strong className="text-red-400">Falha no Protocolo de Resgate</strong> —{' '}
+        você reconhece o conceito superficialmente, mas não consegue recuperá-lo sob pressão de tempo.
+        Exatamente o cenário de uma prova do{' '}
+        <span style={{ color: GREEN, fontWeight: 700, textShadow: `0 0 10px ${GREEN}60` }}>ENEM</span>.{' '}
+        Diagnóstico:{' '}
+        <strong className="text-white">&quot;Efeito de Fluência Ilusória&quot;</strong> —
+        memória aparente sem recuperação sob stress.
       </p>
 
       <div className="flex flex-wrap gap-2">
         {[
           { label: `${hardCount} Lacuna${hardCount !== 1 ? 's' : ''} Crítica${hardCount !== 1 ? 's' : ''}`, color: RED },
           { label: `${subjectMeta.name} — Risco ${risk}`, color: subjectMeta.color },
-          { label: 'Intervenção recomendada', color: VIOLET },
+          { label: 'Falha no Protocolo de Resgate', color: VIOLET },
         ].map(({ label, color }) => (
           <span key={label} className="text-xs font-semibold px-3 py-1 rounded-full"
             style={{ background: `${color}18`, border: `1px solid ${color}35`, color }}>
@@ -207,7 +211,7 @@ function InsightsPanel({ health }: { health: number }) {
           <div>
             <div className="flex justify-between items-center mb-2">
               <span className="text-xs font-semibold text-slate-400">Sua Retenção Atual</span>
-              <span className="text-sm font-black" style={{ color: health < 55 ? RED : ORANGE }}>
+              <span className="text-sm font-black glitch-num" style={{ color: health < 55 ? RED : ORANGE }}>
                 {health}%
               </span>
             </div>
@@ -236,16 +240,18 @@ function InsightsPanel({ health }: { health: number }) {
                 }} />
             </div>
           </div>
-          <div className="mt-1 px-4 py-3 rounded-xl text-center"
-            style={{ background: 'rgba(124,58,237,0.10)', border: '1px solid rgba(124,58,237,0.22)' }}>
-            <p className="text-xs text-slate-500">Gap a preencher</p>
-            <p className="text-2xl font-black mt-0.5" style={{
-              background: `linear-gradient(90deg, ${RED}, ${GREEN})`,
-              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-            }}>
-              +{Math.max(0, 85 - health)} pts
+          <div className="mt-1 px-4 py-4 rounded-xl text-center"
+            style={{ background: 'rgba(127,29,29,0.18)', border: '1px solid rgba(239,68,68,0.30)' }}>
+            <p className="text-xs font-black tracking-widest uppercase mb-0.5" style={{ color: RED }}>
+              [ DÉFICIT DE COMPETITIVIDADE ]
             </p>
-            <p className="text-xs text-slate-600 mt-0.5">com método FlashAprova</p>
+            <p className="text-xl font-black mt-1" style={{ color: '#fca5a5' }}>
+              DÉFICIT PROJETADO: -400 PONTOS NA MÉDIA
+            </p>
+            <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+              Este é o volume de nota que você está perdendo agora por não usar Engenharia de Retenção.
+              Cada dia sem o protocolo é uma vaga que se afasta.
+            </p>
           </div>
         </div>
       </div>
@@ -254,24 +260,40 @@ function InsightsPanel({ health }: { health: number }) {
 }
 
 // ─── Evidence Carousel ────────────────────────────────────────────────────────
-const EVIDENCE_VIDEOS = [
-  { id: 1, name: 'Ana Clara M.',    city: 'SP', score: '960 pts', quote: 'Medicina USP na 1ª chamada!',              accent: EMERALD },
-  { id: 2, name: 'Pedro Alves',     city: 'MG', score: '940 pts', quote: 'Aprovado em Medicina UFMG!',               accent: CYAN    },
-  { id: 3, name: 'Beatriz S.',      city: 'RJ', score: '952 pts', quote: 'Sem cursinho — só FlashAprova.',           accent: VIOLET  },
-  { id: 4, name: 'Lucas T.',        city: 'BA', score: '930 pts', quote: 'Do 680 para 930 em 4 meses.',             accent: ORANGE  },
-  { id: 5, name: 'Mariana F.',      city: 'PR', score: '944 pts', quote: 'Prof. Norma salvou minha redação!',       accent: '#ec4899' },
-  { id: 6, name: 'Rafael O.',       city: 'CE', score: '920 pts', quote: 'Os tutores IA são incríveis.',            accent: GREEN   },
-  { id: 7, name: 'Juliana C.',      city: 'RS', score: '936 pts', quote: 'Passei em Odonto UFRGS!',                 accent: CYAN    },
-  { id: 8, name: 'Gabriel N.',      city: 'GO', score: '948 pts', quote: 'Panteão Elite mudou tudo pra mim.',      accent: EMERALD },
-] as const;
+// Content comes from lib/reels-data.ts — shared with ReelsTestimonials on the
+// landing page. Edit that file to update both carousels simultaneously.
+
+// ─── Evidence Carousel ────────────────────────────────────────────────────────
+// Content comes from lib/reels-data.ts — shared with ReelsTestimonials on the
+// landing page. Edit that file to update both carousels simultaneously.
+
+const EDGE_MASK = {
+  maskImage:       'linear-gradient(90deg, transparent 0%, black 6%, black 94%, transparent 100%)',
+  WebkitMaskImage: 'linear-gradient(90deg, transparent 0%, black 6%, black 94%, transparent 100%)',
+} as const;
 
 function EvidenceCarousel() {
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const x        = useMotionValue(0);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [paused, setPaused] = useState(false);
+  const SPEED = 0.045; // px/ms
+
+  useAnimationFrame((_, delta) => {
+    const px      = paused ? SPEED * 0.4 : SPEED;
+    const current = x.get();
+    const half    = (trackRef.current?.scrollWidth ?? 0) / 2;
+    let   next    = current - px * delta;
+    if (half > 0 && Math.abs(next) >= half) next += half;
+    x.set(next);
+  });
+
+  const doubled = [...REELS, ...REELS];
+
   return (
     <div className="mb-8">
       <div className="text-center mb-5">
         <p className="text-xs font-bold tracking-widest uppercase mb-1" style={{ color: EMERALD }}>
-          📹 Prova Social — Depoimentos Reais
+          🏅 MURAL DOS APROVADOS
         </p>
         <h3 className="text-white font-black text-lg">
           Quem já está no Panteão conta a história
@@ -279,64 +301,85 @@ function EvidenceCarousel() {
       </div>
 
       <div
-        ref={scrollRef}
-        className="flex gap-4 overflow-x-auto pb-3"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        className="overflow-hidden"
+        style={EDGE_MASK}
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
       >
-        {EVIDENCE_VIDEOS.map(v => (
-          <div
-            key={v.id}
-            className="shrink-0 rounded-2xl overflow-hidden relative cursor-pointer group"
-            style={{
-              width: 200,
-              height: 280,
-              background: `radial-gradient(ellipse at top, ${v.accent}22 0%, rgba(8,4,18,0.95) 65%)`,
-              border: `1px solid ${v.accent}30`,
-            }}
-          >
-            {/* Thumbnail gradient */}
-            <div className="absolute inset-0"
+        <motion.div
+          ref={trackRef}
+          className="flex gap-4 py-4 px-2"
+          style={{ x, willChange: 'transform' }}
+        >
+          {doubled.map((reel, i) => (
+            <div
+              key={`${reel.handle}-${i}`}
+              className="shrink-0 rounded-2xl overflow-hidden relative cursor-pointer group"
               style={{
-                background: `linear-gradient(160deg, ${v.accent}18 0%, rgba(4,2,10,0.90) 55%, rgba(4,2,10,0.98) 100%)`,
-              }} />
+                width: 180,
+                height: 252,
+                background: `linear-gradient(160deg, ${reel.gradA} 0%, ${reel.gradB} 100%)`,
+                border: `1px solid ${reel.tagColor}30`,
+              }}
+            >
+              {/* Photo */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={reel.img}
+                alt={reel.handle}
+                className="absolute inset-0 w-full h-full object-cover object-top"
+                loading="lazy"
+                decoding="async"
+                onError={e => { e.currentTarget.style.display = 'none'; }}
+              />
 
-            {/* Play button */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div
-                className="w-14 h-14 rounded-full flex items-center justify-center transition-transform duration-200 group-hover:scale-110"
-                style={{
-                  background: `${v.accent}30`,
-                  border: `2px solid ${v.accent}60`,
-                  backdropFilter: 'blur(8px)',
-                }}
-              >
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path d="M6 4L16 10L6 16V4Z" fill={v.accent} />
-                </svg>
+              {/* Vignette */}
+              <div className="absolute inset-0"
+                style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.45) 45%, rgba(0,0,0,0.10) 70%, transparent 100%)' }} />
+
+              {/* Stories bar */}
+              <div className="absolute top-0 inset-x-0 flex gap-0.5 px-2.5 pt-2 z-20">
+                {reel.stories.map((filled, j) => (
+                  <div key={j} className="h-0.5 flex-1 rounded-full"
+                    style={{ background: filled ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.25)' }} />
+                ))}
+              </div>
+
+              {/* Tag + handle */}
+              <div className="absolute top-5 left-2.5 z-20 flex flex-col gap-0.5">
+                <span className="text-[7px] font-bold tracking-widest uppercase"
+                  style={{ color: reel.tagColor, fontFamily: 'ui-monospace, monospace' }}>
+                  [ {reel.tag} ]
+                </span>
+                <span className="text-[7px] text-white/45" style={{ fontFamily: 'ui-monospace, monospace' }}>
+                  {reel.handle}
+                </span>
+              </div>
+
+              {/* Score badge */}
+              <div className="absolute top-3 right-2 z-20">
+                <span className="text-[8px] font-black px-1.5 py-0.5 rounded-full"
+                  style={{ background: `${reel.tagColor}25`, border: `1px solid ${reel.tagColor}55`, color: reel.tagColor }}>
+                  {reel.score}
+                </span>
+              </div>
+
+              {/* Bottom info */}
+              <div className="absolute bottom-0 inset-x-0 px-3 pb-3 z-20">
+                <p className="font-black text-[9px] leading-none mb-0.5"
+                  style={{ color: reel.tagColor, fontFamily: 'ui-monospace, monospace' }}>
+                  {reel.course}
+                </p>
+                <ul className="flex flex-col gap-0.5 mt-1.5">
+                  {reel.bullets.map((b, j) => (
+                    <li key={j} className="text-[8px] text-white/75 leading-snug">{b}</li>
+                  ))}
+                </ul>
               </div>
             </div>
-
-            {/* Score badge */}
-            <div className="absolute top-3 left-3">
-              <span className="text-xs font-black px-2 py-1 rounded-full"
-                style={{ background: `${v.accent}25`, border: `1px solid ${v.accent}50`, color: v.accent }}>
-                {v.score}
-              </span>
-            </div>
-
-            {/* Info bottom */}
-            <div className="absolute bottom-0 inset-x-0 p-4"
-              style={{ background: 'linear-gradient(to top, rgba(4,2,10,0.98) 0%, transparent 100%)' }}>
-              <p className="text-white font-bold text-sm leading-tight mb-1">{v.name}</p>
-              <p className="text-xs mb-2" style={{ color: v.accent }}>{v.city}</p>
-              <p className="text-slate-400 text-xs leading-snug">&ldquo;{v.quote}&rdquo;</p>
-            </div>
-          </div>
-        ))}
+          ))}
+        </motion.div>
       </div>
-
-      {/* Scroll hint */}
-      <p className="text-center text-slate-700 text-xs mt-2">← deslize para ver mais →</p>
     </div>
   );
 }
@@ -412,6 +455,21 @@ export default function CheckoutPage() {
         50%       { box-shadow: 0 0 0 1px ${EMERALD}, 0 0 48px ${EMERALD}55, 0 0 100px ${EMERALD}22; }
       }
       .elite-card { animation: emerald-pulse 2.8s ease-in-out infinite; }
+
+      @keyframes anomaly-pulse {
+        0%, 100% { background: rgba(127,29,29,0.28); box-shadow: 0 0 0 1px #7f1d1d, 0 0 18px rgba(239,68,68,0.35); }
+        50%       { background: rgba(185,28,28,0.42); box-shadow: 0 0 0 1px #dc2626, 0 0 36px rgba(239,68,68,0.65); }
+      }
+      .status-anomaly { animation: anomaly-pulse 1.6s ease-in-out infinite; }
+
+      @keyframes glitch {
+        0%, 90%, 100% { opacity: 1; transform: translate(0); clip-path: none; }
+        91%  { opacity: 0.8; transform: translate(-2px, 1px); clip-path: inset(15% 0 40% 0); color: #fca5a5; }
+        92%  { opacity: 1;   transform: translate(2px, -1px); clip-path: inset(55% 0 15% 0); color: #f87171; }
+        93%  { opacity: 0.7; transform: translate(-1px, 0);  clip-path: inset(30% 0 55% 0); }
+        94%  { opacity: 1;   transform: translate(0); clip-path: none; }
+      }
+      .glitch-num { animation: glitch 3.5s ease-in-out infinite; display: inline-block; }
     `}</style>
     <div className="min-h-screen px-4 py-10 sm:px-8 relative overflow-hidden"
       style={{ background: 'radial-gradient(ellipse at 30% 0%, #0a0514 0%, #050505 65%)' }}>
@@ -452,23 +510,29 @@ export default function CheckoutPage() {
 
           <div className="relative flex flex-col sm:flex-row items-center gap-6">
             <div className="text-center sm:text-left flex-1">
+              {/* Pulsing anomaly banner */}
+              <div className="status-anomaly rounded-lg px-3 py-2 mb-4 text-center text-xs font-black tracking-widest uppercase"
+                style={{ color: '#fca5a5', border: '1px solid #7f1d1d' }}>
+                [ STATUS: ANOMALIA ESTRUTURAL DETECTADA ]
+              </div>
               <p className="text-slate-500 text-xs font-semibold tracking-widest uppercase mb-2">
                 Relatório de Diagnóstico · IA
               </p>
               <h1 className="text-3xl sm:text-4xl font-black text-white leading-tight mb-1">
-                Status:{' '}
-                <span style={{ color: statusColor, textShadow: `0 0 20px ${statusColor}80` }}>
-                  {status}
-                </span>
+                {data?.name && <span>{data.name}, </span>}
+                <span style={{ color: RED, textShadow: `0 0 24px ${RED}90` }}>
+                  Erosão de Dados
+                </span>{' '}Detectada
               </h1>
               <p className="text-slate-400 text-sm leading-relaxed mt-2">
-                Saúde da Memória:{' '}
-                <span style={{ color: statusColor }} className="font-bold">{health}%</span>
-                {' · '}
-                <span className="text-white font-bold">{hardCount}</span> lacunas críticas em{' '}
+                O Stress Test confirmou: sua base de conhecimento em{' '}
                 <span style={{ color: subjectMeta.color, textShadow: `0 0 10px ${subjectMeta.color}60` }}
                   className="font-bold">
                   {subjectMeta.name}
+                </span>{' '}
+                está vazando. Sem intervenção,{' '}
+                <span className="text-white font-bold">
+                  70% do que você estudou hoje será deletado em 24h.
                 </span>
               </p>
             </div>
@@ -488,54 +552,81 @@ export default function CheckoutPage() {
         {/* ── Plan cards ── */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8 items-start">
 
-          {/* ── PLANO ACELERAÇÃO (Flash) ── */}
+          {/* ── PROTOCOLO MANUAL ── */}
           <div className="relative rounded-2xl p-7 overflow-hidden opacity-80 hover:opacity-100 transition-opacity"
             style={{ ...cardStyle, border:'1px solid rgba(124,58,237,0.18)' }}>
             <div className="absolute inset-x-0 top-0 h-px"
               style={{ background:`linear-gradient(90deg,transparent,rgba(124,58,237,0.40),transparent)` }} />
 
-            <p className="text-xs font-black tracking-widest uppercase mb-3" style={{ color:'#8b5cf6' }}>
-              ⚡ PLANO ACELERAÇÃO
+            {/* Plan name */}
+            <p className="text-[10px] font-black tracking-widest uppercase mb-1" style={{ color:'#8b5cf6' }}>
+              MÓDULO DE INTERVENÇÃO I
+            </p>
+            <p className="text-base font-black text-white mb-4 leading-tight">
+              [ PROTOCOLO MANUAL:{' '}
+              <span style={{ color:'#8b5cf6' }}>FLASHCARDS ]</span>
             </p>
 
-            {/* Validity — hero element */}
+            {/* Validity */}
             <div className="px-4 py-2.5 rounded-xl mb-4 text-center"
               style={{ background:'rgba(124,58,237,0.10)', border:'1px solid rgba(124,58,237,0.30)' }}>
-              <p className="text-xs font-bold tracking-widest uppercase" style={{ color:'#8b5cf6' }}>
-                VÁLIDO ATÉ
-              </p>
+              <p className="text-xs font-bold tracking-widest uppercase" style={{ color:'#8b5cf6' }}>VÁLIDO ATÉ</p>
               <p className="text-lg font-black text-white mt-0.5">ENEM 2026</p>
             </div>
 
             {/* Price */}
             <div className="mb-3">
-              <div className="flex items-baseline gap-1">
-                <span className="text-4xl font-black text-white">12x de R$&nbsp;59,16</span>
-              </div>
-              <p className="text-xs font-semibold mt-0.5" style={{ color: '#8b5cf6' }}>no cartão de crédito</p>
+              <span className="text-4xl font-black text-white">12x de R$&nbsp;59,16</span>
+              <p className="text-xs font-semibold mt-0.5" style={{ color:'#8b5cf6' }}>no cartão de crédito</p>
             </div>
             <p className="text-slate-600 text-sm mb-6">ou R$ 710,00 à vista</p>
 
-            <div className="h-px mb-5" style={{ background:'rgba(255,255,255,0.05)' }} />
+            <div className="h-px mb-4" style={{ background:'rgba(255,255,255,0.05)' }} />
 
-            <div className="flex flex-col gap-2 mb-6 text-sm text-slate-500">
-              {['Flashcards SRS ilimitados', 'Algoritmo SRS avançado', 'Dashboard & heatmap'].map(f => (
-                <div key={f} className="flex items-center gap-2">
-                  <span style={{ color:'#8b5cf6' }}>✓</span> {f}
+            {/* Access label */}
+            <p className="text-[9px] font-black tracking-widest uppercase mb-3" style={{ color:'rgba(124,58,237,0.55)' }}>
+              [ ACESSO ESTÁTICO ]
+            </p>
+
+            <div className="flex flex-col gap-2.5 mb-4 text-sm">
+              {/* Included */}
+              {[
+                '5.700+ Flashcards (Munição Pura)',
+                'Algoritmo SRS de Repetição Espaçada',
+              ].map(f => (
+                <div key={f} className="flex items-start gap-2">
+                  <span className="shrink-0 mt-0.5" style={{ color:'#8b5cf6' }}>✓</span>
+                  <span className="text-slate-300">{f}</span>
                 </div>
               ))}
-              {['Resumos & Tabelas', 'Áudio-Resumos', 'Exército de 10 Especialistas IA'].map(f => (
-                <div key={f} className="flex items-center gap-2 opacity-30">
-                  <span>🔒</span> <span className="line-through">{f}</span>
+
+              {/* Locked */}
+              {[
+                'Exército de 10 Especialistas IA',
+                'Auditoria Forense de Redação',
+              ].map(f => (
+                <div key={f} className="flex items-start gap-2 opacity-35">
+                  <span className="shrink-0 mt-0.5 text-xs">🔒</span>
+                  <span className="line-through text-slate-500 leading-snug">
+                    {f}
+                    <span className="no-underline not-italic text-[9px] font-black tracking-wider ml-1.5 align-middle"
+                      style={{ color:'rgba(239,68,68,0.6)' }}>[ BLOQUEADO ]</span>
+                  </span>
                 </div>
               ))}
             </div>
 
+            {/* Micro-copy */}
+            <p className="text-xs text-slate-600 italic mb-5 leading-relaxed border-l-2 pl-3"
+              style={{ borderColor:'rgba(124,58,237,0.25)' }}>
+              Ideal para quem já domina a tática e busca apenas a ferramenta de repetição manual.
+            </p>
+
             <button
               onClick={() => handleBuy('aceleracao')}
-              className="block w-full py-3 rounded-xl text-center text-sm font-bold transition-all hover:opacity-80"
+              className="block w-full py-3 rounded-xl text-center text-sm font-black tracking-wider transition-all hover:opacity-80"
               style={{ background:'rgba(124,58,237,0.14)', border:'1px solid rgba(124,58,237,0.30)', color:'#a78bfa' }}>
-              Garantir Minha Vaga no ENEM →
+              [ EXECUTAR MÓDULO MANUAL ]
             </button>
           </div>
 
@@ -564,13 +655,18 @@ export default function CheckoutPage() {
               </span>
             </div>
 
-            <p className="text-xs font-black tracking-widest uppercase mb-3 relative"
+            {/* Plan name */}
+            <p className="text-[10px] font-black tracking-widest uppercase mb-1 relative"
+              style={{ color: EMERALD }}>
+              MÓDULO DE INTERVENÇÃO II
+            </p>
+            <p className="text-base font-black mb-4 leading-tight relative"
               style={{ background:`linear-gradient(90deg,${EMERALD},${CYAN})`,
                 WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>
-              🏆 PLANO PANTEÃO ELITE
+              [ PROTOCOLO NEURAL: INTELIGÊNCIA COMPLETA ]
             </p>
 
-            {/* Validity — hero element */}
+            {/* Validity */}
             <div className="px-4 py-3 rounded-xl mb-4 text-center relative"
               style={{ background:`${EMERALD}15`, border:`1px solid ${EMERALD}45` }}>
               <p className="text-xs font-black tracking-widest uppercase" style={{ color: EMERALD }}>
@@ -582,11 +678,7 @@ export default function CheckoutPage() {
 
             {/* Price */}
             <div className="mb-3 relative">
-              <div className="flex items-baseline gap-1">
-                <span className="text-4xl font-black text-white">
-                  12x de R$&nbsp;66,41
-                </span>
-              </div>
+              <span className="text-4xl font-black text-white">12x de R$&nbsp;66,41</span>
               <p className="text-xs font-semibold mt-0.5" style={{ color: EMERALD }}>no cartão de crédito</p>
             </div>
             <p className="text-slate-600 text-sm mb-1 relative">ou R$ 797,00 à vista</p>
@@ -594,24 +686,31 @@ export default function CheckoutPage() {
               Menos de R$ 1,09 por dia
             </p>
 
-            <div className="h-px mb-5 relative"
+            <div className="h-px mb-4 relative"
               style={{ background:`linear-gradient(90deg,${EMERALD}55,${CYAN}55)` }} />
+
+            {/* Infra label */}
+            <p className="text-[9px] font-black tracking-widest uppercase mb-3 relative"
+              style={{ color: EMERALD }}>
+              [ INFRAESTRUTURA DE GUERRA COMPLETA ]
+            </p>
 
             <div className="flex flex-col gap-2.5 mb-6 text-sm relative">
               {([
-                { t:'Tudo do Plano Aceleração incluído',          c: EMERALD },
-                { t:'Exército de 10 Especialistas IA 24h',        c: EMERALD },
-                { t:'__NORMA__',                                   c: EMERALD },
-                { t:'Resumos Storytelling por deck',               c: CYAN    },
-                { t:'Tabelas Comparativas + Macetes & Mnemonics', c: CYAN    },
-                { t:'Áudio-Resumos narrados por IA',              c: CYAN    },
+                { t: 'Tudo do Protocolo Manual incluído',                         c: EMERALD },
+                { t: 'Neural Core: o cérebro que gerencia sua retenção.',          c: EMERALD },
+                { t: 'Mestres do ENEM: 15 Agentes IA em prontidão 24/7.',         c: EMERALD },
+                { t: '__NORMA__',                                                  c: EMERALD },
+                { t: 'Storytelling Engine: Resumos e tabelas gerados por IA.',    c: CYAN    },
               ] as { t: string; c: string }[]).map(({ t, c }) => (
                 <div key={t} className="flex items-start gap-2">
                   <span className="shrink-0 mt-0.5" style={{ color:c }}>✓</span>
                   <span className="text-slate-200 leading-snug">
                     {t === '__NORMA__'
-                      ? <>Redação Master: Mentoria e Correção com Tutor.IA{' '}
-                          <strong style={{ color: EMERALD, textShadow: `0 0 8px ${EMERALD}90` }}>Norma</strong>
+                      ? <>
+                          <strong style={{ color: EMERALD }}>Prof.ª Norma IA:</strong>{' '}
+                          Auditoria e Veredito de Redação em{' '}
+                          <span className="text-white font-bold">30s</span>.
                         </>
                       : t}
                   </span>
@@ -621,7 +720,7 @@ export default function CheckoutPage() {
 
             <button
               onClick={() => handleBuy('panteao_elite')}
-              className="relative block w-full py-4 rounded-xl text-center font-black text-white text-base transition-all duration-200 hover:-translate-y-0.5"
+              className="relative block w-full py-4 rounded-xl text-center font-black text-white text-sm tracking-wider transition-all duration-200 hover:-translate-y-0.5"
               style={{
                 background:`linear-gradient(135deg,${EMERALD} 0%,${CYAN} 60%,#a78bfa 100%)`,
                 boxShadow:`0 0 40px ${EMERALD}55, 0 4px 20px rgba(0,0,0,0.50)`,
@@ -630,7 +729,7 @@ export default function CheckoutPage() {
                 <span className="absolute inset-0"
                   style={{ background:'linear-gradient(105deg,transparent 30%,rgba(255,255,255,0.12) 50%,transparent 70%)' }} />
               </span>
-              Garantir Minha Vaga no ENEM →
+              [ ATIVAR INTELIGÊNCIA PANTEÃO ]
             </button>
 
             {/* Micro trust */}
@@ -673,11 +772,11 @@ export default function CheckoutPage() {
           <div className="grid grid-cols-3 px-5 py-3 border-b border-white/5">
             <span className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Recurso</span>
             <span className="text-xs font-semibold text-center uppercase tracking-wider" style={{ color:'#8b5cf6' }}>
-              ⚡ Aceleração
+              ⚡ Módulo I
             </span>
             <span className="text-xs font-semibold text-center uppercase tracking-widest"
               style={{ background:`linear-gradient(90deg,${EMERALD},${CYAN})`, WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>
-              🏆 Panteão
+              🏆 Módulo II
             </span>
           </div>
           {[
@@ -686,8 +785,8 @@ export default function CheckoutPage() {
             ['Resumos Storytelling',                     false, true ],
             ['Tabelas Comparativas',                     false, true ],
             ['Áudio-Resumos IA',                         false, true ],
-            ['Exército de 10 Especialistas IA',          false, true ],
-            ['Redação Master — Tutor.IA Norma',          false, true ],
+            ['Exército de 15 Especialistas IA',          false, true ],
+            ['Redação Master — Tutor.IA Prof.ª Norma',  false, true ],
             ['Acesso 2 anos (ENEM 2026 + 2027)',         false, true ],
           ].map(([feat, flash, pro], i) => (
             <div key={feat as string} className="grid grid-cols-3 px-5 py-3 text-sm"

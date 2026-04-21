@@ -141,8 +141,8 @@ function generateInsight(params: {
     return {
       type:       'no-consistency',
       line1:      `Soldado${courseTag}, seu radar está perdendo sinal.`,
-      line2:      'A aprovação não é um evento, é um hábito. Sem consistência, o Dr. Chronos não pode salvar sua nota. Comece sua fila de hoje AGORA. 🛡️',
-      specialist: getTutorById('dr-chronos'),
+      line2:      'A aprovação não é um evento, é um hábito. Sem consistência, o Prof. Chronos não pode salvar sua nota. Comece sua fila de hoje AGORA. 🛡️',
+      specialist: getTutorById('prof-chronos'),
       ctaLabel:   'Retomar Sequência Agora',
       ctaHref:    '/dashboard',
     };

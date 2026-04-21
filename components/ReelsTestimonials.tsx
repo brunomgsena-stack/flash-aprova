@@ -2,116 +2,11 @@
 
 import { useState, useRef } from 'react';
 import { motion, useMotionValue, useAnimationFrame, useInView } from 'framer-motion';
+import { REELS, type Reel } from '@/lib/reels-data';
 
 // ─── Design tokens ──────────────────────────────────────────────────────────
 const NEON    = '#00FF73';
 const EMERALD = '#10b981';
-const VIOLET  = '#7C3AED';
-const CYAN    = '#06b6d4';
-
-// ─── Types ───────────────────────────────────────────────────────────────────
-interface Reel {
-  img:        string;
-  tag:        string;
-  tagColor:   string;
-  score:      string;
-  course:     string;
-  handle:     string;
-  bullets:    [string, string, string];
-  gradA:      string;
-  gradB:      string;
-  floatY:     number;
-  floatRot:   number;
-  floatDur:   number;
-  floatDelay: number;
-  stories:    [number, number, number, number];
-  noPlay?:    boolean;
-}
-
-// ─── 8 Cards ─────────────────────────────────────────────────────────────────
-const REELS: Reel[] = [
-  {
-    img:       '/images/ana.med.ufpe.avif',
-    tag:       'MAPEADO',    tagColor: NEON,
-    score:     '940/1000',   course:   'MEDICINA · UFPE',
-    handle:    '@ana.med.ufpe',
-    bullets:   ['🧠 TRI domada. Bio imbatível.', '🎯 4ª tentativa → 1ª aprovação.', '💊 Sistema foi cirúrgico.'],
-    gradA:     '#0d2a14',    gradB:    '#000810',
-    floatY:    6,  floatRot:  0.4, floatDur: 5.2, floatDelay: 0.00,
-    stories:   [1, 0, 0, 0],
-  },
-  {
-    img:       '/images/aprovado_2.jpg',
-    tag:       'SINCRONIZADO', tagColor: CYAN,
-    score:     '920/1000',   course:   'ENG. MECATRÔNICA · USP',
-    handle:    '@carlos.eng.usp',
-    bullets:   ['📡 Radar ENEM = GPS das falhas.', '📐 Mat+Fís: 40%→89% em 60d.', '⚡ 4h de estudo, não 8.'],
-    gradA:     '#0a1830',    gradB:    '#000810',
-    floatY:    8,  floatRot: -0.3, floatDur: 5.8, floatDelay: 0.35,
-    stories:   [1, 1, 0, 0],
-  },
-  {
-    img:       '/images/beatriz.dir.avif',
-    tag:       'BLINDADO',   tagColor: VIOLET,
-    score:     '920/1000',   course:   'DIREITO · UNICAMP',
-    handle:    '@beatriz.dir',
-    bullets:   ['✍️ 30 feedbacks de IA na Red.', '🛡️ Redação blindada com IA.', '⚖️ 1ª tentativa. Unicamp.'],
-    gradA:     '#180e38',    gradB:    '#000810',
-    floatY:    5,  floatRot:  0.5, floatDur: 6.2, floatDelay: 0.70,
-    stories:   [1, 1, 1, 0],
-  },
-  {
-    img:       '/images/aprovado_4.jpg',
-    tag:       'DOMINADO',   tagColor: EMERALD,
-    score:     '940/1000',   course:   'MEDICINA · USP',
-    handle:    '@rafael.sisu1',
-    bullets:   ['🔬 Bio+Quím zeradas na TRI.', '🧬 Memória neural blindada.', '🏆 Top 1% SISU — confirmado.'],
-    gradA:     '#0a2818',    gradB:    '#000810',
-    floatY:    7,  floatRot: -0.4, floatDur: 5.5, floatDelay: 1.05,
-    stories:   [1, 1, 1, 1],
-  },
-  {
-    img:       '/images/juliomed-ufrj.png',
-    tag:       'DOMINADO',   tagColor: '#fbbf24',
-    score:     '960/1000',   course:   'MEDICINA · UFRJ',
-    handle:    '@juliomed.ufrj',
-    bullets:   ['💪 Táticos: covardia com a concorrência.', '🔬 UFRJ Medicina. 960/1000.', '🎯 Sistema que não perdoa lacunas.'],
-    gradA:     '#2a1a0a',    gradB:    '#000810',
-    floatY:    6,  floatRot:  0.3, floatDur: 5.9, floatDelay: 0.20,
-    stories:   [1, 1, 1, 0],
-    noPlay:    true,
-  },
-  {
-    img:       '/images/aprovado_6.jpg',
-    tag:       'SINCRONIZADO', tagColor: '#00FF73',
-    score:     '920/1000',   course:   'ENG. AEROESPACIAL · ITA',
-    handle:    '@lucas.eng.ita',
-    bullets:   ['⚛️ Mestre Newton: física cirúrgica.', '🚀 Radar de lacunas me salvou.', '🛸 ENG. AEROESPACIAL · ITA.'],
-    gradA:     '#0a1a10',    gradB:    '#000810',
-    floatY:    9,  floatRot: -0.5, floatDur: 6.4, floatDelay: 0.50,
-    stories:   [1, 1, 0, 0],
-  },
-  {
-    img:       '/images/sofia-usp.avif',
-    tag:       'BLINDADO',   tagColor: VIOLET,
-    score:     '940/1000',   course:   'DIREITO · USP',
-    handle:    '@sofia.dir.usp',
-    bullets:   ['✍️ Redação: feedback de IA em cada versão.', '⚖️ 1ª tentativa. Direito USP.', '🛡️ Sistema blindou minha nota final.'],
-    gradA:     '#180e38',    gradB:    '#000810',
-    floatY:    5,  floatRot:  0.4, floatDur: 5.3, floatDelay: 0.85,
-    stories:   [1, 1, 1, 1],
-  },
-  {
-    img:       '/images/aprovado_8.jpg',
-    tag:       'BLENDADO',   tagColor: '#a78bfa',
-    score:     '940/1000',   course:   'DIREITO · USP',
-    handle:    '@vitor.direitousp',
-    bullets:   ['✍️ Prof. Norma: GPS da redação.', '⚖️ 900+ na Redação. Garantido.', '🏛️ DIREITO · USP. Alcançado.'],
-    gradA:     '#16092e',    gradB:    '#000810',
-    floatY:    7,  floatRot: -0.3, floatDur: 6.0, floatDelay: 1.20,
-    stories:   [1, 1, 1, 0],
-  },
-];
 
 // ─── Ticker items (20) ────────────────────────────────────────────────────────
 const TICKER_ITEMS = [
@@ -381,7 +276,7 @@ export default function ReelsTestimonials() {
           className="text-xs font-bold tracking-widest uppercase mb-3"
           style={{ color: NEON, fontFamily: 'ui-monospace, monospace' }}
         >
-          EVIDÊNCIAS DE ELITE
+          [ VEREDITO DOS APROVADOS ]
         </p>
         <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">
           Aprovação não é sorte.{' '}
@@ -393,11 +288,30 @@ export default function ReelsTestimonials() {
             É algoritmo.
           </span>
         </h2>
-        <p className="text-slate-500 text-base max-w-xl mx-auto">
-          Testado e validado pelo{' '}
-          <span className="text-slate-300 font-medium">Panteão de Elite</span>:{' '}
-          veja os resultados reais.
+        <p className="text-slate-400 text-base max-w-xl mx-auto mb-8">
+          O próximo desse mural pode ser você. Toque no botão abaixo.
         </p>
+        <a
+          href="/onboarding"
+          className="inline-flex items-center gap-3 px-8 py-4 rounded-sm text-sm font-black tracking-widest uppercase transition-all duration-200"
+          style={{
+            background:  NEON,
+            color:       '#000',
+            fontFamily:  "'JetBrains Mono', 'Fira Code', ui-monospace, monospace",
+            boxShadow:   `0 0 24px ${NEON}50, 0 0 48px ${NEON}20`,
+          }}
+          onMouseEnter={e => {
+            (e.currentTarget as HTMLAnchorElement).style.boxShadow = `0 0 40px ${NEON}80, 0 0 80px ${NEON}30`;
+            (e.currentTarget as HTMLAnchorElement).style.transform = 'scale(1.03)';
+          }}
+          onMouseLeave={e => {
+            (e.currentTarget as HTMLAnchorElement).style.boxShadow = `0 0 24px ${NEON}50, 0 0 48px ${NEON}20`;
+            (e.currentTarget as HTMLAnchorElement).style.transform = 'scale(1)';
+          }}
+        >
+          <span>▶</span>
+          [ DETECTAR VAZAMENTO DE NOTA ]
+        </a>
       </motion.div>
 
       {/* Infinite reel carousel */}

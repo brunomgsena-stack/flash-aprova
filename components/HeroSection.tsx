@@ -1,7 +1,8 @@
 'use client';
 
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   motion,
   useMotionValue,
@@ -866,7 +867,22 @@ function MacBookMockup() {
 
 // ── Main HeroSection ──────────────────────────────────────────────────────────
 export default function HeroSection() {
+  const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
+  const [ctaState, setCtaState] = useState<'idle' | 'loading'>('idle');
+  const [cursorVisible, setCursorVisible] = useState(true);
+
+  useEffect(() => {
+    const interval = setInterval(() => setCursorVisible(v => !v), 530);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleCtaClick = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    if (ctaState === 'loading') return;
+    setCtaState('loading');
+    setTimeout(() => router.push('/onboarding'), 820);
+  }, [ctaState, router]);
 
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
@@ -1194,24 +1210,66 @@ export default function HeroSection() {
           </p>
 
           <div className="flex flex-col items-center gap-3">
-            <Link
-              href="/onboarding"
-              className="inline-flex items-center gap-3 px-9 py-4 rounded-2xl font-black text-black text-lg transition-all duration-200 hover:-translate-y-1 hover:scale-[1.04] active:scale-[0.98]"
+            {/* ── Industrial High-Ticket CTA ── */}
+            <style>{`
+              @keyframes cta-scan {
+                0%   { transform: translateX(-110%) skewX(-12deg); opacity: 0; }
+                15%  { opacity: 0.55; }
+                85%  { opacity: 0.55; }
+                100% { transform: translateX(210%) skewX(-12deg); opacity: 0; }
+              }
+              @keyframes cta-pulse-border {
+                0%, 100% { box-shadow: 0 0 0px #a855f7, 0 0 18px #a855f730, inset 0 0 0px #a855f700; }
+                50%      { box-shadow: 0 0 14px #a855f7, 0 0 32px #a855f755, inset 0 0 8px #a855f715; }
+              }
+              .cta-scan-btn { animation: cta-pulse-border 2.8s ease-in-out infinite; }
+              .cta-scan-btn:hover .cta-scan-line { animation: cta-scan 0.55s ease-in-out; }
+              .cta-scan-btn.loading-state { animation: none; opacity: 0.7; cursor: not-allowed; }
+            `}</style>
+            <button
+              onClick={handleCtaClick}
+              className={`cta-scan-btn relative inline-flex items-center gap-3 overflow-hidden px-10 py-4 text-sm uppercase tracking-widest transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.97]${ctaState === 'loading' ? ' loading-state' : ''}`}
               style={{
+                fontFamily: "'JetBrains Mono', 'Fira Code', 'Courier New', monospace",
+                fontWeight: 700,
+                color: '#000000',
                 background: `linear-gradient(135deg, ${NEON_G} 0%, #00cc5a 100%)`,
+                border: 'none',
+                borderRadius: '16px',
                 boxShadow: `0 0 50px ${NEON_G}55, 0 10px 36px rgba(0,0,0,0.45)`,
               }}
+              disabled={ctaState === 'loading'}
             >
-              <svg width={20} height={20} viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" strokeWidth="2.5"
-                strokeLinecap="round" strokeLinejoin="round"
+              {/* scan line */}
+              <span
+                className="cta-scan-line pointer-events-none absolute inset-y-0 w-12"
+                style={{
+                  background: 'linear-gradient(90deg, transparent, rgba(0,0,0,0.25), transparent)',
+                  left: 0,
+                }}
+              />
+              {/* icon: waveform / activity */}
+              <svg width={16} height={16} viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                style={{ color: '#000000', flexShrink: 0 }}
               >
                 <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
               </svg>
-              Gerar meu Diagnóstico IA
-            </Link>
-            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.22)' }}>
-              Sem cartão · Diagnóstico por IA em 3 min · Acesso imediato
+              {ctaState === 'loading' ? '[ ACESSANDO NÚCLEO... ]' : '[ DETECTAR VAZAMENTO DE NOTA ]'}
+            </button>
+
+            {/* micro-copy terminal */}
+            <p
+              style={{
+                fontFamily: "'JetBrains Mono', 'Fira Code', 'Courier New', monospace",
+                fontSize: '10px',
+                letterSpacing: '0.04em',
+                color: 'rgba(255,255,255,0.45)',
+                lineHeight: 1.5,
+              }}
+            >
+              Acesse seu Raio-X de Memória IA — Diagnóstico dos seus pontos cegos em 3 min
+              <span style={{ opacity: cursorVisible ? 1 : 0, transition: 'opacity 0.08s' }}> _</span>
             </p>
           </div>
         </motion.div>

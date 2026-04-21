@@ -29,7 +29,6 @@ const NeuralBrainMap     = dynamic(() => import('@/components/NeuralBrainMap'), 
 const CardVaultSection   = dynamic(() => import('@/components/CardVaultSection'),   { ssr: false, loading: () => <SkeletonBlock h={480} /> });
 const NormaRedacaoSection= dynamic(() => import('@/components/NormaRedacaoSection'),{ ssr: false, loading: () => <SkeletonBlock h={520} /> });
 const AiTutorsSection    = dynamic(() => import('@/components/AiTutorsSection'),    { ssr: false, loading: () => <SkeletonBlock h={480} /> });
-const EssayEvolutionSection = dynamic(() => import('@/components/EssayEvolutionSection'), { ssr: false, loading: () => <SkeletonBlock h={460} /> });
 const FocusSection          = dynamic(() => import('@/components/FocusSection'),          { ssr: false, loading: () => <SkeletonBlock h={480} /> });
 const NeuralEcosystemFlow= dynamic(() => import('@/components/NeuralEcosystemFlow'),{ ssr: false, loading: () => <SkeletonBlock h={360} /> });
 const BlindagemEngine    = dynamic(() => import('@/components/BlindagemEngine'),    { ssr: false, loading: () => <SkeletonBlock h={400} /> });
@@ -686,59 +685,200 @@ export default function LandingPage() {
           <NormaRedacaoSection />
         </LazySection>
 
-        {/* ══════════════════ TRAJETÓRIA — Essay Evolution ══ */}
-        <LazySection minHeight={460}>
-          <EssayEvolutionSection />
-        </LazySection>
-
         {/* ═══════════════════ CTA mid-page ══ */}
         <div className="flex justify-center pb-16">
           <CTAButton />
         </div>
 
-        {/* ════════════════════════════ FINAL CTA ══ */}
-        <section className="max-w-4xl mx-auto px-6 sm:px-10 pb-24">
-          <div className="relative rounded-3xl p-10 sm:p-16 overflow-hidden text-center"
+        {/* ════════════════════ AUDITORIA DE MERCADO ══ */}
+        <section className="max-w-4xl mx-auto px-6 sm:px-10 pb-16">
+          <div
+            className="relative rounded-2xl overflow-hidden p-8 sm:p-12"
             style={{
-              background: 'rgba(15,15,15,0.98)',
-              border: `1px solid ${NEON}30`,
-              boxShadow: `0 0 0 1px ${NEON}10, 0 0 80px ${NEON}14, 0 0 160px rgba(124,58,237,0.10)`,
-            }}>
-            <div className="absolute inset-x-0 top-0 h-px"
-              style={{ background: `linear-gradient(90deg, transparent, ${NEON}80, ${VIOLET}60, transparent)` }} />
-            <div className="absolute top-0 left-0 w-80 h-80 pointer-events-none"
-              style={{ background: `radial-gradient(circle, ${NEON}10 0%, transparent 70%)`, transform: 'translate(-30%,-30%)' }} />
-            <div className="absolute bottom-0 right-0 w-72 h-72 pointer-events-none"
-              style={{ background: `radial-gradient(circle, rgba(124,58,237,0.16) 0%, transparent 70%)`, transform: 'translate(30%,30%)' }} />
+              background: '#0D0D0D',
+              border: '1px solid #1a1a1a',
+              fontFamily: "'JetBrains Mono', 'Fira Code', 'Courier New', monospace",
+            }}
+          >
+            {/* scanline overlay */}
+            <div
+              className="pointer-events-none absolute inset-0 opacity-[0.03]"
+              style={{
+                backgroundImage: 'repeating-linear-gradient(0deg, #00FF73, #00FF73 1px, transparent 1px, transparent 4px)',
+              }}
+            />
 
-            <div className="relative">
+            {/* header badge */}
+            <div className="relative mb-8">
               <div
-                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-6 text-xs font-bold tracking-widest uppercase"
-                style={{ background: `${NEON}14`, border: `1px solid ${NEON}35`, color: NEON }}
+                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-sm text-xs font-bold tracking-widest uppercase mb-6"
+                style={{ background: 'rgba(0,255,115,0.08)', border: '1px solid rgba(0,255,115,0.25)', color: NEON }}
               >
                 <span className="inline-block w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: NEON }} />
-                Seu concorrente já está usando
+                [AUDITORIA DE MERCADO] | O CUSTO DA INÉRCIA
               </div>
 
-              <h2 className="text-3xl sm:text-4xl font-black text-white leading-tight mb-4">
-                Cada dia sem o método certo<br/>
-                é memória perdida{' '}
-                <span style={{ color: ORANGE }}>que não volta.</span>
-              </h2>
-              <p className="text-slate-400 text-base mb-10 max-w-lg mx-auto">
-                Inicie seu Diagnóstico por IA agora, descubra suas lacunas em 3 minutos e comece a reter{' '}
-                <Neon>97%</Neon> do que estuda — a partir de hoje.
+              <p className="text-slate-400 text-sm sm:text-base leading-relaxed max-w-2xl">
+                Manter uma estrutura de aprovação de elite no modelo tradicional exige um investimento pesado.
+                Se você fosse contratar cada módulo da nossa infraestrutura separadamente, este seria o seu custo mensal:
               </p>
-              <div className="flex flex-col items-center gap-4">
-                <CTAButton size="lg" />
-                <div className="flex flex-wrap justify-center gap-6 text-xs text-slate-600">
-                  {['Sem cartão de crédito', 'Acesso imediato', 'Cancele quando quiser'].map(t => (
-                    <span key={t} className="flex items-center gap-1.5">
-                      <span style={{ color: NEON }}>✓</span> {t}
-                    </span>
-                  ))}
-                </div>
+            </div>
+
+            {/* receipt items */}
+            <div
+              className="relative rounded-sm mb-8 overflow-hidden"
+              style={{ border: '1px solid #222', background: '#0A0A0A' }}
+            >
+              {/* receipt header */}
+              <div
+                className="px-6 py-3 text-xs tracking-widest text-center"
+                style={{ color: NEON, borderBottom: '1px dashed #222' }}
+              >
+                ┌─ CUSTO MENSAL ESTIMADO ─────────────────────────────────────┐
               </div>
+
+              {[
+                { label: 'Mentorias Individuais', value: 'R$ 1.200,00 /mês' },
+                { label: 'Corretor de Redação Privado', value: 'R$ 450,00 /mês' },
+                { label: 'Material de Revisão (Papel/PDF)', value: 'R$ 200,00 /mês' },
+                { label: 'Mensalidade Cursinho Premium', value: 'R$ 2.500,00 /mês' },
+              ].map((item, i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between px-6 py-3 text-xs sm:text-sm"
+                  style={{ borderBottom: '1px dashed #1a1a1a', color: '#94a3b8' }}
+                >
+                  <span style={{ color: '#cbd5e1' }}>{item.label}</span>
+                  <span style={{ color: NEON, fontWeight: 700 }}>{item.value}</span>
+                </div>
+              ))}
+
+              {/* total */}
+              <div
+                className="flex items-center justify-between px-6 py-4 text-sm sm:text-base font-bold"
+                style={{ background: 'rgba(0,255,115,0.06)', borderTop: '1px solid rgba(0,255,115,0.2)' }}
+              >
+                <span style={{ color: '#f1f5f9' }}>Total Projetado</span>
+                <span style={{ color: NEON, fontSize: '1.1em' }}>R$ 4.350,00 /mês</span>
+              </div>
+
+              <div
+                className="px-6 py-3 text-xs tracking-widest text-center"
+                style={{ color: '#333' }}
+              >
+                └─────────────────────────────────────────────────────────────┘
+              </div>
+            </div>
+
+            {/* insight text */}
+            <p className="text-slate-400 text-sm sm:text-base mb-8 leading-relaxed">
+              A pergunta não é quanto custa o FlashAprova, mas quanto custa continuar operando em um sistema que{' '}
+              <span style={{ color: ORANGE, fontWeight: 700 }}>cobra o preço de um carro popular por ano</span>
+              {' '}para te entregar 30% de retenção.
+            </p>
+
+            {/* comparison table */}
+            <div
+              className="relative rounded-sm overflow-hidden mb-8"
+              style={{ border: '1px solid #222' }}
+            >
+              {/* table header */}
+              <div
+                className="grid text-xs font-bold tracking-widest uppercase py-3"
+                style={{
+                  gridTemplateColumns: '1.8fr 1fr 1fr',
+                  background: '#111',
+                  borderBottom: '1px solid #222',
+                  color: '#475569',
+                }}
+              >
+                <div className="px-5">Atributo</div>
+                <div className="px-3" style={{ color: ORANGE }}>Cursinho Tradicional</div>
+                <div className="px-3" style={{ color: NEON }}>FlashAprova</div>
+              </div>
+
+              {[
+                {
+                  attr: 'Investimento Anual',
+                  trad: '~ R$ 25.000,00',
+                  flash: '< 4% deste valor',
+                  flashColor: NEON,
+                },
+                {
+                  attr: 'Retenção Real',
+                  trad: 'Aluguel (Esquece em 24h)',
+                  flash: 'Propriedade (97% Blindado)',
+                  flashColor: NEON,
+                },
+                {
+                  attr: 'Disponibilidade',
+                  trad: 'Horário Comercial',
+                  flash: '24/7 (Zero Latência)',
+                  flashColor: NEON,
+                },
+              ].map((row, i) => (
+                <div
+                  key={i}
+                  className="grid text-xs sm:text-sm py-3 items-center"
+                  style={{
+                    gridTemplateColumns: '1.8fr 1fr 1fr',
+                    borderBottom: i < 2 ? '1px dashed #1a1a1a' : undefined,
+                    background: i % 2 === 0 ? 'rgba(255,255,255,0.01)' : 'transparent',
+                  }}
+                >
+                  <div className="px-5" style={{ color: '#94a3b8' }}>{row.attr}</div>
+                  <div className="px-3" style={{ color: ORANGE, opacity: 0.85 }}>{row.trad}</div>
+                  <div className="px-3 font-bold" style={{ color: row.flashColor }}>{row.flash}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* yellow alert */}
+            <div
+              className="flex items-center gap-3 rounded-sm px-5 py-3 mb-8 text-xs sm:text-sm font-bold tracking-wide"
+              style={{
+                background: 'rgba(234,179,8,0.08)',
+                border: '1px solid rgba(234,179,8,0.35)',
+                color: '#fbbf24',
+              }}
+            >
+              <span style={{ fontSize: '1.1em' }}>⚠</span>
+              <span>[ CONCLUSÃO: O SISTEMA TRADICIONAL É FINANCEIRAMENTE INEFICIENTE ]</span>
+            </div>
+
+            {/* transition line */}
+            <p
+              className="text-center text-base sm:text-lg font-bold mb-8 leading-snug"
+              style={{ color: '#f1f5f9' }}
+            >
+              Um ano a mais de cursinho custa{' '}
+              <span style={{ color: ORANGE }}>R$ 30k</span>.
+              {' '}O FlashAprova custa{' '}
+              <span style={{ color: NEON }}>menos que um jantar.</span>
+            </p>
+
+            {/* CTA */}
+            <div className="flex justify-center">
+              <a
+                href="/onboarding"
+                className="inline-flex items-center gap-3 px-8 py-4 rounded-sm text-sm font-black tracking-widest uppercase transition-all duration-200"
+                style={{
+                  background: NEON,
+                  color: '#000',
+                  boxShadow: `0 0 24px ${NEON}50, 0 0 48px ${NEON}20`,
+                }}
+                onMouseEnter={e => {
+                  (e.currentTarget as HTMLAnchorElement).style.boxShadow = `0 0 40px ${NEON}80, 0 0 80px ${NEON}30`;
+                  (e.currentTarget as HTMLAnchorElement).style.transform = 'scale(1.03)';
+                }}
+                onMouseLeave={e => {
+                  (e.currentTarget as HTMLAnchorElement).style.boxShadow = `0 0 24px ${NEON}50, 0 0 48px ${NEON}20`;
+                  (e.currentTarget as HTMLAnchorElement).style.transform = 'scale(1)';
+                }}
+              >
+                <span>▶</span>
+                [ DETECTAR VAZAMENTO DE NOTA ]
+              </a>
             </div>
           </div>
         </section>

@@ -15,7 +15,7 @@ const RED     = '#ef4444';
 const MONO    = "'JetBrains Mono', 'Courier New', ui-monospace, monospace";
 
 const NORMA_AVATAR =
-  'https://api.dicebear.com/9.x/lorelei/svg?seed=ProfNorma&backgroundColor=0d0a1e&hair=variant19&earrings=variant02';
+  'https://api.dicebear.com/9.x/lorelei/svg?seed=ProfaNorma&backgroundColor=0d0a1e&hair=variant19&earrings=variant02';
 
 // ─── State Machine ─────────────────────────────────────────────────────────────
 type Stage = 'WRITING' | 'UPLOAD' | 'PROCESSING' | 'VEREDITO';
@@ -939,7 +939,7 @@ function TriDossier() {
         }}>
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full overflow-hidden shrink-0" style={{ border: `1.5px solid ${GOLD}50`, background: '#0d0a1e' }}>
-              <Image src={NORMA_AVATAR} alt="Prof. Norma" width={32} height={32} className="w-full h-full object-cover" unoptimized />
+              <Image src={NORMA_AVATAR} alt="Prof.ª Norma" width={32} height={32} className="w-full h-full object-cover" unoptimized />
             </div>
             <span className="text-[9px] font-black tracking-widest" style={{ color: GOLD, fontFamily: MONO }}>
               norma@flashaprova ~ veredito
