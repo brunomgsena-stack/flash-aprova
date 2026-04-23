@@ -15,7 +15,7 @@ const ITEMS = [
   {
     id: 'DECK-001',
     icon: '⚡',
-    name: '5.807 Cards Curados',
+    name: 'Flashcards Táticos',
     desc: 'Cada card calibrado para a TRI — sem enrolação, só o que cai.',
     stat: '5.807',
     statLabel: 'CARDS',
@@ -42,7 +42,7 @@ const ITEMS = [
   {
     id: 'TUT-004',
     icon: '🤖',
-    name: 'Tutores IA 24/7',
+    name: 'Tutores IA Especialistas',
     desc: 'Explica, corrige e adapta a linguagem ao seu nível — a qualquer hora.',
     stat: '24/7',
     statLabel: 'ONLINE',
@@ -53,7 +53,7 @@ const ITEMS = [
     icon: '✍️',
     name: 'Correção de Redação',
     desc: 'Feedback instantâneo nas 5 competências do ENEM com nota preditiva.',
-    stat: '1000',
+    stat: '+900',
     statLabel: 'PTS',
     color: '#eab308',
   },
@@ -184,10 +184,8 @@ export default function ArsenalElite() {
         </h2>
 
         <p className="text-slate-500 text-base max-w-2xl mx-auto leading-relaxed">
-          Delegue o esforço braçal para a nossa engenharia. Enquanto o candidato comum perde
-          meses fabricando resumos e cards manuais, você recebe o{' '}
-          <span className="text-white font-semibold">arsenal pronto</span> para dominar a TRI
-          e focar apenas no que realmente cai.
+          Delegue o <span className="text-white font-semibold">esforço braçal</span> para o nosso sistema. Pare de{' '}
+          <span className="text-white font-semibold">perder meses</span> fabricando materiai. Tudo o que você precisa para ser aprovado:
         </p>
       </motion.div>
 
@@ -226,8 +224,8 @@ export default function ArsenalElite() {
               className="text-[10px]"
               style={{ fontFamily: JETBRAINS, color: 'rgba(255,255,255,0.25)' }}
             >
-              Arsenal compilado ·{' '}
-              <span style={{ color: NEON }}>PRONTO PARA DEPLOY</span>
+              Preparar intervenção ·{' '}
+              <span style={{ color: NEON }}>ARSENAL COMPLETO</span>
             </span>
           </div>
 

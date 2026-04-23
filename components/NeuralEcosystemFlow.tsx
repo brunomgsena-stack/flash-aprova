@@ -463,12 +463,12 @@ export default function NeuralEcosystemFlow() {
       ref={sectionRef}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className="max-w-6xl mx-auto px-5 sm:px-10 pb-28 pt-8"
+      className="max-w-6xl mx-auto px-5 sm:px-10 pb-10 sm:pb-28 pt-8"
     >
 
       {/* ── Headline ─────────────────────────────────────────────────────────── */}
       <motion.div
-        className="text-center mb-6"
+        className="text-center mb-1 sm:mb-6"
         initial={{ opacity: 0, y: 28 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
@@ -507,8 +507,8 @@ export default function NeuralEcosystemFlow() {
 
       {/* ── Visual arena ─────────────────────────────────────────────────────── */}
       <div
-        className="relative mx-auto"
-        style={{ height: 460, maxWidth: 680 }}
+        className="relative mx-auto h-[280px] sm:h-[460px]"
+        style={{ maxWidth: 680 }}
       >
 
         {/* Connector lines */}
@@ -591,53 +591,85 @@ export default function NeuralEcosystemFlow() {
 
       {/* ── Mobile list ──────────────────────────────────────────────────────── */}
       <div className="sm:hidden mt-10 flex flex-col gap-3">
-        {RINGS.map((ring, i) => (
-          <div
-            key={ring.id}
-            style={{
-              border:       `1px solid ${ring.color}${active === i ? '50' : '22'}`,
-              borderRadius: 10,
-              padding:      '11px 14px',
-              background:   active === i ? `${ring.color}08` : 'rgba(255,255,255,0.02)',
-              transition:   'all 0.4s',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
-              <span
-                style={{
-                  fontFamily: 'ui-monospace, monospace',
-                  fontSize: 8,
-                  color: ring.color,
-                  opacity: 0.65,
-                  letterSpacing: '0.08em',
-                }}
-              >
-                {ring.number}
-              </span>
+        {RINGS.map((ring, i) => {
+          const isActive = active === i;
+          return (
+            <motion.div
+              key={ring.id}
+              style={{
+                position:     'relative',
+                borderRadius: 10,
+                padding:      '11px 14px',
+                background:   isActive ? `${ring.color}10` : 'rgba(255,255,255,0.02)',
+                border:       `${isActive ? 1.5 : 1}px solid ${ring.color}${isActive ? '60' : '22'}`,
+                boxShadow:    isActive
+                  ? `0 0 0 0px ${ring.color}00`
+                  : 'none',
+              }}
+              animate={isActive ? {
+                boxShadow: [
+                  `0 0 0 0px ${ring.color}00, inset 0 0 0px ${ring.color}00`,
+                  `0 0 14px 3px ${ring.color}40, inset 0 0 10px ${ring.color}18`,
+                  `0 0 0 0px ${ring.color}00, inset 0 0 0px ${ring.color}00`,
+                ],
+              } : { boxShadow: 'none' }}
+              transition={isActive ? { duration: 1.6, repeat: Infinity, ease: 'easeInOut' } : { duration: 0.4 }}
+            >
+              {/* Pulsing border overlay */}
+              {isActive && (
+                <motion.div
+                  style={{
+                    position:     'absolute',
+                    inset:        0,
+                    borderRadius: 10,
+                    border:       `1.5px solid ${ring.color}`,
+                    pointerEvents:'none',
+                  }}
+                  animate={{ opacity: [0.2, 0.8, 0.2] }}
+                  transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
+                />
+              )}
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
+                <span
+                  style={{
+                    fontFamily: 'ui-monospace, monospace',
+                    fontSize: 8,
+                    color: ring.color,
+                    opacity: 0.65,
+                    letterSpacing: '0.08em',
+                  }}
+                >
+                  {ring.number}
+                </span>
+                <p
+                  style={{
+                    fontFamily:    'ui-monospace, monospace',
+                    fontSize:      11,
+                    letterSpacing: '0.10em',
+                    color:         ring.color,
+                    fontWeight:    800,
+                    textShadow:    isActive ? `0 0 10px ${ring.color}70` : 'none',
+                    transition:    'text-shadow 0.4s',
+                  }}
+                >
+                  {ring.label}
+                </p>
+              </div>
               <p
                 style={{
-                  fontFamily:    'ui-monospace, monospace',
-                  fontSize:      11,
-                  letterSpacing: '0.10em',
-                  color:         ring.color,
-                  fontWeight:    800,
+                  fontFamily: 'ui-monospace, monospace',
+                  fontSize:   9,
+                  color:      isActive ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.28)',
+                  paddingLeft: 24,
+                  transition: 'color 0.4s',
                 }}
               >
-                {ring.label}
+                {ring.sublabel}
               </p>
-            </div>
-            <p
-              style={{
-                fontFamily: 'ui-monospace, monospace',
-                fontSize:   9,
-                color:      'rgba(255,255,255,0.38)',
-                paddingLeft: 24,
-              }}
-            >
-              {ring.sublabel}
-            </p>
-          </div>
-        ))}
+            </motion.div>
+          );
+        })}
       </div>
 
     </section>

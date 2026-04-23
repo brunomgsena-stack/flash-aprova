@@ -177,91 +177,144 @@ function StraightOutputLines({ inView }: { inView: boolean }) {
   return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full block" />;
 }
 
-// ─── Center: Núcleo translúcido BLINDAGEM ENGINE (Glassmorphism) ──────────────
+// ─── Center: CPU chip processor visual ───────────────────────────────────────
 function NucleusCore({ inView }: { inView: boolean }) {
+  // Pin rows on each edge
+  const PIN_COUNT = 5;
+  const pins = Array.from({ length: PIN_COUNT }, (_, i) => i);
+
   return (
     <motion.div
-      className="relative z-10 flex flex-col items-center justify-center shrink-0"
-      style={{
-        width:               170,
-        height:              210,
-        background:          'rgba(255,255,255,0.045)',
-        backdropFilter:      'blur(28px)',
-        WebkitBackdropFilter:'blur(28px)',
-        border:              '1px solid rgba(255,255,255,0.12)',
-        borderRadius:        20,
-        boxShadow:           '0 0 60px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.10)',
-      }}
+      className="relative z-10 flex items-center justify-center shrink-0"
+      style={{ width: 120, height: 120 }}
       initial={{ opacity: 0, scale: 0.72 }}
       animate={inView ? { opacity: 1, scale: 1 } : {}}
       transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
     >
-      {/* Pulsing border glow */}
+      {/* ── Outer breath ring ── */}
       <motion.div
-        className="absolute inset-0 rounded-[20px] pointer-events-none"
+        className="absolute pointer-events-none"
         style={{
-          border:    `1px solid ${NEON}30`,
-          boxShadow: `0 0 28px ${NEON}10, inset 0 0 36px ${VIOLET}12`,
+          inset: -8,
+          border: `1px solid ${NEON}18`,
+          borderRadius: 10,
         }}
-        animate={{ opacity: [0.45, 1, 0.45] }}
-        transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
-      />
-
-      {/* Outer breath ring */}
-      <motion.div
-        className="absolute pointer-events-none rounded-[24px]"
-        style={{ inset: -10, border: `1px solid ${NEON}14` }}
-        animate={{ opacity: [0, 0.55, 0], scale: [0.94, 1.06, 0.94] }}
+        animate={{ opacity: [0, 0.6, 0], scale: [0.93, 1.07, 0.93] }}
         transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut' }}
       />
 
-      {/* Top shimmer line */}
+      {/* ── CPU package (outer shell) ── */}
       <div
-        className="absolute inset-x-0 top-0 h-px rounded-t-[20px] pointer-events-none"
-        style={{ background: `linear-gradient(90deg, transparent, ${NEON}45, transparent)` }}
-      />
-
-      {/* Label: NÚCLEO */}
-      <p
-        className="text-[8px] tracking-[0.24em] uppercase mb-3"
-        style={{ fontFamily: JETBRAINS, color: 'rgba(255,255,255,0.22)' }}
-      >
-        &gt; NÚCLEO
-      </p>
-
-      {/* Main title */}
-      <h3
-        className="text-[13px] font-black text-center leading-snug"
+        className="relative"
         style={{
-          fontFamily:    JETBRAINS,
-          color:         'white',
-          letterSpacing: '-0.01em',
-          textShadow:    '0 0 20px rgba(255,255,255,0.12)',
+          width: 100, height: 100,
+          background: 'linear-gradient(145deg, #1a1f2e 0%, #0d1117 60%, #161b27 100%)',
+          border: '1px solid rgba(255,255,255,0.13)',
+          borderRadius: 6,
+          boxShadow: `0 0 0 1px rgba(0,0,0,0.6), 0 0 32px ${VIOLET}22, 0 8px 32px rgba(0,0,0,0.7)`,
         }}
       >
-        BLINDAGEM<br />ENGINE
-      </h3>
+        {/* Corner alignment marks */}
+        {([['0','0'], ['auto','0'], ['0','auto'], ['auto','auto']] as [string,string][]).map(([b,r], idx) => (
+          <div key={idx} className="absolute pointer-events-none"
+            style={{
+              width: 7, height: 7,
+              top:    idx < 2 ? 5 : undefined, bottom:  idx >= 2 ? 5 : undefined,
+              left:   idx % 2 === 0 ? 5 : undefined, right: idx % 2 === 1 ? 5 : undefined,
+              borderTop:    idx < 2  ? `1.5px solid ${NEON}60` : undefined,
+              borderBottom: idx >= 2 ? `1.5px solid ${NEON}60` : undefined,
+              borderLeft:   idx % 2 === 0 ? `1.5px solid ${NEON}60` : undefined,
+              borderRight:  idx % 2 === 1 ? `1.5px solid ${NEON}60` : undefined,
+            }} />
+        ))}
 
-      {/* Divider */}
-      <div
-        className="my-3.5 w-10 h-px"
-        style={{ background: `linear-gradient(90deg, transparent, ${NEON}55, transparent)` }}
-      />
-
-      {/* Status indicator */}
-      <div className="flex items-center gap-1.5">
-        <motion.div
-          className="w-1.5 h-1.5 rounded-full"
-          style={{ background: NEON, boxShadow: `0 0 8px ${NEON}, 0 0 16px ${NEON}60` }}
-          animate={{ opacity: [1, 0.18, 1] }}
-          transition={{ duration: 1.2, repeat: Infinity }}
-        />
-        <span
-          className="text-[8px] tracking-[0.14em] uppercase"
-          style={{ fontFamily: JETBRAINS, color: `${NEON}75` }}
+        {/* ── Die (inner chip) ── */}
+        <div
+          className="absolute"
+          style={{
+            inset: 16,
+            background: 'linear-gradient(135deg, #0f1520 0%, #0a0e18 100%)',
+            border: `1px solid ${VIOLET}40`,
+            borderRadius: 3,
+            overflow: 'hidden',
+          }}
         >
-          ATIVO
-        </span>
+          {/* Grid of micro-cells */}
+          <div className="absolute inset-0"
+            style={{
+              backgroundImage: `
+                linear-gradient(${VIOLET}15 1px, transparent 1px),
+                linear-gradient(90deg, ${VIOLET}15 1px, transparent 1px)
+              `,
+              backgroundSize: '8px 8px',
+            }} />
+
+          {/* Central die label */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-0.5">
+            <span className="text-[6px] tracking-[0.2em] uppercase"
+              style={{ fontFamily: JETBRAINS, color: `${NEON}50` }}>
+              BLINDAGEM
+            </span>
+            <span className="text-[7px] font-black tracking-[0.15em] uppercase"
+              style={{ fontFamily: JETBRAINS, color: 'rgba(255,255,255,0.75)',
+                textShadow: `0 0 10px ${NEON}60` }}>
+              ENGINE
+            </span>
+            {/* Status dot */}
+            <motion.div
+              className="mt-1 w-1.5 h-1.5 rounded-full"
+              style={{ background: NEON, boxShadow: `0 0 6px ${NEON}` }}
+              animate={{ opacity: [1, 0.15, 1] }}
+              transition={{ duration: 1.2, repeat: Infinity }}
+            />
+          </div>
+
+          {/* Scanning line */}
+          <motion.div
+            className="absolute inset-x-0 h-px pointer-events-none"
+            style={{ background: `linear-gradient(90deg, transparent, ${NEON}70, transparent)` }}
+            animate={{ top: ['0%', '100%', '0%'] }}
+            transition={{ duration: 2.4, repeat: Infinity, ease: 'linear' }}
+          />
+        </div>
+
+        {/* ── Pins: top & bottom ── */}
+        {(['top', 'bottom'] as const).map(side => (
+          <div key={side} className="absolute inset-x-0 flex justify-center gap-[5px]"
+            style={{ [side]: -6 }}>
+            {pins.map(i => (
+              <div key={i} style={{
+                width: 3, height: 6,
+                background: `linear-gradient(${side === 'top' ? '180deg' : '0deg'}, #8b92a0, #4a5060)`,
+                borderRadius: 1,
+                boxShadow: `0 0 3px ${NEON}20`,
+              }} />
+            ))}
+          </div>
+        ))}
+
+        {/* ── Pins: left & right ── */}
+        {(['left', 'right'] as const).map(side => (
+          <div key={side} className="absolute inset-y-0 flex flex-col justify-center gap-[5px]"
+            style={{ [side]: -6 }}>
+            {pins.map(i => (
+              <div key={i} style={{
+                width: 6, height: 3,
+                background: `linear-gradient(${side === 'left' ? '90deg' : '270deg'}, #8b92a0, #4a5060)`,
+                borderRadius: 1,
+                boxShadow: `0 0 3px ${NEON}20`,
+              }} />
+            ))}
+          </div>
+        ))}
+
+        {/* Pulsing border glow */}
+        <motion.div
+          className="absolute inset-0 rounded-[6px] pointer-events-none"
+          style={{ border: `1px solid ${NEON}25`, boxShadow: `inset 0 0 20px ${VIOLET}15` }}
+          animate={{ opacity: [0.4, 1, 0.4] }}
+          transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
+        />
       </div>
     </motion.div>
   );
@@ -295,9 +348,8 @@ export default function TacticalRecovery() {
           {' '}na hora do ENEM.
         </h2>
         <p className="text-slate-500 text-base max-w-2xl mx-auto">
-          Enquanto a concorrência se perde em loopings mentais, nossa tecnologia de{' '}
-          <span className="text-white font-semibold">Acesso em Latência Zero</span>{' '}
-          garante que a resposta correta salte na sua mente no exato momento da pressão.
+          Esqueça apenas a concorrência. Nossa tecnologia garante que a resposta correta salte na sua mente no momento de maior pressão:{' '}
+          <span className="text-white font-semibold">na hora da prova</span>.
         </p>
       </div>
 
@@ -318,7 +370,7 @@ export default function TacticalRecovery() {
         {/* Main flow row */}
         <div
           className="flex items-stretch"
-          style={{ height: 280 }}
+          style={{ height: 240 }}
         >
 
           {/* ── Left: INPUT — linhas orgânicas roxas ── */}
@@ -350,8 +402,12 @@ export default function TacticalRecovery() {
           </div>
 
           {/* ── Center: Blindagem Engine Nucleus ── */}
-          <div className="flex items-center justify-center shrink-0 px-4 sm:px-7">
-            <NucleusCore inView={inView} />
+          <div className="flex flex-col shrink-0 px-3 sm:px-5">
+            <div className="flex-1 flex items-center justify-center">
+              <NucleusCore inView={inView} />
+            </div>
+            {/* Spacer matching the label height on left/right columns */}
+            <div className="py-3 border-t" style={{ borderColor: 'transparent' }} />
           </div>
 
           {/* ── Right: OUTPUT — linhas retas verdes ── */}
@@ -403,8 +459,8 @@ export default function TacticalRecovery() {
               className="text-[10px]"
               style={{ fontFamily: JETBRAINS, color: 'rgba(255,255,255,0.25)' }}
             >
-              Acesso em Latência Zero ·{' '}
-              <span style={{ color: NEON }}>0.021ms</span>
+              Anos de estudos reduzidos ·{' '}
+              <span style={{ color: NEON }}>Aprovação a caminho</span>
             </span>
           </div>
 

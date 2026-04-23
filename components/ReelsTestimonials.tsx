@@ -267,7 +267,7 @@ export default function ReelsTestimonials() {
 
       {/* Header */}
       <motion.div
-        className="text-center mb-12 px-6 sm:px-10"
+        className="text-center mb-4 px-6 sm:px-10"
         initial={{ opacity: 0, y: 20 }}
         animate={inView ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.6, ease: 'easeOut' }}
@@ -279,7 +279,7 @@ export default function ReelsTestimonials() {
           [ VEREDITO DOS APROVADOS ]
         </p>
         <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">
-          Aprovação não é sorte.{' '}
+          Aprovação não é sorte.<br />
           <span style={{
             background:           `linear-gradient(90deg, ${EMERALD}, ${NEON})`,
             WebkitBackgroundClip: 'text',
@@ -288,30 +288,6 @@ export default function ReelsTestimonials() {
             É algoritmo.
           </span>
         </h2>
-        <p className="text-slate-400 text-base max-w-xl mx-auto mb-8">
-          O próximo desse mural pode ser você. Toque no botão abaixo.
-        </p>
-        <a
-          href="/onboarding"
-          className="inline-flex items-center gap-3 px-8 py-4 rounded-sm text-sm font-black tracking-widest uppercase transition-all duration-200"
-          style={{
-            background:  NEON,
-            color:       '#000',
-            fontFamily:  "'JetBrains Mono', 'Fira Code', ui-monospace, monospace",
-            boxShadow:   `0 0 24px ${NEON}50, 0 0 48px ${NEON}20`,
-          }}
-          onMouseEnter={e => {
-            (e.currentTarget as HTMLAnchorElement).style.boxShadow = `0 0 40px ${NEON}80, 0 0 80px ${NEON}30`;
-            (e.currentTarget as HTMLAnchorElement).style.transform = 'scale(1.03)';
-          }}
-          onMouseLeave={e => {
-            (e.currentTarget as HTMLAnchorElement).style.boxShadow = `0 0 24px ${NEON}50, 0 0 48px ${NEON}20`;
-            (e.currentTarget as HTMLAnchorElement).style.transform = 'scale(1)';
-          }}
-        >
-          <span>▶</span>
-          [ DETECTAR VAZAMENTO DE NOTA ]
-        </a>
       </motion.div>
 
       {/* Infinite reel carousel */}

@@ -337,7 +337,7 @@ function CTAButton({ size = 'lg', label }: { size?: 'sm' | 'lg'; label?: string 
   return (
     <Link
       href="/onboarding"
-      className={`cta-pulse relative flex sm:inline-flex w-full sm:w-auto justify-center items-center gap-3 rounded-2xl font-black text-black overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.99] ${big ? 'px-8 py-5 text-lg' : 'px-6 py-4 text-base'}`}
+      className={`cta-pulse relative flex sm:inline-flex w-full sm:w-auto justify-center items-center gap-3 rounded-2xl font-black text-black overflow-hidden whitespace-nowrap transition-all duration-200 hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.99] ${big ? 'px-8 py-5 text-lg' : 'px-6 py-4 text-sm'}`}
       style={{
         background:    `linear-gradient(135deg, ${NEON} 0%, #00cc5a 100%)`,
         letterSpacing: '-0.01em',
@@ -372,14 +372,18 @@ function Neon({ children }: { children: React.ReactNode }) {
 }
 
 // ─── Authority Banner ─────────────────────────────────────────────────────────
+const UNIVERSITIES = [
+  'USP','UFRJ','UFMG','UFRGS','UFPE','UnB','UFSC','UFPR',
+  'UFF','UFBA','UFPA','UFC','UTFPR','UNIFESP','UFG','UFRN',
+  'UFPB','UFU','UFSCar','UFSM',
+];
+
 function AuthorityBanner() {
-  const universities = [
-    { abbr: 'USP',     full: 'Universidade de São Paulo' },
-    { abbr: 'UNICAMP', full: 'Univ. Estadual de Campinas' },
-    { abbr: 'UFPE',    full: 'Univ. Federal de Pernambuco' },
-  ];
+  // duplicate for seamless loop
+  const items = [...UNIVERSITIES, ...UNIVERSITIES];
+
   return (
-    <section className="max-w-6xl mx-auto px-4 sm:px-10 pb-8 sm:pb-16">
+    <section className="max-w-6xl mx-auto px-4 sm:px-10 pt-6 sm:pt-0 pb-8 sm:pb-16">
       <div
         className="relative rounded-2xl overflow-hidden"
         style={{
@@ -393,26 +397,37 @@ function AuthorityBanner() {
           style={{ background: `linear-gradient(90deg, transparent, ${NEON}50, transparent)` }} />
 
         <div className="flex flex-col sm:flex-row items-center justify-between gap-6 px-8 py-7">
-          <div className="text-center sm:text-left">
+          <div className="text-center sm:text-left flex-shrink-0">
             <p className="text-white font-black text-xl sm:text-2xl leading-snug">
-              +<span style={{ color: NEON }}>8.000</span> estudantes já blindaram<br className="hidden sm:block" /> sua memória com o FlashAprova
+              +<span style={{ color: NEON }}>3.800</span> estudantes já blindaram<br className="hidden sm:block" /> sua memória com o FlashAprova
             </p>
             <p className="text-slate-600 text-xs mt-1 tracking-widest uppercase">
-              Aprovados nas maiores universidades do país
+              Aprovados nas top universidades do país
             </p>
           </div>
 
-          <div className="hidden sm:block w-px h-12 bg-white/10" />
+          <div className="hidden sm:block w-px h-12 bg-white/10 flex-shrink-0" />
 
-          <div className="flex items-center gap-5 sm:gap-10">
-            {universities.map(({ abbr, full }) => (
-              <div key={abbr} className="flex flex-col items-center gap-1 opacity-40 hover:opacity-70 transition-opacity duration-200">
-                <span className="text-white font-black text-xl tracking-tight">{abbr}</span>
-                <span className="text-white/50 text-[8px] tracking-[0.12em] uppercase text-center leading-tight" style={{ maxWidth: 80 }}>
-                  {full}
+          {/* Carousel */}
+          <div className="relative w-full overflow-hidden" style={{ maskImage: 'linear-gradient(90deg, transparent, black 12%, black 88%, transparent)' }}>
+            <style>{`
+              @keyframes uni-scroll {
+                0%   { transform: translateX(0); }
+                100% { transform: translateX(-50%); }
+              }
+              .uni-track { animation: uni-scroll 28s linear infinite; }
+            `}</style>
+            <div className="uni-track flex items-center gap-8 w-max">
+              {items.map((abbr, i) => (
+                <span
+                  key={i}
+                  className="text-white font-black text-base tracking-tight flex-shrink-0"
+                  style={{ opacity: 0.35 }}
+                >
+                  {abbr}
                 </span>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -424,28 +439,28 @@ function AuthorityBanner() {
 // ─── FAQ data ─────────────────────────────────────────────────────────────────
 const FAQ_ITEMS = [
   {
-    q: 'O FlashAprova é gratuito?',
-    a: 'Sim. O plano gratuito (Flash) dá acesso a centenas de flashcards e ao Diagnóstico por IA sem cartão de crédito. Para acesso ilimitado a todos os 5.700+ cards, Tutores IA e Redação com IA, existe o plano AiPro+.',
+    q: 'Vou perder tempo configurando o app ou o material já vem pronto?',
+    a: 'Veredito: Tempo é seu recurso mais escasso. Ao contrário do Anki, onde você gasta meses criando cards, o FlashAprova entrega o Arsenal Pronto. São +5.700 flashcards táticos focados no 80/20 do ENEM. Você entra para evoluir sua nota, não para ser digitador.',
   },
   {
-    q: 'Funciona para quem está começando do zero?',
-    a: 'Perfeitamente. O Diagnóstico de IA identifica seu nível em cada disciplina e cria um plano personalizado. Você começa exatamente de onde precisa — sem desperdiçar tempo com conteúdo que já domina.',
+    q: 'O método funciona para conteúdos densos como Medicina e Engenharia?',
+    a: 'Veredito: O algoritmo foi desenhado especificamente para alta complexidade. Nossa tecnologia de Acesso em Latência Zero garante que, sob a pressão máxima do ENEM, a resposta correta salte na sua mente. É a diferença entre "achar que sabe" e ter a Propriedade do Conhecimento.',
   },
   {
-    q: 'Em quanto tempo vejo resultado?',
-    a: 'A maioria dos alunos relata melhora perceptível em retenção após 7 dias de uso consistente. Alunos que usam o FlashAprova por 60+ dias apresentam, em média, 30% mais acertos nas disciplinas treinadas.',
+    q: 'Por que o FlashAprova é superior ao Anki ou métodos manuais?',
+    a: 'Veredito: O Anki é um martelo; o FlashAprova é uma fábrica automatizada. Além do SRS de elite, você tem o Neural Core com 10 Agentes IA e a Norma IA para auditar suas redações em 30 segundos. Métodos manuais são "terapia de estudo", nós entregamos Engenharia de Retenção.',
   },
   {
-    q: 'Quanto tempo preciso dedicar por dia?',
-    a: 'O algoritmo SRS otimiza suas revisões para 15 a 20 minutos diários. Sessões curtas e diárias são cientificamente mais eficazes do que maratonas semanais.',
+    q: 'Quanto tempo do meu dia a "Blindagem" consome?',
+    a: 'Veredito: Eficiência é a nossa obsessão. O Radar de Lacunas elimina o estudo às cegas: você foca apenas no que o seu cérebro está prestes a deletar. 30 a 45 minutos diários no app garantem uma retenção de 97%, economizando horas de revisões inúteis em apostilas estáticas.',
   },
   {
-    q: 'O que diferencia o FlashAprova do Anki e outros apps?',
-    a: 'Três diferenciais: (1) conteúdo 100% curado para o ENEM — nenhum card genérico; (2) Tutores IA especialistas por disciplina; (3) Mapa de Domínio em tempo real que mostra onde você está perdendo pontos.',
+    q: 'E se eu sentir que a Engenharia de Retenção não é para mim?',
+    a: 'Veredito: Operamos com Risco Zero. Você tem 7 dias de Garantia Incondicional. Se não sentir uma melhora brutal na sua velocidade de resgate e segurança no conteúdo, devolvemos 100% do seu investimento. Sem perguntas, sem burocracia.',
   },
   {
-    q: 'Posso usar no celular?',
-    a: 'Sim. O FlashAprova é 100% web responsivo — funciona no navegador do celular, tablet e computador sem precisar instalar nenhum aplicativo.',
+    q: 'Posso confiar na correção de redação da IA?',
+    a: 'Veredito: A Norma IA não "dá uma nota". Ela faz uma Auditoria Forense baseada no padrão oficial do INEP. Enquanto um corretor humano leva 10 dias, a Norma disseca sua estrutura em segundos, revelando falhas invisíveis que custam sua aprovação.',
   },
 ] as const;
 
@@ -480,11 +495,11 @@ function ENEMCountdown() {
   ];
 
   return (
-    <div className="hidden sm:flex items-center gap-1.5"
+    <div className="flex items-center gap-1.5"
       style={{ fontFamily: "'JetBrains Mono', 'Courier New', ui-monospace, monospace" }}
     >
       <span className="text-[9px] font-bold tracking-[0.18em] uppercase mr-1"
-        style={{ color: 'rgba(255,255,255,0.2)' }}>
+        style={{ color: '#ef4444' }}>
         ENEM
       </span>
       {units.map(({ v, label }, i) => (
@@ -492,17 +507,17 @@ function ENEMCountdown() {
           <span
             className="tabular-nums text-sm font-black"
             style={{
-              color: '#e2e8f0',
-              background: 'rgba(255,255,255,0.05)',
-              border: '1px solid rgba(255,255,255,0.08)',
+              color: '#ef4444',
+              background: '#0a0a0a',
+              border: '1px solid rgba(239,68,68,0.4)',
               borderRadius: 5,
               padding: '1px 5px',
               letterSpacing: '-0.02em',
             }}
           >{v}</span>
-          <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.22)' }}>{label}</span>
+          <span className="text-[9px]" style={{ color: 'rgba(239,68,68,0.55)' }}>{label}</span>
           {i < units.length - 1 && (
-            <span className="text-xs mx-0.5" style={{ color: 'rgba(255,255,255,0.12)' }}>·</span>
+            <span className="text-xs mx-0.5" style={{ color: 'rgba(239,68,68,0.25)' }}>·</span>
           )}
         </span>
       ))}
@@ -569,7 +584,7 @@ function FAQAccordion() {
       </div>
 
       <div className="text-center mt-10">
-        <CTAButton size="sm" />
+        <CTAButton size="sm" label="[ DETECTAR VAZAMENTO DE NOTA ]" />
       </div>
     </section>
   );
@@ -613,15 +628,23 @@ export default function LandingPage() {
 
       <div className="relative" style={{ zIndex: 1 }}>
 
+        {/* ════════════════ MOBILE COUNTDOWN BAR ══ */}
+        <div className="flex sm:hidden items-center justify-center py-2.5 w-full"
+          style={{ background: '#000000', borderBottom: '1px solid rgba(239,68,68,0.2)' }}>
+          <ENEMCountdown />
+        </div>
+
         {/* ════════════════════════════════════ NAVBAR ══ */}
-        <nav className="flex items-center justify-between px-6 sm:px-10 py-5 max-w-6xl mx-auto">
-          <span className="font-black text-white text-xl tracking-tight">
+        <nav className="flex items-center justify-between px-6 sm:px-10 py-2 sm:py-5 max-w-6xl mx-auto">
+          <span className="hidden sm:inline font-black text-white text-xl tracking-tight">
             Flash<span style={{
               background: `linear-gradient(90deg, ${NEON}, ${VIOLET})`,
               WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
             }}>Aprova</span>
           </span>
-          <ENEMCountdown />
+          <div className="hidden sm:block">
+            <ENEMCountdown />
+          </div>
           <div className="flex items-center gap-4">
             <Link href="/login" className="text-sm text-slate-400 hover:text-white transition-colors font-medium hidden sm:block">
               Entrar
@@ -665,6 +688,10 @@ export default function LandingPage() {
           <TacticalRecovery />
         </LazySection>
 
+        <div className="flex justify-center pb-16 px-4 -mt-8">
+          <CTAButton size="sm" label="[ DETECTAR VAZAMENTO DE NOTA ]" />
+        </div>
+
         {/* ══════════════════════════ ARSENAL DE ELITE ══ */}
         <LazySection minHeight={420}>
           <ArsenalElite />
@@ -686,8 +713,8 @@ export default function LandingPage() {
         </LazySection>
 
         {/* ═══════════════════ CTA mid-page ══ */}
-        <div className="flex justify-center pb-16">
-          <CTAButton />
+        <div className="flex justify-center pb-16 -mt-10 px-5 sm:px-0">
+          <CTAButton size="sm" label="[ DETECTAR VAZAMENTO DE NOTA ]" />
         </div>
 
         {/* ════════════════════ AUDITORIA DE MERCADO ══ */}
@@ -709,14 +736,17 @@ export default function LandingPage() {
             />
 
             {/* header badge */}
-            <div className="relative mb-8">
+            <div className="relative mb-8 flex flex-col items-center text-center">
               <div
-                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-sm text-xs font-bold tracking-widest uppercase mb-6"
-                style={{ background: 'rgba(0,255,115,0.08)', border: '1px solid rgba(0,255,115,0.25)', color: NEON }}
+                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-sm text-base font-bold tracking-widest uppercase mb-2"
+                style={{ background: 'rgba(255,40,40,0.08)', border: '1px solid rgba(255,40,40,0.35)', color: '#f87171' }}
               >
-                <span className="inline-block w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: NEON }} />
-                [AUDITORIA DE MERCADO] | O CUSTO DA INÉRCIA
+                <span className="inline-block w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#f87171' }} />
+                [NOTA FISCAL: REPROVADO]
               </div>
+              <p className="text-base font-bold tracking-widest uppercase mb-6" style={{ color: '#f87171' }}>
+                O CUSTO TRADICIONAL
+              </p>
 
               <p className="text-slate-400 text-sm sm:text-base leading-relaxed max-w-2xl">
                 Manter uma estrutura de aprovação de elite no modelo tradicional exige um investimento pesado.
@@ -732,13 +762,13 @@ export default function LandingPage() {
               {/* receipt header */}
               <div
                 className="hidden sm:block px-6 py-3 text-xs tracking-widest text-center"
-                style={{ color: NEON, borderBottom: '1px dashed #222' }}
+                style={{ color: '#f87171', borderBottom: '1px dashed #222' }}
               >
                 ┌─ CUSTO MENSAL ESTIMADO ─────────────────────────────────────┐
               </div>
               <div
                 className="sm:hidden px-4 py-2 text-[10px] tracking-widest text-center"
-                style={{ color: NEON, borderBottom: '1px dashed #222' }}
+                style={{ color: '#f87171', borderBottom: '1px dashed #222' }}
               >
                 CUSTO MENSAL ESTIMADO
               </div>
@@ -746,8 +776,8 @@ export default function LandingPage() {
               {[
                 { label: 'Mentorias Individuais', value: 'R$ 1.200,00 /mês' },
                 { label: 'Corretor de Redação Privado', value: 'R$ 450,00 /mês' },
-                { label: 'Material de Revisão (Papel/PDF)', value: 'R$ 200,00 /mês' },
-                { label: 'Mensalidade Cursinho Premium', value: 'R$ 2.500,00 /mês' },
+                { label: 'Materiais de Revisão', value: 'R$ 200,00 /mês' },
+                { label: 'Cursinho Famoso', value: 'R$ 2.500,00 /mês' },
               ].map((item, i) => (
                 <div
                   key={i}
@@ -755,17 +785,17 @@ export default function LandingPage() {
                   style={{ borderBottom: '1px dashed #1a1a1a', color: '#94a3b8' }}
                 >
                   <span style={{ color: '#cbd5e1' }}>{item.label}</span>
-                  <span style={{ color: NEON, fontWeight: 700 }}>{item.value}</span>
+                  <span style={{ color: '#f87171', fontWeight: 700 }}>{item.value}</span>
                 </div>
               ))}
 
               {/* total */}
               <div
                 className="flex items-center justify-between px-6 py-4 text-sm sm:text-base font-bold"
-                style={{ background: 'rgba(0,255,115,0.06)', borderTop: '1px solid rgba(0,255,115,0.2)' }}
+                style={{ background: 'rgba(248,113,113,0.06)', borderTop: '1px solid rgba(248,113,113,0.2)' }}
               >
                 <span style={{ color: '#f1f5f9' }}>Total Projetado</span>
-                <span style={{ color: NEON, fontSize: '1.1em' }}>R$ 4.350,00 /mês</span>
+                <span style={{ color: '#f87171', fontSize: '1.1em' }}>R$ 4.350,00 /mês</span>
               </div>
 
               <div
@@ -806,7 +836,7 @@ export default function LandingPage() {
               {[
                 {
                   attr: 'Investimento Anual',
-                  trad: '~ R$ 25.000,00',
+                  trad: '~ 30 mil reais',
                   flash: '< 4% deste valor',
                   flashColor: NEON,
                 },
@@ -819,7 +849,7 @@ export default function LandingPage() {
                 {
                   attr: 'Disponibilidade',
                   trad: 'Horário Comercial',
-                  flash: '24/7 (Zero Latência)',
+                  flash: '24h por dia/ 7 dias por semana',
                   flashColor: NEON,
                 },
               ].map((row, i) => (
@@ -855,37 +885,18 @@ export default function LandingPage() {
 
             {/* transition line */}
             <p
-              className="text-center text-base sm:text-lg font-bold mb-8 leading-snug"
+              className="text-center text-sm sm:text-base font-bold mb-8 leading-snug"
               style={{ color: '#f1f5f9' }}
             >
               Um ano a mais de cursinho custa{' '}
-              <span style={{ color: ORANGE }}>R$ 30k</span>.
-              {' '}O FlashAprova custa{' '}
+              <span style={{ color: ORANGE }}>R$ 30 mil reais</span>.{' '}
+              Nosso sistema custa{' '}
               <span style={{ color: NEON }}>menos que um jantar.</span>
             </p>
 
             {/* CTA */}
             <div className="flex justify-center">
-              <a
-                href="/onboarding"
-                className="inline-flex items-center gap-3 px-8 py-4 rounded-sm text-sm font-black tracking-widest uppercase transition-all duration-200"
-                style={{
-                  background: NEON,
-                  color: '#000',
-                  boxShadow: `0 0 24px ${NEON}50, 0 0 48px ${NEON}20`,
-                }}
-                onMouseEnter={e => {
-                  (e.currentTarget as HTMLAnchorElement).style.boxShadow = `0 0 40px ${NEON}80, 0 0 80px ${NEON}30`;
-                  (e.currentTarget as HTMLAnchorElement).style.transform = 'scale(1.03)';
-                }}
-                onMouseLeave={e => {
-                  (e.currentTarget as HTMLAnchorElement).style.boxShadow = `0 0 24px ${NEON}50, 0 0 48px ${NEON}20`;
-                  (e.currentTarget as HTMLAnchorElement).style.transform = 'scale(1)';
-                }}
-              >
-                <span>▶</span>
-                [ DETECTAR VAZAMENTO DE NOTA ]
-              </a>
+              <CTAButton size="sm" label="[ DETECTAR VAZAMENTO DE NOTA ]" />
             </div>
           </div>
         </section>

@@ -432,7 +432,7 @@ export default function FocusSection() {
   const inView     = useInView(sectionRef, { once: true, margin: '-80px' });
 
   return (
-    <section ref={sectionRef} className="max-w-6xl mx-auto px-5 sm:px-10 pb-24">
+    <section ref={sectionRef} className="max-w-6xl mx-auto px-5 sm:px-10 pt-10 sm:pt-0 pb-24">
 
       {/* ── Header ── */}
       <div className="text-center mb-12">
@@ -450,7 +450,7 @@ export default function FocusSection() {
           </span>
         </h2>
         <p className="text-slate-500 text-base max-w-2xl mx-auto">
-          O fim do estudo às cegas. Estudar o que você já sabe é desperdício. O Radar utiliza a nossa Engenharia de Retenção para encontrar as falhas invisíveis que a TRI do ENEM não perdoa — antes que elas te reprovem.
+          O fim do estudo às cegas. O Radar utiliza a nossa Engenharia de Retenção para encontrar as falhas invisíveis que a TRI do ENEM não perdoa — antes que elas te reprovem.
         </p>
       </div>
 
@@ -508,8 +508,8 @@ export default function FocusSection() {
           <div className="mt-3 grid grid-cols-5 gap-1">
             {FRAG_AXES.map(a => (
               <div key={a.label} className="flex flex-col items-center gap-0.5">
-                <div className="w-1.5 h-1.5 rounded-full" style={{ background: a.color }} />
-                <span className="text-[8px] text-slate-700" style={{ fontFamily: JETBRAINS }}>
+                <div className="hidden sm:block w-1.5 h-1.5 rounded-full" style={{ background: a.color }} />
+                <span className="hidden sm:inline text-[8px] text-slate-700" style={{ fontFamily: JETBRAINS }}>
                   {Math.round(a.v * 100)}%
                 </span>
               </div>
@@ -517,34 +517,7 @@ export default function FocusSection() {
           </div>
         </Card>
 
-        {/* ── Card 2: Cronograma Preditivo ── */}
-        <Card color={NEON}>
-          <div className="flex items-center gap-2 mb-4">
-            <span className="text-lg">📅</span>
-            <div>
-              <p className="text-[11px] font-black tracking-widest uppercase"
-                style={{ color: NEON, fontFamily: JETBRAINS }}>
-                Diretriz de Ataque
-              </p>
-              <p className="text-[10px] text-slate-600 mt-0.5" style={{ fontFamily: JETBRAINS }}>Agendamento tático pela IA</p>
-            </div>
-            <motion.span className="ml-auto w-2 h-2 rounded-full shrink-0"
-              style={{ background: NEON }}
-              animate={{ opacity: [1, 0.2, 1] }}
-              transition={{ duration: 1.2, repeat: Infinity, delay: 0.3 }} />
-          </div>
-
-          <CalendarWidget inView={inView} />
-
-          <div className="mt-4 px-3 py-2.5 rounded-xl"
-            style={{ background: `${NEON}0a`, border: `1px solid ${NEON}20` }}>
-            <p className="text-[11px] font-semibold" style={{ color: NEON }}>
-              ⏱ Próxima revisão: <span className="font-black">Química</span> — hoje 19h
-            </p>
-          </div>
-        </Card>
-
-        {/* ── Card 3: Nivelamento Inteligente ── */}
+        {/* ── Card 2: Nivelamento Inteligente ── */}
         <Card color={CYAN} tooltip="Conteúdo adaptado para nível Intermediário.">
           <div className="flex items-center gap-2 mb-4">
             <span className="text-lg">📈</span>
@@ -576,6 +549,33 @@ export default function FocusSection() {
             style={{ background: `${CYAN}0a`, border: `1px solid ${CYAN}20` }}>
             <p className="text-[11px] font-semibold" style={{ color: CYAN }}>
               🧬 Nível geral: <span className="font-black">Intermediário+</span> — subindo
+            </p>
+          </div>
+        </Card>
+
+        {/* ── Card 3: Cronograma Preditivo ── */}
+        <Card color={NEON}>
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-lg">📅</span>
+            <div>
+              <p className="text-[11px] font-black tracking-widest uppercase"
+                style={{ color: NEON, fontFamily: JETBRAINS }}>
+                Diretriz de Ataque
+              </p>
+              <p className="text-[10px] text-slate-600 mt-0.5" style={{ fontFamily: JETBRAINS }}>Agendamento tático pela IA</p>
+            </div>
+            <motion.span className="ml-auto w-2 h-2 rounded-full shrink-0"
+              style={{ background: NEON }}
+              animate={{ opacity: [1, 0.2, 1] }}
+              transition={{ duration: 1.2, repeat: Infinity, delay: 0.3 }} />
+          </div>
+
+          <CalendarWidget inView={inView} />
+
+          <div className="mt-4 px-3 py-2.5 rounded-xl"
+            style={{ background: `${NEON}0a`, border: `1px solid ${NEON}20` }}>
+            <p className="text-[11px] font-semibold" style={{ color: NEON }}>
+              ⏱ Próxima revisão: <span className="font-black">Química</span> — hoje 19h
             </p>
           </div>
         </Card>

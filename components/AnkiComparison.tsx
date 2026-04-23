@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState, useRef } from 'react';
 import { motion, useInView, type Variants } from 'framer-motion';
 
@@ -7,6 +8,7 @@ import { motion, useInView, type Variants } from 'framer-motion';
 const RED    = '#ff2d55';
 const PURPLE = '#7C3AED';
 const GREEN  = '#22c55e';
+const NEON   = '#00FF73';
 
 // ─── Animation variants ───────────────────────────────────────────────────────
 type AnyEase = [number, number, number, number];
@@ -73,6 +75,10 @@ export default function AnkiComparison() {
           0%,49%  { opacity: 1;    }
           50%,100%{ opacity: 0.35; }
         }
+        @keyframes shimmer {
+          0%   { transform: translateX(-100%); }
+          100% { transform: translateX(200%);  }
+        }
       `}</style>
 
       {/* ════════════ SECTION HEADER ════════════ */}
@@ -111,7 +117,7 @@ export default function AnkiComparison() {
           style={{ color: 'rgba(255,255,255,0.42)' }}>
           Não é falta de inteligência. É o uso de ferramentas obsoletas que{' '}
           <span style={{ color: 'rgba(255,255,255,0.70)' }}>
-            ignoram como o seu cérebro realmente funciona.
+            ignoram como o seu cérebro funciona.
           </span>
         </p>
       </motion.div>
@@ -474,32 +480,29 @@ export default function AnkiComparison() {
           <span className="font-bold" style={{ color: GREEN }}>aprovação</span>.
         </p>
 
-        <motion.button
-          className="relative px-10 py-4 rounded-2xl font-black text-sm tracking-widest overflow-hidden"
+        <Link
+          href="/onboarding"
+          className="cta-pulse relative flex sm:inline-flex w-full sm:w-auto justify-center items-center gap-3 rounded-2xl font-black text-black overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.99] px-8 py-5 text-lg"
           style={{
-            background: `linear-gradient(135deg, ${PURPLE}, #5b21b6)`,
-            color: '#fff',
-            boxShadow: `0 0 0 1px ${PURPLE}60, 0 0 40px ${PURPLE}35, 0 8px 32px rgba(0,0,0,0.5)`,
+            background:    `linear-gradient(135deg, ${NEON} 0%, #00cc5a 100%)`,
+            letterSpacing: '-0.01em',
+            boxShadow:     `0 0 40px ${NEON}50, 0 4px 24px ${NEON}30`,
           }}
-          whileHover={{
-            scale: 1.04,
-            boxShadow: `0 0 0 1px ${PURPLE}90, 0 0 70px ${PURPLE}55, 0 0 120px ${GREEN}18, 0 8px 40px rgba(0,0,0,0.6)`,
-            transition: { duration: 0.2 },
-          }}
-          whileTap={{ scale: 0.97 }}
         >
-          {/* Shimmer */}
-          <motion.div
+          <span
             className="absolute inset-0 pointer-events-none"
             style={{
-              background: 'linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.12) 50%, transparent 65%)',
-              backgroundSize: '200% 100%',
+              background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.25) 50%, transparent 70%)',
+              animation: 'shimmer 2.4s infinite',
             }}
-            animate={{ backgroundPosition: ['200% 0', '-200% 0'] }}
-            transition={{ duration: 2.4, repeat: Infinity, ease: 'linear', repeatDelay: 0.8 }}
           />
-          MIGRAR PARA O FLASHAPROVA →
-        </motion.button>
+          <svg width={22} height={22} viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+            className="relative">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          </svg>
+          <span className="relative">[ DETECTAR VAZAMENTO DE NOTA ]</span>
+        </Link>
       </motion.div>
 
     </div>

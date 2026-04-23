@@ -14,8 +14,7 @@ const ORANGE  = '#f97316';
 const RED     = '#ef4444';
 const MONO    = "'JetBrains Mono', 'Courier New', ui-monospace, monospace";
 
-const NORMA_AVATAR =
-  'https://api.dicebear.com/9.x/lorelei/svg?seed=ProfaNorma&backgroundColor=0d0a1e&hair=variant19&earrings=variant02';
+const NORMA_AVATAR = '/images/tutor-redacao.avif';
 
 // ─── State Machine ─────────────────────────────────────────────────────────────
 type Stage = 'WRITING' | 'UPLOAD' | 'PROCESSING' | 'VEREDITO';
@@ -35,10 +34,10 @@ const NEXT_STAGE: Record<Stage, Stage> = {
 };
 
 const STAGE_LABELS: Record<Stage, string> = {
-  WRITING:    '01 · WRITING',
-  UPLOAD:     '02 · UPLOAD',
-  PROCESSING: '03 · PROCESSING',
-  VEREDITO:   '04 · VEREDITO',
+  WRITING:    '01 · SÍNTESE',
+  UPLOAD:     '02 · ANÁLISE IA',
+  PROCESSING: '03 · AUDITORIA COMPLETA',
+  VEREDITO:   '03 · AUDITORIA COMPLETA',
 };
 
 // ─── Data ──────────────────────────────────────────────────────────────────────
@@ -228,13 +227,14 @@ function EvolutionSparkline() {
 
 // ── Stage Indicator ─────────────────────────────────────────────────────────────
 function StageIndicator({ stage }: { stage: Stage }) {
-  const stages: Stage[] = ['WRITING', 'UPLOAD', 'PROCESSING', 'VEREDITO'];
-  const currentIdx = stages.indexOf(stage);
+  const stages: Stage[] = ['WRITING', 'UPLOAD', 'PROCESSING'];
+  const displayStage: Stage = stage === 'VEREDITO' ? 'PROCESSING' : stage;
+  const currentIdx = stages.indexOf(displayStage);
 
   return (
     <div className="flex items-center justify-center gap-1 sm:gap-2 mb-8 flex-wrap">
       {stages.map((s, i) => {
-        const isActive = s === stage;
+        const isActive = s === displayStage;
         const isPast   = i < currentIdx;
         return (
           <div key={s} className="flex items-center gap-1 sm:gap-2">
@@ -503,6 +503,7 @@ function ProcessingStage() {
   const [scanPct, setScanPct] = useState(0);
   const [log, setLog]         = useState<typeof PROCESS_LOG[number][]>([]);
   const logRef                = useRef<HTMLDivElement>(null);
+  const prevPctRef            = useRef(-1);
 
   useEffect(() => {
     // Scan line loop
@@ -511,9 +512,13 @@ function ProcessingStage() {
     const CYCLE = 2600;
     const tick  = (ts: number) => {
       if (!start) start = ts;
-      const e   = (ts - start) % CYCLE;
-      const pct = e < CYCLE / 2 ? (e / (CYCLE / 2)) * 100 : 100 - ((e - CYCLE / 2) / (CYCLE / 2)) * 100;
-      setScanPct(Math.round(pct));
+      const e       = (ts - start) % CYCLE;
+      const pct     = e < CYCLE / 2 ? (e / (CYCLE / 2)) * 100 : 100 - ((e - CYCLE / 2) / (CYCLE / 2)) * 100;
+      const rounded = Math.round(pct);
+      if (rounded !== prevPctRef.current) {
+        prevPctRef.current = rounded;
+        setScanPct(rounded);
+      }
       frame = requestAnimationFrame(tick);
     };
     frame = requestAnimationFrame(tick);
@@ -680,7 +685,7 @@ function ProcessingStage() {
 function ScannerPanel() {
   const [scanPct, setScanPct]   = useState(0);
   const [revealed, setRevealed] = useState<Set<string>>(new Set());
-  const prevPct                 = useRef(0);
+  const prevPctRef              = useRef(-1);
 
   useEffect(() => {
     let frame = 0;
@@ -695,23 +700,32 @@ function ScannerPanel() {
           ? (elapsed / (CYCLE / 2)) * 100
           : 100 - ((elapsed - CYCLE / 2) / (CYCLE / 2)) * 100;
       const rounded = Math.round(pct);
-      setScanPct(rounded);
-      prevPct.current = rounded;
+
+      if (rounded !== prevPctRef.current) {
+        const prev = prevPctRef.current;
+        prevPctRef.current = rounded;
+
+        // Reset revealed set when scan restarts from top
+        if (rounded < 3 && prev > 90) {
+          setRevealed(new Set());
+        }
+
+        // Reveal errors as scan line passes over them
+        const panelY = 12 + (rounded / 100) * 78;
+        SCAN_ERRORS.forEach(err => {
+          if (panelY >= err.topPct - 2) {
+            setRevealed(r => r.has(err.id) ? r : new Set([...r, err.id]));
+          }
+        });
+
+        setScanPct(rounded);
+      }
+
       frame = requestAnimationFrame(tick);
     };
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
   }, []);
-
-  useEffect(() => {
-    if (scanPct < 3 && prevPct.current > 90) setRevealed(new Set());
-    const panelY = 12 + (scanPct / 100) * 78;
-    SCAN_ERRORS.forEach(err => {
-      if (panelY >= err.topPct - 2) {
-        setRevealed(prev => prev.has(err.id) ? prev : new Set([...prev, err.id]));
-      }
-    });
-  }, [scanPct]);
 
   const scanLineTop = `${12 + (scanPct / 100) * 78}%`;
 
@@ -856,132 +870,204 @@ function ScannerPanel() {
   );
 }
 
-// ── Stage 4: VEREDITO — TRI Dossier ───────────────────────────────────────────
-function TriDossier() {
+// ── Stage 4: VEREDITO — Score Card ────────────────────────────────────────────
+function DossierScoreCard() {
   return (
-    <div className="flex flex-col gap-4">
-      {/* Score card */}
-      <div className="relative rounded-2xl overflow-hidden" style={{
-        background: 'rgba(6,8,16,0.70)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        border: `1px solid ${NEON}30`,
-        boxShadow: `0 0 50px ${NEON}18, 0 0 100px ${NEON}0a`,
-      }}>
-        <div className="absolute inset-0 pointer-events-none" style={{
-          background: `radial-gradient(ellipse at 50% 25%, ${NEON}10 0%, transparent 65%)`,
-        }} />
-        <div className="absolute inset-x-0 top-0 h-px" style={{
-          background: `linear-gradient(90deg, transparent, ${NEON}60, transparent)`,
-        }} />
+    <div className="relative rounded-2xl overflow-hidden" style={{
+      background: 'rgba(6,8,16,0.70)',
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
+      border: `1px solid ${NEON}30`,
+      boxShadow: `0 0 50px ${NEON}18, 0 0 100px ${NEON}0a`,
+    }}>
+      <div className="absolute inset-0 pointer-events-none" style={{
+        background: `radial-gradient(ellipse at 50% 25%, ${NEON}10 0%, transparent 65%)`,
+      }} />
+      <div className="absolute inset-x-0 top-0 h-px" style={{
+        background: `linear-gradient(90deg, transparent, ${NEON}60, transparent)`,
+      }} />
 
-        {/* Score row */}
-        <div className="flex items-center justify-between px-5 pt-5 pb-4 relative z-10">
-          <div>
-            <p className="text-[8px] font-bold tracking-[0.25em] text-slate-500 mb-1" style={{ fontFamily: MONO }}>
-              DOSSIÊ TRI · TOTAL SCORE
-            </p>
-            <div className="flex items-baseline gap-1">
-              <CountUp target={TOTAL_SCORE} color={NEON} size="xl" />
-              <span className="text-2xl font-black text-slate-600 ml-1" style={{ fontFamily: MONO }}>/1000</span>
-            </div>
-          </div>
-          <div className="flex flex-col items-end gap-2">
-            <motion.div className="flex items-center gap-1.5"
-              animate={{ opacity: [1, 0.4, 1] }} transition={{ duration: 1.8, repeat: Infinity }}>
-              <motion.div className="w-1.5 h-1.5 rounded-full" style={{ background: NEON }} />
-              <span className="text-[8px] font-bold tracking-widest" style={{ color: NEON, fontFamily: MONO }}>ANÁLISE OK</span>
-            </motion.div>
-            <div className="px-2.5 py-1 rounded-lg" style={{ background: `${NEON}10`, border: `1px solid ${NEON}25` }}>
-              <span className="text-[8px] font-black" style={{ color: NEON, fontFamily: MONO }}>TOP 5%</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="mx-5 h-px" style={{ background: 'rgba(255,255,255,0.05)' }} />
-
-        {/* Evolution sparkline */}
-        <div className="px-5 py-3 relative z-10">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[7px] font-bold tracking-[0.2em] text-slate-600 uppercase" style={{ fontFamily: MONO }}>
-              Performance Log · 8 redações
-            </span>
-            <span className="text-[8px] font-black" style={{ color: NEON, fontFamily: MONO }}>↑ +380 pts</span>
-          </div>
-          <EvolutionSparkline />
-          <div className="flex items-center justify-between mt-1">
-            <span className="text-[7px] text-slate-700" style={{ fontFamily: MONO }}>RED. #1 · 580</span>
-            <span className="text-[7px] text-slate-700" style={{ fontFamily: MONO }}>ATUAL · 960</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Competency modules — stagger on mount */}
-      <div>
-        <p className="text-[8px] font-bold tracking-[0.22em] text-slate-600 mb-3 uppercase" style={{ fontFamily: MONO }}>
-          Módulos de Competência
-        </p>
-        <div className="flex flex-col gap-2">
-          {COMPETENCIAS.map((c, i) => (
-            <StatusModule key={c.id} c={c} staggerDelay={i * 0.12} />
-          ))}
-        </div>
-      </div>
-
-      {/* Norma terminal */}
-      <div className="rounded-2xl overflow-hidden" style={{
-        background: 'rgba(4,6,14,0.92)',
-        border: `1px solid ${GOLD}30`,
-        boxShadow: `0 0 28px ${GOLD}10, inset 0 0 40px rgba(0,0,0,0.5)`,
-      }}>
-        <div className="flex items-center justify-between px-4 py-2" style={{
-          background: `${GOLD}0c`, borderBottom: `1px solid ${GOLD}20`,
-        }}>
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full overflow-hidden shrink-0" style={{ border: `1.5px solid ${GOLD}50`, background: '#0d0a1e' }}>
-              <Image src={NORMA_AVATAR} alt="Prof.ª Norma" width={32} height={32} className="w-full h-full object-cover" unoptimized />
-            </div>
-            <span className="text-[9px] font-black tracking-widest" style={{ color: GOLD, fontFamily: MONO }}>
-              norma@flashaprova ~ veredito
-            </span>
-          </div>
-          <motion.span className="text-[8px] font-bold px-2 py-0.5 rounded" style={{
-            color: GOLD, background: `${GOLD}18`, border: `1px solid ${GOLD}35`, fontFamily: MONO,
-          }} animate={{ opacity: [1, 0.4, 1] }} transition={{ duration: 2.2, repeat: Infinity }}>
-            ● VEREDITO
-          </motion.span>
-        </div>
-
-        <div className="px-4 py-3">
-          <p className="text-[9px] mb-2" style={{ color: `${GOLD}60`, fontFamily: MONO }}>
-            $ analyze --student=alfab_002 --deep=true
+      <div className="flex items-center justify-between px-5 pt-5 pb-4 relative z-10">
+        <div>
+          <p className="text-[8px] font-bold tracking-[0.25em] text-slate-500 mb-1" style={{ fontFamily: MONO }}>
+            DOSSIÊ TRI · TOTAL SCORE
           </p>
-          <div style={{ fontFamily: MONO, fontSize: '0.70rem', lineHeight: '1.75', color: 'rgba(226,232,240,0.88)' }}>
-            <span style={{ color: `${GOLD}90` }}>&gt; </span>
-            <span style={{ color: ORANGE, fontWeight: 700 }}>C2 REP-003</span>: repertório sem legitimação acadêmica.
-            <br />
-            <span style={{ color: `${GOLD}90` }}>&gt; </span>
-            <span style={{ color: EMERALD }}>C5 PERFEITA — intervenção completa e detalhada.</span>
-            <span style={{ color: GOLD }}> ▮</span>
+          <div className="flex items-baseline gap-1">
+            <CountUp target={TOTAL_SCORE} color={NEON} size="xl" />
+            <span className="text-2xl font-black text-slate-600 ml-1" style={{ fontFamily: MONO }}>/1000</span>
           </div>
+        </div>
+        <div className="flex flex-col items-end gap-2">
+          <motion.div className="flex items-center gap-1.5"
+            animate={{ opacity: [1, 0.4, 1] }} transition={{ duration: 1.8, repeat: Infinity }}>
+            <motion.div className="w-1.5 h-1.5 rounded-full" style={{ background: NEON }} />
+            <span className="text-[8px] font-bold tracking-widest" style={{ color: NEON, fontFamily: MONO }}>ANÁLISE OK</span>
+          </motion.div>
+          <div className="px-2.5 py-1 rounded-lg" style={{ background: `${NEON}10`, border: `1px solid ${NEON}25` }}>
+            <span className="text-[8px] font-black" style={{ color: NEON, fontFamily: MONO }}>TOP 5%</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="mx-5 h-px" style={{ background: 'rgba(255,255,255,0.05)' }} />
+
+      <div className="px-5 py-3 relative z-10">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-[7px] font-bold tracking-[0.2em] text-slate-600 uppercase" style={{ fontFamily: MONO }}>
+            Performance Log · 8 redações
+          </span>
+          <span className="text-[8px] font-black" style={{ color: NEON, fontFamily: MONO }}>↑ +380 pts</span>
+        </div>
+        <EvolutionSparkline />
+        <div className="flex items-center justify-between mt-1">
+          <span className="text-[7px] text-slate-700" style={{ fontFamily: MONO }}>RED. #1 · 580</span>
+          <span className="text-[7px] text-slate-700" style={{ fontFamily: MONO }}>ATUAL · 960</span>
         </div>
       </div>
     </div>
   );
 }
 
+// ── Stage 4: VEREDITO — Competency Modules ────────────────────────────────────
+function DossierCompetencies() {
+  return (
+    <div>
+      <p className="text-[8px] font-bold tracking-[0.22em] text-slate-600 mb-3 uppercase" style={{ fontFamily: MONO }}>
+        Módulos de Competência
+      </p>
+      <div className="flex flex-col gap-2">
+        {COMPETENCIAS.map((c, i) => (
+          <StatusModule key={c.id} c={c} staggerDelay={i * 0.12} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Stage 4: VEREDITO — Norma Terminal ────────────────────────────────────────
+function DossierNormaTerminal() {
+  return (
+    <div className="rounded-2xl overflow-hidden" style={{
+      background: 'rgba(4,6,14,0.92)',
+      border: `1px solid ${GOLD}30`,
+      boxShadow: `0 0 28px ${GOLD}10, inset 0 0 40px rgba(0,0,0,0.5)`,
+    }}>
+      <div className="flex items-center justify-between px-4 py-2" style={{
+        background: `${GOLD}0c`, borderBottom: `1px solid ${GOLD}20`,
+      }}>
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-full overflow-hidden shrink-0" style={{ border: `1.5px solid ${GOLD}50`, background: '#0d0a1e' }}>
+            <Image src={NORMA_AVATAR} alt="Prof.ª Norma" width={32} height={32} className="w-full h-full object-cover" unoptimized />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[9px] font-black tracking-widest" style={{ color: GOLD, fontFamily: MONO }}>
+              VEREDITO IA
+            </span>
+            <span className="text-[7px] font-medium" style={{ color: `${GOLD}70`, fontFamily: MONO }}>
+              Prof(a) Norma
+            </span>
+          </div>
+        </div>
+        <motion.span className="text-[8px] font-bold px-2 py-0.5 rounded" style={{
+          color: GOLD, background: `${GOLD}18`, border: `1px solid ${GOLD}35`, fontFamily: MONO,
+        }} animate={{ opacity: [1, 0.4, 1] }} transition={{ duration: 2.2, repeat: Infinity }}>
+          ● VEREDITO
+        </motion.span>
+      </div>
+
+      <div className="px-4 py-3">
+        <p className="text-[9px] mb-2" style={{ color: `${GOLD}60`, fontFamily: MONO }}>
+          $ analyze --student=alfab_002 --deep=true
+        </p>
+        <div style={{ fontFamily: MONO, fontSize: '0.70rem', lineHeight: '1.75', color: 'rgba(226,232,240,0.88)' }}>
+          <span style={{ color: `${GOLD}90` }}>&gt; </span>
+          <span style={{ color: ORANGE, fontWeight: 700 }}>C2 REP-003</span>: repertório sem legitimação acadêmica.
+          <br />
+          <span style={{ color: `${GOLD}90` }}>&gt; </span>
+          <span style={{ color: EMERALD }}>C5 PERFEITA — intervenção completa e detalhada.</span>
+          <span style={{ color: GOLD }}> ▮</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Stage 4: VEREDITO — TRI Dossier (desktop) ─────────────────────────────────
+function TriDossier() {
+  return (
+    <div className="flex flex-col gap-4">
+      <DossierScoreCard />
+      <DossierCompetencies />
+      <DossierNormaTerminal />
+    </div>
+  );
+}
+
 // ── Stage 4: VEREDITO wrapper ──────────────────────────────────────────────────
+const DOSSIER_BLOCKS = [
+  { key: 'score', Component: DossierScoreCard },
+  { key: 'comp',  Component: DossierCompetencies },
+  { key: 'norma', Component: DossierNormaTerminal },
+];
+
 function VeredityStage() {
+  const [mobilePhase, setMobilePhase] = useState<'scan' | 'dossier'>('scan');
+
+  useEffect(() => {
+    const t = setTimeout(() => setMobilePhase('dossier'), 3500);
+    return () => clearTimeout(t);
+  }, []);
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.6 }}
-      className="grid grid-cols-1 lg:grid-cols-[1.15fr_1fr] gap-5"
+      style={{ height: '100%' }}
     >
-      <ScannerPanel />
-      <TriDossier />
+      {/* Desktop: side-by-side grid */}
+      <div className="hidden lg:grid lg:grid-cols-[1.15fr_1fr] gap-5">
+        <ScannerPanel />
+        <TriDossier />
+      </div>
+
+      {/* Mobile: scanner → veredito blocks (same viewport, no scroll needed) */}
+      <div className="lg:hidden" style={{ height: 580, overflowY: 'auto', scrollbarWidth: 'none' }}>
+        <AnimatePresence mode="wait">
+          {mobilePhase === 'scan' ? (
+            <motion.div
+              key="scan"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0, y: -16, scale: 0.97 }}
+              transition={{ duration: 0.4 }}
+            >
+              <ScannerPanel />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="dossier"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="flex flex-col gap-4"
+            >
+              {DOSSIER_BLOCKS.map(({ key, Component }, i) => (
+                <motion.div
+                  key={key}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.2, duration: 0.45, ease: [0.22, 0.61, 0.36, 1] }}
+                >
+                  <Component />
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </motion.div>
   );
 }
@@ -1001,41 +1087,40 @@ export default function NormaRedacaoSection() {
       <div className="text-center mb-10">
         <p className="text-xs font-bold tracking-widest uppercase mb-3"
           style={{ color: PURPLE, fontFamily: MONO }}>
-          &gt; Banca Examinadora IA
+          &gt; Corretor de Redação IA
         </p>
 
         <h2 className="text-3xl sm:text-4xl font-black text-white mb-4 leading-tight tracking-tight">
-          A Auditoria Final:{' '}
+          Seja Aprovado com{' '}
           <span style={{
-            background: `linear-gradient(90deg, ${PURPLE}, #c084fc)`,
-            WebkitBackgroundClip: 'text',
-            backgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            color: 'transparent',
+            background: `linear-gradient(90deg, ${PURPLE}, #00FF73)`,
+            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
           }}>
-            O Veredito Nota 1000.
-          </span>
+            +900
+          </span>{' '}
+          na Redação
         </h2>
 
         <p className="text-slate-500 text-base max-w-2xl mx-auto">
-          Elimine a subjetividade humana. Nossa inteligência disseca sua estrutura sob o padrão
-          oficial do INEP, revelando falhas invisíveis em 30 segundos.{' '}
-          <span className="text-slate-300 font-semibold">
-            Evolua em um dia o que a concorrência leva meses para processar.
-          </span>
+          Descubra <span className="text-white font-bold">falhas invisíveis</span> da sua redação em{' '}
+          <span className="text-white font-bold">30 segundos</span>. Tenha um mentor especialista nas{' '}
+          <span className="text-white font-bold">5 competências do INEP</span> e a inteligência de um banco de dados de{' '}
+          <span className="text-white font-bold">+8.000 redações</span>.
         </p>
       </div>
 
       {/* Stage indicator */}
       <StageIndicator stage={stage} />
 
-      {/* Animated demo area */}
-      <AnimatePresence mode="wait">
-        {stage === 'WRITING'    && <WritingStage    key="writing"    />}
-        {stage === 'UPLOAD'     && <UploadStage     key="upload"     />}
-        {stage === 'PROCESSING' && <ProcessingStage key="processing" />}
-        {stage === 'VEREDITO'   && <VeredityStage   key="veredito"   />}
-      </AnimatePresence>
+      {/* Animated demo area — fixed height to prevent layout shifts */}
+      <div style={{ height: 580, overflow: 'hidden' }}>
+        <AnimatePresence mode="wait">
+          {stage === 'WRITING'    && <WritingStage    key="writing"    />}
+          {stage === 'UPLOAD'     && <UploadStage     key="upload"     />}
+          {stage === 'PROCESSING' && <ProcessingStage key="processing" />}
+          {stage === 'VEREDITO'   && <VeredityStage   key="veredito"   />}
+        </AnimatePresence>
+      </div>
     </section>
   );
 }

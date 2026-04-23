@@ -9,7 +9,7 @@ const NEON   = '#00FF73';
 const VIOLET = '#7C3AED';
 
 // ─── Timing ────────────────────────────────────────────────────────────────
-const CYCLE_DELAY_MS  = 4_500;
+const CYCLE_DELAY_MS  = 5_000;
 const MANUAL_PAUSE_MS = 30_000;
 
 // ─── Avatar factory ─────────────────────────────────────────────────────────
@@ -362,31 +362,24 @@ function AgentCard({ agent, isActive, ringActive, ringKey, onClick }: {
         </span>
       </div>
 
-      {/* Specs — only when active */}
-      <AnimatePresence>
-        {isActive && (
-          <motion.div
-            className="w-full mt-2 text-center overflow-hidden"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.22, ease: 'easeOut' }}
-          >
-            <p
-              className="text-[9px] leading-snug truncate"
-              style={{ ...MONO, color: agent.color + 'cc' }}
-            >
-              {agent.specialty}
-            </p>
-            <p
-              className="text-[8px] leading-snug mt-0.5"
-              style={{ ...MONO, color: 'rgba(255,255,255,0.32)', whiteSpace: 'normal' }}
-            >
-              {agent.focus}
-            </p>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Specs — fixed height, only opacity changes */}
+      <div
+        className="w-full mt-2 text-center"
+        style={{ height: 34, transition: 'opacity 0.22s ease', opacity: isActive ? 1 : 0 }}
+      >
+        <p
+          className="text-[9px] leading-snug truncate"
+          style={{ ...MONO, color: agent.color + 'cc' }}
+        >
+          {agent.specialty}
+        </p>
+        <p
+          className="text-[8px] leading-snug mt-0.5"
+          style={{ ...MONO, color: 'rgba(255,255,255,0.32)', whiteSpace: 'normal' }}
+        >
+          {agent.focus}
+        </p>
+      </div>
     </motion.button>
   );
 }
@@ -451,11 +444,11 @@ function CommandRail({ agents, activeId, onSelect, ringActive, ringKey }: {
       <div className="flex items-center gap-2 mb-3 relative" style={{ zIndex: 1 }}>
         <div className="w-1 h-1 rounded-full animate-pulse" style={{ background: activeAgent.color }} />
         <p className="text-[9px] font-bold tracking-[0.2em] uppercase" style={{ ...MONO, color: 'rgba(255,255,255,0.25)' }}>
-          Command Rail · Selecione o Agente
+          · Selecione o Agente
         </p>
         <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.04)' }} />
         <p className="text-[9px]" style={{ ...MONO, color: activeAgent.color + '99' }}>
-          {agents.length} agentes online
+          [ONLINE]
         </p>
       </div>
 
@@ -534,15 +527,17 @@ export default function AiTutorsSection() {
           NÚCLEO ORÁCULO
         </p>
         <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">
-          O seu Comando Tático 24/7
+          <span className="sm:hidden">
+            <span style={{ color: '#00FF73' }}>Comando Tático</span>{' '}24/7
+          </span>
+          <span className="hidden sm:inline">O seu Comando Tático 24/7</span>
         </h2>
         <p className="text-slate-500 text-base max-w-xl mx-auto">
-          Não pergunte a um robô. Consulte a{' '}
-          <span className="font-bold text-white">rede neural treinada</span>{' '}
-          para pensar como os{' '}
-          <span className="font-bold text-white">mestres do ENEM</span>.{' '}
-          <span className="font-bold text-white">Quinze agentes especializados</span>{' '}
-          com acesso imediato à lógica dos aprovados.
+          Tire dúvidas com os{' '}
+          <span className="font-bold text-white">'Mestres do ENEM'</span>.{' '}
+          Nossa{' '}
+          <span className="font-bold text-white">Rede Neural de 15 agentes especializados</span>{' '}
+          com banco de dados focado no ENEM.
         </p>
       </div>
 
@@ -557,17 +552,18 @@ export default function AiTutorsSection() {
 
       {/* ── Chat container ───────────────────────────────────────── */}
       <motion.div
-        className="relative rounded-3xl overflow-hidden"
+        className="relative rounded-3xl overflow-hidden flex flex-col"
         animate={{
           borderColor: `${agent.color}30`,
           boxShadow:   `0 0 48px ${agent.color}14, 0 0 0 0.5px ${agent.color}18`,
         }}
         transition={{ duration: 0.4 }}
         style={{
-          background:         'rgba(9,9,11,0.5)',
-          backdropFilter:     'blur(20px)',
+          height:               440,
+          background:           'rgba(9,9,11,0.5)',
+          backdropFilter:       'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
-          border:             '0.5px solid transparent',
+          border:               '0.5px solid transparent',
         }}
       >
         {/* Shimmer top line */}
@@ -622,7 +618,7 @@ export default function AiTutorsSection() {
         </div>
 
         {/* Messages area */}
-        <div className="px-5 py-6 flex flex-col gap-4 min-h-[290px]">
+        <div className="px-5 py-6 flex flex-col gap-4 flex-1 overflow-hidden">
           <AnimatePresence mode="popLayout">
 
             {/* User message */}
@@ -736,9 +732,7 @@ export default function AiTutorsSection() {
               border: '0.5px solid rgba(255,255,255,0.07)',
             }}
           >
-            <p className="flex-1 text-sm text-slate-700 select-none" style={MONO}>
-              Transmitir mensagem para {agent.codename}…
-            </p>
+            <div className="flex-1" />
             <motion.div
               className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
               style={{ background: `${agent.color}20`, border: `0.5px solid ${agent.color}50` }}

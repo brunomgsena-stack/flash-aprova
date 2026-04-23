@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   motion,
+  AnimatePresence,
   useMotionValue,
   useSpring,
   useTransform,
@@ -52,6 +53,82 @@ const TERMINAL_LINES = [
   '> Blindando memória: Rev. Francesa...     ✅',
   '> Otimizando: Funções Trigonométricas...  ⚡',
   '> Neural sync — 97% retenção garantida    ✅',
+];
+
+// ── Sidebar nav items (used in Estudar scroll animation) ─────────────────────
+const SIDEBAR_NAV = [
+  { icon: '🏠', label: 'Home'   },
+  { icon: '📚', label: 'Deck'   },
+  { icon: '📊', label: 'Stats'  },
+  { icon: '🤖', label: 'IA'     },
+  { icon: '🎯', label: 'Metas'  },
+  { icon: '🔔', label: 'Alertas'},
+];
+
+// ── Chat tutors — full roster mirroring AiTutorsSection ─────────────────────
+const _av = (seed: string, extra = '') =>
+  `https://api.dicebear.com/9.x/lorelei/svg?seed=${seed}&backgroundColor=0d0a1e${extra ? '&' + extra : ''}`;
+
+const CHAT_TUTORS = [
+  { name: 'NORMA',    subject: 'Redação',    color: '#7C3AED',
+    avatar: _av('ProfNorma', 'hair=variant19&earrings=variant02'),
+    msgs: ['Coesão fraca e proposta genérica custam 80 pts. Corrija os dois!', 'Diagnóstico preciso antes da correção. Padrão de erro é o foco.'] },
+  { name: 'VEKTOR',   subject: 'Física',     color: '#f97316',
+    avatar: _av('ProfVektor', 'beard=variant01'),
+    msgs: ['MRU: v = s/t. MRUV: v = v₀ + at e s = v₀t + ½at². Plug and play!', 'Menos conversa, mais vetores. 2 equações = 80% da Física no ENEM.'] },
+  { name: 'CHRONOS',  subject: 'História',   color: '#a78bfa',
+    avatar: '/images/tutor-historia.avif',
+    msgs: ['Era Vargas: 3 fases, 3 lógicas. O ENEM ama comparar as três. 🏛️', 'Causalidade histórica > decoreba de datas. Sempre!'] },
+  { name: 'ATLAS',    subject: 'Geografia',  color: '#34d399',
+    avatar: _av('DrAtlasGeo', 'hair=variant06'),
+    msgs: ['Bioma + clima + solo: aprenda o trio, não o isolado. 🌿', 'Amazônia = densa; Cerrado = raízes profundas; Caatinga = xerófita.'] },
+  { name: 'ÁTOMO',    subject: 'Química',    color: '#06b6d4',
+    avatar: '/images/tutor-quimica.avif',
+    msgs: ['Estequiometria: coeficiente = proporção = regra de 3. Simples! 🧪', 'Le Chatelier: equilíbrio dinâmico é certeiro no ENEM.'] },
+  { name: 'PI',       subject: 'Matemática', color: '#00FF73',
+    avatar: _av('MestrePiMat', 'hair=variant11'),
+    msgs: ['Delta < 0 = sem raízes reais. Fluxo: calcula → classifica → decide.', 'Geometria plana: o ENEM adora área de figuras compostas. 📐'] },
+  { name: 'BIO',      subject: 'Biologia',   color: '#22c55e',
+    avatar: _av('DrBio', 'hair=variant01'),
+    msgs: ['Fotossíntese: sol + CO₂ + H₂O → glicose. Analogia resolve! 🧬', 'Genética: meiose gera variabilidade; mitose = cópia exata.'] },
+  { name: 'SINTAXE',  subject: 'Português',  color: '#f59e0b',
+    avatar: _av('ProfSintaxe', 'hair=variant03'),
+    msgs: ['Tese antes de alternativa. Sempre. Sem exceção.', 'O ENEM não testa leitura — testa argumentação. Interrogue o texto!'] },
+  { name: 'PRÁXIS',   subject: 'Filosofia',  color: '#e879f9',
+    avatar: _av('ProfPraxis', 'hair=variant03'),
+    msgs: ['Filósofo = lente de análise. Aplique a certa ao contexto. 🔍', 'Kant: fenômeno ≠ coisa em si. Rousseau: natureza boa, soc. corrompe.'] },
+  { name: 'NEXUS',    subject: 'Sociologia', color: '#60a5fa',
+    avatar: _av('ProfNexus', 'hair=variant01'),
+    msgs: ['Durkheim = coesão. Weber = dominação. Marx = conflito. Grave!', 'Fenômeno → teórico → conceito. Equação da Sociologia no ENEM.'] },
+  { name: 'VANGUARDA',subject: 'Artes',      color: '#fb7185',
+    avatar: _av('MsVanguarda', 'hair=variant04&earrings=variant01'),
+    msgs: ['Obra = manifesto. Contexto histórico é sempre a chave. 🎨', 'Modernismo 22: ruptura + afirmação da identidade nacional.'] },
+  { name: 'SONETO',   subject: 'Literatura', color: '#818cf8',
+    avatar: _av('SrtaSoneto', 'hair=variant05&earrings=variant02'),
+    msgs: ['Tom + vocabulário = movimento literário. O trecho entrega tudo. 📖', 'Romantismo: idealização. Realismo: crítica. Modernismo: ruptura.'] },
+  { name: 'LINK',     subject: 'Inglês',     color: '#38bdf8',
+    avatar: _av('TeacherLink', 'hair=variant02'),
+    msgs: ['Pergunta → palavras-chave → localiza no texto. 80% resolvido!', 'No ENEM: você não traduz — você localiza informação. 🇺🇸'] },
+  { name: 'SOL',      subject: 'Espanhol',   color: '#fbbf24',
+    avatar: _av('ProfaSol', 'hair=variant06&earrings=variant01'),
+    msgs: ['Falso amigo é armadilha nº 1. Contexto sempre vence aparência.', '"Embarazada" = grávida. "Borracha" = bêbada. Cuidado! 🇪🇸'] },
+  { name: 'MUNDI',    subject: 'Atualidades',color: '#a3e635',
+    avatar: _av('DrMundi', 'beard=variant02'),
+    msgs: ['Fato atual = gancho. Conceito de base é o que a questão mede. 🌍', 'O ENEM não cobra notícia — cobra conexão com conceitos.'] },
+];
+
+// ── ENEM masters data ─────────────────────────────────────────────────────────
+const MESTRES = [
+  { initials: 'AL', name: 'Ana Lima',      subject: 'Biologia',   color: '#34d399', emoji: '🧬',
+    tips: ['Mitocôndria cai todo ENEM!', 'Fotossíntese: grave a equação!', 'Foco em Genética hoje'] },
+  { initials: 'CM', name: 'Carlos Matos',  subject: 'Física',     color: '#a78bfa', emoji: '⚛️',
+    tips: ['Newton: entenda, não decore!', 'Termodinâmica: 3 leis', 'Ondulatória é ponto certo'] },
+  { initials: 'JR', name: 'Juliana Reis',  subject: 'Matemática', color: '#fb923c', emoji: '📐',
+    tips: ['Geometria vale 3 questões!', 'PA e PG: pratique hoje', 'Probabilidade é garantido'] },
+  { initials: 'RS', name: 'Ricardo Silva', subject: 'Química',    color: '#00e5ff', emoji: '🧪',
+    tips: ['Le Chatelier é certeiro!', 'Estequiometria: treino!', 'Orgânica: nomenclatura fácil'] },
+  { initials: 'FC', name: 'Fernanda Costa',subject: 'História',   color: '#f59e0b', emoji: '🏛️',
+    tips: ['Rev. Francesa conecta tudo!', 'Brasil República: foco!', 'Getúlio é essencial'] },
 ];
 
 // ── Floating concepts ─────────────────────────────────────────────────────────
@@ -389,152 +466,195 @@ function ConnectionLines() {
   );
 }
 
-// ── Dashboard screen (mini replica of the real StudentDashboard) ──────────────
-const DASH_AREAS = [
-  { icon: '🏛️', label: 'Humanas',    score: 72, cards: 18, color: '#fb923c' },
-  { icon: '🔬', label: 'Natureza',   score: 54, cards: 31, color: '#34d399' },
-  { icon: '📚', label: 'Linguagens', score: 81, cards:  9, color: '#60a5fa' },
-  { icon: '📐', label: 'Matemática', score: 45, cards: 42, color: PURPLE_L  },
-];
+// ── Tutores IA screen — chat with real tutor avatars ─────────────────────────
+function TutoresScreen() {
+  type FeedItem = { id: number; tutorIdx: number; msgIdx: number };
 
-function DashboardScreen() {
-  const done = 32, goal = 50;
-  const pct  = Math.round((done / goal) * 100);
+  const [feed, setFeed] = useState<FeedItem[]>([
+    { id: 0, tutorIdx: 0, msgIdx: 0 },
+    { id: 1, tutorIdx: 1, msgIdx: 0 },
+    { id: 2, tutorIdx: 2, msgIdx: 0 },
+  ]);
+  const nextRef = useRef({ counter: 3, tIdx: 0, mIdx: 1 });
+
+  useEffect(() => {
+    const iv = setInterval(() => {
+      const { counter, tIdx, mIdx } = nextRef.current;
+      const nextT = (tIdx + 1) % CHAT_TUTORS.length;
+      const msgs = CHAT_TUTORS[nextT].msgs;
+      const nextM = (mIdx + 1) % msgs.length;
+      nextRef.current = { counter: counter + 1, tIdx: nextT, mIdx: nextM };
+      setFeed((prev) => [...prev.slice(-2), { id: counter, tutorIdx: nextT, msgIdx: nextM }]);
+    }, 2200);
+    return () => clearInterval(iv);
+  }, []);
+
+  const [typingIdx, setTypingIdx] = useState(0);
+  const [showTyping, setShowTyping] = useState(true);
+  useEffect(() => {
+    const iv = setInterval(() => {
+      setShowTyping(false);
+      setTimeout(() => {
+        setTypingIdx((i) => (i + 1) % CHAT_TUTORS.length);
+        setShowTyping(true);
+      }, 300);
+    }, 2200);
+    return () => clearInterval(iv);
+  }, []);
 
   return (
-    <div style={{ height: '100%', overflowY: 'auto', padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+    <div style={{
+      height: '100%', display: 'flex', flexDirection: 'column',
+      padding: '9px 11px', gap: 6, overflow: 'hidden',
+      background: 'linear-gradient(160deg, #0d0d1a 0%, #080c18 100%)',
+    }}>
 
       {/* Header */}
-      <div>
-        <div style={{ fontSize: 7, fontWeight: 700, letterSpacing: '0.12em', color: EMERALD, marginBottom: 3 }}>
-          FLASHAPROVA
-        </div>
-        <div style={{ fontSize: 14, fontWeight: 800, color: '#fff', lineHeight: 1.1 }}>Meu Foco</div>
-        <div style={{ fontSize: 7, color: 'rgba(255,255,255,0.4)', marginTop: 2, display: 'flex', alignItems: 'center', gap: 3 }}>
-          <span style={{ width: 5, height: 5, borderRadius: '50%', background: EMERALD, display: 'inline-block', boxShadow: `0 0 4px ${EMERALD}` }} />
-          12 dias em sequência · Você está construindo um hábito real
-        </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+        <span style={{ fontSize: 10, fontWeight: 800, color: '#fff', letterSpacing: '-0.01em' }}>
+          🎓 Tutores IA
+        </span>
+        <motion.div
+          style={{
+            display: 'flex', alignItems: 'center', gap: 3,
+            background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.3)',
+            borderRadius: 999, padding: '1px 6px',
+          }}
+          animate={{ opacity: [0.6, 1, 0.6] }}
+          transition={{ duration: 1.6, repeat: Infinity }}
+        >
+          <div style={{ width: 4, height: 4, borderRadius: '50%', background: EMERALD, boxShadow: `0 0 5px ${EMERALD}` }} />
+          <span style={{ fontSize: 6, color: EMERALD, fontWeight: 700, letterSpacing: '0.06em' }}>ONLINE</span>
+        </motion.div>
       </div>
 
-      {/* Daily progress bar */}
-      <div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
-          <span style={{ fontSize: 7, color: 'rgba(255,255,255,0.45)', fontWeight: 600 }}>Meta de hoje</span>
-          <span style={{ fontSize: 7, fontWeight: 800, color: CYAN }}>{done} <span style={{ color: 'rgba(255,255,255,0.3)', fontWeight: 400 }}>/ {goal} cards</span></span>
-        </div>
-        <div style={{ height: 4, background: 'rgba(255,255,255,0.07)', borderRadius: 2, overflow: 'hidden' }}>
-          <motion.div
-            style={{ height: '100%', background: `linear-gradient(90deg, ${CYAN}, ${EMERALD})`, borderRadius: 2 }}
-            initial={{ width: 0 }}
-            animate={{ width: `${pct}%` }}
-            transition={{ duration: 1.2, ease: 'easeOut' }}
-          />
-        </div>
-        <div style={{ fontSize: 6, color: 'rgba(255,255,255,0.25)', marginTop: 2 }}>
-          Faltam {goal - done} cards · ~10 min
-        </div>
-      </div>
-
-      {/* Copiloto card */}
-      <div style={{
-        background: `${EMERALD}08`,
-        border: `1px solid ${EMERALD}28`,
-        borderRadius: 8,
-        padding: '7px 9px',
-        display: 'flex', gap: 6, alignItems: 'flex-start',
-      }}>
-        <div style={{
-          width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
-          background: `linear-gradient(135deg, ${EMERALD}60, ${CYAN}40)`,
-          border: `1px solid ${EMERALD}50`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 10,
-        }}>💡</div>
-        <div>
-          <div style={{ fontSize: 7, fontWeight: 700, color: EMERALD, marginBottom: 2 }}>Copiloto · AiPro+</div>
-          <div style={{ fontSize: 7, color: 'rgba(255,255,255,0.6)', lineHeight: 1.5 }}>
-            Hoje vamos focar em ~10 min de Matemática? É o caminho mais tranquilo para a sua meta de hoje.
-          </div>
-          <div style={{
-            marginTop: 5,
-            display: 'inline-flex', alignItems: 'center', gap: 3,
-            background: `linear-gradient(135deg, ${EMERALD}, #059669)`,
-            border: `1px solid ${EMERALD}60`,
-            borderRadius: 5, padding: '3px 7px',
-            fontSize: 7, fontWeight: 700, color: '#fff',
-          }}>⚡ Iniciar Sessão · Matemática</div>
-        </div>
-      </div>
-
-      {/* Stats pills row */}
-      <div style={{ display: 'flex', gap: 5 }}>
-        {[
-          { value: '61%', label: 'EDITAL\nDOMINADO', color: EMERALD },
-          { value: '94%', label: 'RETENÇÃO',          color: CYAN    },
-          { value: '12🔥', label: 'SEQUÊNCIA',         color: '#fb923c' },
-        ].map((s) => (
-          <div key={s.label} style={{
-            flex: 1, background: `${s.color}10`, border: `1px solid ${s.color}30`,
-            borderRadius: 7, padding: '5px 4px', textAlign: 'center',
-          }}>
-            <div style={{ fontSize: 11, fontWeight: 800, color: s.color, lineHeight: 1 }}>{s.value}</div>
-            <div style={{ fontSize: 6, color: 'rgba(255,255,255,0.25)', marginTop: 2, whiteSpace: 'pre-line', lineHeight: 1.3 }}>{s.label}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* ENEM Areas grid */}
-      <div>
-        <div style={{ fontSize: 6, fontWeight: 700, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.25)', marginBottom: 5 }}>
-          ÁREAS DISPONÍVEIS
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5 }}>
-          {DASH_AREAS.map((a) => (
-            <div key={a.label} style={{
-              background: `${a.color}08`,
-              border: `1px solid ${a.color}28`,
-              borderRadius: 7, padding: '6px 7px',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 }}>
-                <span style={{ fontSize: 10 }}>{a.icon}</span>
-                <span style={{ fontSize: 7, fontWeight: 700, color: '#fff' }}>{a.label}</span>
+      {/* Tutor avatar strip — all tutors scrolling horizontally */}
+      <div style={{ overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
+        {/* fade edges */}
+        <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 16, zIndex: 1,
+          background: 'linear-gradient(90deg, #0d0d1a, transparent)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 16, zIndex: 1,
+          background: 'linear-gradient(-90deg, #0d0d1a, transparent)', pointerEvents: 'none' }} />
+        <motion.div
+          style={{ display: 'flex', gap: 5, alignItems: 'flex-start' }}
+          animate={{ x: [0, -(26 * CHAT_TUTORS.length)] }}
+          transition={{ duration: CHAT_TUTORS.length * 0.9, repeat: Infinity, repeatType: 'loop', ease: 'linear' }}
+        >
+          {[...CHAT_TUTORS, ...CHAT_TUTORS].map((t, i) => {
+            const isActive = (i % CHAT_TUTORS.length) === typingIdx && showTyping;
+            return (
+              <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, flexShrink: 0 }}>
+                <div style={{ position: 'relative' }}>
+                  <img src={t.avatar} alt={t.name} width={22} height={22}
+                    style={{
+                      borderRadius: '50%', display: 'block', objectFit: 'cover', background: '#0d0a1e',
+                      border: `1.5px solid ${isActive ? t.color : t.color + '35'}`,
+                      boxShadow: isActive ? `0 0 8px ${t.color}80` : 'none',
+                      transition: 'border-color 0.3s, box-shadow 0.3s',
+                    }} />
+                  {isActive && (
+                    <div style={{
+                      position: 'absolute', bottom: 0, right: 0,
+                      width: 6, height: 6, borderRadius: '50%',
+                      background: t.color, border: '1px solid #080c18',
+                    }} />
+                  )}
+                </div>
+                <span style={{ fontSize: 5.5, color: isActive ? t.color : 'rgba(255,255,255,0.28)', fontWeight: isActive ? 700 : 400, lineHeight: 1 }}>
+                  {t.name}
+                </span>
               </div>
-              <div style={{ height: 3, background: 'rgba(255,255,255,0.07)', borderRadius: 2, overflow: 'hidden', marginBottom: 3 }}>
-                <motion.div
-                  style={{ height: '100%', background: `linear-gradient(90deg, ${a.color}80, ${a.color})`, borderRadius: 2 }}
-                  initial={{ width: 0 }}
-                  animate={{ width: `${a.score}%` }}
-                  transition={{ duration: 1.2, delay: 0.3, ease: 'easeOut' }}
-                />
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 6, color: 'rgba(255,255,255,0.3)' }}>{a.cards} cards</span>
-                <span style={{ fontSize: 7, fontWeight: 700, color: a.color }}>{a.score}%</span>
-              </div>
-            </div>
-          ))}
-        </div>
+            );
+          })}
+        </motion.div>
       </div>
 
+      {/* Divider */}
+      <div style={{ height: '0.5px', background: 'rgba(255,255,255,0.08)', flexShrink: 0 }} />
+
+      {/* Chat feed */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', gap: 5, overflow: 'hidden' }}>
+        <AnimatePresence initial={false}>
+          {feed.map((item) => {
+            const t = CHAT_TUTORS[item.tutorIdx];
+            return (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0, y: 14, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -8, scale: 0.96 }}
+                transition={{ duration: 0.38, ease: [0.16, 1, 0.3, 1] }}
+                style={{ display: 'flex', gap: 6, alignItems: 'flex-start' }}
+              >
+                <img src={t.avatar} alt={t.name} width={20} height={20}
+                  style={{ borderRadius: '50%', flexShrink: 0, marginTop: 1, objectFit: 'cover', background: '#0d0a1e', border: `1px solid ${t.color}55` }} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 6, fontWeight: 700, color: t.color, marginBottom: 2 }}>
+                    {t.name} · {t.subject}
+                  </div>
+                  <div style={{
+                    fontSize: 7.5, color: 'rgba(255,255,255,0.82)', lineHeight: 1.45,
+                    background: `${t.color}0e`, border: `1px solid ${t.color}28`,
+                    borderRadius: '2px 8px 8px 8px', padding: '4px 8px',
+                  }}>
+                    {t.msgs[item.msgIdx]}
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
+
+        {/* Typing indicator */}
+        <AnimatePresence>
+          {showTyping && (
+            <motion.div
+              key={typingIdx}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              style={{ display: 'flex', gap: 6, alignItems: 'center' }}
+            >
+              <img src={CHAT_TUTORS[typingIdx].avatar} alt="" width={20} height={20}
+                style={{ borderRadius: '50%', flexShrink: 0, objectFit: 'cover', background: '#0d0a1e', border: `1px solid ${CHAT_TUTORS[typingIdx].color}55` }} />
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 3,
+                background: `${CHAT_TUTORS[typingIdx].color}0d`,
+                border: `1px solid ${CHAT_TUTORS[typingIdx].color}25`,
+                borderRadius: '2px 8px 8px 8px', padding: '5px 9px',
+              }}>
+                {[0, 0.18, 0.36].map((delay, i) => (
+                  <motion.div key={i}
+                    style={{ width: 4, height: 4, borderRadius: '50%', background: CHAT_TUTORS[typingIdx].color }}
+                    animate={{ y: [0, -4, 0], opacity: [0.4, 1, 0.4] }}
+                    transition={{ duration: 0.7, repeat: Infinity, delay }}
+                  />
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }
 
 // ── App dashboard rendered inside the MacBook screen ─────────────────────────
 function AppScreen() {
-  const [activeTab, setActiveTab] = useState<'Dashboard' | 'Estudar'>('Estudar');
+  const [activeTab, setActiveTab] = useState<'TutoresIA' | 'Estudar' | 'CommandCenter' | 'Redacao'>('Estudar');
   const [cardIdx, setCardIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
 
-  // Auto-switch tabs: 3.5 s on Estudar → 2.5 s on Dashboard → repeat
+  // Auto-switch: Estudar 3.5s → TutoresIA 4s → CommandCenter 4.5s → Redacao 4s → repeat
   useEffect(() => {
-    const TAB_DURATIONS: Record<'Dashboard' | 'Estudar', number> = {
-      Estudar: 3500,
-      Dashboard: 2500,
+    const DUR: Record<typeof activeTab, number> = {
+      Estudar: 3500, TutoresIA: 4500, CommandCenter: 4500, Redacao: 5000,
     };
-    const timer = setTimeout(() => {
-      setActiveTab((t) => (t === 'Estudar' ? 'Dashboard' : 'Estudar'));
-    }, TAB_DURATIONS[activeTab]);
+    const NEXT: Record<typeof activeTab, typeof activeTab> = {
+      Estudar: 'TutoresIA', TutoresIA: 'CommandCenter', CommandCenter: 'Redacao', Redacao: 'Estudar',
+    };
+    const timer = setTimeout(() => setActiveTab((t) => NEXT[t]), DUR[activeTab]);
     return () => clearTimeout(timer);
   }, [activeTab]);
 
@@ -547,6 +667,14 @@ function AppScreen() {
     }, 4400);
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, [cardIdx, activeTab]);
+
+  // Sidebar nav active highlight cycles upward in sync with scroll
+  const [navIdx, setNavIdx] = useState(1);
+  useEffect(() => {
+    if (activeTab !== 'Estudar') return;
+    const iv = setInterval(() => setNavIdx((i) => (i + 1) % SIDEBAR_NAV.length), 833);
+    return () => clearInterval(iv);
+  }, [activeTab]);
 
   const card = FLASHCARDS[cardIdx];
 
@@ -575,22 +703,23 @@ function AppScreen() {
           ))}
         </div>
         {/* Tab bar */}
-        <div style={{ flex: 1, display: 'flex', justifyContent: 'center', gap: 2 }}>
-          {(['Dashboard', 'Estudar'] as const).map((tab) => {
-            const isActive = tab === activeTab;
+        <div style={{ flex: 1, display: 'flex', justifyContent: 'center', gap: 1 }}>
+          {([
+            { id: 'Estudar',       label: 'Estudar',    ac: PURPLE    },
+            { id: 'TutoresIA',     label: 'Tutores IA', ac: '#a855f7' },
+            { id: 'CommandCenter', label: '⚡ Central',  ac: NEON_G    },
+            { id: 'Redacao',       label: 'Redação',    ac: '#10b981' },
+          ] as const).map(({ id, label, ac }) => {
+            const isActive = id === activeTab;
             return (
-              <div
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                style={{
-                  fontSize: 9, fontWeight: isActive ? 700 : 500,
-                  color: isActive ? '#fff' : 'rgba(255,255,255,0.3)',
-                  padding: '3px 9px', borderRadius: 6,
-                  background: isActive ? 'rgba(124,58,237,0.25)' : 'transparent',
-                  border: isActive ? `1px solid ${PURPLE}40` : '1px solid transparent',
-                  cursor: 'pointer',
-                }}
-              >{tab}</div>
+              <div key={id} onClick={() => setActiveTab(id)} style={{
+                fontSize: 7, fontWeight: isActive ? 700 : 500,
+                color: isActive ? (id === 'CommandCenter' ? NEON_G : id === 'Redacao' ? '#10b981' : id === 'TutoresIA' ? '#a855f7' : '#fff') : 'rgba(255,255,255,0.28)',
+                padding: '2px 5px', borderRadius: 5,
+                background: isActive ? `${ac}20` : 'transparent',
+                border: isActive ? `1px solid ${ac}42` : '1px solid transparent',
+                cursor: 'pointer', whiteSpace: 'nowrap',
+              }}>{label}</div>
             );
           })}
         </div>
@@ -603,9 +732,21 @@ function AppScreen() {
       </div>
 
       {/* ── Body ── */}
-      {activeTab === 'Dashboard' && (
+      {activeTab === 'TutoresIA' && (
         <div style={{ flex: 1, overflow: 'hidden' }}>
-          <DashboardScreen />
+          <TutoresScreen />
+        </div>
+      )}
+
+      {activeTab === 'Redacao' && (
+        <div style={{ flex: 1, overflow: 'hidden' }}>
+          <RedacaoScreen />
+        </div>
+      )}
+
+      {activeTab === 'CommandCenter' && (
+        <div style={{ flex: 1, overflow: 'hidden' }}>
+          <CommandCenterScreen />
         </div>
       )}
 
@@ -628,24 +769,32 @@ function AppScreen() {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 13, boxShadow: `0 0 12px ${PURPLE}60`,
           }}>⚡</div>
-          {/* Nav items */}
-          {[
-            { icon: '🏠', label: 'Home', active: false },
-            { icon: '📚', label: 'Deck', active: true  },
-            { icon: '📊', label: 'Stats', active: false },
-            { icon: '🤖', label: 'IA', active: false },
-          ].map((n) => (
-            <div key={n.label} style={{
-              width: 40, height: 34, borderRadius: 8,
-              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-              background: n.active ? `${PURPLE}22` : 'transparent',
-              border: n.active ? `1px solid ${PURPLE}45` : '1px solid transparent',
-              cursor: 'default',
-            }}>
-              <span style={{ fontSize: 11, color: n.active ? PURPLE_L : 'rgba(255,255,255,0.25)' }}>{n.icon}</span>
-              <span style={{ fontSize: 7, color: n.active ? PURPLE_L : 'rgba(255,255,255,0.2)', marginTop: 1 }}>{n.label}</span>
-            </div>
-          ))}
+          {/* Nav items — continuous upward scroll */}
+          <div style={{ overflow: 'hidden', flex: 1, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <motion.div
+              style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'center' }}
+              animate={{ y: [0, -(38 * SIDEBAR_NAV.length)] }}
+              transition={{ duration: SIDEBAR_NAV.length * 0.833, repeat: Infinity, repeatType: 'loop', ease: 'linear' }}
+            >
+              {[...SIDEBAR_NAV, ...SIDEBAR_NAV].map((n, i) => {
+                const isActive = (i % SIDEBAR_NAV.length) === navIdx;
+                return (
+                  <div key={i} style={{
+                    width: 40, height: 34, borderRadius: 8, flexShrink: 0,
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    background: isActive ? `${PURPLE}22` : 'transparent',
+                    border: isActive ? `1px solid ${PURPLE}45` : '1px solid transparent',
+                    boxShadow: isActive ? `0 0 10px ${PURPLE}40` : 'none',
+                    cursor: 'default',
+                    transition: 'background 0.3s, border-color 0.3s',
+                  }}>
+                    <span style={{ fontSize: 11, color: isActive ? PURPLE_L : 'rgba(255,255,255,0.22)' }}>{n.icon}</span>
+                    <span style={{ fontSize: 7, color: isActive ? PURPLE_L : 'rgba(255,255,255,0.18)', marginTop: 1 }}>{n.label}</span>
+                  </div>
+                );
+              })}
+            </motion.div>
+          </div>
           {/* ENEM countdown at bottom */}
           <div style={{ marginTop: 'auto', marginBottom: 4, textAlign: 'center' }}>
             <div style={{ fontSize: 13, fontWeight: 800, color: PURPLE_L, lineHeight: 1 }}>142</div>
@@ -799,6 +948,429 @@ function AppScreen() {
   );
 }
 
+// ── Redação screen — writing → sending → processing → verdict ────────────────
+function RedacaoScreen() {
+  type Stage = 'writing' | 'sending' | 'processing' | 'verdict';
+  const [stage, setStage] = useState<Stage>('writing');
+  const [score, setScore] = useState(0);
+
+  useEffect(() => {
+    const t1 = setTimeout(() => setStage('sending'),    1000);
+    const t2 = setTimeout(() => setStage('processing'), 1900);
+    const t3 = setTimeout(() => setStage('verdict'),    2900);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+  }, []);
+
+  useEffect(() => {
+    if (stage !== 'verdict') return;
+    let cur = 0;
+    const iv = setInterval(() => {
+      cur = Math.min(cur + 18, 960);
+      setScore(Math.round(cur));
+      if (cur >= 960) clearInterval(iv);
+    }, 20);
+    return () => clearInterval(iv);
+  }, [stage]);
+
+  const COMPS = [
+    { id: 'C1', label: 'Norma Culta',  val: 200, color: '#10b981' },
+    { id: 'C2', label: 'Tema/Argum.',  val: 160, color: '#00FF73' },
+    { id: 'C3', label: 'Organização',  val: 200, color: '#f59e0b' },
+    { id: 'C4', label: 'Coesão',       val: 200, color: '#f97316' },
+    { id: 'C5', label: 'Intervenção',  val: 200, color: '#a855f7' },
+  ];
+
+  const NORMA_AV = _av('ProfNorma', 'hair=variant19&earrings=variant02');
+
+  const ESSAY = [
+    'A exclusão digital no Brasil perpetua desigualdades estruturais históricas e limita o exercício pleno da cidadania.',
+    'Segundo o IBGE, 46% dos lares de baixa renda não possuem acesso à internet de qualidade.',
+    'Cabe ao Estado garantir infraestrutura tecnológica universal, priorizando regiões vulneráveis. ▌',
+  ];
+
+  return (
+    <div style={{
+      height: '100%', display: 'flex', flexDirection: 'column',
+      padding: '8px 11px', gap: 6, overflow: 'hidden',
+      background: 'linear-gradient(160deg, #0d0d1a 0%, #080c18 100%)',
+    }}>
+      <AnimatePresence mode="wait">
+
+        {/* ── WRITING + SENDING ── */}
+        {(stage === 'writing' || stage === 'sending') && (
+          <motion.div key="write"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+            exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.3 }}
+            style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}
+          >
+            {/* Editor header */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
+              <span style={{ fontSize: 9, fontWeight: 800, color: '#fff' }}>📄 Rascunho · ENEM</span>
+              <span style={{
+                fontSize: 6, color: '#f59e0b', fontWeight: 700,
+                background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.25)',
+                padding: '1px 6px', borderRadius: 999,
+              }}>Exclusão Digital</span>
+              <motion.span style={{ marginLeft: 'auto', fontSize: 7, color: 'rgba(255,255,255,0.3)' }}
+                animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1, repeat: Infinity }}>
+                ●
+              </motion.span>
+            </div>
+
+            {/* Essay text editor */}
+            <div style={{
+              flex: 1, background: 'rgba(255,255,255,0.025)',
+              border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8,
+              padding: '8px 10px', display: 'flex', flexDirection: 'column', gap: 6, overflow: 'hidden',
+            }}>
+              {ESSAY.map((para, i) => (
+                <motion.p key={i}
+                  initial={{ opacity: 0, x: -5 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.4, delay: i * 0.22 }}
+                  style={{ fontSize: 7, color: 'rgba(255,255,255,0.7)', lineHeight: 1.6, margin: 0,
+                    fontFamily: "'Georgia', serif" }}
+                >{para}</motion.p>
+              ))}
+            </div>
+
+            {/* Upload bar (only in 'sending') */}
+            {stage === 'sending' && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ flexShrink: 0 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <span style={{ fontSize: 6, color: '#a855f7', fontWeight: 700 }}>Enviando para Norma IA...</span>
+                  <motion.span style={{ fontSize: 8 }}
+                    animate={{ rotate: [0, 360] }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}>
+                    ⏳
+                  </motion.span>
+                </div>
+                <div style={{ height: 3, background: 'rgba(255,255,255,0.07)', borderRadius: 2, overflow: 'hidden' }}>
+                  <motion.div style={{ height: '100%', borderRadius: 2,
+                    background: 'linear-gradient(90deg, #a855f7, #7c3aed, #a855f7)',
+                    backgroundSize: '200% 100%' }}
+                    initial={{ width: '0%' }}
+                    animate={{ width: '100%' }}
+                    transition={{ duration: 0.85, ease: 'easeInOut' }}
+                  />
+                </div>
+              </motion.div>
+            )}
+          </motion.div>
+        )}
+
+        {/* ── PROCESSING ── */}
+        {stage === 'processing' && (
+          <motion.div key="proc"
+            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }} transition={{ duration: 0.3 }}
+            style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 7 }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexShrink: 0 }}>
+              <img src={NORMA_AV} width={28} height={28} alt="Norma"
+                style={{ borderRadius: '50%', border: '2px solid #a855f780', background: '#0d0a1e', flexShrink: 0 }} />
+              <div>
+                <div style={{ fontSize: 8, fontWeight: 800, color: '#fff' }}>Norma IA analisando...</div>
+                <motion.div style={{ fontSize: 6, color: '#a78bfa', marginTop: 1 }}
+                  animate={{ opacity: [0.5, 1, 0.5] }} transition={{ duration: 0.7, repeat: Infinity }}>
+                  Verificando 5 competências...
+                </motion.div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+              {COMPS.map((c, i) => (
+                <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <span style={{ fontSize: 6, fontWeight: 700, color: c.color, width: 14, flexShrink: 0 }}>{c.id}</span>
+                  <span style={{ fontSize: 6, color: 'rgba(255,255,255,0.35)', width: 54, flexShrink: 0 }}>{c.label}</span>
+                  <div style={{ flex: 1, height: 3, background: 'rgba(255,255,255,0.07)', borderRadius: 2, overflow: 'hidden' }}>
+                    <motion.div style={{ height: '100%', borderRadius: 2,
+                      background: `linear-gradient(90deg, ${c.color}88, ${c.color})` }}
+                      initial={{ width: 0 }}
+                      animate={{ width: `${(c.val / 200) * 100}%` }}
+                      transition={{ duration: 0.55, delay: i * 0.07, ease: 'easeOut' }}
+                    />
+                  </div>
+                  <motion.span style={{ fontSize: 7, fontWeight: 700, color: c.color, width: 24, textAlign: 'right', flexShrink: 0 }}
+                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 + i * 0.07 }}
+                  >{c.val}</motion.span>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* ── VERDICT ── */}
+        {stage === 'verdict' && (
+          <motion.div key="verdict"
+            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35 }}
+            style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}
+          >
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexShrink: 0 }}>
+              <img src={NORMA_AV} width={28} height={28} alt="Norma"
+                style={{ borderRadius: '50%', border: '2px solid #10b98180', background: '#0d0a1e', flexShrink: 0 }} />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 8, fontWeight: 800, color: '#fff' }}>Norma IA · Laudo Final</div>
+                <div style={{ fontSize: 6, color: '#10b981', marginTop: 1 }}>✅ Análise concluída</div>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: 5.5, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.06em' }}>SCORE</div>
+                <div style={{ fontSize: 20, fontWeight: 900, lineHeight: 1,
+                  background: 'linear-gradient(90deg, #FFD700, #FFA500)',
+                  WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{score}</div>
+                <div style={{ fontSize: 5.5, color: 'rgba(255,255,255,0.25)' }}>/ 1000</div>
+              </div>
+            </div>
+
+            {/* Compact competency bars */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {COMPS.map((c) => (
+                <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <span style={{ fontSize: 6, fontWeight: 700, color: c.color, width: 14, flexShrink: 0 }}>{c.id}</span>
+                  <span style={{ fontSize: 5.5, color: 'rgba(255,255,255,0.3)', width: 54, flexShrink: 0 }}>{c.label}</span>
+                  <div style={{ flex: 1, height: 2, background: 'rgba(255,255,255,0.07)', borderRadius: 1, overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${(c.val / 200) * 100}%`, background: c.color, borderRadius: 1 }} />
+                  </div>
+                  <span style={{ fontSize: 6.5, fontWeight: 700, color: c.color, width: 24, textAlign: 'right', flexShrink: 0 }}>{c.val}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Divider */}
+            <div style={{ height: '0.5px', background: 'rgba(255,255,255,0.08)', flexShrink: 0 }} />
+
+            {/* Feedback bubble */}
+            <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              style={{ display: 'flex', gap: 5, alignItems: 'flex-start' }}
+            >
+              <img src={NORMA_AV} width={14} height={14} alt="Norma"
+                style={{ borderRadius: '50%', border: '1px solid #a855f755', background: '#0d0a1e', flexShrink: 0, marginTop: 1 }} />
+              <div style={{
+                fontSize: 7, color: 'rgba(255,255,255,0.8)', lineHeight: 1.5, flex: 1,
+                background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.22)',
+                borderRadius: '2px 8px 8px 8px', padding: '4px 8px',
+              }}>
+                ✍️ Intervenção impecável. C1 e C3 perfeitos —{' '}
+                <span style={{ color: '#FFD700', fontWeight: 700 }}>960/1000</span> nota máxima! ⭐
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ── Command Center 2×2 grid — shown inside the MacBook screen on mobile ───────
+function CommandCenterScreen() {
+  const [termLines, setTermLines] = useState<string[]>([TERMINAL_LINES[0]]);
+  const termIdxRef = useRef(1);
+  useEffect(() => {
+    const iv = setInterval(() => {
+      setTermLines((prev) =>
+        [...prev, TERMINAL_LINES[termIdxRef.current % TERMINAL_LINES.length]].slice(-3)
+      );
+      termIdxRef.current += 1;
+    }, 1400);
+    return () => clearInterval(iv);
+  }, []);
+
+  const [visibleConcepts, setVisibleConcepts] = useState([0, 1]);
+  useEffect(() => {
+    const iv = setInterval(() => {
+      setVisibleConcepts((prev) => {
+        const next = (prev[prev.length - 1] + 1) % CONCEPTS.length;
+        return [...prev.slice(1), next];
+      });
+    }, 1800);
+    return () => clearInterval(iv);
+  }, []);
+
+  const mono = "'JetBrains Mono','Courier New',ui-monospace,monospace";
+
+  const cell = (border: string): React.CSSProperties => ({
+    padding: 8,
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'hidden',
+    background: 'rgba(6,10,20,0.97)',
+    border,
+  });
+
+  const hdr: React.CSSProperties = {
+    fontSize: 7,
+    fontWeight: 700,
+    color: PURPLE_L,
+    marginBottom: 5,
+    fontFamily: mono,
+    letterSpacing: '0.06em',
+    flexShrink: 0,
+  };
+
+  return (
+    <div style={{
+      height: '100%',
+      display: 'grid',
+      gridTemplateColumns: '1fr 1fr',
+      gridTemplateRows: '1fr 1fr',
+      background: '#060a14',
+    }}>
+
+      {/* TL — Arsenal de Revisão */}
+      <div style={cell('none')}>
+        <div style={{ ...hdr, borderBottom: '0.5px solid rgba(255,255,255,0.08)', paddingBottom: 4, marginBottom: 6 }}>
+          📚 Arsenal
+        </div>
+        {[
+          { name: 'Bio',  pct: 78, color: '#34d399' },
+          { name: 'Quím', pct: 54, color: '#fb923c' },
+          { name: 'Fís',  pct: 91, color: PURPLE_L  },
+        ].map((s) => (
+          <div key={s.name} style={{ marginBottom: 5 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
+              <span style={{ fontSize: 7, color: 'rgba(255,255,255,0.55)', fontFamily: mono }}>{s.name}</span>
+              <motion.span
+                style={{ fontSize: 7, color: s.color, fontFamily: mono, fontWeight: 700 }}
+                animate={{ textShadow: [`0 0 6px ${s.color}80`, `0 0 14px ${s.color}cc`, `0 0 6px ${s.color}80`] }}
+                transition={{ duration: 2.2, repeat: Infinity, delay: Math.random() }}
+              >{s.pct}%</motion.span>
+            </div>
+            <div style={{ height: 2, background: 'rgba(255,255,255,0.07)', borderRadius: 1, overflow: 'hidden' }}>
+              <motion.div
+                style={{ height: '100%', background: `linear-gradient(90deg, ${s.color}99, ${s.color})`, borderRadius: 1 }}
+                initial={{ width: 0 }}
+                animate={{ width: `${s.pct}%` }}
+                transition={{ duration: 1.4, delay: 0.5, ease: 'easeOut' }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* TR — Agenda IA */}
+      <div style={cell('none')}>
+        <div style={{ ...hdr, borderBottom: '0.5px solid rgba(255,255,255,0.08)', paddingBottom: 4, marginBottom: 6 }}>
+          🤖 Agenda IA
+        </div>
+        {[
+          { time: '14:00', subject: 'Termodinâmica', icon: '⚛️' },
+          { time: '16:30', subject: 'Genética',      icon: '🧬' },
+          { time: '19:00', subject: 'Literatura',    icon: '📖' },
+        ].map((s) => (
+          <div key={s.time} style={{
+            display: 'flex', alignItems: 'center', gap: 4,
+            marginBottom: 4, padding: '3px 5px', borderRadius: 5,
+            background: `${PURPLE}18`, border: `1px solid ${PURPLE}28`,
+          }}>
+            <span style={{ fontSize: 9 }}>{s.icon}</span>
+            <div>
+              <div style={{ fontSize: 7, color: '#fff', fontWeight: 700 }}>{s.subject}</div>
+              <div style={{ fontSize: 6, color: PURPLE_L, fontFamily: mono }}>{s.time} · IA</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* BL — AI Memory Engine */}
+      <div style={cell('none')}>
+        <div style={{ ...hdr, borderBottom: '0.5px solid rgba(255,255,255,0.08)', paddingBottom: 4, marginBottom: 5 }}>
+          ⚙️ AI Engine
+        </div>
+        <div style={{
+          flex: 1,
+          background: 'rgba(0,0,0,0.55)',
+          borderRadius: 4,
+          padding: '4px 6px',
+          fontFamily: mono,
+          fontSize: 6,
+          overflow: 'hidden',
+          border: '1px solid rgba(124,58,237,0.18)',
+        }}>
+          <div style={{ color: `${PURPLE_L}55`, marginBottom: 2 }}>// v3.1 · live</div>
+          {termLines.map((line, i) => (
+            <motion.div
+              key={`${i}-${line}`}
+              initial={{ opacity: 0, x: -4 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3 }}
+              style={{
+                color: line.includes('✅') ? '#34d399' : line.includes('⚡') ? PURPLE_L : 'rgba(255,255,255,0.4)',
+                marginBottom: 1,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >{line}</motion.div>
+          ))}
+          <motion.span
+            style={{ color: PURPLE_L }}
+            animate={{ opacity: [1, 0, 1] }}
+            transition={{ duration: 1, repeat: Infinity }}
+          >▮</motion.span>
+        </div>
+      </div>
+
+      {/* BR — Conceitos Blindados */}
+      <div style={cell('none')}>
+        <div style={{ ...hdr, borderBottom: '0.5px solid rgba(255,255,255,0.08)', paddingBottom: 4, marginBottom: 6 }}>
+          🔒 Blindados
+        </div>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, justifyContent: 'center' }}>
+          {visibleConcepts.map((ci) => (
+            <motion.div
+              key={ci}
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              style={{
+                padding: '4px 6px', borderRadius: 999,
+                background: `${PURPLE}1a`, border: `1px solid ${PURPLE}45`,
+                color: PURPLE_L, fontSize: 7, fontWeight: 700,
+                textAlign: 'center', fontFamily: mono,
+              }}
+            >🔒 {CONCEPTS[ci]}</motion.div>
+          ))}
+        </div>
+        <motion.div
+          style={{ height: 1, background: `linear-gradient(90deg, transparent, ${NEON_G}, transparent)`, marginTop: 6 }}
+          animate={{ opacity: [0.2, 0.9, 0.2] }}
+          transition={{ duration: 2.4, repeat: Infinity }}
+        />
+      </div>
+
+      {/* 0.5px cross dividers */}
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        pointerEvents: 'none',
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr',
+        gridTemplateRows: '1fr 1fr',
+      }}>
+        {/* Vertical center line */}
+        <div style={{
+          position: 'absolute',
+          left: '50%',
+          top: 0,
+          bottom: 0,
+          width: '0.5px',
+          background: 'rgba(255,255,255,0.1)',
+        }} />
+        {/* Horizontal center line */}
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: 0,
+          right: 0,
+          height: '0.5px',
+          background: 'rgba(255,255,255,0.1)',
+        }} />
+      </div>
+    </div>
+  );
+}
+
 // ── MacBook frame ─────────────────────────────────────────────────────────────
 function MacBookMockup() {
   return (
@@ -915,8 +1487,7 @@ export default function HeroSection() {
   return (
     <section
       ref={containerRef}
-      className="relative w-full overflow-hidden"
-      style={{ minHeight: '100vh' }}
+      className="relative w-full overflow-hidden sm:min-h-screen"
     >
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
@@ -948,7 +1519,7 @@ export default function HeroSection() {
 
         {/* Headline block */}
         <motion.div
-          className="text-center px-4 sm:px-6 pt-8 sm:pt-14 pb-2 sm:pb-4 mx-auto"
+          className="text-center px-4 sm:px-6 pt-0 sm:pt-14 pb-5 sm:pb-4 mx-auto"
           style={{ maxWidth: 820 }}
           initial={{ opacity: 0, y: 32 }}
           animate={{ opacity: 1, y: 0 }}
@@ -1116,8 +1687,8 @@ export default function HeroSection() {
 
             {/* MacBook center */}
             <motion.div
-              className="relative max-w-[260px] sm:max-w-[380px] lg:max-w-[560px]"
-              style={{ zIndex: 10, x: nbX, y: nbY, width: '100%' }}
+              className="relative"
+              style={{ zIndex: 10, x: nbX, y: nbY, width: '100%', maxWidth: 560 }}
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ duration: 1.1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
@@ -1181,107 +1752,11 @@ export default function HeroSection() {
             </motion.div>
           </div>
 
-          {/* ── Mobile floating blocks 2×2 grid — hidden on lg+ ── */}
-          <div className="lg:hidden grid grid-cols-2 gap-2 mt-3">
-            {/* Arsenal de Revisão */}
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.5 }}
-            >
-              <GlassCard className="w-full h-full">
-                <div className="text-[10px] font-bold mb-2" style={{ color: PURPLE_L }}>
-                  📚 Arsenal de Revisão
-                </div>
-                {[
-                  { name: 'Biologia', pct: 78, color: '#34d399' },
-                  { name: 'Química',  pct: 54, color: '#fb923c' },
-                  { name: 'Física',   pct: 91, color: PURPLE_L  },
-                ].map((s) => (
-                  <div key={s.name} className="mb-2">
-                    <div className="flex justify-between items-center mb-0.5">
-                      <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.72)' }}>{s.name}</span>
-                      <span className="text-[8px] px-1 py-0.5 rounded-full font-bold"
-                        style={{ background: `${s.color}1e`, color: s.color, border: `1px solid ${s.color}48` }}>
-                        Pendente
-                      </span>
-                    </div>
-                    <div className="h-0.5 rounded-full overflow-hidden"
-                      style={{ background: 'rgba(255,255,255,0.07)' }}>
-                      <motion.div
-                        className="h-full rounded-full"
-                        style={{ background: s.color }}
-                        initial={{ width: 0 }}
-                        animate={{ width: `${s.pct}%` }}
-                        transition={{ duration: 1.6, delay: 0.8, ease: 'easeOut' }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </GlassCard>
-            </motion.div>
-
-            {/* Agenda IA */}
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.6 }}
-            >
-              <GlassCard className="w-full h-full">
-                <div className="text-[10px] font-bold mb-2" style={{ color: PURPLE_L }}>
-                  🤖 Agenda IA
-                </div>
-                {[
-                  { time: '14:00', subject: 'Termodinâmica', icon: '⚛️' },
-                  { time: '16:30', subject: 'Genética',      icon: '🧬' },
-                  { time: '19:00', subject: 'Literatura',    icon: '📖' },
-                ].map((session) => (
-                  <div key={session.time}
-                    className="flex items-center gap-1.5 mb-1 p-1.5 rounded-xl"
-                    style={{ background: `${PURPLE}12`, border: '1px solid rgba(124,58,237,0.18)' }}
-                  >
-                    <span className="text-sm">{session.icon}</span>
-                    <div>
-                      <div className="text-[9px] font-semibold" style={{ color: '#ffffff' }}>
-                        {session.subject}
-                      </div>
-                      <div className="text-[8px]" style={{ color: PURPLE_L }}>
-                        {session.time} · IA
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </GlassCard>
-            </motion.div>
-
-            {/* AI Memory Engine */}
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.7 }}
-            >
-              <TerminalWidget className="w-full h-full" />
-            </motion.div>
-
-            {/* Conceitos Blindados */}
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.8 }}
-            >
-              <GlassCard className="w-full h-full">
-                <div className="text-[10px] font-bold mb-2" style={{ color: PURPLE_L }}>
-                  🔒 Conceitos Blindados
-                </div>
-                <ConceptsWidget />
-              </GlassCard>
-            </motion.div>
-          </div>
         </div>
 
         {/* Subheadline + CTA */}
         <motion.div
-          className="text-center px-4 sm:px-6 pt-2 pb-8 sm:pb-12 mx-auto"
+          className="text-center px-4 sm:px-6 pt-6 sm:pt-2 pb-8 sm:pb-12 mx-auto"
           style={{ maxWidth: 720 }}
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
@@ -1291,22 +1766,19 @@ export default function HeroSection() {
             className="text-base sm:text-lg leading-relaxed mx-auto mb-6 sm:mb-10"
             style={{ color: 'rgba(255,255,255,0.5)', maxWidth: 640 }}
           >
-            Estudar por{' '}
+            Substitua{' '}
             <span style={{ color: '#ffffff', fontWeight: 600 }}>
-              resumos e apostilas
+              horas de estudo passivo
             </span>{' '}
-            é o{' '}
+            por um{' '}
             <span style={{ color: '#ffffff', fontWeight: 600 }}>
-              erro que elimina 90% dos candidatos.
+              Protocolo de 25 minutos
             </span>{' '}
-            Use a{' '}
+            de Engenharia de Retenção. Estanque o vazamento de nota e assuma a{' '}
             <span style={{ color: '#ffffff', fontWeight: 600 }}>
-              Engenharia de Retenção Ativa
+              propriedade definitiva
             </span>{' '}
-            para blindar sua memória — e garantir seu{' '}
-            <span style={{ color: '#ffffff', fontWeight: 600 }}>
-              nome na lista de aprovados.
-            </span>
+            da sua vaga.
           </p>
 
           <div className="flex flex-col items-center gap-3">
@@ -1322,16 +1794,28 @@ export default function HeroSection() {
                 0%, 100% { box-shadow: 0 0 0px #a855f7, 0 0 18px #a855f730, inset 0 0 0px #a855f700; }
                 50%      { box-shadow: 0 0 14px #a855f7, 0 0 32px #a855f755, inset 0 0 8px #a855f715; }
               }
+              @keyframes hero-shimmer {
+                0%   { transform: translateX(-100%); }
+                100% { transform: translateX(100%); }
+              }
               .cta-scan-btn { animation: cta-pulse-border 2.8s ease-in-out infinite; }
               .cta-scan-btn:hover .cta-scan-line { animation: cta-scan 0.55s ease-in-out; }
               .cta-scan-btn.loading-state { animation: none; opacity: 0.7; cursor: not-allowed; }
+              @media (max-width: 639px) {
+                .cta-scan-btn { animation: none !important; box-shadow: 0 0 40px #00ff8050, 0 4px 24px #00ff8030 !important; }
+                .cta-scan-line { display: none; }
+                .cta-shimmer { animation: hero-shimmer 2.4s infinite; }
+              }
+              @media (min-width: 640px) {
+                .cta-shimmer { display: none; }
+              }
             `}</style>
             <button
               onClick={handleCtaClick}
-              className={`cta-scan-btn relative inline-flex items-center gap-2 sm:gap-3 overflow-hidden px-5 sm:px-10 py-3 sm:py-4 text-xs sm:text-sm uppercase tracking-widest transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.97]${ctaState === 'loading' ? ' loading-state' : ''}`}
+              className={`cta-scan-btn relative flex sm:inline-flex w-full sm:w-auto justify-center items-center gap-2 sm:gap-3 overflow-hidden px-6 sm:px-10 py-4 sm:py-4 text-sm sm:text-sm uppercase tracking-widest transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.97]${ctaState === 'loading' ? ' loading-state' : ''}`}
               style={{
                 fontFamily: "'JetBrains Mono', 'Fira Code', 'Courier New', monospace",
-                fontWeight: 700,
+                fontWeight: 900,
                 color: '#000000',
                 background: `linear-gradient(135deg, ${NEON_G} 0%, #00cc5a 100%)`,
                 border: 'none',
@@ -1340,7 +1824,14 @@ export default function HeroSection() {
               }}
               disabled={ctaState === 'loading'}
             >
-              {/* scan line */}
+              {/* shimmer — mobile only */}
+              <span
+                className="cta-shimmer pointer-events-none absolute inset-0"
+                style={{
+                  background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.25) 50%, transparent 70%)',
+                }}
+              />
+              {/* scan line — desktop only */}
               <span
                 className="cta-scan-line pointer-events-none absolute inset-y-0 w-12"
                 style={{
@@ -1368,14 +1859,13 @@ export default function HeroSection() {
                 lineHeight: 1.5,
               }}
             >
-              Acesse seu Raio-X de Memória IA — Diagnóstico dos seus pontos cegos em 3 min
-              <span style={{ opacity: cursorVisible ? 1 : 0, transition: 'opacity 0.08s' }}> _</span>
+              Raio-X de Memória IA | Descubra pontos cegos em 3 min
             </p>
           </div>
         </motion.div>
 
         {/* Stats row */}
-        <div className="relative mx-auto px-4 pb-12 sm:pb-24" style={{ maxWidth: 1160 }}>
+        <div className="relative mx-auto px-4 pb-0 sm:pb-24" style={{ maxWidth: 1160 }}>
           <motion.div
             className="flex flex-wrap justify-center gap-5 sm:gap-10"
             initial={{ opacity: 0, y: 20 }}
@@ -1383,11 +1873,11 @@ export default function HeroSection() {
             transition={{ duration: 0.8, delay: 1.2 }}
           >
             {[
-              { n: '97%',    label: 'retenção com SRS + IA',   color: PURPLE_L  },
-              { n: '5.700+', label: 'flashcards táticos ENEM', color: '#34d399' },
-              { n: '24h',    label: 'para sentir a diferença', color: '#fb923c' },
-            ].map(({ n, label, color }) => (
-              <div key={n} className="text-center">
+              { n: '97%',    label: 'retenção com SRS + IA',   color: PURPLE_L,   hideMobile: false },
+              { n: '5.700+', label: 'flashcards táticos ENEM', color: '#34d399',  hideMobile: false },
+              { n: '24h',    label: 'para sentir a diferença', color: '#fb923c',  hideMobile: true  },
+            ].map(({ n, label, color, hideMobile }) => (
+              <div key={n} className={`text-center${hideMobile ? ' hidden sm:block' : ''}`}>
                 <p className="text-3xl font-black"
                   style={{ color, textShadow: `0 0 20px ${color}60` }}>
                   {n}

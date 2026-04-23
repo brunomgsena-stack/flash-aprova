@@ -128,10 +128,8 @@ function PilarCard({
         background: 'rgba(255,255,255,0.035)',
         backdropFilter: 'blur(24px)',
         WebkitBackdropFilter: 'blur(24px)',
-        border: `1px solid ${hovered ? color + '55' : 'rgba(255,255,255,0.08)'}`,
-        boxShadow: hovered
-          ? `0 0 48px ${color}22, 0 0 0 1px ${color}35`
-          : '0 0 0 0 transparent',
+        border: `1px solid ${color}55`,
+        boxShadow: `0 0 48px ${color}22, 0 0 0 1px ${color}35`,
         transform: `perspective(900px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`,
         transition: 'border-color 0.25s ease, box-shadow 0.25s ease, transform 0.1s ease',
       }}
@@ -154,7 +152,7 @@ function PilarCard({
       {/* Top shimmer */}
       <div className="absolute inset-x-0 top-0 h-px rounded-t-2xl pointer-events-none"
         style={{
-          background: `linear-gradient(90deg, transparent, ${color}${hovered ? '80' : '30'}, transparent)`,
+          background: `linear-gradient(90deg, transparent, ${color}80, transparent)`,
           transition: 'opacity 0.25s',
         }} />
 
@@ -162,8 +160,8 @@ function PilarCard({
       <div
         className="text-3xl mb-3 leading-none font-black transition-all duration-300"
         style={{
-          color: hovered ? color : 'rgba(255,255,255,0.18)',
-          textShadow: hovered ? `0 0 18px ${color}, 0 0 36px ${color}80` : 'none',
+          color: color,
+          textShadow: `0 0 18px ${color}, 0 0 36px ${color}80`,
           fontFamily: 'ui-monospace, monospace',
         }}
       >
@@ -173,7 +171,7 @@ function PilarCard({
       <p
         className="text-xs font-black uppercase tracking-widest mb-2 transition-colors duration-300"
         style={{
-          color: hovered ? color : 'rgba(255,255,255,0.35)',
+          color: color,
           fontFamily: 'ui-monospace, monospace',
         }}
       >
@@ -208,21 +206,11 @@ export default function EbbinghausSection() {
   return (
     <section
       ref={sectionRef}
-      className="relative max-w-5xl mx-auto px-5 sm:px-10 pb-28"
+      className="relative max-w-5xl mx-auto px-2 sm:px-10 pb-6 sm:pb-28"
     >
 
       {/* ── Header ── */}
-      <div className="text-center mb-12 relative z-10">
-        <motion.p
-          className="text-xs font-bold tracking-widest uppercase mb-4"
-          style={{ color: ORANGE, fontFamily: 'ui-monospace, monospace' }}
-          initial={{ opacity: 0, y: -8 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.4 }}
-        >
-          &gt; DIAGNÓSTICO DO SISTEMA
-        </motion.p>
-
+      <div className="text-center mb-6 sm:mb-12 relative z-10">
         <motion.h2
           className="text-3xl sm:text-4xl md:text-5xl font-black text-white leading-tight mb-5"
           initial={{ opacity: 0, y: 16 }}
@@ -230,21 +218,9 @@ export default function EbbinghausSection() {
           transition={{ duration: 0.55, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
         >
           Seu cérebro foi programado para{' '}
-          <motion.span
-            style={{ color: ORANGE }}
-            animate={{
-              textShadow: [
-                '0 0 0px transparent',
-                `0 0 22px ${ORANGE}, 0 0 44px ${ORANGE}80`,
-                `0 0 8px ${ORANGE}60`,
-                `0 0 28px ${ORANGE}, 0 0 55px ${ORANGE}70`,
-                '0 0 0px transparent',
-              ],
-            }}
-            transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
-          >
+          <span style={{ color: ORANGE, textShadow: `0 0 22px ${ORANGE}, 0 0 44px ${ORANGE}80` }}>
             esquecer.
-          </motion.span>
+          </span>
         </motion.h2>
 
         <motion.p
@@ -260,9 +236,20 @@ export default function EbbinghausSection() {
         </motion.p>
       </div>
 
+      {/* ── Chart label ── */}
+      <motion.p
+        className="text-center text-xs font-bold tracking-widest uppercase mb-3"
+        style={{ color: ORANGE, fontFamily: 'ui-monospace, monospace' }}
+        initial={{ opacity: 0, y: -8 }}
+        animate={isInView ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.4 }}
+      >
+        &gt; DIAGNÓSTICO DO SISTEMA
+      </motion.p>
+
       {/* ── Chart card ── */}
       <motion.div
-        className="relative rounded-3xl p-6 sm:p-8 mb-10 overflow-hidden"
+        className="relative rounded-3xl p-3 sm:p-8 mb-10 overflow-hidden"
         style={{
           background: 'rgba(255,255,255,0.04)',
           backdropFilter: 'blur(24px)',
@@ -441,7 +428,7 @@ export default function EbbinghausSection() {
       </motion.div>
 
       {/* ── Pilares do Desastre ── */}
-      <div className="mb-14 relative z-10">
+      <div className="mb-4 sm:mb-14 relative z-10">
         <motion.p
           className="text-center text-xs font-bold tracking-widest uppercase mb-7"
           style={{ color: RED, fontFamily: 'ui-monospace, monospace' }}

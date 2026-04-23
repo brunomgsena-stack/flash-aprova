@@ -98,6 +98,24 @@ const SUBJECTS: Subject[] = [
     topics:   ['Marx & Durkheim', 'Estratificação Social', 'Movimentos Sociais'],
     sysTag:   'ESTRUTURA SOCIAL MAPEADA',
   },
+  {
+    icon: '🇬🇧', name: 'Inglês',             area: 'Linguagens & Códigos',
+    count:  376, color: '#38bdf8',
+    topics:   ['Interpretação de Texto', 'Vocabulário ENEM', 'Gramática Contextual'],
+    sysTag:   'LANGUAGE MODULE ATIVO',
+  },
+  {
+    icon: '🇪🇸', name: 'Espanhol',           area: 'Linguagens & Códigos',
+    count:  214, color: '#f87171',
+    topics:   ['Falsos Cognatos', 'Compreensão Leitora', 'Variedades Hispânicas'],
+    sysTag:   'MÓDULO HISPÂNICO OK',
+  },
+  {
+    icon: '🗞️', name: 'Atualidades',         area: 'Conhecimentos Gerais',
+    count:  189, color: '#c084fc',
+    topics:   ['Geopolítica Global', 'Meio Ambiente & Clima', 'Ciência & Tecnologia'],
+    sysTag:   'FEED ATUALIZADO',
+  },
 ];
 
 // ─── Border-beam (conic-gradient orbiting the card edge) ───────────────────────
@@ -254,26 +272,25 @@ function VaultCard({ s, index }: { s: Subject; index: number }) {
         {/* ── Thin rule ── */}
         <div className="h-px" style={{ background: 'rgba(255,255,255,0.05)' }} />
 
-        {/* ── Topic list — 3 items ── */}
-        <div className="flex flex-col gap-1.5">
-          {s.topics.map((topic, i) => (
-            <motion.div
-              key={topic}
-              className="flex items-center gap-1.5"
-              animate={hovered
-                ? { opacity: 1,   x: 2 }
-                : { opacity: 0.42, x: 0 }}
-              transition={{ duration: 0.16, delay: hovered ? i * 0.04 : 0, ease: 'easeOut' }}
-            >
-              <span
-                className="text-[10px] font-bold shrink-0 leading-none"
-                style={{ color: s.color }}
-              >
-                ›
-              </span>
-              <span className="text-[11px] text-slate-500 leading-snug">{topic}</span>
-            </motion.div>
-          ))}
+        {/* ── Topic list — cycling upward ── */}
+        <div className="overflow-hidden" style={{ height: '66px' }}>
+          <motion.div
+            className="flex flex-col"
+            animate={{ y: [0, -66] }}
+            transition={{ duration: 5, repeat: Infinity, ease: 'linear' }}
+          >
+            {[...s.topics, ...s.topics].map((topic, i) => (
+              <div key={i} className="flex items-center gap-1.5" style={{ height: '22px' }}>
+                <span
+                  className="text-[10px] font-bold shrink-0 leading-none"
+                  style={{ color: s.color }}
+                >
+                  ›
+                </span>
+                <span className="text-[11px] text-slate-500 leading-snug">{topic}</span>
+              </div>
+            ))}
+          </motion.div>
         </div>
 
         {/* ── System tag footer ── */}
@@ -315,7 +332,7 @@ export default function CardVaultSection() {
             className="inline-block w-1.5 h-1.5 rounded-full animate-pulse"
             style={{ background: NEON }}
           />
-          DATABASE: CONHECIMENTO BRUTO
+          PROTOCOLO APROVAÇÃO ENEM
         </div>
 
         <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">
@@ -346,19 +363,40 @@ export default function CardVaultSection() {
             className="text-[9px] tracking-[0.22em] uppercase whitespace-nowrap"
             style={{ fontFamily: 'ui-monospace, monospace', color: 'rgba(255,255,255,0.28)' }}
           >
-            12 MÓDULOS CARREGADOS
+            15 MÓDULOS CARREGADOS
           </span>
           <div className="h-px w-12 sm:w-20" style={{ background: 'rgba(255,255,255,0.07)' }} />
         </div>
       </div>
 
-      {/* Mobile: horizontal snap carousel */}
-      <div className="sm:hidden flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 px-1" style={{ scrollbarWidth: 'none' }}>
-        {SUBJECTS.map((s, i) => (
-          <div key={s.name} className="snap-start shrink-0" style={{ width: '72vw', maxWidth: 280 }}>
-            <VaultCard s={s} index={i} />
-          </div>
-        ))}
+      {/* Mobile: 2-row auto-scrolling marquee */}
+      <div className="sm:hidden flex flex-col gap-3 overflow-hidden">
+        <style>{`
+          @keyframes marquee-left  { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+          @keyframes marquee-right { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+        `}</style>
+        {([SUBJECTS.slice(0, 8), SUBJECTS.slice(8)] as Subject[][]).map((row, rowIdx) => {
+          const doubled = [...row, ...row];
+          const duration = rowIdx === 0 ? 26 : 22;
+          const animName = rowIdx === 0 ? 'marquee-left' : 'marquee-right';
+          return (
+            <div key={rowIdx} className="overflow-hidden pb-2">
+              <div
+                className="flex gap-3"
+                style={{
+                  width: 'max-content',
+                  animation: `${animName} ${duration}s linear infinite`,
+                }}
+              >
+                {doubled.map((s, i) => (
+                  <div key={`${s.name}-${i}`} className="shrink-0" style={{ width: '65vw', maxWidth: 260 }}>
+                    <VaultCard s={s} index={i} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
       </div>
       {/* Desktop: grid */}
       <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
