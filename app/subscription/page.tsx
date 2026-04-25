@@ -62,7 +62,7 @@ function Feature({ text, color, dim = false }: { text: string; color: string; di
 
 function ActiveBanner({ info, plan }: { info: PlanInfo; plan: Plan }) {
   const color  = plan === 'panteao_elite' ? '#06b6d4' : '#7C3AED';
-  const label  = plan === 'panteao_elite' ? 'Panteão Elite' : 'Aceleração';
+  const label  = plan === 'panteao_elite' ? 'Protocolo Neural' : 'Protocolo Básico';
   const days   = info.expiresAt
     ? `${info.daysLeft} dia${info.daysLeft !== 1 ? 's' : ''} restante${info.daysLeft !== 1 ? 's' : ''}`
     : 'Plano ativo';
@@ -80,7 +80,7 @@ function ActiveBanner({ info, plan }: { info: PlanInfo; plan: Plan }) {
           {plan === 'panteao_elite' ? <RobotIcon size={18} stroke="currentColor" /> : <LightningIcon />}
         </div>
         <div>
-          <span className="text-white font-bold text-sm">Você está no Plano {label}</span>
+          <span className="text-white font-bold text-sm">Você está no {label}</span>
           {info.expiresAt && (
             <p className="text-xs mt-0.5" style={{ color }}>
               {days} · renova em {info.expiresAt.toLocaleDateString('pt-BR')}
@@ -150,7 +150,7 @@ function SubscriberPanel({ info }: { info: PlanInfo }) {
                   textShadow: '0 0 20px rgba(6,182,212,0.4)',
                 }}
               >
-                Panteão Elite
+                Protocolo Neural
               </span>
             </div>
           </div>
@@ -174,13 +174,13 @@ function SubscriberPanel({ info }: { info: PlanInfo }) {
         {/* Benefits list */}
         <div className="space-y-1.5">
           {[
-            'Flashcards ilimitados com algoritmo SRS avançado',
-            'Dashboard de performance e heatmap de consistência',
-            'Resumos Storytelling por deck',
-            'Tabelas Comparativas, Macetes & Mnemonics',
-            'Áudio-Resumos narrados por IA',
-            'Tutor IA Especialista em tempo real',
-            'Geração de Flashcards via Foto ou PDF',
+            '5.700+ Flashcards com algoritmo SRS avançado',
+            'Dashboard & heatmap de consistência',
+            'Neural Core: gestão inteligente de retenção',
+            '15 Agentes IA Especialistas em prontidão 24/7',
+            'Prof.ª Norma IA: auditoria de redação em 30s',
+            'Storytelling Engine: resumos e tabelas por IA',
+            'Acesso por 2 anos — ENEM 2026 + 2027',
           ].map((benefit) => (
             <div key={benefit} className="flex items-start gap-2.5">
               <span className="mt-0.5 shrink-0 text-cyan-400 text-xs">✓</span>
@@ -210,7 +210,7 @@ function SubscriberPanel({ info }: { info: PlanInfo }) {
               border: '1px solid rgba(255,255,255,0.12)',
             }}
           >
-            Alterar para Plano Aceleração
+            Alterar para Protocolo Básico
           </button>
 
           <button
@@ -333,25 +333,25 @@ function SalesPage({
           </div>
 
           <p className="text-xs font-semibold tracking-widest uppercase mb-1" style={{ color: '#a78bfa' }}>
-            Plano Aceleração
+            Protocolo Básico
           </p>
 
           <div className="mb-1">
+            <p className="text-slate-500 text-xs line-through mb-0.5">era R$ 890,00</p>
             <span className="text-slate-500 text-xs">12x de</span>
             <div className="flex items-baseline gap-1.5 mt-0.5">
-              <span className="text-5xl font-black text-white">R$&nbsp;21</span>
-              <span className="text-3xl font-black text-white">,90</span>
+              <span className="text-5xl font-black text-white">R$&nbsp;59</span>
+              <span className="text-3xl font-black text-white">,16</span>
             </div>
-            <p className="text-slate-600 text-xs mt-1">R$ 262,80 / ano · sem juros</p>
+            <p className="text-slate-600 text-xs mt-1">ou R$ 710,00 à vista · ENEM 2026</p>
           </div>
 
           <div className="h-px my-5" style={{ background: 'rgba(255,255,255,0.07)' }} />
 
           <div className="space-y-0.5 mb-7">
-            <Feature color="#a78bfa" text="Flashcards ilimitados" />
-            <Feature color="#a78bfa" text="Algoritmo de Repetição Espaçada (SRS)" />
-            <Feature color="#a78bfa" text="Dashboard com métricas de performance" />
-            <Feature color="#a78bfa" text="Heatmap de consistência de estudos" />
+            <Feature color="#a78bfa" text="5.700+ Flashcards (Munição Pura)" />
+            <Feature color="#a78bfa" text="Algoritmo SRS de Repetição Espaçada" />
+            <Feature color="#a78bfa" text="Dashboard & heatmap de consistência" />
           </div>
 
           {currentPlan === 'aceleracao' ? (
@@ -367,7 +367,7 @@ function SalesPage({
               className="w-full py-3 rounded-xl text-sm font-bold text-white transition-all duration-200 hover:opacity-80"
               style={{ background: 'rgba(124,58,237,0.25)', border: '1px solid rgba(124,58,237,0.40)' }}
             >
-              Garantir Vaga — Aceleração
+              Garantir Vaga — Protocolo Básico
             </button>
           )}
         </div>
@@ -430,31 +430,32 @@ function SalesPage({
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
             }}>
-            Plano Panteão Elite
+            Protocolo Neural
           </p>
 
           <div className="mb-1">
+            <p className="text-slate-500 text-xs line-through mb-0.5">era R$ 997,00</p>
             <span className="text-slate-500 text-xs">12x de</span>
             <div className="flex items-baseline gap-1.5 mt-0.5">
-              <span className="text-5xl font-black text-white">R$&nbsp;29</span>
-              <span className="text-3xl font-black text-white">,90</span>
+              <span className="text-5xl font-black text-white">R$&nbsp;66</span>
+              <span className="text-3xl font-black text-white">,41</span>
             </div>
             <p className="text-sm font-semibold italic mt-1" style={{ color: '#06b6d4' }}>
-              Menos de R$ 1,91 por dia
+              Menos de R$ 1,09 por dia
             </p>
-            <p className="text-slate-600 text-xs mt-0.5">R$ 358,80 / ano · sem juros</p>
+            <p className="text-slate-600 text-xs mt-0.5">ou R$ 797,00 à vista · ENEM 2026 + 2027</p>
           </div>
 
           <div className="h-px my-5"
             style={{ background: 'linear-gradient(90deg, rgba(124,58,237,0.40), rgba(6,182,212,0.40), rgba(236,72,153,0.20))' }} />
 
           <div className="space-y-0.5 mb-7">
-            <Feature color="#67e8f9" text="Tudo do Plano Aceleração" />
-            <Feature color="#67e8f9" text="Resumos Storytelling por deck" />
-            <Feature color="#67e8f9" text="Tabelas Comparativas + Macetes & Mnemonics" />
-            <Feature color="#67e8f9" text="Áudio-Resumos narrados por IA" />
-            <Feature color="#ec4899" text="Tutor IA Especialista em tempo real" />
-            <Feature color="#ec4899" text="Geração de Flashcards via Foto ou PDF" />
+            <Feature color="#67e8f9" text="Tudo do Protocolo Básico incluído" />
+            <Feature color="#67e8f9" text="Neural Core: gestão inteligente de retenção" />
+            <Feature color="#67e8f9" text="15 Agentes IA Especialistas em prontidão 24/7" />
+            <Feature color="#67e8f9" text="Storytelling Engine: resumos e tabelas por IA" />
+            <Feature color="#ec4899" text="Prof.ª Norma IA: auditoria de redação em 30s" />
+            <Feature color="#ec4899" text="Acesso por 2 anos — ENEM 2026 + 2027" />
           </div>
 
           <button
@@ -470,7 +471,7 @@ function SalesPage({
               <span className="absolute inset-0"
                 style={{ background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.15) 50%, transparent 70%)' }} />
             </span>
-            Garantir Vaga — Panteão Elite (12x sem juros)
+            Garantir Vaga — Protocolo Neural (12x sem juros)
           </button>
 
           <div className="flex items-center justify-center gap-2 mt-4 text-sm font-bold" style={{ color: '#06b6d4' }}>
@@ -486,27 +487,25 @@ function SalesPage({
 
         <div className="grid grid-cols-3 px-6 py-4 border-b border-white/5">
           <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Recurso</span>
-          <span className="text-xs font-semibold text-center uppercase tracking-wider" style={{ color: '#a78bfa' }}>Aceleração</span>
+          <span className="text-xs font-semibold text-center uppercase tracking-wider" style={{ color: '#a78bfa' }}>Protocolo Básico</span>
           <span className="text-xs font-semibold text-center uppercase tracking-widest"
             style={{
               background: 'linear-gradient(90deg, #a78bfa, #67e8f9)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
             }}>
-            Panteão Elite
+            Protocolo Neural
           </span>
         </div>
 
         {[
-          { feature: 'Flashcards ilimitados',          flash: true,  pro: true  },
-          { feature: 'Algoritmo SRS avançado',         flash: true,  pro: true  },
-          { feature: 'Dashboard & heatmap',            flash: true,  pro: true  },
-          { feature: 'Resumos Storytelling',           flash: false, pro: true  },
-          { feature: 'Tabelas Comparativas',           flash: false, pro: true  },
-          { feature: 'Macetes & Mnemonics',            flash: false, pro: true  },
-          { feature: 'Áudio-Resumo narrado por IA',   flash: false, pro: true  },
-          { feature: 'Tutor IA Especialista',          flash: false, pro: true  },
-          { feature: 'Flashcards por Foto/PDF',        flash: false, pro: true  },
+          { feature: 'Flashcards SRS ilimitados',        flash: true,  pro: true  },
+          { feature: 'Dashboard & heatmap',              flash: true,  pro: true  },
+          { feature: 'Resumos Storytelling',             flash: false, pro: true  },
+          { feature: 'Tabelas Comparativas',             flash: false, pro: true  },
+          { feature: '15 Especialistas IA',              flash: false, pro: true  },
+          { feature: 'Prof.ª Norma — Redação',           flash: false, pro: true  },
+          { feature: 'Acesso 2 anos (2026+2027)',        flash: false, pro: true  },
         ].map(({ feature, flash, pro }, i) => (
           <div
             key={feature}

@@ -357,9 +357,7 @@ export default function TacticalRecovery() {
       <motion.div
         className="relative rounded-2xl overflow-hidden"
         style={{
-          background:          'rgba(255,255,255,0.018)',
-          backdropFilter:      'blur(20px)',
-          WebkitBackdropFilter:'blur(20px)',
+          background:          'rgba(18,18,18,0.92)',
           border:              '1px solid rgba(255,255,255,0.07)',
           boxShadow:           '0 0 80px rgba(0,0,0,0.35)',
         }}

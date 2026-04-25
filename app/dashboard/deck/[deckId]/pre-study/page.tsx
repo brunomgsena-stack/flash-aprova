@@ -3,7 +3,6 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { getSubjectIcon } from '@/lib/iconMap';
 import { getCategoryInfo } from '@/lib/categories';
-import { fetchUserPlan } from '@/lib/plan';
 import { createClient } from '@/lib/supabase/server';
 import DeckContent from './DeckContent';
 
@@ -64,28 +63,49 @@ export default async function DeckPreStudyPage({ params }: Props) {
   const icon        = getSubjectIcon(subject.title, subject.icon_url, subject.category);
   const moduleTitle = deck.module_id ? await getModuleTitle(deck.module_id) : null;
 
-  // Fetch user plan server-side
+  // Fetch user plan server-side using the authenticated server client (respects RLS)
   const serverClient = await createClient();
   const { data: { user } } = await serverClient.auth.getUser();
-  const planInfo = user ? await fetchUserPlan(user.id) : null;
-  const plan = planInfo?.plan ?? 'aceleracao';
+  let plan: 'aceleracao' | 'panteao_elite' = 'aceleracao';
+  if (user) {
+    const [statsResult, profileResult] = await Promise.all([
+      serverClient.from('user_stats').select('plan, plan_expires_at').eq('user_id', user.id).maybeSingle(),
+      serverClient.from('profiles').select('role').eq('id', user.id).maybeSingle(),
+    ]);
+    const isAdmin   = profileResult.data?.role === 'admin';
+    const rawPlan   = statsResult.data?.plan as 'aceleracao' | 'panteao_elite' | undefined;
+    const expiresAt = statsResult.data?.plan_expires_at ? new Date(statsResult.data.plan_expires_at) : null;
+    const expired   = expiresAt ? expiresAt < new Date() : false;
+    if (isAdmin || (rawPlan === 'panteao_elite' && !expired)) plan = 'panteao_elite';
+  }
 
   return (
     <main className="min-h-screen px-4 py-12 sm:px-8">
       <div className="max-w-3xl mx-auto">
 
-        {/* ── Breadcrumbs ─────────────────────────────────────────────── */}
-        <nav className="flex items-center gap-1.5 text-xs text-slate-500 mb-8 flex-wrap">
-          <Link href="/dashboard" className="hover:text-white transition-colors">
+        {/* ── Back button ─────────────────────────────────────────────── */}
+        <Link
+          href="/dashboard"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-white transition-colors mb-6 group"
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="group-hover:-translate-x-0.5 transition-transform">
+            <path d="M10 3L5 8l5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          Voltar ao Dashboard
+        </Link>
+
+        {/* ── Breadcrumbs — hidden on mobile ──────────────────────────── */}
+        <nav className="hidden sm:flex items-center gap-1.5 text-xs text-slate-500 mb-8 flex-wrap">
+          <Link href="/dashboard" className="hover:text-white transition-colors shrink-0">
             Dashboard
           </Link>
           {subject.category && (
             <>
-              <span className="opacity-40">›</span>
-              <span style={{ color: catInfo.color }}>{catInfo.short}</span>
+              <span className="opacity-40 shrink-0">›</span>
+              <span className="shrink-0" style={{ color: catInfo.color }}>{catInfo.short}</span>
             </>
           )}
-          <span className="opacity-40">›</span>
+          <span className="opacity-40 shrink-0">›</span>
           <Link
             href={`/dashboard/subject/${subject.id}`}
             className="hover:text-white transition-colors"
@@ -120,10 +140,9 @@ export default async function DeckPreStudyPage({ params }: Props) {
             <p className="text-xs font-semibold tracking-widest uppercase mb-0.5" style={{ color }}>
               {subject.title}
             </p>
-            <h1 className="text-2xl sm:text-3xl font-bold text-white leading-tight">
+            <h1 className="text-xl sm:text-2xl font-bold text-white leading-tight">
               {deck.title}
             </h1>
-            <p className="text-slate-400 text-sm mt-0.5">Base de Conhecimento</p>
           </div>
         </div>
 
@@ -170,17 +189,13 @@ export default async function DeckPreStudyPage({ params }: Props) {
           </Link>
         </div>
 
-        {/* ── Separador "Base de Conhecimento" ────────────────────────── */}
-        <p className="text-xs font-semibold tracking-widest uppercase text-slate-500 mb-4">
-          Base de Conhecimento
-        </p>
-
-        {/* ── Content sections (accordion) ─────────────────────────────── */}
+        {/* ── Content sections ─────────────────────────────────────────── */}
         <DeckContent
           color={color}
           plan={plan}
           subjectTitle={subject.title}
           deckTitle={deck.title}
+          deckId={deckId}
           summary_markdown={deck.summary_markdown}
           comparative_table_json={deck.comparative_table_json}
           mnemonics={deck.mnemonics}

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { fetchUserPlan } from '@/lib/plan';
+
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -53,15 +53,18 @@ export async function POST(req: NextRequest) {
   }
 
   // ── Plan check + Admin bypass ────────────────────────────────────────────────
-  const [planInfo, profileResult] = await Promise.all([
-    fetchUserPlan(user.id),
+  const [statsResult, profileResult] = await Promise.all([
+    serverClient.from('user_stats').select('plan, plan_expires_at').eq('user_id', user.id).maybeSingle(),
     serverClient.from('profiles').select('role').eq('id', user.id).maybeSingle(),
   ]);
-  const hasAccess =
-    planInfo.plan === 'panteao_elite' || profileResult.data?.role === 'admin';
+  const isAdmin   = profileResult.data?.role === 'admin';
+  const rawPlan   = statsResult.data?.plan as string | undefined;
+  const expiresAt = statsResult.data?.plan_expires_at ? new Date(statsResult.data.plan_expires_at) : null;
+  const expired   = expiresAt ? expiresAt < new Date() : false;
+  const hasAccess = isAdmin || (rawPlan === 'panteao_elite' && !expired);
   if (!hasAccess) {
     return NextResponse.json(
-      { error: 'Recurso exclusivo do plano AiPro+.' },
+      { error: 'Recurso exclusivo do Protocolo Neural.' },
       { status: 403 },
     );
   }

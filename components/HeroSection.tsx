@@ -66,54 +66,51 @@ const SIDEBAR_NAV = [
 ];
 
 // ── Chat tutors — full roster mirroring AiTutorsSection ─────────────────────
-const _av = (seed: string, extra = '') =>
-  `https://api.dicebear.com/9.x/lorelei/svg?seed=${seed}&backgroundColor=0d0a1e${extra ? '&' + extra : ''}`;
-
 const CHAT_TUTORS = [
   { name: 'NORMA',    subject: 'Redação',    color: '#7C3AED',
-    avatar: _av('ProfNorma', 'hair=variant19&earrings=variant02'),
+    avatar: '/images/avatars/ProfNorma.svg',
     msgs: ['Coesão fraca e proposta genérica custam 80 pts. Corrija os dois!', 'Diagnóstico preciso antes da correção. Padrão de erro é o foco.'] },
   { name: 'VEKTOR',   subject: 'Física',     color: '#f97316',
-    avatar: _av('ProfVektor', 'beard=variant01'),
+    avatar: '/images/avatars/ProfVektor.svg',
     msgs: ['MRU: v = s/t. MRUV: v = v₀ + at e s = v₀t + ½at². Plug and play!', 'Menos conversa, mais vetores. 2 equações = 80% da Física no ENEM.'] },
   { name: 'CHRONOS',  subject: 'História',   color: '#a78bfa',
     avatar: '/images/tutor-historia.avif',
     msgs: ['Era Vargas: 3 fases, 3 lógicas. O ENEM ama comparar as três. 🏛️', 'Causalidade histórica > decoreba de datas. Sempre!'] },
   { name: 'ATLAS',    subject: 'Geografia',  color: '#34d399',
-    avatar: _av('DrAtlasGeo', 'hair=variant06'),
+    avatar: '/images/avatars/DrAtlasGeo.svg',
     msgs: ['Bioma + clima + solo: aprenda o trio, não o isolado. 🌿', 'Amazônia = densa; Cerrado = raízes profundas; Caatinga = xerófita.'] },
   { name: 'ÁTOMO',    subject: 'Química',    color: '#06b6d4',
     avatar: '/images/tutor-quimica.avif',
     msgs: ['Estequiometria: coeficiente = proporção = regra de 3. Simples! 🧪', 'Le Chatelier: equilíbrio dinâmico é certeiro no ENEM.'] },
   { name: 'PI',       subject: 'Matemática', color: '#00FF73',
-    avatar: _av('MestrePiMat', 'hair=variant11'),
+    avatar: '/images/avatars/MestrePiMat.svg',
     msgs: ['Delta < 0 = sem raízes reais. Fluxo: calcula → classifica → decide.', 'Geometria plana: o ENEM adora área de figuras compostas. 📐'] },
   { name: 'BIO',      subject: 'Biologia',   color: '#22c55e',
-    avatar: _av('DrBio', 'hair=variant01'),
+    avatar: '/images/avatars/DrBio.svg',
     msgs: ['Fotossíntese: sol + CO₂ + H₂O → glicose. Analogia resolve! 🧬', 'Genética: meiose gera variabilidade; mitose = cópia exata.'] },
   { name: 'SINTAXE',  subject: 'Português',  color: '#f59e0b',
-    avatar: _av('ProfSintaxe', 'hair=variant03'),
+    avatar: '/images/avatars/ProfSintaxe.svg',
     msgs: ['Tese antes de alternativa. Sempre. Sem exceção.', 'O ENEM não testa leitura — testa argumentação. Interrogue o texto!'] },
   { name: 'PRÁXIS',   subject: 'Filosofia',  color: '#e879f9',
-    avatar: _av('ProfPraxis', 'hair=variant03'),
+    avatar: '/images/avatars/ProfPraxis.svg',
     msgs: ['Filósofo = lente de análise. Aplique a certa ao contexto. 🔍', 'Kant: fenômeno ≠ coisa em si. Rousseau: natureza boa, soc. corrompe.'] },
   { name: 'NEXUS',    subject: 'Sociologia', color: '#60a5fa',
-    avatar: _av('ProfNexus', 'hair=variant01'),
+    avatar: '/images/avatars/ProfNexus.svg',
     msgs: ['Durkheim = coesão. Weber = dominação. Marx = conflito. Grave!', 'Fenômeno → teórico → conceito. Equação da Sociologia no ENEM.'] },
   { name: 'VANGUARDA',subject: 'Artes',      color: '#fb7185',
-    avatar: _av('MsVanguarda', 'hair=variant04&earrings=variant01'),
+    avatar: '/images/avatars/MsVanguarda.svg',
     msgs: ['Obra = manifesto. Contexto histórico é sempre a chave. 🎨', 'Modernismo 22: ruptura + afirmação da identidade nacional.'] },
   { name: 'SONETO',   subject: 'Literatura', color: '#818cf8',
-    avatar: _av('SrtaSoneto', 'hair=variant05&earrings=variant02'),
+    avatar: '/images/avatars/SrtaSoneto.svg',
     msgs: ['Tom + vocabulário = movimento literário. O trecho entrega tudo. 📖', 'Romantismo: idealização. Realismo: crítica. Modernismo: ruptura.'] },
   { name: 'LINK',     subject: 'Inglês',     color: '#38bdf8',
-    avatar: _av('TeacherLink', 'hair=variant02'),
+    avatar: '/images/avatars/TeacherLink.svg',
     msgs: ['Pergunta → palavras-chave → localiza no texto. 80% resolvido!', 'No ENEM: você não traduz — você localiza informação. 🇺🇸'] },
   { name: 'SOL',      subject: 'Espanhol',   color: '#fbbf24',
-    avatar: _av('ProfaSol', 'hair=variant06&earrings=variant01'),
+    avatar: '/images/avatars/ProfaSol.svg',
     msgs: ['Falso amigo é armadilha nº 1. Contexto sempre vence aparência.', '"Embarazada" = grávida. "Borracha" = bêbada. Cuidado! 🇪🇸'] },
   { name: 'MUNDI',    subject: 'Atualidades',color: '#a3e635',
-    avatar: _av('DrMundi', 'beard=variant02'),
+    avatar: '/images/avatars/DrMundi.svg',
     msgs: ['Fato atual = gancho. Conceito de base é o que a questão mede. 🌍', 'O ENEM não cobra notícia — cobra conexão com conceitos.'] },
 ];
 
@@ -164,9 +161,7 @@ function GlassCard({
     <div
       className={`rounded-2xl p-4 ${className}`}
       style={{
-        background: 'rgba(12,8,24,0.84)',
-        backdropFilter: 'blur(24px)',
-        WebkitBackdropFilter: 'blur(24px)',
+        background: 'rgba(12,8,24,0.95)',
         border: '1px solid rgba(124,58,237,0.28)',
         boxShadow: '0 8px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)',
         ...style,
@@ -192,17 +187,7 @@ function FloatWrapper({ children, delay = 0, intensity = 10 }: {
 }
 
 // ── AI Terminal widget (replaces Métricas de Retenção) ────────────────────────
-function TerminalWidget({ className = 'w-60' }: { className?: string }) {
-  const [lines, setLines] = useState<string[]>([TERMINAL_LINES[0]]);
-  const idxRef = useRef(1);
-  useEffect(() => {
-    const iv = setInterval(() => {
-      const next = TERMINAL_LINES[idxRef.current % TERMINAL_LINES.length];
-      idxRef.current += 1;
-      setLines((prev) => [...prev, next].slice(-5));
-    }, 1400);
-    return () => clearInterval(iv);
-  }, []);
+function TerminalWidget({ className = 'w-60', lines }: { className?: string; lines: string[] }) {
 
   return (
     <GlassCard className={className}>
@@ -251,17 +236,7 @@ function TerminalWidget({ className = 'w-60' }: { className?: string }) {
 }
 
 // ── Concepts widget ───────────────────────────────────────────────────────────
-function ConceptsWidget() {
-  const [visible, setVisible] = useState([0, 1, 2]);
-  useEffect(() => {
-    const iv = setInterval(() => {
-      setVisible((prev) => {
-        const next = (prev[prev.length - 1] + 1) % CONCEPTS.length;
-        return [...prev.slice(1), next];
-      });
-    }, 1800);
-    return () => clearInterval(iv);
-  }, []);
+function ConceptsWidget({ visible }: { visible: number[] }) {
   return (
     <div className="flex flex-col gap-1.5" style={{ minHeight: 88 }}>
       {visible.map((ci) => (
@@ -477,6 +452,10 @@ function TutoresScreen() {
   ]);
   const nextRef = useRef({ counter: 3, tIdx: 0, mIdx: 1 });
 
+  const [typingIdx, setTypingIdx] = useState(0);
+  const [showTyping, setShowTyping] = useState(true);
+
+  // Single interval drives both feed rotation and typing indicator
   useEffect(() => {
     const iv = setInterval(() => {
       const { counter, tIdx, mIdx } = nextRef.current;
@@ -485,17 +464,9 @@ function TutoresScreen() {
       const nextM = (mIdx + 1) % msgs.length;
       nextRef.current = { counter: counter + 1, tIdx: nextT, mIdx: nextM };
       setFeed((prev) => [...prev.slice(-2), { id: counter, tutorIdx: nextT, msgIdx: nextM }]);
-    }, 2200);
-    return () => clearInterval(iv);
-  }, []);
-
-  const [typingIdx, setTypingIdx] = useState(0);
-  const [showTyping, setShowTyping] = useState(true);
-  useEffect(() => {
-    const iv = setInterval(() => {
       setShowTyping(false);
       setTimeout(() => {
-        setTypingIdx((i) => (i + 1) % CHAT_TUTORS.length);
+        setTypingIdx(nextT);
         setShowTyping(true);
       }, 300);
     }, 2200);
@@ -641,7 +612,7 @@ function TutoresScreen() {
 }
 
 // ── App dashboard rendered inside the MacBook screen ─────────────────────────
-function AppScreen() {
+function AppScreen({ termLines, visibleConcepts }: { termLines: string[]; visibleConcepts: number[] }) {
   const [activeTab, setActiveTab] = useState<'TutoresIA' | 'Estudar' | 'CommandCenter' | 'Redacao'>('Estudar');
   const [cardIdx, setCardIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
@@ -692,8 +663,7 @@ function AppScreen() {
         display: 'flex', alignItems: 'center', gap: 10,
         padding: '8px 14px',
         borderBottom: '1px solid rgba(255,255,255,0.06)',
-        background: 'rgba(255,255,255,0.03)',
-        backdropFilter: 'blur(12px)',
+        background: 'rgba(18,18,18,0.92)',
         flexShrink: 0,
       }}>
         {/* Traffic lights */}
@@ -746,7 +716,7 @@ function AppScreen() {
 
       {activeTab === 'CommandCenter' && (
         <div style={{ flex: 1, overflow: 'hidden' }}>
-          <CommandCenterScreen />
+          <CommandCenterScreen termLines={termLines} visibleConcepts={visibleConcepts} />
         </div>
       )}
 
@@ -965,10 +935,10 @@ function RedacaoScreen() {
     if (stage !== 'verdict') return;
     let cur = 0;
     const iv = setInterval(() => {
-      cur = Math.min(cur + 18, 960);
+      cur = Math.min(cur + 54, 960);
       setScore(Math.round(cur));
       if (cur >= 960) clearInterval(iv);
-    }, 20);
+    }, 60);
     return () => clearInterval(iv);
   }, [stage]);
 
@@ -980,7 +950,7 @@ function RedacaoScreen() {
     { id: 'C5', label: 'Intervenção',  val: 200, color: '#a855f7' },
   ];
 
-  const NORMA_AV = _av('ProfNorma', 'hair=variant19&earrings=variant02');
+  const NORMA_AV = '/images/avatars/ProfNorma.svg';
 
   const ESSAY = [
     'A exclusão digital no Brasil perpetua desigualdades estruturais históricas e limita o exercício pleno da cidadania.',
@@ -1163,29 +1133,7 @@ function RedacaoScreen() {
 }
 
 // ── Command Center 2×2 grid — shown inside the MacBook screen on mobile ───────
-function CommandCenterScreen() {
-  const [termLines, setTermLines] = useState<string[]>([TERMINAL_LINES[0]]);
-  const termIdxRef = useRef(1);
-  useEffect(() => {
-    const iv = setInterval(() => {
-      setTermLines((prev) =>
-        [...prev, TERMINAL_LINES[termIdxRef.current % TERMINAL_LINES.length]].slice(-3)
-      );
-      termIdxRef.current += 1;
-    }, 1400);
-    return () => clearInterval(iv);
-  }, []);
-
-  const [visibleConcepts, setVisibleConcepts] = useState([0, 1]);
-  useEffect(() => {
-    const iv = setInterval(() => {
-      setVisibleConcepts((prev) => {
-        const next = (prev[prev.length - 1] + 1) % CONCEPTS.length;
-        return [...prev.slice(1), next];
-      });
-    }, 1800);
-    return () => clearInterval(iv);
-  }, []);
+function CommandCenterScreen({ termLines, visibleConcepts }: { termLines: string[]; visibleConcepts: number[] }) {
 
   const mono = "'JetBrains Mono','Courier New',ui-monospace,monospace";
 
@@ -1372,7 +1320,7 @@ function CommandCenterScreen() {
 }
 
 // ── MacBook frame ─────────────────────────────────────────────────────────────
-function MacBookMockup() {
+function MacBookMockup({ termLines, visibleConcepts }: { termLines: string[]; visibleConcepts: number[] }) {
   return (
     <div style={{ width: '100%', maxWidth: 560, position: 'relative' }}>
       {/* Lid */}
@@ -1402,7 +1350,7 @@ function MacBookMockup() {
           border: '1px solid rgba(0,0,0,0.5)',
           boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.04)',
         }}>
-          <AppScreen />
+          <AppScreen termLines={termLines} visibleConcepts={visibleConcepts} />
         </div>
       </div>
 
@@ -1442,11 +1390,35 @@ export default function HeroSection() {
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
   const [ctaState, setCtaState] = useState<'idle' | 'loading'>('idle');
-  const [cursorVisible, setCursorVisible] = useState(true);
 
+  // ── Shared terminal state (drives TerminalWidget + CommandCenterScreen) ──────
+  const [termLines, setTermLines] = useState<string[]>([TERMINAL_LINES[0]]);
+  const termIdxRef = useRef(1);
+
+  // ── Shared concepts state (drives ConceptsWidget + CommandCenterScreen) ──────
+  const [visibleConcepts, setVisibleConcepts] = useState([0, 1, 2]);
+
+  // Single interval drives terminal ticker (1400ms)
   useEffect(() => {
-    const interval = setInterval(() => setCursorVisible(v => !v), 530);
-    return () => clearInterval(interval);
+    const iv = setInterval(() => {
+      setTermLines((prev) => {
+        const next = TERMINAL_LINES[termIdxRef.current % TERMINAL_LINES.length];
+        termIdxRef.current += 1;
+        return [...prev, next].slice(-5);
+      });
+    }, 1400);
+    return () => clearInterval(iv);
+  }, []);
+
+  // Concepts rotate at 1800ms — separate ticker to keep phase independent
+  useEffect(() => {
+    const iv = setInterval(() => {
+      setVisibleConcepts((prev) => {
+        const next = (prev[prev.length - 1] + 1) % CONCEPTS.length;
+        return [...prev.slice(1), next];
+      });
+    }, 1800);
+    return () => clearInterval(iv);
   }, []);
 
   const handleCtaClick = useCallback((e: React.MouseEvent) => {
@@ -1681,7 +1653,7 @@ export default function HeroSection() {
               transition={{ duration: 0.8, delay: 0.7, ease: [0.16, 1, 0.3, 1] }}
             >
               <FloatWrapper delay={1.4} intensity={8}>
-                <TerminalWidget />
+                <TerminalWidget lines={termLines} />
               </FloatWrapper>
             </motion.div>
 
@@ -1693,7 +1665,7 @@ export default function HeroSection() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ duration: 1.1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
             >
-              <MacBookMockup />
+              <MacBookMockup termLines={termLines} visibleConcepts={visibleConcepts} />
             </motion.div>
 
             {/* TR — Agenda IA */}
@@ -1746,7 +1718,7 @@ export default function HeroSection() {
                   <div className="text-xs font-bold mb-3" style={{ color: PURPLE_L }}>
                     🔒 Conceitos Blindados
                   </div>
-                  <ConceptsWidget />
+                  <ConceptsWidget visible={visibleConcepts} />
                 </GlassCard>
               </FloatWrapper>
             </motion.div>

@@ -26,24 +26,39 @@ export default function WhatsAppFloat() {
   const [showBadge,   setShowBadge]     = useState(false);
   const [shaking,     setShaking]       = useState(false);
   const [dismissed,   setDismissed]     = useState(false);
+  const [reached,     setReached]       = useState(false);
 
-  // Tooltip após 5s + shake trigger
+  // Só aparece após o usuário chegar no mural dos aprovados
   useEffect(() => {
+    const target = document.getElementById('mural-aprovados');
+    if (!target) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setReached(true); observer.disconnect(); } },
+      { threshold: 0.1 }
+    );
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, []);
+
+  // Tooltip após 5s do mural ser atingido + shake
+  useEffect(() => {
+    if (!reached) return;
     const t = setTimeout(() => {
       setShowTooltip(true);
       setShaking(true);
       setTimeout(() => setShaking(false), 600);
     }, 5_000);
     return () => clearTimeout(t);
-  }, []);
+  }, [reached]);
 
-  // Badge após 8s
+  // Badge após 8s do mural ser atingido
   useEffect(() => {
+    if (!reached) return;
     const t = setTimeout(() => setShowBadge(true), 8_000);
     return () => clearTimeout(t);
-  }, []);
+  }, [reached]);
 
-  if (dismissed) return null;
+  if (!reached || dismissed) return null;
 
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
@@ -69,7 +84,7 @@ export default function WhatsAppFloat() {
             <span className="absolute -bottom-2 right-5 h-3 w-3 rotate-45 border-b border-r border-emerald-500/30 bg-[#0d1117]/80" />
 
             <p className="font-semibold text-emerald-400">
-              Dúvida final antes de garantir sua vaga no Panteão Elite?
+              Dúvida final antes de garantir sua vaga?
             </p>
             <p className="mt-0.5 text-white/75">
               Fale com o consultor agora.

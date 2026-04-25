@@ -27,8 +27,8 @@ const AREA_ICONS: Record<string, string> = {
 };
 
 const DAYS_SHORT = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
-const MINS_PER_BLOCK = 45;
-const SECS_PER_CARD  = 35;
+const MINS_PER_BLOCK = 15;   // 75 cards × 12s = 15 min por bloco
+const SECS_PER_CARD  = 12;
 
 // ─── AI Plan types ────────────────────────────────────────────────────────────
 
@@ -51,7 +51,14 @@ type AiPriority = {
   motivo: string;
 };
 
-const PLAN_TTL_DAYS = 7;   // plano expira após 7 dias
+function getLastMondayMidnight(): Date {
+  const now = new Date();
+  const daysFromMonday = (now.getDay() + 6) % 7; // 0=Mon … 6=Sun
+  const d = new Date(now);
+  d.setDate(now.getDate() - daysFromMonday);
+  d.setHours(0, 1, 0, 0);
+  return d;
+}
 
 type AiStudyPlan = {
   prioridades:        AiPriority[];
@@ -74,7 +81,8 @@ type DeckInfo = {
   subject:     string;
   subjectIcon: string;
   area:        string;
-  dueCount:    number;
+  dueCount:    number;   // cards agendados para revisão hoje
+  newCount:    number;   // cards nunca estudados
   mastery:     number;
 };
 
@@ -86,6 +94,7 @@ type WeekBlock = {
   deckId:      string;
   cards:       number;
   mins:        number;
+  isNew:       boolean;  // true = conteúdo inédito; false = revisão
 };
 
 type ScheduleData = {
@@ -110,8 +119,9 @@ function generateSchedule(
   aiPlan:          AiStudyPlan | null,
 ): WeekBlock[][] {
   const blocksPerDay = Math.max(1, Math.floor((hoursPerDay * 60) / MINS_PER_BLOCK));
+  const MAX_CARDS    = Math.floor((MINS_PER_BLOCK * 60) / SECS_PER_CARD); // 75
 
-  // If AI plan exists, sort areas by plan peso (desc). Otherwise fall back to mastery.
+  // Sort areas: AI peso → dificuldade → menor mastery
   const sortedAreas = [...ENEM_AREAS]
     .map(a => a.short)
     .filter(a => decks.some(d => d.area === a))
@@ -119,7 +129,7 @@ function generateSchedule(
       if (aiPlan) {
         const aPeso = aiPlan.prioridades.find(p => p.area === a)?.peso ?? 0;
         const bPeso = aiPlan.prioridades.find(p => p.area === b)?.peso ?? 0;
-        if (aPeso !== bPeso) return bPeso - aPeso; // higher peso first
+        if (aPeso !== bPeso) return bPeso - aPeso;
       }
       const aDiff = difficultyAreas.includes(a) ? 1 : 0;
       const bDiff = difficultyAreas.includes(b) ? 1 : 0;
@@ -133,37 +143,52 @@ function generateSchedule(
   let globalAreaIdx = 0;
 
   for (let day = 0; day < 7; day++) {
-    const dayBlocks: WeekBlock[]  = [];
-    const usedDeckIds = new Set<string>();
+    const dayBlocks: WeekBlock[] = [];
+    const usedDeckIds  = new Set<string>();
+    const usedAreas    = new Set<string>();
 
+    // Blocos pares → revisão preferencial; blocos ímpares → conteúdo novo preferencial
     for (let b = 0; b < blocksPerDay; b++) {
-      let chosenArea: string | null = null;
-      for (let attempt = 0; attempt < sortedAreas.length; attempt++) {
-        const candidate = sortedAreas[(globalAreaIdx + attempt) % sortedAreas.length];
-        const hasAvail  = decks.some(d => d.area === candidate && !usedDeckIds.has(d.id) && d.dueCount > 0);
-        if (hasAvail) { chosenArea = candidate; break; }
-      }
-      if (!chosenArea) {
-        chosenArea = sortedAreas[globalAreaIdx % sortedAreas.length];
-      }
-      globalAreaIdx = (globalAreaIdx + 1) % sortedAreas.length;
+      const preferReview = b % 2 === 0;
 
+      // Tenta encontrar área com deck disponível, sem repetir área no mesmo dia
+      let chosenArea: string | null = null;
+      for (let pass = 0; pass < 2 && !chosenArea; pass++) {
+        const allowUsedArea = pass === 1; // 2ª passagem: aceita área já usada hoje
+        for (let attempt = 0; attempt < sortedAreas.length; attempt++) {
+          const candidate = sortedAreas[(globalAreaIdx + attempt) % sortedAreas.length];
+          if (!allowUsedArea && usedAreas.has(candidate)) continue;
+          const hasReview = decks.some(d => d.area === candidate && !usedDeckIds.has(d.id) && d.dueCount > 0);
+          const hasNew    = decks.some(d => d.area === candidate && !usedDeckIds.has(d.id) && d.newCount > 0);
+          const hasAny    = decks.some(d => d.area === candidate && !usedDeckIds.has(d.id));
+          if ((preferReview && hasReview) || (!preferReview && hasNew) || hasAny) {
+            chosenArea = candidate;
+            break;
+          }
+        }
+      }
+      if (!chosenArea) chosenArea = sortedAreas[globalAreaIdx % sortedAreas.length];
+      globalAreaIdx = (globalAreaIdx + 1) % sortedAreas.length;
+      usedAreas.add(chosenArea);
+
+      // Dentro da área, prefere deck de revisão ou novo conforme o bloco
       const deck = decks
         .filter(d => d.area === chosenArea)
         .sort((a, b) => {
           const aUsed = usedDeckIds.has(a.id) ? 1 : 0;
           const bUsed = usedDeckIds.has(b.id) ? 1 : 0;
           if (aUsed !== bUsed) return aUsed - bUsed;
-          return b.dueCount - a.dueCount;
+          if (preferReview) return b.dueCount - a.dueCount;
+          return b.newCount - a.newCount;
         })[0];
 
       if (!deck) continue;
       usedDeckIds.add(deck.id);
 
-      const cardsInBlock = Math.min(
-        deck.dueCount > 0 ? deck.dueCount : 20,
-        Math.floor((MINS_PER_BLOCK * 60) / SECS_PER_CARD),
-      );
+      const isNew        = deck.dueCount === 0 && deck.newCount > 0;
+      const baseCards    = deck.dueCount > 0 ? deck.dueCount : (deck.newCount > 0 ? deck.newCount : MAX_CARDS);
+      const cardsInBlock = Math.min(baseCards, MAX_CARDS);
+
       dayBlocks.push({
         area:        chosenArea,
         subject:     deck.subject,
@@ -171,7 +196,8 @@ function generateSchedule(
         deckTitle:   deck.title,
         deckId:      deck.id,
         cards:       cardsInBlock,
-        mins:        MINS_PER_BLOCK,
+        mins:        Math.ceil((cardsInBlock * SECS_PER_CARD) / 60),
+        isNew,
       });
     }
     schedule.push(dayBlocks);
@@ -179,103 +205,6 @@ function generateSchedule(
   return schedule;
 }
 
-// ─── Sem dados suficientes (aluno novo) ──────────────────────────────────────
-
-function NotEnoughData({ reviewed }: { reviewed: number }) {
-  const needed = 10;
-  const pct    = Math.min(Math.round((reviewed / needed) * 100), 100);
-  return (
-    <div className="flex flex-col items-center justify-center py-20 gap-5 text-center">
-      <div
-        className="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl"
-        style={{ background: `${OCEAN}14`, border: `1px solid ${OCEAN}30` }}
-      >
-        📊
-      </div>
-      <div>
-        <h2 className="text-xl font-black text-white mb-2">
-          O FlashTutor está te conhecendo
-        </h2>
-        <p className="text-sm max-w-md mx-auto mb-4" style={{ color: DIM }}>
-          Estude alguns cards primeiro para o FlashTutor entender seu ritmo
-          e gerar um cronograma 100% baseado no seu desempenho real.
-        </p>
-        {/* Progress to unlock */}
-        <div className="flex flex-col items-center gap-2">
-          <p className="text-xs" style={{ color: DIM }}>
-            {reviewed}/{needed} cards revisados para desbloquear
-          </p>
-          <div className="w-48 h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
-            <div
-              className="h-full rounded-full transition-all duration-500"
-              style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${VIOLET}, ${OCEAN})` }}
-            />
-          </div>
-        </div>
-      </div>
-      <Link
-        href="/dashboard"
-        className="text-xs underline transition-colors hover:text-white"
-        style={{ color: DIM }}
-      >
-        ← Ir estudar agora
-      </Link>
-    </div>
-  );
-}
-
-// ─── Gerar / Recalibrar plano ─────────────────────────────────────────────────
-
-function GeneratePlanCTA({
-  isExpired,
-  generatedAt,
-  onGenerate,
-  generating,
-}: {
-  isExpired:   boolean;
-  generatedAt: string | null;
-  onGenerate:  () => void;
-  generating:  boolean;
-}) {
-  const daysAgo = generatedAt
-    ? Math.floor((Date.now() - new Date(generatedAt).getTime()) / 864e5)
-    : null;
-
-  return (
-    <div
-      className="rounded-2xl p-5 mb-5 flex items-start gap-4"
-      style={{
-        background: isExpired ? `${AMBER}08` : `${VIOLET}08`,
-        border:     `1px solid ${isExpired ? AMBER : VIOLET}30`,
-      }}
-    >
-      <span className="text-2xl shrink-0">{isExpired ? '🔄' : '🤖'}</span>
-      <div className="flex-1 min-w-0">
-        <p className="font-black text-white text-sm mb-1">
-          {isExpired ? 'Recalibração Semanal Sugerida' : 'Gerar Cronograma com IA'}
-        </p>
-        <p className="text-xs mb-3" style={{ color: DIM }}>
-          {isExpired && daysAgo !== null
-            ? `Seu plano tem ${daysAgo} dias. O FlashTutor vai analisar seu desempenho desta semana e montar um novo cronograma adaptado.`
-            : 'O FlashTutor vai analisar seus acertos e erros e montar o cronograma da próxima semana priorizando o que você mais precisa.'}
-        </p>
-        <button
-          onClick={onGenerate}
-          disabled={generating}
-          className="px-5 py-2 rounded-xl font-black text-white text-xs transition-all duration-200 hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
-          style={{
-            background: generating
-              ? 'rgba(255,255,255,0.08)'
-              : `linear-gradient(135deg, ${isExpired ? AMBER : VIOLET}, ${isExpired ? '#d97706' : '#6d28d9'})`,
-            boxShadow: generating ? 'none' : `0 0 16px ${isExpired ? AMBER : VIOLET}40`,
-          }}
-        >
-          {generating ? '⏳ Analisando seu desempenho...' : isExpired ? '🔄 Recalibrar Plano' : '✨ Gerar Cronograma IA'}
-        </button>
-      </div>
-    </div>
-  );
-}
 
 // ─── AI Plan banner ───────────────────────────────────────────────────────────
 
@@ -423,8 +352,10 @@ function PontosCriticos({ pontos, curso }: { pontos: string[]; curso: string | n
 // ─── Block Card ───────────────────────────────────────────────────────────────
 
 function BlockCard({ block, onStart, doneToday }: { block: WeekBlock; onStart: () => void; doneToday: boolean }) {
-  const color = doneToday ? EMERALD : (AREA_COLORS[block.area] ?? OCEAN);
-  const icon  = AREA_ICONS[block.area] ?? '📚';
+  const color    = doneToday ? EMERALD : (AREA_COLORS[block.area] ?? OCEAN);
+  const icon     = AREA_ICONS[block.area] ?? '📚';
+  const tagColor = block.isNew ? VIOLET : OCEAN;
+  const tagLabel = block.isNew ? 'novo' : 'revisão';
 
   return (
     <button
@@ -451,6 +382,14 @@ function BlockCard({ block, onStart, doneToday }: { block: WeekBlock; onStart: (
         <span className="text-xs font-bold truncate" style={{ color, fontSize: '10px', letterSpacing: '0.04em' }}>
           {block.area}
         </span>
+        {!doneToday && (
+          <span
+            className="ml-auto rounded px-1 font-bold shrink-0"
+            style={{ fontSize: '8px', color: tagColor, background: `${tagColor}18`, border: `1px solid ${tagColor}30` }}
+          >
+            {tagLabel}
+          </span>
+        )}
       </div>
       <p className="text-xs font-semibold text-white leading-tight truncate mb-0.5">
         {block.subject}
@@ -483,26 +422,64 @@ function EmptyDay() {
   );
 }
 
-// ─── Hours Selector ───────────────────────────────────────────────────────────
+// ─── Day Selector ─────────────────────────────────────────────────────────────
 
-function HoursSelector({ value, onChange }: { value: number; onChange: (h: number) => void }) {
-  const options = [0.5, 1, 1.5, 2, 3, 4, 5, 6];
+function DaySelector({ value, onChange }: { value: number[]; onChange: (days: number[]) => void }) {
   return (
     <div className="flex items-center gap-2 flex-wrap">
-      <span className="text-xs font-semibold" style={{ color: DIM }}>Horas por dia:</span>
+      <span className="text-xs font-semibold" style={{ color: DIM }}>Dias de estudo:</span>
       <div className="flex gap-1.5 flex-wrap">
-        {options.map(h => (
+        {DAYS_SHORT.map((day, i) => {
+          const active = value.includes(i);
+          return (
+            <button
+              key={day}
+              onClick={() => {
+                const next = active ? value.filter(d => d !== i) : [...value, i].sort((a, b) => a - b);
+                if (next.length > 0) onChange(next);
+              }}
+              className="rounded-lg px-2.5 py-1 text-xs font-bold transition-all duration-150"
+              style={
+                active
+                  ? { background: `${EMERALD}22`, border: `1px solid ${EMERALD}55`, color: 'white' }
+                  : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: DIM }
+              }
+            >
+              {day}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── Attack Time Selector ─────────────────────────────────────────────────────
+
+const ATTACK_OPTIONS: { label: string; value: number }[] = [
+  { label: '15min', value: 0.25 },
+  { label: '30min', value: 0.5  },
+  { label: '45min', value: 0.75 },
+  { label: '1h',    value: 1    },
+];
+
+function AttackTimeSelector({ value, onChange }: { value: number; onChange: (h: number) => void }) {
+  return (
+    <div className="flex items-center gap-2 flex-wrap">
+      <span className="text-xs font-semibold" style={{ color: DIM }}>Tempo de ataque:</span>
+      <div className="flex gap-1.5 flex-wrap">
+        {ATTACK_OPTIONS.map(opt => (
           <button
-            key={h}
-            onClick={() => onChange(h)}
+            key={opt.value}
+            onClick={() => onChange(opt.value)}
             className="rounded-lg px-2.5 py-1 text-xs font-bold transition-all duration-150"
             style={
-              value === h
+              value === opt.value
                 ? { background: `${OCEAN}22`, border: `1px solid ${OCEAN}55`, color: 'white' }
                 : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: DIM }
             }
           >
-            {h < 1 ? '30min' : `${h}h`}
+            {opt.label}
           </button>
         ))}
       </div>
@@ -536,10 +513,22 @@ export default function WeeklySchedule() {
   const router = useRouter();
   const [schedData,     setSchedData]     = useState<ScheduleData | null>(null);
   const [loading,       setLoading]       = useState(true);
-  const [hours,         setHours]         = useState(2);
+  const [hours,         setHours]         = useState(0.5);
   const [selectedWeek,  setSelectedWeek]  = useState(0);
   const [generating,    setGenerating]    = useState(false);
-  const [reviewedCount, setReviewedCount] = useState(0);
+  const [studyDays,     setStudyDays]     = useState<number[]>(() => {
+    if (typeof window === 'undefined') return [0, 1, 2, 3, 4];
+    try {
+      const saved = localStorage.getItem('flashaprova_study_days');
+      if (saved) return JSON.parse(saved) as number[];
+    } catch { /* ignore */ }
+    return [0, 1, 2, 3, 4];
+  });
+
+  function handleStudyDaysChange(days: number[]) {
+    setStudyDays(days);
+    localStorage.setItem('flashaprova_study_days', JSON.stringify(days));
+  }
 
   useEffect(() => {
     async function load() {
@@ -568,7 +557,11 @@ export default function WeeklySchedule() {
 
       // Pre-fill hours from plan if available
       if (aiPlan?.horas_por_dia) {
-        setHours(Math.min(aiPlan.horas_por_dia, 6));
+        const clamped = Math.min(aiPlan.horas_por_dia, 1);
+        const nearest = ATTACK_OPTIONS.reduce((prev, cur) =>
+          Math.abs(cur.value - clamped) < Math.abs(prev.value - clamped) ? cur : prev
+        );
+        setHours(nearest.value);
       }
 
       // Normalize cards
@@ -587,15 +580,14 @@ export default function WeeklySchedule() {
       const progMap = new Map(rows.map(r => [r.card_id, r]));
       const nrMap   = new Map(rows.map(r => [r.card_id, r.next_review as string | null]));
 
-      // Due count per deck
-      const deckDueMap = new Map<string, { title: string; subject: string; subjectIcon: string; area: string; dueCount: number; subjectId: string }>();
+      // Due count + new count per deck
+      const deckDueMap = new Map<string, { title: string; subject: string; subjectIcon: string; area: string; dueCount: number; newCount: number; subjectId: string }>();
       let totalDue = 0;
       for (const c of normCards) {
-        const nr    = nrMap.get(c.id);
-        const isDue = nr === undefined || (nr !== null && nr <= today);
-        if (!isDue) continue;
-        totalDue++;
-        const area = getCategoryShort(c.subjectCategory);
+        const nr      = nrMap.get(c.id);
+        const isNew   = nr === undefined;                           // nunca estudado
+        const isDue   = isNew || (nr !== null && nr <= today);     // novo ou agendado para hoje
+        const area    = getCategoryShort(c.subjectCategory);
         if (!deckDueMap.has(c.deckId)) {
           deckDueMap.set(c.deckId, {
             title:       c.deckTitle,
@@ -603,10 +595,17 @@ export default function WeeklySchedule() {
             subjectIcon: getSubjectIcon(c.subjectTitle, c.subjectIconUrl, c.subjectCategory),
             area,
             dueCount:    0,
+            newCount:    0,
             subjectId:   c.subjectId,
           });
         }
-        deckDueMap.get(c.deckId)!.dueCount++;
+        if (isDue) {
+          totalDue++;
+          deckDueMap.get(c.deckId)!.dueCount++;
+        }
+        if (isNew) {
+          deckDueMap.get(c.deckId)!.newCount++;
+        }
       }
 
       // Area scores
@@ -637,6 +636,7 @@ export default function WeeklySchedule() {
         subjectIcon: d.subjectIcon,
         area:        d.area,
         dueCount:    d.dueCount,
+        newCount:    d.newCount,
         mastery:     subjectMastery.get(d.subjectId) ?? 0,
       })).sort((a, b) => b.dueCount - a.dueCount);
 
@@ -653,6 +653,7 @@ export default function WeeklySchedule() {
           subjectIcon: getSubjectIcon(c.subjectTitle, c.subjectIconUrl, c.subjectCategory),
           area:        getCategoryShort(c.subjectCategory),
           dueCount:    0,
+          newCount:    0,
           mastery:     subjectMastery.get(c.subjectId) ?? 0,
         });
       }
@@ -678,7 +679,6 @@ export default function WeeklySchedule() {
         }
       }
 
-      setReviewedCount(rows.length);
       setSchedData({
         decksWithDue:      [...decksWithDue, ...allDecksMeta],
         areaScores,
@@ -691,28 +691,36 @@ export default function WeeklySchedule() {
         todayReviewCount,
       });
       setLoading(false);
+
+      // Auto-regenerate every Monday at 00:01 — no manual button needed
+      if (rows.length >= 10) {
+        const lastMonday = getLastMondayMidnight();
+        const needsRegen = !aiPlan || !aiPlan.generated_at || new Date(aiPlan.generated_at) < lastMonday;
+        if (needsRegen) {
+          setGenerating(true);
+          try {
+            const res  = await fetch('/api/ai/generate-schedule', { method: 'POST' });
+            const body = await res.json() as { ok?: boolean; plan?: Record<string, unknown>; error?: string };
+            if (body.ok && body.plan) {
+              setSchedData(prev => prev ? { ...prev, aiPlan: body.plan as AiStudyPlan } : prev);
+              setSelectedWeek(0);
+              if ((body.plan as AiStudyPlan).horas_por_dia) {
+                const clamped = Math.min((body.plan as AiStudyPlan).horas_por_dia, 1);
+                const nearest = ATTACK_OPTIONS.reduce((prev, cur) =>
+                  Math.abs(cur.value - clamped) < Math.abs(prev.value - clamped) ? cur : prev
+                );
+                setHours(nearest.value);
+              }
+            }
+          } finally {
+            setGenerating(false);
+          }
+        }
+      }
     }
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // ── Generate / recalibrate plan ───────────────────────────────────────────
-  async function handleGenerate() {
-    setGenerating(true);
-    try {
-      const res  = await fetch('/api/ai/generate-schedule', { method: 'POST' });
-      const body = await res.json() as { ok?: boolean; plan?: Record<string, unknown>; error?: string };
-      if (body.ok && body.plan && schedData) {
-        setSchedData(prev => prev ? { ...prev, aiPlan: body.plan as AiStudyPlan } : prev);
-        setSelectedWeek(0);
-        if ((body.plan as AiStudyPlan).horas_por_dia) {
-          setHours(Math.min((body.plan as AiStudyPlan).horas_por_dia, 6));
-        }
-      }
-    } finally {
-      setGenerating(false);
-    }
-  }
 
   const schedule = useMemo(() => {
     if (!schedData) return null;
@@ -720,8 +728,8 @@ export default function WeeklySchedule() {
   }, [schedData, hours]);
 
   const todayIdx        = ((new Date().getDay() + 6) % 7);
-  const totalWeekCards  = schedule?.flat().reduce((s, b) => s + b.cards, 0) ?? 0;
-  const totalWeekMins   = schedule?.flat().reduce((s, b) => s + b.mins,  0) ?? 0;
+  const totalWeekCards  = schedule?.reduce((s, day, i) => studyDays.includes(i) ? s + day.reduce((ds, b) => ds + b.cards, 0) : s, 0) ?? 0;
+  const totalWeekMins   = schedule?.reduce((s, day, i) => studyDays.includes(i) ? s + day.reduce((ds, b) => ds + b.mins,  0) : s, 0) ?? 0;
 
   return (
     <main className="min-h-screen px-4 py-10 sm:px-8 flex flex-col items-center">
@@ -731,10 +739,10 @@ export default function WeeklySchedule() {
         <div className="flex items-start justify-between gap-4 mb-6 flex-wrap">
           <div>
             <p className="text-xs font-bold tracking-widest uppercase mb-1" style={{ color: OCEAN }}>
-              Cronograma Semanal IA
+              FlashTutor IA
             </p>
             <h1 className="text-2xl font-black text-white">
-              {schedData ? `Semana de ${schedData.firstName}` : 'Sua Semana'}
+              Cronograma da Semana
             </h1>
             <p className="text-sm mt-0.5" style={{ color: DIM }}>
               {schedData?.aiPlan?.generated_from === 'performance_data'
@@ -753,33 +761,27 @@ export default function WeeklySchedule() {
 
         {loading ? <Skeleton /> : !schedData ? (
           <p className="text-center py-20" style={{ color: DIM }}>Não foi possível carregar seus dados.</p>
-        ) : reviewedCount < 10 ? (
-          /* ── Aluno novo, sem dados suficientes ── */
-          <NotEnoughData reviewed={reviewedCount} />
+        ) : schedData.decksWithDue.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl"
+              style={{ background: `${OCEAN}14`, border: `1px solid ${OCEAN}30` }}>📚</div>
+            <p className="text-white font-black text-lg">Adicione decks para montar o cronograma</p>
+            <Link href="/dashboard" className="text-xs underline hover:text-white transition-colors" style={{ color: DIM }}>← Ir para o Dashboard</Link>
+          </div>
         ) : (
           <>
-            {/* ── Gerar / Recalibrar plano (se não tem plano ou expirou) ── */}
-            {(() => {
-              const plan        = schedData.aiPlan;
-              const generatedAt = plan?.generated_at ?? null;
-              const daysOld     = generatedAt
-                ? (Date.now() - new Date(generatedAt).getTime()) / 864e5
-                : Infinity;
-              const isExpired   = daysOld > PLAN_TTL_DAYS;
-              const hasNoPlan   = !plan;
-
-              if (hasNoPlan || isExpired) {
-                return (
-                  <GeneratePlanCTA
-                    isExpired={!hasNoPlan && isExpired}
-                    generatedAt={generatedAt}
-                    onGenerate={handleGenerate}
-                    generating={generating}
-                  />
-                );
-              }
-              return null;
-            })()}
+            {/* ── Atualizando cronograma (auto, toda segunda-feira) ── */}
+            {generating && (
+              <div
+                className="rounded-2xl p-4 mb-5 flex items-center gap-3"
+                style={{ background: `${VIOLET}08`, border: `1px solid ${VIOLET}20` }}
+              >
+                <span className="text-lg">⏳</span>
+                <p className="text-xs font-semibold" style={{ color: DIM }}>
+                  FlashTutor atualizando seu cronograma…
+                </p>
+              </div>
+            )}
 
             {/* ── AI Plan banner (se tem plano) ── */}
             {schedData.aiPlan && (
@@ -799,10 +801,12 @@ export default function WeeklySchedule() {
             />}
 
             {/* ── Controls row ── */}
-            <div className="flex items-center justify-between gap-4 flex-wrap mb-5 rounded-2xl px-4 py-3"
+            <div className="flex flex-col gap-3 mb-5 rounded-2xl px-4 py-3"
               style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
-              <HoursSelector value={hours} onChange={setHours} />
-              <div className="flex items-center gap-4 text-xs" style={{ color: DIM }}>
+              <DaySelector value={studyDays} onChange={handleStudyDaysChange} />
+              <div className="w-full h-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
+              <AttackTimeSelector value={hours} onChange={setHours} />
+              <div className="flex items-center gap-4 text-xs flex-wrap" style={{ color: DIM }}>
                 <span>
                   <strong className="text-white">{totalWeekCards.toLocaleString('pt-BR')}</strong> cards
                 </span>
@@ -849,40 +853,48 @@ export default function WeeklySchedule() {
             </div>
 
             {/* ── Weekly Grid ── */}
-            <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(7, minmax(0, 1fr))' }}>
-              {/* Day headers */}
-              {DAYS_SHORT.map((day, i) => (
-                <div key={day} className="rounded-xl px-2 py-1.5 text-center"
-                  style={{
-                    background: i === todayIdx ? `${OCEAN}18` : 'rgba(255,255,255,0.04)',
-                    border:     `1px solid ${i === todayIdx ? OCEAN + '40' : 'rgba(255,255,255,0.07)'}`,
-                  }}>
-                  <p className="text-xs font-bold" style={{ color: i === todayIdx ? OCEAN : 'rgba(255,255,255,0.55)' }}>
-                    {day}
-                  </p>
-                  {i === todayIdx && (
-                    <p style={{ fontSize: '8px', color: OCEAN, opacity: 0.7 }}>hoje</p>
-                  )}
-                </div>
-              ))}
+            <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 pb-2">
+              <div
+                className="grid gap-2"
+                style={{
+                  gridTemplateColumns: `repeat(${studyDays.length}, minmax(110px, 1fr))`,
+                  minWidth: `${studyDays.length * 115}px`,
+                }}
+              >
+                {/* Day headers */}
+                {DAYS_SHORT.map((day, i) => !studyDays.includes(i) ? null : (
+                  <div key={day} className="rounded-xl px-2 py-1.5 text-center"
+                    style={{
+                      background: i === todayIdx ? `${OCEAN}18` : 'rgba(255,255,255,0.04)',
+                      border:     `1px solid ${i === todayIdx ? OCEAN + '40' : 'rgba(255,255,255,0.07)'}`,
+                    }}>
+                    <p className="text-xs font-bold" style={{ color: i === todayIdx ? OCEAN : 'rgba(255,255,255,0.55)' }}>
+                      {day}
+                    </p>
+                    {i === todayIdx && (
+                      <p style={{ fontSize: '8px', color: OCEAN, opacity: 0.7 }}>hoje</p>
+                    )}
+                  </div>
+                ))}
 
-              {/* Blocks */}
-              {schedule!.map((dayBlocks, dayIdx) => (
-                <div key={dayIdx} className="flex flex-col gap-1.5">
-                  {dayBlocks.length === 0 ? (
-                    <EmptyDay />
-                  ) : (
-                    dayBlocks.map((block, blockIdx) => (
-                      <BlockCard
-                        key={blockIdx}
-                        block={block}
-                        doneToday={dayIdx === todayIdx && schedData.studiedTodayDecks.has(block.deckId)}
-                        onStart={() => router.push(`/study/turbo?decks=${block.deckId}`)}
-                      />
-                    ))
-                  )}
-                </div>
-              ))}
+                {/* Blocks */}
+                {schedule!.map((dayBlocks, dayIdx) => !studyDays.includes(dayIdx) ? null : (
+                  <div key={dayIdx} className="flex flex-col gap-1.5">
+                    {dayBlocks.length === 0 ? (
+                      <EmptyDay />
+                    ) : (
+                      dayBlocks.map((block, blockIdx) => (
+                        <BlockCard
+                          key={blockIdx}
+                          block={block}
+                          doneToday={dayIdx === todayIdx && schedData.studiedTodayDecks.has(block.deckId)}
+                          onStart={() => router.push(`/study/turbo?decks=${block.deckId}`)}
+                        />
+                      ))
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* ── Footer ── */}
@@ -892,10 +904,6 @@ export default function WeeklySchedule() {
               </Link>
             </p>
 
-            {/* Mobile hint */}
-            <p className="text-xs text-center mt-2 sm:hidden" style={{ color: 'rgba(255,255,255,0.20)' }}>
-              ← Role para ver todos os dias →
-            </p>
           </>
         )}
       </div>

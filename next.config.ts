@@ -13,7 +13,7 @@ const securityHeaders = [
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
       "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: blob: https://api.dicebear.com",
+      "img-src 'self' data: blob:",
       "font-src 'self' data:",
       "connect-src 'self' https://*.supabase.co https://api.openai.com https://generativelanguage.googleapis.com",
       "frame-ancestors 'none'",
@@ -24,6 +24,10 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  experimental: {
+    optimizePackageImports: ['framer-motion'],
+  },
+
   async headers() {
     return [
       {
@@ -34,15 +38,8 @@ const nextConfig: NextConfig = {
   },
 
   images: {
-    // Allow next/image to proxy dicebear avatars (used for tutors & Norma)
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'api.dicebear.com',
-        pathname: '/**',
-      },
-    ],
-    // Serve external SVGs through the optimizer; skip size transform (SVGs are vector)
+    remotePatterns: [],
+    // Serve local SVGs through the optimizer; skip size transform (SVGs are vector)
     dangerouslyAllowSVG: true,
     contentDispositionType: 'inline',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",

@@ -17,9 +17,9 @@ const GOAL_LABELS: Record<number, { label: string; msg: string }> = {
 };
 
 const AREAS = [
-  { id: 'Natureza',   icon: '🔬', label: 'Ciências da Natureza', sub: 'Biologia, Física, Química' },
-  { id: 'Humanas',    icon: '🏛️', label: 'Ciências Humanas',     sub: 'História, Geografia, Filosofia' },
-  { id: 'Linguagens', icon: '📚', label: 'Linguagens',            sub: 'Português, Literatura, Artes' },
+  { id: 'Natureza',   icon: '🔬', label: 'NATUREZA',   sub: 'Biologia, Física, Química' },
+  { id: 'Humanas',    icon: '🏛️', label: 'HUMANAS',    sub: 'História, Geografia, Filosofia' },
+  { id: 'Linguagens', icon: '📚', label: 'LINGUAGENS', sub: 'Português, Literatura, Artes' },
   { id: 'Matemática', icon: '📐', label: 'Matemática',            sub: 'Álgebra, Geometria, Estatística' },
 ];
 

@@ -21,7 +21,7 @@ function PlanBadge({ plan }: { plan: Plan }) {
           letterSpacing: '0.02em',
         }}
       >
-        Panteão Elite
+        Protocolo Neural
       </span>
     );
   }
@@ -34,7 +34,7 @@ function PlanBadge({ plan }: { plan: Plan }) {
         border:     '1px solid rgba(124,58,237,0.40)',
       }}
     >
-      Aceleração
+      Protocolo Básico
     </span>
   );
 }
@@ -101,7 +101,9 @@ export default function UserMenu() {
         >
           {initial}
         </div>
-        <PlanBadge plan={plan} />
+        <span className="hidden sm:contents">
+          <PlanBadge plan={plan} />
+        </span>
         {/* Chevron */}
         <svg
           className="transition-transform duration-200 shrink-0"

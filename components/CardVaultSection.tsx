@@ -189,9 +189,7 @@ function VaultCard({ s, index }: { s: Subject; index: number }) {
     <motion.div
       className="relative rounded-xl overflow-hidden cursor-default"
       style={{
-        background:           'rgba(9,9,11,0.60)',
-        backdropFilter:       'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
+        background:           'rgba(9,9,11,0.92)',
         border:               '1px solid rgba(255,255,255,0.08)',
       }}
       initial={{ opacity: 0, y: 32, scale: 0.94, filter: 'blur(4px)' }}

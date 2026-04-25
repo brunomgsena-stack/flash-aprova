@@ -99,8 +99,8 @@ export default async function SubjectPage({ params }: Props) {
     <main className="min-h-screen px-4 py-12 sm:px-8">
       <div className="max-w-3xl mx-auto">
 
-        {/* ── Breadcrumbs ───────────────────────────────────────────── */}
-        <nav className="flex items-center gap-1.5 text-xs text-slate-500 mb-8 flex-wrap">
+        {/* ── Breadcrumbs — hidden on mobile ────────────────────────── */}
+        <nav className="hidden sm:flex items-center gap-1.5 text-xs text-slate-500 mb-8 flex-wrap">
           <Link href="/dashboard" className="hover:text-white transition-colors">
             Dashboard
           </Link>
@@ -155,7 +155,13 @@ export default async function SubjectPage({ params }: Props) {
             <p className="text-xs font-semibold tracking-widest uppercase text-slate-500 mb-4">
               Módulos
             </p>
-            <ModuleAccordion modules={modules} color={color} />
+            <ModuleAccordion
+              modules={modules}
+              color={color}
+              subjectTitle={subject.title}
+              subjectIcon={subject.icon_url}
+              subjectCat={subject.category}
+            />
           </>
         )}
 

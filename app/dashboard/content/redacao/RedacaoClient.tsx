@@ -77,93 +77,290 @@ function SpinnerIcon() {
   );
 }
 
-// ─── Norma Hero Card ─────────────────────────────────────────────────────────
+// ─── Competency bar color ────────────────────────────────────────────────────
 
-function NormaHeroCard({ plan, onOpenModal }: { plan: Plan; onOpenModal: () => void }) {
-  const isPro = plan === 'panteao_elite';
+function competenciaBarColor(nota: number): string {
+  if (nota >= 200) return '#00ff80';
+  if (nota >= 160) return '#eab308';
+  if (nota >= 120) return '#f97316';
+  return '#ef4444';
+}
+
+// ─── Diagnóstico da Última Redação ───────────────────────────────────────────
+
+function CompetenciasDiagnostico({
+  lastResult, lastEssay,
+}: {
+  lastResult: NormaResult | null;
+  lastEssay:  EssayRecord | null;
+}) {
+  const ML = 'var(--font-jetbrains), "JetBrains Mono", monospace';
+
+  if (!lastResult || !lastEssay) return null;
+
+  const nota       = lastResult.nota_total;
+  const totalColor = nota >= 800 ? '#00ff80' : nota >= 600 ? CYAN : nota >= 400 ? '#eab308' : '#ef4444';
 
   return (
     <div
-      className="relative rounded-2xl overflow-hidden mb-8"
-      style={{
-        background:   'rgba(6,182,212,0.05)',
-        border:       `1px solid ${isPro ? 'rgba(6,182,212,0.35)' : 'rgba(6,182,212,0.18)'}`,
-        boxShadow:    isPro ? '0 0 60px rgba(6,182,212,0.12), 0 0 120px rgba(124,58,237,0.06)' : 'none',
-      }}
+      className="relative rounded-2xl overflow-hidden mb-5"
+      style={{ background: 'rgba(3,6,18,0.95)', border: '1px solid rgba(6,182,212,0.16)', boxShadow: '0 0 40px rgba(6,182,212,0.05)' }}
     >
-      {/* Gradient border (top) */}
+      {/* Scanlines */}
+      <div className="absolute inset-0 pointer-events-none"
+        style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.14) 3px, rgba(0,0,0,0.14) 4px)' }} />
+      {/* Top neon line */}
       <div className="absolute inset-x-0 top-0 h-px"
-        style={{ background: `linear-gradient(90deg, transparent, ${CYAN}60, ${PINK}40, transparent)` }} />
+        style={{ background: `linear-gradient(90deg, transparent, ${CYAN}88, ${VIOLET}55, transparent)` }} />
 
-      {/* Ambient glows */}
-      <div className="absolute inset-0 pointer-events-none"
-        style={{ background: `radial-gradient(ellipse at top right, rgba(6,182,212,0.08) 0%, transparent 60%)` }} />
-      <div className="absolute inset-0 pointer-events-none"
-        style={{ background: `radial-gradient(ellipse at bottom left, rgba(124,58,237,0.06) 0%, transparent 60%)` }} />
+      <div className="relative p-5">
+        {/* Header */}
+        <div className="flex items-center gap-3 mb-4 flex-wrap">
+          <span style={{ fontFamily: ML, fontSize: '8px', color: 'rgba(255,255,255,0.28)', letterSpacing: '0.08em' }}>
+            {new Date(lastEssay.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}
+          </span>
+          <div className="flex-1 h-px" style={{ background: 'linear-gradient(90deg, rgba(6,182,212,0.20), transparent)' }} />
+          <span className="font-black text-lg" style={{ color: totalColor, fontFamily: ML, textShadow: `0 0 12px ${totalColor}88` }}>
+            {nota}
+            <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.30)', fontWeight: 400 }}>/1000</span>
+          </span>
+        </div>
 
-      <div className="relative flex flex-col sm:flex-row items-center gap-6 p-6 sm:p-7">
+        <p style={{ fontFamily: ML, fontSize: '9px', color: 'rgba(255,255,255,0.30)', letterSpacing: '0.08em', marginBottom: '16px' }}>
+          TEMA: <span className="text-white">{lastEssay.tema}</span>
+        </p>
 
-        {/* Avatar */}
-        <div className="shrink-0 relative">
-          <div
-            className="w-20 h-20 rounded-2xl flex items-center justify-center"
-            style={{
-              background: `linear-gradient(135deg, rgba(6,182,212,0.20), rgba(124,58,237,0.15))`,
-              border:     `1px solid ${CYAN}50`,
-              boxShadow:  `0 0 32px ${CYAN}30`,
-              color:      CYAN,
-            }}
-          >
-            <PenIcon size={36} />
+        {/* 5 Competency bars */}
+        <div className="space-y-3.5">
+          {COMPETENCIAS.map(({ key, label, desc }) => {
+            const comp = lastResult.competencias[key];
+            const clr  = competenciaBarColor(comp.nota);
+            const pct  = (comp.nota / 200) * 100;
+            return (
+              <div key={key}>
+                <div className="flex items-center gap-3 mb-1">
+                  <span className="flex items-center justify-center rounded flex-shrink-0"
+                    style={{ fontFamily: ML, fontSize: '8px', fontWeight: 700, width: '22px', height: '18px',
+                      background: `${clr}18`, border: `1px solid ${clr}44`, color: clr }}>
+                    {label}
+                  </span>
+                  <span style={{ fontFamily: ML, fontSize: '9px', color: 'rgba(255,255,255,0.42)', flex: 1, letterSpacing: '0.02em' }}>
+                    {desc}
+                  </span>
+                  <span style={{ fontFamily: ML, fontSize: '12px', fontWeight: 700, color: clr, textShadow: `0 0 8px ${clr}88`, minWidth: '28px', textAlign: 'right' }}>
+                    {comp.nota}
+                  </span>
+                  <span style={{ fontFamily: ML, fontSize: '8px', color: 'rgba(255,255,255,0.20)' }}>/200</span>
+                </div>
+                <div className="h-2 rounded-full overflow-hidden ml-8"
+                  style={{ background: 'rgba(255,255,255,0.05)' }}>
+                  <div className="h-full rounded-full"
+                    style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${clr}55, ${clr})`,
+                      boxShadow: `0 0 10px ${clr}99`, transition: 'width 0.9s ease' }} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Norma Panel (Avatar + Recommendations + Chat) ───────────────────────────
+
+type ChatMsg = { role: 'user' | 'norma'; text: string };
+
+// ─── Norma Chat Modal ─────────────────────────────────────────────────────────
+
+function NormaChatModal({ onClose }: { onClose: () => void }) {
+  const ML = 'var(--font-jetbrains), "JetBrains Mono", monospace';
+
+  const [chatMsgs,    setChatMsgs]    = useState<ChatMsg[]>([]);
+  const [chatInput,   setChatInput]   = useState('');
+  const [chatLoading, setChatLoading] = useState(false);
+  const [prevRespId,  setPrevRespId]  = useState<string | undefined>(undefined);
+  const chatContainerRef              = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = chatContainerRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [chatMsgs]);
+
+  async function sendChat() {
+    if (!chatInput.trim() || chatLoading) return;
+    const userMsg = chatInput.trim();
+    setChatInput('');
+    setChatMsgs(prev => [...prev, { role: 'user', text: userMsg }]);
+    setChatLoading(true);
+    try {
+      const res = await fetch('/api/chat/tutor', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({
+          tutor_id:             'profa-norma',
+          message:              userMsg,
+          deck_title:           'Redação ENEM',
+          subject_title:        'Redação',
+          previous_response_id: prevRespId,
+        }),
+      });
+      const data = await res.json();
+      if (data.text) {
+        setPrevRespId(data.previous_response_id);
+        const chunks = (data.text as string)
+          .split(/\n\n+/)
+          .map((s: string) => s.trim())
+          .filter(Boolean);
+        for (let i = 0; i < chunks.length; i++) {
+          if (i > 0) {
+            await new Promise<void>(resolve => setTimeout(resolve, 480 + Math.random() * 420));
+          }
+          setChatMsgs(prev => [...prev, { role: 'norma', text: chunks[i] }]);
+        }
+      } else {
+        setChatMsgs(prev => [...prev, { role: 'norma', text: data.error ?? 'Erro inesperado.' }]);
+      }
+    } catch {
+      setChatMsgs(prev => [...prev, { role: 'norma', text: 'Erro de conexão. Tente novamente.' }]);
+    } finally {
+      setChatLoading(false);
+    }
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex sm:items-center sm:justify-center sm:p-4"
+      style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)' }}
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full h-full sm:h-auto sm:max-w-lg sm:rounded-3xl overflow-hidden flex flex-col"
+        style={{
+          background: 'rgba(3,5,18,0.98)',
+          border:     `1px solid ${CYAN}28`,
+          boxShadow:  `0 0 60px ${CYAN}15, 0 -4px 40px rgba(0,0,0,0.60)`,
+          maxHeight:  '100dvh',
+        }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="absolute inset-x-0 top-0 h-px"
+          style={{ background: `linear-gradient(90deg, transparent, ${CYAN}60, transparent)` }} />
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 pt-5 pb-4 shrink-0"
+          style={{ borderBottom: '1px solid rgba(6,182,212,0.10)' }}>
+          <div className="flex items-center gap-3">
+            <div className="relative shrink-0">
+              <div className="w-12 h-12 rounded-xl overflow-hidden"
+                style={{ border: `1px solid ${CYAN}44`, boxShadow: `0 0 16px ${CYAN}22` }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/images/tutor-redacao.avif" alt="Prof.ª Norma"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              </div>
+              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2"
+                style={{ background: '#00ff80', borderColor: '#050814', boxShadow: '0 0 6px #00ff8088' }} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="font-black text-white text-sm">Prof.ª Norma</h2>
+                <span className="font-bold rounded-full"
+                  style={{ background: `linear-gradient(135deg, ${VIOLET}cc, ${CYAN}cc)`, color: '#fff',
+                    fontSize: '7px', letterSpacing: '0.10em', padding: '2px 7px' }}>
+                  NORMA.AI
+                </span>
+              </div>
+              <p style={{ fontFamily: ML, fontSize: '8px', color: '#00ff80', letterSpacing: '0.08em', marginTop: '2px' }}>
+                ● Online · Corretora ENEM ativa
+              </p>
+            </div>
           </div>
-          {isPro && (
-            <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-[#030712]"
-              style={{ background: '#22c55e', boxShadow: '0 0 8px #22c55e80' }} />
+          <button
+            onClick={onClose}
+            className="w-8 h-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-white transition-colors"
+            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)' }}
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Messages */}
+        <div
+          ref={chatContainerRef}
+          className="flex-1 overflow-y-auto px-5 py-4 space-y-3"
+          style={{ minHeight: '200px' }}
+        >
+          {chatMsgs.length === 0 && (
+            <div className="flex flex-col items-center justify-center h-full py-8 text-center">
+              <p className="text-slate-500 text-xs">Olá! Sou a Prof.ª Norma.</p>
+              <p className="text-slate-600 text-xs mt-1">Pergunte sobre sua redação, competências do ENEM,<br />estratégias de argumentação e muito mais.</p>
+            </div>
+          )}
+          {chatMsgs.map((m, i) => (
+            <div key={i} className={`flex gap-2.5 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              {m.role === 'norma' && (
+                <div className="w-7 h-7 rounded-lg overflow-hidden shrink-0 mt-0.5"
+                  style={{ border: `1px solid ${CYAN}33` }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/images/tutor-redacao.avif" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
+              )}
+              <div className="rounded-2xl px-3.5 py-2.5 max-w-[80%]"
+                style={{
+                  background: m.role === 'user'
+                    ? `linear-gradient(135deg, ${VIOLET}44, ${CYAN}28)`
+                    : 'rgba(255,255,255,0.06)',
+                  border: m.role === 'user'
+                    ? `1px solid ${CYAN}40`
+                    : '1px solid rgba(255,255,255,0.08)',
+                }}>
+                <p className="text-xs text-slate-200 leading-relaxed whitespace-pre-wrap">{m.text}</p>
+              </div>
+            </div>
+          ))}
+          {chatLoading && (
+            <div className="flex gap-2.5 justify-start">
+              <div className="w-7 h-7 rounded-lg overflow-hidden shrink-0"
+                style={{ border: `1px solid ${CYAN}33` }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/images/tutor-redacao.avif" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              </div>
+              <div className="rounded-2xl px-3.5 py-2.5"
+                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <div className="flex gap-1 items-center h-4">
+                  {[0, 1, 2].map(j => (
+                    <div key={j} className="w-1.5 h-1.5 rounded-full"
+                      style={{ background: CYAN, animation: `pulse 1.2s ease-in-out ${j * 0.3}s infinite` }} />
+                  ))}
+                </div>
+              </div>
+            </div>
           )}
         </div>
 
-        {/* Copy */}
-        <div className="flex-1 text-center sm:text-left min-w-0">
-          <div className="flex items-center gap-2 mb-1 flex-wrap justify-center sm:justify-start">
-            <p className="text-white font-black text-lg leading-tight">
-              Fale com a Norma: Sua Corretora IA 1000
-            </p>
-            <span
-              className="text-xs font-bold px-2 py-0.5 rounded-full text-white shrink-0"
-              style={{
-                background: `linear-gradient(135deg, ${VIOLET}, ${CYAN})`,
-                boxShadow:  `0 0 8px ${VIOLET}50`,
-              }}
+        {/* Input */}
+        <div className="px-5 pb-5 pt-3 shrink-0"
+          style={{ borderTop: '1px solid rgba(6,182,212,0.08)' }}>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={chatInput}
+              onChange={e => setChatInput(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); } }}
+              placeholder="Pergunte à Norma sobre sua redação..."
+              className="flex-1 rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-600 outline-none"
+              style={{ background: 'rgba(255,255,255,0.05)', border: `1px solid ${chatInput ? `${CYAN}40` : 'rgba(255,255,255,0.09)'}` }}
+            />
+            <button
+              type="button"
+              onClick={sendChat}
+              disabled={!chatInput.trim() || chatLoading}
+              className="px-4 py-3 rounded-xl font-bold text-white transition-all hover:-translate-y-0.5 disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{ background: `linear-gradient(135deg, ${VIOLET}, ${CYAN})`, boxShadow: chatInput ? `0 0 16px ${VIOLET}44` : 'none' }}
             >
-              AiPro+
-            </span>
+              ›
+            </button>
           </div>
-          <p className="text-xs mb-3" style={{ color: CYAN }}>
-            {isPro ? '● Online agora · Pronta para corrigir' : 'Disponível no plano AiPro+'}
-          </p>
-          <p className="text-slate-400 text-sm leading-relaxed">
-            Envie seu texto e receba uma correção detalhada baseada nas{' '}
-            <span className="text-white font-semibold">5 competências oficiais do ENEM</span>.
-            Feedback personalizado + sugestões de repertório.
-          </p>
-        </div>
-
-        {/* CTA */}
-        <div className="shrink-0">
-          <button
-            onClick={onOpenModal}
-            className="flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-black text-white transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.03] whitespace-nowrap"
-            style={{
-              background: isPro
-                ? `linear-gradient(135deg, ${VIOLET}, ${CYAN})`
-                : 'rgba(255,255,255,0.07)',
-              border:     isPro ? 'none' : '1px solid rgba(255,255,255,0.12)',
-              boxShadow:  isPro ? `0 0 24px ${VIOLET}55, 0 4px 16px rgba(0,0,0,0.35)` : 'none',
-            }}
-          >
-            <PenIcon size={15} />
-            Corrigir minha Redação
-          </button>
         </div>
       </div>
     </div>
@@ -188,19 +385,15 @@ function EssayModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
-      style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)' }}
-      onClick={onClose}
+      className="fixed inset-0 z-50 flex"
+      style={{ background: 'rgba(5,8,18,0.99)' }}
     >
       <div
-        className="relative w-full sm:max-w-2xl rounded-t-3xl sm:rounded-3xl overflow-hidden flex flex-col"
+        className="relative w-full h-full overflow-hidden flex flex-col"
         style={{
-          background:   'rgba(5,8,18,0.97)',
-          border:       `1px solid ${CYAN}30`,
-          boxShadow:    `0 0 60px ${CYAN}15, 0 -4px 40px rgba(0,0,0,0.60)`,
-          maxHeight:    '92dvh',
+          background: 'rgba(5,8,18,0.99)',
+          border:     `1px solid ${CYAN}15`,
         }}
-        onClick={e => e.stopPropagation()}
       >
         {/* Top line */}
         <div className="absolute inset-x-0 top-0 h-px"
@@ -215,7 +408,7 @@ function EssayModal({
               <PenIcon size={16} />
             </div>
             <div>
-              <p className="text-white font-black text-sm">Banca AiPro+</p>
+              <p className="text-white font-black text-sm">Banca Protocolo Neural</p>
               <p className="text-xs" style={{ color: CYAN }}>Norma · Correção por IA</p>
             </div>
           </div>
@@ -239,10 +432,10 @@ function EssayModal({
               <span className="text-lg shrink-0">🔒</span>
               <div>
                 <p className="text-sm font-bold" style={{ color: 'rgba(212,175,55,0.95)' }}>
-                  Recurso exclusivo AiPro+
+                  Recurso exclusivo Protocolo Neural
                 </p>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  A correção por IA está disponível apenas no plano AiPro+.{' '}
+                  A correção por IA está disponível apenas no plano Protocolo Neural.{' '}
                   <a href="/subscription" className="underline" style={{ color: CYAN }}>Fazer upgrade →</a>
                 </p>
               </div>
@@ -282,7 +475,7 @@ function EssayModal({
               value={texto}
               onChange={e => setTexto(e.target.value)}
               placeholder="Escreva ou cole sua redação aqui. A Norma analisará cada parágrafo com base nas 5 competências do ENEM..."
-              rows={12}
+              rows={20}
               className="w-full rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-600 outline-none resize-none transition-all leading-relaxed"
               style={{
                 background: 'rgba(255,255,255,0.03)',
@@ -309,7 +502,7 @@ function EssayModal({
               border:     canSubmit ? 'none' : '1px solid rgba(255,255,255,0.08)',
             }}
           >
-            {isPro ? 'Iniciar Análise da Banca AiPro+' : 'Disponível no AiPro+'}
+            {isPro ? 'Iniciar Análise da Banca Protocolo Neural' : 'Disponível no Protocolo Neural'}
           </button>
           {canSubmit && (
             <p className="text-center text-xs text-slate-700 mt-2">
@@ -403,7 +596,7 @@ function GradeResults({
       {/* ── Nota total ── */}
       <div className="px-6 pt-7 pb-6 text-center border-b border-white/5">
         <p className="text-xs font-semibold tracking-widest uppercase text-slate-500 mb-3">
-          Resultado da Banca AiPro+
+          Resultado da Banca Protocolo Neural
         </p>
         <div
           className="text-8xl font-black leading-none mb-2"
@@ -613,7 +806,7 @@ function AccordionRow({
             <span className="flex items-center gap-1 shrink-0">
               <LockIcon />
               <span className="text-xs font-semibold" style={{ color: 'rgba(212,175,55,0.85)' }}>
-                AiPro+
+                Protocolo Neural
               </span>
             </span>
           )}
@@ -681,10 +874,10 @@ function UpgradeModal({ onClose }: { onClose: () => void }) {
           <div className="text-4xl">✒️</div>
           <div>
             <p className="font-black text-lg leading-tight mb-1" style={{ color: '#0f172a' }}>
-              Recurso AiPro+ 🤖
+              Recurso Protocolo Neural 🤖
             </p>
             <p className="text-sm leading-relaxed" style={{ color: 'rgba(15,23,42,0.65)' }}>
-              A Base de Conhecimento completa — Resumos, Tabelas e Correção IA — é exclusiva do AiPro+.
+              A Base de Conhecimento completa — Resumos, Tabelas e Correção IA — é exclusiva do Protocolo Neural.
             </p>
           </div>
           <a
@@ -692,7 +885,7 @@ function UpgradeModal({ onClose }: { onClose: () => void }) {
             className="w-full py-3 rounded-xl font-bold text-sm text-center transition-all hover:-translate-y-0.5"
             style={{ background: '#0f0a1e', color: '#e8e8e8', border: '1px solid rgba(255,255,255,0.15)', boxShadow: '0 2px 14px rgba(0,0,0,0.45)' }}
           >
-            Fazer Upgrade para AiPro+ →
+            Fazer Upgrade para Protocolo Neural →
           </a>
           <button onClick={onClose} className="text-xs font-medium" style={{ color: 'rgba(15,23,42,0.45)' }}>
             Agora não
@@ -791,8 +984,9 @@ function TableContent({ color }: { color: string }) {
 type ActiveTab = 'correcao' | 'evolucao';
 
 export default function RedacaoClient({ plan }: { plan: Plan }) {
-  const [modalOpen,   setModalOpen]   = useState(false);
-  const [showUpgrade, setShowUpgrade] = useState(false);
+  const [modalOpen,     setModalOpen]     = useState(false);
+  const [chatModalOpen, setChatModalOpen] = useState(false);
+  const [showUpgrade,   setShowUpgrade]   = useState(false);
   const [loading,     setLoading]     = useState(false);
   const [result,             setResult]             = useState<NormaResult | null>(null);
   const [viewingSubmission, setViewingSubmission]  = useState<EssayRecord | null>(null);
@@ -803,6 +997,9 @@ export default function RedacaoClient({ plan }: { plan: Plan }) {
 
   const isPro = plan === 'panteao_elite';
   const color = CYAN;
+
+  const lastEssay  = historico.length > 0 ? historico[historico.length - 1] : null;
+  const lastResult = lastEssay?.analise_completa ? (lastEssay.analise_completa as NormaResult) : null;
 
   // ── Fetch histórico do Supabase ───────────────────────────────────────────
   useEffect(() => {
@@ -833,7 +1030,6 @@ export default function RedacaoClient({ plan }: { plan: Plan }) {
     setResult(record.analise_completa as NormaResult);
     setError(null);
     setActiveTab('correcao');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function exitReviewMode() {
@@ -899,11 +1095,143 @@ export default function RedacaoClient({ plan }: { plan: Plan }) {
 
   return (
     <>
-      {modalOpen   && <EssayModal   plan={plan} onClose={() => setModalOpen(false)} onSubmit={handleSubmit} />}
-      {showUpgrade && <UpgradeModal onClose={() => setShowUpgrade(false)} />}
+      {modalOpen     && <EssayModal      plan={plan} onClose={() => setModalOpen(false)}     onSubmit={handleSubmit} />}
+      {chatModalOpen && <NormaChatModal               onClose={() => setChatModalOpen(false)} />}
+      {showUpgrade   && <UpgradeModal                 onClose={() => setShowUpgrade(false)} />}
 
-      {/* ── Hero card ─────────────────────────────────────────────────────── */}
-      <NormaHeroCard plan={plan} onOpenModal={() => setModalOpen(true)} />
+      {/* ── Diagnóstico ───────────────────────────────────────────────────── */}
+      <CompetenciasDiagnostico lastResult={lastResult} lastEssay={lastEssay} />
+
+      {/* ── Dois blocos de ação ───────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-7">
+
+        {/* Bloco 1: Chat com a Tutora IA */}
+        <div
+          className="relative rounded-2xl overflow-hidden flex flex-col"
+          style={{ background: 'rgba(3,5,18,0.97)', border: `1px solid ${CYAN}22`, boxShadow: `0 0 30px ${CYAN}06` }}
+        >
+          <div className="absolute inset-x-0 top-0 h-px"
+            style={{ background: `linear-gradient(90deg, transparent, ${CYAN}50, transparent)` }} />
+          <div className="p-5 flex flex-col flex-1">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="relative shrink-0">
+                <div className="w-14 h-14 rounded-xl overflow-hidden"
+                  style={{ border: `1px solid ${CYAN}44`, boxShadow: `0 0 20px ${CYAN}22` }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/images/tutor-redacao.avif" alt="Prof.ª Norma"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
+                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2"
+                  style={{ background: '#00ff80', borderColor: '#050814', boxShadow: '0 0 6px #00ff8088' }} />
+              </div>
+              <div>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <h3 className="font-black text-white text-sm">Prof.ª Norma</h3>
+                  <span className="font-bold rounded-full"
+                    style={{ background: `linear-gradient(135deg, ${VIOLET}cc, ${CYAN}cc)`, color: '#fff',
+                      fontSize: '7px', letterSpacing: '0.10em', padding: '2px 7px' }}>
+                    NORMA.AI
+                  </span>
+                </div>
+                <p className="text-slate-500 text-xs mt-0.5">Corretora ENEM · Especialista em redação</p>
+              </div>
+            </div>
+            <p className="text-xs text-slate-400 leading-relaxed mb-4">
+              Tire dúvidas sobre competências do ENEM, peça dicas de argumentação, estrutura de texto e repertório sociocultural.
+            </p>
+
+            {/* Insights based on essays */}
+            {lastResult && (() => {
+              const comps = COMPETENCIAS.map(c => ({ ...c, nota: lastResult.competencias[c.key].nota }));
+              const weakest = comps.reduce((a, b) => a.nota < b.nota ? a : b);
+              const tip = lastResult.pontos_melhoria?.[0];
+              return (
+                <div
+                  className="rounded-xl px-3.5 py-3 mb-4 space-y-2"
+                  style={{ background: `${CYAN}07`, border: `1px solid ${CYAN}18` }}
+                >
+                  <p style={{ fontSize: '9px', letterSpacing: '0.12em', color: CYAN, fontWeight: 700, marginBottom: '6px' }}>
+                    INSIGHTS DAS SUAS REDAÇÕES
+                  </p>
+                  <div className="flex items-start gap-2">
+                    <span style={{ color: '#f97316', fontSize: '10px', marginTop: '1px', flexShrink: 0 }}>▼</span>
+                    <p className="text-xs text-slate-300 leading-snug">
+                      Competência mais fraca: <span className="font-bold" style={{ color: '#f97316' }}>{weakest.label} — {weakest.desc.split(' ').slice(0, 3).join(' ')}</span> ({weakest.nota}/200)
+                    </p>
+                  </div>
+                  {tip && (
+                    <div className="flex items-start gap-2">
+                      <span style={{ color: CYAN, fontSize: '10px', marginTop: '1px', flexShrink: 0 }}>→</span>
+                      <p className="text-xs text-slate-400 leading-snug">{tip}</p>
+                    </div>
+                  )}
+                  {lastResult.veredito && (
+                    <div className="flex items-start gap-2">
+                      <span style={{ color: '#a78bfa', fontSize: '10px', marginTop: '1px', flexShrink: 0 }}>✦</span>
+                      <p className="text-xs text-slate-400 leading-snug line-clamp-2">{lastResult.veredito}</p>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            <button
+              type="button"
+              onClick={() => isPro ? setChatModalOpen(true) : setShowUpgrade(true)}
+              className="w-full py-2.5 rounded-xl font-bold text-sm text-white transition-all hover:-translate-y-0.5"
+              style={{
+                background: isPro
+                  ? `linear-gradient(135deg, ${VIOLET}, ${CYAN})`
+                  : 'rgba(255,255,255,0.06)',
+                border: isPro ? 'none' : '1px solid rgba(255,255,255,0.12)',
+                boxShadow: isPro ? `0 0 20px ${VIOLET}33` : 'none',
+              }}
+            >
+              {isPro ? '💬 Conversar com a Norma' : '🔒 Disponível no Protocolo Neural'}
+            </button>
+          </div>
+        </div>
+
+        {/* Bloco 2: Enviar Redação */}
+        <div
+          className="relative rounded-2xl overflow-hidden flex flex-col"
+          style={{ background: 'rgba(3,5,18,0.97)', border: `1px solid ${VIOLET}22`, boxShadow: `0 0 30px ${VIOLET}06` }}
+        >
+          <div className="absolute inset-x-0 top-0 h-px"
+            style={{ background: `linear-gradient(90deg, transparent, ${VIOLET}50, transparent)` }} />
+          <div className="p-5 flex flex-col flex-1">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0"
+                style={{ background: `linear-gradient(135deg, ${VIOLET}22, ${PINK}18)`,
+                  border: `1px solid ${VIOLET}44`, boxShadow: `0 0 20px ${VIOLET}22`, fontSize: '28px' }}>
+                ✒️
+              </div>
+              <div>
+                <h3 className="font-black text-white text-sm">Banca Protocolo Neural</h3>
+                <p className="text-slate-500 text-xs mt-0.5">Correção por IA · Análise ENEM C1–C5</p>
+              </div>
+            </div>
+            <p className="text-xs text-slate-400 leading-relaxed mb-4 flex-1">
+              Envie sua redação e receba correção detalhada por competência, nota estimada, pontos fortes e sugestões de melhoria.
+            </p>
+            <button
+              type="button"
+              onClick={() => isPro ? setModalOpen(true) : setShowUpgrade(true)}
+              className="w-full py-2.5 rounded-xl font-bold text-sm text-white transition-all hover:-translate-y-0.5"
+              style={{
+                background: isPro
+                  ? `linear-gradient(135deg, ${VIOLET}, ${PINK})`
+                  : 'rgba(255,255,255,0.06)',
+                border: isPro ? 'none' : '1px solid rgba(255,255,255,0.12)',
+                boxShadow: isPro ? `0 0 20px ${VIOLET}33` : 'none',
+              }}
+            >
+              {isPro ? '✒️ Enviar Redação' : '🔒 Disponível no Protocolo Neural'}
+            </button>
+          </div>
+        </div>
+
+      </div>
 
       {/* ── Tab bar ───────────────────────────────────────────────────────── */}
       <div

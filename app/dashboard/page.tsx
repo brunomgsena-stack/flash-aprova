@@ -4,6 +4,7 @@ import StudentDashboard      from '@/components/StudentDashboard';
 import PerformanceMetrics    from './PerformanceMetrics';
 import ChartsRow             from './ChartsRow';
 import SubjectsWithDomain    from './SubjectsWithDomain';
+import { DashboardProvider } from '@/lib/DashboardContext';
 
 type Subject = {
   id:       string;
@@ -36,28 +37,30 @@ export default async function DashboardPage() {
 
   const allSubjects = [
     ...mapped,
-    { id: 'redacao-flash', title: 'Redação Flash+', icon: '✒️', color: '#06b6d4', category: 'Redação' },
+    { id: 'redacao-flash', title: 'Redação | Norma.AI', icon: '✒️', color: '#06b6d4', category: 'Redação' },
   ];
 
   return (
-    <main className="min-h-screen px-4 py-12 sm:px-8 flex flex-col items-center">
-      <div className="w-full max-w-5xl">
+    <DashboardProvider>
+      <main className="min-h-screen px-4 py-12 sm:px-8 flex flex-col items-center">
+        <div className="w-full max-w-5xl">
 
-        {/* Header + Mentor Card (Zen Focus) */}
-        <StudentDashboard>
+          {/* Header + Mentor Card (Zen Focus) */}
+          <StudentDashboard>
 
-          {/* Charts: Radar ENEM + Retenção */}
-          <ChartsRow subjects={mapped.map(s => ({ id: s.id, category: s.category }))} />
+            {/* Charts: Radar ENEM + Retenção */}
+            <ChartsRow subjects={mapped.map(s => ({ id: s.id, category: s.category }))} />
 
-          {/* Métricas de Performance */}
-          <PerformanceMetrics />
+            {/* Métricas de Performance */}
+            <PerformanceMetrics />
 
-          {/* Matérias agrupadas por categoria */}
-          <SubjectsWithDomain subjects={allSubjects} />
+            {/* Matérias agrupadas por categoria */}
+            <SubjectsWithDomain subjects={allSubjects} />
 
-        </StudentDashboard>
+          </StudentDashboard>
 
-      </div>
-    </main>
+        </div>
+      </main>
+    </DashboardProvider>
   );
 }

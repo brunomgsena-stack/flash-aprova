@@ -17,7 +17,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { createClient } from '@/lib/supabase/server';
-import { fetchUserPlan } from '@/lib/plan';
 import { getTutorBySubject, getTutorById, getVectorStoreId } from '@/lib/tutor-config';
 
 export const runtime = 'nodejs';
@@ -35,12 +34,15 @@ export async function POST(req: NextRequest) {
   }
 
   // ── Plan check + Admin bypass ────────────────────────────────────────────────
-  const [planInfo, profileResult] = await Promise.all([
-    fetchUserPlan(user.id),
+  const [statsResult, profileResult] = await Promise.all([
+    serverClient.from('user_stats').select('plan, plan_expires_at').eq('user_id', user.id).maybeSingle(),
     serverClient.from('profiles').select('role').eq('id', user.id).maybeSingle(),
   ]);
-  const hasAccess =
-    planInfo.plan === 'panteao_elite' || profileResult.data?.role === 'admin';
+  const isAdmin   = profileResult.data?.role === 'admin';
+  const rawPlan   = (statsResult.data?.plan as string | undefined) ?? 'aceleracao';
+  const expiresAt = statsResult.data?.plan_expires_at ? new Date(statsResult.data.plan_expires_at) : null;
+  const expired   = expiresAt ? expiresAt < new Date() : false;
+  const hasAccess = isAdmin || (rawPlan === 'panteao_elite' && !expired);
   if (!hasAccess) {
     return NextResponse.json({ error: 'Recurso exclusivo do Plano Panteão Elite.' }, { status: 403 });
   }
@@ -98,10 +100,14 @@ export async function POST(req: NextRequest) {
       ...(previousResponseId ? { previous_response_id: previousResponseId } : {}),
     });
 
-    const text = (response as unknown as { output_text?: string }).output_text ?? '';
+    const raw = (response as unknown as { output_text?: string }).output_text ?? '';
+    const messages = raw
+      .split(/\[BREAK\]|\n\n/)
+      .map(s => s.trim())
+      .filter(Boolean);
 
     return NextResponse.json({
-      text,
+      messages,
       previous_response_id: (response as unknown as { id: string }).id,
     });
 

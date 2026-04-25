@@ -4,7 +4,6 @@ import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis,
   ResponsiveContainer, Tooltip,
 } from 'recharts';
-import { useTheme } from '@/components/ThemeProvider';
 
 export type RadarPoint = {
   area:     string;
@@ -12,35 +11,62 @@ export type RadarPoint = {
   fullMark: 100;
 };
 
-// Paleta Zen Focus — sem vermelho/laranja de crise
-const MINT  = '#34D399';   // forças (mastery ≥ 40)
-const OCEAN = '#0EA5E9';   // oportunidades (mastery < 40)
+const NEON = '#00FF73';
 
-function CustomTooltip({ active, payload, isLight }: { active?: boolean; payload?: { payload: RadarPoint }[]; isLight?: boolean }) {
+const AREA_COLORS: Record<string, string> = {
+  Natureza:   '#22d3ee',
+  Humanas:    '#f97316',
+  Linguagens: '#a855f7',
+  Matemática: '#10b981',
+  Redação:    '#eab308',
+};
+
+const RADAR_STYLES = `
+  @keyframes radarPulse {
+    0%, 100% { fill-opacity: 0.10; }
+    50%       { fill-opacity: 0.26; }
+  }
+  @keyframes radarStroke {
+    0%, 100% { stroke-opacity: 0.7; }
+    50%       { stroke-opacity: 1; }
+  }
+  @keyframes gridGlow {
+    0%, 100% { stroke-opacity: 0.07; }
+    50%       { stroke-opacity: 0.14; }
+  }
+  .radar-polygon {
+    animation: radarPulse 3s ease-in-out infinite, radarStroke 3s ease-in-out infinite;
+    filter: drop-shadow(0 0 8px rgba(0,255,115,0.45));
+  }
+  .radar-grid line,
+  .radar-grid polygon {
+    animation: gridGlow 4s ease-in-out infinite;
+  }
+`;
+
+function CustomTooltip({ active, payload }: { active?: boolean; payload?: { payload: RadarPoint }[] }) {
   if (!active || !payload?.length) return null;
-  const d       = payload[0].payload;
-  const isStrong = d.mastery >= 40;
-  const color    = isStrong ? MINT : OCEAN;
-  const label    = isStrong
-    ? `${d.mastery}% — já está dominando! ⭐`
-    : `${d.mastery}% — boa oportunidade de crescimento 📈`;
+  const d     = payload[0].payload;
+  const color = AREA_COLORS[d.area] ?? NEON;
+  const label = d.mastery >= 40
+    ? `${d.mastery}% — dominando! ⭐`
+    : `${d.mastery}% — oportunidade de crescimento 📈`;
 
   return (
     <div
       className="px-3 py-2 rounded-xl text-sm"
       style={{
-        background: isLight ? 'rgba(255,255,255,0.97)' : 'rgba(5,11,20,0.95)',
-        border:     `1px solid ${color}30`,
-        boxShadow:  isLight ? `0 4px 16px rgba(15,23,42,0.12)` : `0 0 20px ${color}15`,
+        background: 'rgba(5,11,20,0.96)',
+        border:     `1px solid ${color}45`,
+        boxShadow:  `0 0 20px ${color}25`,
       }}
     >
-      <p className="font-semibold mb-0.5" style={{ color: isLight ? '#0A0A0A' : '#ffffff' }}>{d.area}</p>
+      <p className="font-semibold mb-0.5 text-white">{d.area}</p>
       <p style={{ color }}>{label}</p>
     </div>
   );
 }
 
-// Dot customizado: verde-menta para forças, azul para crescimento
 function CustomDot(props: {
   cx?: number; cy?: number;
   payload?: RadarPoint;
@@ -48,40 +74,72 @@ function CustomDot(props: {
 }) {
   const { cx, cy, payload } = props;
   if (cx === undefined || cy === undefined || !payload) return null;
+  const color    = AREA_COLORS[payload.area] ?? NEON;
   const isStrong = payload.mastery >= 40;
-  const color    = isStrong ? MINT : OCEAN;
+  const r        = isStrong ? 4 : 3;
+  const dur      = `${1.8 + Math.random() * 0.8}s`;
+
   return (
-    <circle
-      cx={cx}
-      cy={cy}
-      r={isStrong ? 4 : 3}
-      fill={color}
-      stroke="none"
-      style={{ filter: `drop-shadow(0 0 ${isStrong ? 5 : 3}px ${color}88)` }}
-    />
+    <g>
+      {/* Expanding ring */}
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke={color} strokeWidth="1.2">
+        <animate attributeName="r"       values={`${r};${r + 7};${r}`} dur={dur} repeatCount="indefinite" />
+        <animate attributeName="opacity" values="0.7;0;0.7"             dur={dur} repeatCount="indefinite" />
+      </circle>
+      {/* Core dot */}
+      <circle
+        cx={cx} cy={cy} r={r}
+        fill={color}
+        style={{ filter: `drop-shadow(0 0 ${isStrong ? 7 : 4}px ${color})` }}
+      />
+    </g>
+  );
+}
+
+function ColoredTick(props: { x?: number; y?: number; payload?: { value: string } }) {
+  const { x = 0, y = 0, payload } = props;
+  if (!payload) return null;
+  const color = AREA_COLORS[payload.value] ?? 'rgba(255,255,255,0.40)';
+
+  function handleClick() {
+    const id = `area-${payload!.value.toLowerCase()}`;
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  return (
+    <text
+      x={x} y={y}
+      textAnchor="middle"
+      dominantBaseline="central"
+      style={{
+        cursor:     'pointer',
+        fontSize:   11,
+        fontFamily: 'Inter, system-ui',
+        fontWeight: 700,
+        fill:       color,
+        filter:     `drop-shadow(0 0 4px ${color}88)`,
+      }}
+      onClick={handleClick}
+    >
+      {payload.value}
+    </text>
   );
 }
 
 export default function MasteryRadarChart({ data }: { data: RadarPoint[] }) {
-  const { theme }  = useTheme();
-  const isLight    = theme === 'light';
-  const hasData    = data.some(d => d.mastery > 0);
-  const strongAreas = data.filter(d => d.mastery >= 40).map(d => d.area);
-  const growAreas   = data.filter(d => d.mastery > 0 && d.mastery < 40).map(d => d.area);
-
-  // Light mode: iridescent Apple gradient; dark: mint solid
-  const radarStroke = isLight ? '#5AC8FA' : MINT;
-  const radarFill   = isLight ? 'url(#radarIris)' : MINT;
-  const gridStroke  = isLight ? 'rgba(0,0,0,0.07)' : 'rgba(255,255,255,0.07)';
-  const tickFill    = isLight ? '#86868B' : '#64748b';
-  const labelColor  = isLight ? '#86868B' : OCEAN;
+  const hasData = data.some(d => d.mastery > 0);
 
   return (
     <div className="w-full h-full flex flex-col">
-      <p className="text-xs font-semibold tracking-widest uppercase mb-0.5" style={{ color: radarStroke }}>
+      <style>{RADAR_STYLES}</style>
+
+      <p className="text-xs font-bold tracking-widest uppercase mb-0.5" style={{ color: NEON, textShadow: `0 0 8px ${NEON}80` }}>
         Radar ENEM
       </p>
-      <p className="text-xs mb-3" style={{ color: labelColor }}>O que você já conquistou e onde crescer mais</p>
+      <p className="text-xs mb-3" style={{ color: 'rgba(255,255,255,0.28)' }}>
+        Clique numa área para ver as matérias
+      </p>
 
       {!hasData ? (
         <div className="flex-1 flex items-center justify-center">
@@ -90,55 +148,36 @@ export default function MasteryRadarChart({ data }: { data: RadarPoint[] }) {
           </p>
         </div>
       ) : (
-        <>
-          <div className="flex-1 min-h-0">
-            <ResponsiveContainer width="100%" height="100%">
-              <RadarChart data={data} margin={{ top: 4, right: 20, bottom: 4, left: 20 }}>
-                {/* SVG gradient defs for light mode iridescent fill */}
-                <defs>
-                  <linearGradient id="radarIris" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%"   stopColor="#5AC8FA" stopOpacity="0.28" />
-                    <stop offset="45%"  stopColor="#AF52DE" stopOpacity="0.18" />
-                    <stop offset="100%" stopColor="#34C759" stopOpacity="0.22" />
-                  </linearGradient>
-                </defs>
-                <PolarGrid stroke={gridStroke} gridType="polygon" />
-                <PolarAngleAxis
-                  dataKey="area"
-                  tick={{ fill: tickFill, fontSize: 11, fontFamily: 'Inter, system-ui' }}
-                />
-                <Radar
-                  name="Domínio"
-                  dataKey="mastery"
-                  stroke={radarStroke}
-                  fill={radarFill}
-                  fillOpacity={isLight ? 1 : 0.14}
-                  strokeWidth={isLight ? 1.5 : 2}
-                  dot={<CustomDot />}
-                />
-                <Tooltip content={<CustomTooltip isLight={isLight} />} />
-              </RadarChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Legenda de forças vs oportunidades */}
-          {(strongAreas.length > 0 || growAreas.length > 0) && (
-            <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2">
-              {strongAreas.length > 0 && (
-                <p className="text-xs" style={{ color: MINT }}>
-                  <span className="font-bold">⭐ Forte:</span>{' '}
-                  <span style={{ color: isLight ? '#475569' : 'rgba(255,255,255,0.45)' }}>{strongAreas.join(', ')}</span>
-                </p>
-              )}
-              {growAreas.length > 0 && (
-                <p className="text-xs" style={{ color: OCEAN }}>
-                  <span className="font-bold">📈 Crescimento:</span>{' '}
-                  <span style={{ color: isLight ? '#475569' : 'rgba(255,255,255,0.45)' }}>{growAreas.join(', ')}</span>
-                </p>
-              )}
-            </div>
-          )}
-        </>
+        <div className="flex-1 min-h-0">
+          <ResponsiveContainer width="100%" height="100%">
+            <RadarChart data={data} margin={{ top: 4, right: 20, bottom: 4, left: 20 }}>
+              <defs>
+                <linearGradient id="radarFillGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%"   stopColor={NEON}    stopOpacity="0.35" />
+                  <stop offset="50%"  stopColor="#00ccff" stopOpacity="0.20" />
+                  <stop offset="100%" stopColor="#7C3AED" stopOpacity="0.30" />
+                </linearGradient>
+              </defs>
+              <PolarGrid
+                stroke="rgba(0,255,115,0.10)"
+                gridType="polygon"
+                className="radar-grid"
+              />
+              <PolarAngleAxis dataKey="area" tick={<ColoredTick />} />
+              <Radar
+                name="Domínio"
+                dataKey="mastery"
+                stroke={NEON}
+                fill="url(#radarFillGrad)"
+                fillOpacity={1}
+                strokeWidth={2}
+                dot={<CustomDot />}
+                className="radar-polygon"
+              />
+              <Tooltip content={<CustomTooltip />} />
+            </RadarChart>
+          </ResponsiveContainer>
+        </div>
       )}
     </div>
   );

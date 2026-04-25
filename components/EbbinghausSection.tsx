@@ -125,9 +125,7 @@ function PilarCard({
       ref={cardRef}
       className="relative rounded-2xl p-5 sm:p-6 cursor-default select-none"
       style={{
-        background: 'rgba(255,255,255,0.035)',
-        backdropFilter: 'blur(24px)',
-        WebkitBackdropFilter: 'blur(24px)',
+        background: 'rgba(18,18,18,0.92)',
         border: `1px solid ${color}55`,
         boxShadow: `0 0 48px ${color}22, 0 0 0 1px ${color}35`,
         transform: `perspective(900px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`,
@@ -251,9 +249,7 @@ export default function EbbinghausSection() {
       <motion.div
         className="relative rounded-3xl p-3 sm:p-8 mb-10 overflow-hidden"
         style={{
-          background: 'rgba(255,255,255,0.04)',
-          backdropFilter: 'blur(24px)',
-          WebkitBackdropFilter: 'blur(24px)',
+          background: 'rgba(18,18,18,0.95)',
           border: '1px solid rgba(255,255,255,0.08)',
           boxShadow: `0 0 80px rgba(124,58,237,0.07), 0 0 0 1px rgba(124,58,237,0.06)`,
         }}

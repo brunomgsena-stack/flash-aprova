@@ -34,6 +34,8 @@ const TITLE_RULES: [RegExp, string][] = [
   [/portugu/i,                  '📖'],
   [/literatur/i,                '📜'],
   [/artes|arte\b/i,             '🎨'],
+  [/ingl[eê]s/i,                '🇬🇧'],
+  [/espanh/i,                   '🇪🇸'],
 ];
 
 export function getSubjectIcon(

@@ -1,10 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabaseClient';
+import { useMemo } from 'react';
 import { useTheme } from '@/components/ThemeProvider';
-import { buildDomainMap } from '@/lib/domain';
 import { getCategoryInfo, ENEM_AREAS } from '@/lib/categories';
+import { useDashboardData } from '@/lib/DashboardContext';
 import MasteryRadarChart, { type RadarPoint }      from './charts/MasteryRadarChart';
 import RetentionAreaChart, { type RetentionPoint } from './charts/RetentionAreaChart';
 
@@ -46,89 +45,57 @@ type SubjectRow = { id: string; category: string | null };
 export default function ChartsRow({ subjects }: { subjects: SubjectRow[] }) {
   const { theme } = useTheme();
   const isLight   = theme === 'light';
+  const dashState = useDashboardData();
 
-  const [radarData,    setRadarData]    = useState<RadarPoint[]>([]);
-  const [retentionData, setRetentionData] = useState<RetentionPoint[]>([]);
-  const [ready,        setReady]        = useState(false);
+  const { radarData, retentionData } = useMemo(() => {
+    if (dashState.status !== 'ready') return { radarData: [], retentionData: [] };
+    const { domainMap, progress } = dashState.data;
 
-  useEffect(() => {
-    async function load() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { setReady(true); return; }
+    const today = new Date().toISOString().split('T')[0];
+    const day7  = new Date(Date.now() + 6 * 864e5).toISOString().split('T')[0];
 
-      // ── 1. Cards + subject mapping ──────────────────────────────────────────
-      const { data: allCards } = await supabase
-        .from('cards')
-        .select('id, decks(subject_id)');
-
-      // ── 2. User progress ────────────────────────────────────────────────────
-      const today   = new Date().toISOString().split('T')[0];
-      const day7    = new Date(Date.now() + 6 * 864e5).toISOString().split('T')[0];
-
-      const { data: progress } = await supabase
-        .from('user_progress')
-        .select('card_id, interval_days, next_review')
-        .eq('user_id', user.id);
-
-      if (!allCards || !progress) { setReady(true); return; }
-
-      // ── 3. Domain map ───────────────────────────────────────────────────────
-      const normalised = (allCards as { id: string; decks: unknown }[]).map(c => ({
-        id:    c.id,
-        decks: Array.isArray(c.decks)
-          ? (c.decks[0] as { subject_id: string } ?? null)
-          : (c.decks as { subject_id: string } | null),
-      }));
-      const domainMap = buildDomainMap(normalised, progress);
-
-      // ── 4. Mastery per ENEM area ────────────────────────────────────────────
-      // Map: canonical short name → { sum, count }
-      const shortScore = new Map<string, { sum: number; count: number }>();
-
-      for (const subj of subjects) {
-        const cat = subj.category;
-        if (!cat) continue;
-        const short = getCategoryInfo(cat).short;
-        if (!shortScore.has(short)) shortScore.set(short, { sum: 0, count: 0 });
-        const dom = domainMap.get(subj.id);
-        if (dom) {
-          const s = shortScore.get(short)!;
-          s.sum   += dom.coverage;   // cards revisados / total cards (0–1)
-          s.count += 1;
-        }
+    // Mastery per ENEM area
+    const shortScore = new Map<string, { sum: number; count: number }>();
+    for (const subj of subjects) {
+      const cat = subj.category;
+      if (!cat) continue;
+      const short = getCategoryInfo(cat).short;
+      if (!shortScore.has(short)) shortScore.set(short, { sum: 0, count: 0 });
+      const dom = domainMap.get(subj.id);
+      if (dom) {
+        const s = shortScore.get(short)!;
+        s.sum   += dom.coverage;
+        s.count += 1;
       }
-
-      const radar: RadarPoint[] = ENEM_AREAS.map(info => {
-        const s = shortScore.get(info.short);
-        const mastery = s && s.count > 0 ? Math.round((s.sum / s.count) * 100) : 0;
-        return { area: info.short, mastery, fullMark: 100 };
-      });
-
-      // ── 5. Retention curve (next 7 days) ────────────────────────────────────
-      const dueCounts = new Map<string, number>();
-      for (const p of progress) {
-        if (p.next_review >= today && p.next_review <= day7) {
-          dueCounts.set(p.next_review, (dueCounts.get(p.next_review) ?? 0) + 1);
-        }
-      }
-
-      const retention: RetentionPoint[] = Array.from({ length: 7 }, (_, i) => {
-        const iso = new Date(Date.now() + i * 864e5).toISOString().split('T')[0];
-        return {
-          label:   dayLabel(iso, i),
-          due:     dueCounts.get(iso) ?? 0,
-          isToday: i === 0,
-        };
-      });
-
-      setRadarData(radar);
-      setRetentionData(retention);
-      setReady(true);
     }
-    load();
-  }, [subjects]);
 
-  if (!ready) return <Skeleton isLight={isLight} />;
+    const radar: RadarPoint[] = ENEM_AREAS.map(info => {
+      const s = shortScore.get(info.short);
+      const mastery = s && s.count > 0 ? Math.round((s.sum / s.count) * 100) : 0;
+      return { area: info.short, mastery, fullMark: 100 };
+    });
+
+    // Retention curve (next 7 days)
+    const dueCounts = new Map<string, number>();
+    for (const p of progress) {
+      if (p.next_review && p.next_review >= today && p.next_review <= day7) {
+        dueCounts.set(p.next_review, (dueCounts.get(p.next_review) ?? 0) + 1);
+      }
+    }
+
+    const retention: RetentionPoint[] = Array.from({ length: 7 }, (_, i) => {
+      const iso = new Date(Date.now() + i * 864e5).toISOString().split('T')[0];
+      return {
+        label:   dayLabel(iso, i),
+        due:     dueCounts.get(iso) ?? 0,
+        isToday: i === 0,
+      };
+    });
+
+    return { radarData: radar, retentionData: retention };
+  }, [dashState, subjects]);
+
+  if (dashState.status === 'loading') return <Skeleton isLight={isLight} />;
 
   const cardStyle = {
     background:           isLight ? '#FFFFFF' : 'rgba(255,255,255,0.04)',

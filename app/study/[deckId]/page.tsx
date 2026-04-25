@@ -460,10 +460,10 @@ export default function StudyPage() {
       {/* Header */}
       <div className="w-full max-w-2xl flex items-center justify-between">
         <button
-          onClick={() => router.back()}
+          onClick={() => router.push('/dashboard')}
           className="text-slate-400 hover:text-white transition-colors text-sm flex items-center gap-1"
         >
-          ← Voltar
+          ← Voltar ao Dashboard
         </button>
         <p className="text-slate-400 text-sm font-medium">
           <span className="text-white font-bold">{deckTitle}</span>

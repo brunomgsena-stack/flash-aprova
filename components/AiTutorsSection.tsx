@@ -12,10 +12,8 @@ const VIOLET = '#7C3AED';
 const CYCLE_DELAY_MS  = 5_000;
 const MANUAL_PAUSE_MS = 30_000;
 
-// ─── Avatar factory ─────────────────────────────────────────────────────────
-function av(seed: string, extra = '') {
-  return `https://api.dicebear.com/9.x/lorelei/svg?seed=${seed}&backgroundColor=0d0a1e${extra ? '&' + extra : ''}`;
-}
+// ─── Avatar helper ───────────────────────────────────────────────────────────
+const av = (seed: string, _params?: string) => `/images/avatars/${seed}.svg`;
 
 // ─── Ring constants ──────────────────────────────────────────────────────────
 const RING_R = 30;
@@ -42,7 +40,7 @@ const AGENTS: AgentDef[] = [
     specialty: 'Engenharia de Persuasão',
     focus:     'Dissecação de teses e blindagem textual.',
     color:     VIOLET,
-    avatar:    av('ProfNorma', 'hair=variant19&earrings=variant02'),
+    avatar:    '/images/tutor-redacao.avif',
     userMsg:   'Como subo minha nota de Redação de 600 para 1000?',
     agentMsg:  'Não passo a mão na cabeça. Você erra nos mesmos 3 pontos: coesão fraca, proposta de intervenção genérica e introdução sem gancho. Cada um desses te custa 40 pontos. Corrija os 3 e o 1000 é consequência — não sorte.',
     tip:       'Diagnóstico preciso antes de correção. Foca no padrão de erro.',
@@ -53,7 +51,7 @@ const AGENTS: AgentDef[] = [
     specialty: 'Otimização de Sistemas Físicos',
     focus:     'Vetores de impacto e termodinâmica aplicada.',
     color:     '#f97316',
-    avatar:    av('ProfVektor', 'beard=variant01'),
+    avatar:    '/images/tutor-fisica.avif',
     userMsg:   'Preciso entender MRU e MRUV antes da prova.',
     agentMsg:  'Menos conversa, mais vetores. MRU: v = s/t. Fim. MRUV: v = v₀ + at e s = v₀t + ½at². Plug and play. Memoriza as 2 equações e você resolve 80% das questões de cinemática.',
     tip:       'As 2 equações do MRUV cobrem quase tudo no ENEM.',
@@ -75,7 +73,7 @@ const AGENTS: AgentDef[] = [
     specialty: 'Dinâmicas de Espaço e Geopolítica',
     focus:     'Análise sistêmica de biomas e fluxos globais de poder.',
     color:     '#34d399',
-    avatar:    av('DrAtlasGeo', 'hair=variant06'),
+    avatar:    '/images/tutor-geografia.avif',
     userMsg:   'Nunca lembro os 6 biomas brasileiros na prova.',
     agentMsg:  'Ancora em característica única. Amazônia = densa, úmida, maior. Cerrado = raízes profundas pra seca. Caatinga = xerófita. Mata Atlântica = costeira, fragmentada. Pampa = subtropical. Pantanal = maior planície alagável.',
     tip:       'O ENEM cruza bioma + clima + solo. Aprenda o trio, não o isolado.',
@@ -97,7 +95,7 @@ const AGENTS: AgentDef[] = [
     specialty: 'Lógica Analítica',
     focus:     'Geometria de precisão e padrões estatísticos.',
     color:     NEON,
-    avatar:    av('MestrePiMat', 'hair=variant11'),
+    avatar:    '/images/tutor-matematica.avif',
     userMsg:   'Quando delta é negativo, o que acontece com a função?',
     agentMsg:  'Delta < 0 = sem raízes reais = parábola não toca o eixo x. Delta = 0 = uma raiz. Delta > 0 = duas raízes. Fluxo: calcula delta → classifica → decide o caminho. Sempre esse fluxo.',
     tip:       'O ENEM ama delta em contexto (lucro, área, trajetória). O raciocínio é sempre igual.',
@@ -108,7 +106,7 @@ const AGENTS: AgentDef[] = [
     specialty: 'Sistemas Vivos e Evolução',
     focus:     'Genética molecular e ecossistemas complexos.',
     color:     '#22c55e',
-    avatar:    av('DrBio', 'hair=variant01'),
+    avatar:    '/images/tutor-biologia.avif',
     userMsg:   'Fotossíntese parece complexo demais pra memorizar.',
     agentMsg:  'Imagina a folha como uma fábrica solar. Sol = energia da tomada. CO₂ = matéria-prima pela janela. H₂O = correia transportadora. Glicose = produto na esteira. A planta só juntou sol + gás + água e fabricou açúcar.',
     tip:       'Analogia resolve mais rápido que decoreba. O ENEM ama lógica de processo.',
@@ -119,7 +117,7 @@ const AGENTS: AgentDef[] = [
     specialty: 'Decodificação Textual',
     focus:     'Argumentação, interpretação e semiótica.',
     color:     '#f59e0b',
-    avatar:    av('ProfSintaxe', 'hair=variant03'),
+    avatar:    av('ProfSintaxe'),
     userMsg:   'Interpretação de texto — sempre erro nas alternativas finais.',
     agentMsg:  'O ENEM não testa leitura — testa argumentação. Antes das alternativas, responde em uma frase qual a ideia central. Com essa âncora, as alternativas erradas se eliminam sozinhas. Você não lê o texto — você o interroga.',
     tip:       'Tese antes de alternativa. Sempre. Sem exceção.',
@@ -130,7 +128,7 @@ const AGENTS: AgentDef[] = [
     specialty: 'Sistemas de Pensamento Crítico',
     focus:     'Filosofia aplicada e ética como argumento.',
     color:     '#e879f9',
-    avatar:    av('ProfPraxis', 'hair=variant03'),
+    avatar:    av('ProfPraxis'),
     userMsg:   'Filosofia no ENEM é só decoreba de filósofo?',
     agentMsg:  'Não. O ENEM usa Filosofia como lente crítica. Kant: separa fenômeno do noumeno. Rousseau: o homem é bom, a sociedade o corrompe. Cada filósofo é uma lente — o ENEM pede que você a aplique em situações reais.',
     tip:       'Filósofo = lente de análise. O ENEM dá o contexto, você aplica a lente certa.',
@@ -141,7 +139,7 @@ const AGENTS: AgentDef[] = [
     specialty: 'Dinâmicas de Estratificação Social',
     focus:     'Movimentos sociais e estruturas de poder.',
     color:     '#60a5fa',
-    avatar:    av('ProfNexus', 'hair=variant01'),
+    avatar:    av('ProfNexus'),
     userMsg:   'Como abordar questões de Sociologia no ENEM?',
     agentMsg:  'Sociologia no ENEM é sempre: identifique o fenômeno → localize no contexto → aplique o conceito. Durkheim = coesão social. Weber = dominação. Marx = conflito de classes. O enunciado sempre pede o conceito certo pra situação certa.',
     tip:       'Mapeie: fenômeno → teórico → conceito. Essa é a equação da Sociologia no ENEM.',
@@ -152,7 +150,7 @@ const AGENTS: AgentDef[] = [
     specialty: 'Linguagem Visual e Cultura',
     focus:     'Leitura de imagem e manifestos artísticos.',
     color:     '#fb7185',
-    avatar:    av('MsVanguarda', 'hair=variant04&earrings=variant01'),
+    avatar:    av('MsVanguarda'),
     userMsg:   'Como o ENEM cobra Artes? Parece impossível estudar.',
     agentMsg:  'Artes no ENEM é leitura de imagem + contexto histórico. Movimento artístico + o que ele representa politicamente. Uma tela não é decoração — é manifesto. Modernismo de 22? Ruptura com o academicismo, afirmação da identidade nacional.',
     tip:       'Lê cada obra como texto com argumento. Contexto histórico é sempre a chave.',
@@ -163,7 +161,7 @@ const AGENTS: AgentDef[] = [
     specialty: 'Literatura e Intertextualidade',
     focus:     'Análise de obras e escolas literárias.',
     color:     '#818cf8',
-    avatar:    av('SrtaSoneto', 'hair=variant05&earrings=variant02'),
+    avatar:    av('SrtaSoneto'),
     userMsg:   'Como estudo Literatura pra cair no ENEM?',
     agentMsg:  'O ENEM cobra contexto, não decoreba de obra. Romantismo = idealização + nacionalismo. Realismo = crítica social + ironia. Modernismo = ruptura + identidade. Lê trechos curtos e identifica o movimento pelo tom — isso resolve 90% das questões.',
     tip:       'Tom + vocabulário = movimento literário. O trecho sempre entrega a resposta.',
@@ -174,7 +172,7 @@ const AGENTS: AgentDef[] = [
     specialty: 'Decodificação de Texto em Inglês',
     focus:     'Leitura estratégica e falsos cognatos.',
     color:     '#38bdf8',
-    avatar:    av('TeacherLink', 'hair=variant02'),
+    avatar:    av('TeacherLink'),
     userMsg:   'Nunca sei o que fazer com textos em inglês na prova.',
     agentMsg:  'Regra de ouro: você não precisa entender tudo. O ENEM testa leitura, não tradução. Primeiro, leia a pergunta. Depois, caça no texto as palavras-chave da pergunta. A resposta está no texto — só precisa saber onde olhar.',
     tip:       'Pergunta → palavras-chave → localiza no texto. Esse fluxo resolve 80% das questões.',
@@ -185,7 +183,7 @@ const AGENTS: AgentDef[] = [
     specialty: 'Decodificação de Texto em Espanhol',
     focus:     'Contexto, falsos amigos e leitura.',
     color:     '#fbbf24',
-    avatar:    av('ProfaSol', 'hair=variant06&earrings=variant01'),
+    avatar:    av('ProfaSol'),
     userMsg:   'Espanhol parece fácil mas sempre erro por confundir com português.',
     agentMsg:  'Exatamente aí está a armadilha. "Embarazada" = grávida, não embaraçada. "Borracha" = bêbada, não borracha. O espanhol parece próximo mas tem minas espalhadas. Regra: sempre confirma pelo contexto antes de confiar na aparência da palavra.',
     tip:       'Falso amigo é a armadilha número 1. Contexto sempre vence aparência.',
@@ -196,7 +194,7 @@ const AGENTS: AgentDef[] = [
     specialty: 'Análise do Mundo Contemporâneo',
     focus:     'Geopolítica, fatos e contexto ENEM.',
     color:     '#a3e635',
-    avatar:    av('DrMundi', 'beard=variant02'),
+    avatar:    av('DrMundi'),
     userMsg:   'Como atualidades cai no ENEM? Preciso acompanhar tudo?',
     agentMsg:  'Não. O ENEM não cobra notícia — cobra conexão. Pega um tema atual (crise climática, conflito geopolítico) e conecta com conceitos das disciplinas. A pergunta real é: "o que esse fato revela sobre a sociedade/natureza/economia?". Sabe o conceito, você responde qualquer contexto.',
     tip:       'Fato atual = gancho. O conceito de base é sempre o que a questão mede.',
@@ -243,8 +241,6 @@ function AgentCard({ agent, isActive, ringActive, ringKey, onClick }: {
           ? `linear-gradient(145deg, ${agent.color}14 0%, ${agent.color}06 100%)`
           : 'rgba(255,255,255,0.02)',
         border: `0.5px solid ${isActive ? agent.color + '80' : 'rgba(255,255,255,0.07)'}`,
-        backdropFilter: 'blur(64px)',
-        WebkitBackdropFilter: 'blur(64px)',
         transition: 'border-color 0.25s, background 0.25s',
       }}
       animate={{ scale: isActive ? 1.045 : 1 }}
@@ -411,10 +407,8 @@ function CommandRail({ agents, activeId, onSelect, ringActive, ringKey }: {
       onMouseMove={onMouseMove}
       onMouseLeave={onMouseLeave}
       style={{
-        background:         'rgba(9,9,11,0.5)',
+        background:         'rgba(9,9,11,0.92)',
         border:             '0.5px solid rgba(255,255,255,0.06)',
-        backdropFilter:     'blur(32px)',
-        WebkitBackdropFilter: 'blur(32px)',
         padding:            '14px 16px',
       }}
     >
@@ -560,9 +554,7 @@ export default function AiTutorsSection() {
         transition={{ duration: 0.4 }}
         style={{
           height:               440,
-          background:           'rgba(9,9,11,0.5)',
-          backdropFilter:       'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
+          background:           'rgba(9,9,11,0.92)',
           border:               '0.5px solid transparent',
         }}
       >

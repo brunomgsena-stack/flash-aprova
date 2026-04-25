@@ -228,9 +228,8 @@ function ApprovedTicker() {
     <div
       className="overflow-hidden border-y py-3"
       style={{
-        background:   'rgba(9,9,11,0.80)',
+        background:   'rgba(9,9,11,0.95)',
         borderColor:  'rgba(16,185,129,0.18)',
-        backdropFilter: 'blur(8px)',
         ...EDGE_MASK,
       }}
     >
@@ -313,9 +312,8 @@ export default function ReelsTestimonials() {
         <div
           className="rounded-2xl px-6 py-4 flex flex-wrap items-center justify-center gap-x-8 gap-y-3"
           style={{
-            background:     'rgba(255,255,255,0.03)',
+            background:     'rgba(18,18,18,0.92)',
             border:         '1px solid rgba(255,255,255,0.06)',
-            backdropFilter: 'blur(12px)',
           }}
         >
           {[

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { motion, useMotionValue, useAnimationFrame } from 'framer-motion';
 import Link from 'next/link';
 import { type SubjectId, SUBJECT_META } from '../onboarding/flashcardData';
@@ -24,28 +24,97 @@ function RadarChart({ scores }: { scores: number[] }) {
   const cx = 110, cy = 110, R = 82;
   const angles = [-90, 0, 90, 180].map(d => (d * Math.PI) / 180);
   const pt = (r: number, i: number) => `${cx + r * Math.cos(angles[i])},${cy + r * Math.sin(angles[i])}`;
+
+  // animated scores: fade in from 0 to actual value
+  const [animScores, setAnimScores] = useState(scores.map(() => 0));
+
+  useEffect(() => {
+    let start: number | null = null;
+    const duration = 1200;
+    const raf = requestAnimationFrame(function tick(ts) {
+      if (!start) start = ts;
+      const t = Math.min((ts - start) / duration, 1);
+      const ease = 1 - Math.pow(1 - t, 3);
+      setAnimScores(scores.map(s => s * ease));
+      if (t < 1) requestAnimationFrame(tick);
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [scores]);
+
+  const polyPoints = animScores.map((s, i) => pt(s * R, i)).join(' ');
+
   return (
-    <svg viewBox="0 0 220 220" className="w-full" style={{ maxHeight: 220 }}>
+    <svg viewBox="0 0 220 220" className="w-full" style={{ maxHeight: 220, minHeight: 140 }}>
       <defs>
         <filter id="radar-glow">
           <feGaussianBlur stdDeviation="3" result="b"/>
           <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
         </filter>
+        <filter id="scan-glow">
+          <feGaussianBlur stdDeviation="2" result="b"/>
+          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <linearGradient id="scan-grad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="transparent"/>
+          <stop offset="40%" stopColor={`${VIOLET}cc`}/>
+          <stop offset="60%" stopColor="#a78bfa"/>
+          <stop offset="100%" stopColor="transparent"/>
+        </linearGradient>
+        <clipPath id="radar-clip">
+          <rect x="28" y="28" width="164" height="164"/>
+        </clipPath>
       </defs>
+
+      {/* grid rings */}
       {[0.25, 0.5, 0.75, 1].map(p => (
         <polygon key={p} points={angles.map((_, i) => pt(p * R, i)).join(' ')}
           fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="1" />
       ))}
+      {/* grid axes */}
       {angles.map((_, i) => (
         <line key={i} x1={cx} y1={cy} x2={cx + R * Math.cos(angles[i])} y2={cy + R * Math.sin(angles[i])}
           stroke="rgba(255,255,255,0.07)" strokeWidth="1" />
       ))}
-      <polygon points={scores.map((s, i) => pt(s * R, i)).join(' ')}
-        fill={`${VIOLET}25`} stroke={VIOLET} strokeWidth="2" filter="url(#radar-glow)" />
-      {scores.map((s, i) => (
-        <circle key={i} cx={cx + s * R * Math.cos(angles[i])} cy={cy + s * R * Math.sin(angles[i])}
-          r="5" fill={RADAR_COLORS[i]} />
-      ))}
+
+      {/* filled area */}
+      <polygon points={polyPoints}
+        fill={`${VIOLET}28`} stroke={VIOLET} strokeWidth="2" filter="url(#radar-glow)" />
+
+      {/* scan line — pure SMIL, zero JS */}
+      <line x1="28" x2="192"
+        stroke="url(#scan-grad)" strokeWidth="1.5"
+        filter="url(#scan-glow)"
+        clipPath="url(#radar-clip)"
+        opacity="0.75">
+        <animate attributeName="y1" values="28;192;28" dur="3s" repeatCount="indefinite" calcMode="ease-in-out"/>
+        <animate attributeName="y2" values="28;192;28" dur="3s" repeatCount="indefinite" calcMode="ease-in-out"/>
+      </line>
+      {/* scan line bright core */}
+      <line x1="60" x2="160"
+        stroke="#c4b5fd" strokeWidth="0.5"
+        clipPath="url(#radar-clip)"
+        opacity="0.4">
+        <animate attributeName="y1" values="28;192;28" dur="3s" repeatCount="indefinite" calcMode="ease-in-out"/>
+        <animate attributeName="y2" values="28;192;28" dur="3s" repeatCount="indefinite" calcMode="ease-in-out"/>
+      </line>
+
+      {/* dots — pulse staggered via SMIL begin offset */}
+      {animScores.map((s, i) => {
+        const dotX = cx + s * R * Math.cos(angles[i]);
+        const dotY = cy + s * R * Math.sin(angles[i]);
+        return (
+          <g key={i}>
+            <circle cx={dotX} cy={dotY} r="6" fill={RADAR_COLORS[i]} opacity="0">
+              <animate attributeName="r"       values="6;14;6"        dur="3.6s" begin={`${i * 0.9}s`} repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0.25;0;0.25"   dur="3.6s" begin={`${i * 0.9}s`} repeatCount="indefinite"/>
+            </circle>
+            <circle cx={dotX} cy={dotY} r="5" fill={RADAR_COLORS[i]} filter="url(#radar-glow)"/>
+            <circle cx={dotX} cy={dotY} r="2.5" fill="white" opacity="0.7"/>
+          </g>
+        );
+      })}
+
+      {/* labels */}
       {angles.map((_, i) => {
         const lx = cx + (R + 16) * Math.cos(angles[i]);
         const ly = cy + (R + 16) * Math.sin(angles[i]);
@@ -135,6 +204,7 @@ function NarrativeReport({
 
 // ─── Knowledge Loss Curve ─────────────────────────────────────────────────────
 function InsightsPanel({ health }: { health: number }) {
+  const deficitPts = health < 55 ? 500 : health < 65 ? 400 : health < 72 ? 300 : 200;
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
 
@@ -229,12 +299,12 @@ function InsightsPanel({ health }: { health: number }) {
           <div>
             <div className="flex justify-between items-center mb-2">
               <span className="text-xs font-semibold text-slate-400">Meta para Aprovação</span>
-              <span className="text-sm font-black" style={{ color: GREEN }}>85%</span>
+              <span className="text-sm font-black" style={{ color: GREEN }}>87%</span>
             </div>
             <div className="h-3 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
               <div className="h-full rounded-full"
                 style={{
-                  width: '85%',
+                  width: '87%',
                   background: `linear-gradient(90deg, #16a34a, ${GREEN})`,
                   boxShadow: `0 0 8px ${GREEN}60`,
                 }} />
@@ -246,7 +316,7 @@ function InsightsPanel({ health }: { health: number }) {
               [ DÉFICIT DE COMPETITIVIDADE ]
             </p>
             <p className="text-xl font-black mt-1" style={{ color: '#fca5a5' }}>
-              DÉFICIT PROJETADO: -400 PONTOS NA MÉDIA
+              DÉFICIT PROJETADO: -{deficitPts} PONTOS NA MÉDIA
             </p>
             <p className="text-xs text-slate-500 mt-2 leading-relaxed">
               Este é o volume de nota que você está perdendo agora por não usar Engenharia de Retenção.
@@ -258,10 +328,6 @@ function InsightsPanel({ health }: { health: number }) {
     </div>
   );
 }
-
-// ─── Evidence Carousel ────────────────────────────────────────────────────────
-// Content comes from lib/reels-data.ts — shared with ReelsTestimonials on the
-// landing page. Edit that file to update both carousels simultaneously.
 
 // ─── Evidence Carousel ────────────────────────────────────────────────────────
 // Content comes from lib/reels-data.ts — shared with ReelsTestimonials on the
@@ -290,7 +356,7 @@ function EvidenceCarousel() {
   const doubled = [...REELS, ...REELS];
 
   return (
-    <div className="mb-8">
+    <div id="mural-aprovados" className="mb-8">
       <div className="text-center mb-5">
         <p className="text-xs font-bold tracking-widest uppercase mb-1" style={{ color: EMERALD }}>
           🏅 MURAL DOS APROVADOS
@@ -396,19 +462,30 @@ interface OnboardingData {
 
 type PlanId = 'aceleracao' | 'panteao_elite';
 
-const ABACATE_LINKS: Record<PlanId, string> = {
-  aceleracao:    'https://www.asaas.com/c/49ydadcmmrrzmigg',
-  panteao_elite: 'https://www.asaas.com/c/7tv0nhdilq1frb4s',
-};
-
 const cardStyle = {
   background: 'rgba(10,5,20,0.88)',
   backdropFilter: 'blur(24px)',
   WebkitBackdropFilter: 'blur(24px)',
 } as React.CSSProperties;
 
+const CURSO_WORDS = ['DIREITO','PSICO','ODONTO','ENG','MED VET','SAÚDE','EXATAS','COMPUTAÇÃO','ARQ & URB','ECONOMIA','ADM'];
+
 export default function CheckoutPage() {
   const [data, setData] = useState<OnboardingData | null>(null);
+  const [cursoIdx, setCursoIdx] = useState(0);
+  const [cursoVisible, setCursoVisible] = useState(true);
+  const [buying, setBuying] = useState<PlanId | null>(null);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCursoVisible(false);
+      setTimeout(() => {
+        setCursoIdx(i => (i + 1) % CURSO_WORDS.length);
+        setCursoVisible(true);
+      }, 220);
+    }, 1800);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     try {
@@ -417,12 +494,22 @@ export default function CheckoutPage() {
     } catch { /* ignore */ }
   }, []);
 
-  function handleBuy(planId: PlanId) {
-    const params = new URLSearchParams();
-    if (data?.email) params.set('email', data.email);
-    if (data?.name)  params.set('name',  data.name);
-    const query = params.toString();
-    window.location.href = query ? `${ABACATE_LINKS[planId]}?${query}` : ABACATE_LINKS[planId];
+  async function handleBuy(planId: PlanId) {
+    if (buying) return;
+    setBuying(planId);
+    try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ planId, email: data?.email, name: data?.name }),
+      });
+      const json = await res.json() as { url?: string; error?: string };
+      if (!res.ok || !json.url) throw new Error(json.error ?? 'Erro ao gerar link de pagamento.');
+      window.location.href = json.url;
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Erro inesperado. Tente novamente.');
+      setBuying(null);
+    }
   }
 
   const health      = data?.memoryHealth ?? 62;
@@ -433,6 +520,7 @@ export default function CheckoutPage() {
   const status      = health < 55 ? 'CRÍTICO' : health < 72 ? 'EM RISCO' : 'ATENÇÃO';
   const statusColor = health < 55 ? RED : health < 72 ? ORANGE : '#eab308';
   const statusBorder= health < 55 ? 'rgba(239,68,68,0.28)' : health < 72 ? 'rgba(249,115,22,0.28)' : 'rgba(234,179,8,0.28)';
+  const deficitPts  = health < 55 ? 500 : health < 65 ? 400 : health < 72 ? 300 : 200;
 
   const subjectScore = health > 80 ? 0.76 : health > 60 ? 0.52 : health > 40 ? 0.32 : 0.18;
   const defaultScores: Record<SubjectId, number> = { biologia: 0.60, quimica: 0.42, historia: 0.55, geografia: 0.68 };
@@ -519,7 +607,7 @@ export default function CheckoutPage() {
                 Relatório de Diagnóstico · IA
               </p>
               <h1 className="text-3xl sm:text-4xl font-black text-white leading-tight mb-1">
-                {data?.name && <span>{data.name}, </span>}
+                {data?.name && <span>{data.name.split(' ')[0]}, </span>}
                 <span style={{ color: RED, textShadow: `0 0 24px ${RED}90` }}>
                   Erosão de Dados
                 </span>{' '}Detectada
@@ -553,17 +641,14 @@ export default function CheckoutPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8 items-start">
 
           {/* ── PROTOCOLO MANUAL ── */}
-          <div className="relative rounded-2xl p-7 overflow-hidden opacity-80 hover:opacity-100 transition-opacity"
+          <div className="relative rounded-2xl p-7 overflow-hidden"
             style={{ ...cardStyle, border:'1px solid rgba(124,58,237,0.18)' }}>
             <div className="absolute inset-x-0 top-0 h-px"
               style={{ background:`linear-gradient(90deg,transparent,rgba(124,58,237,0.40),transparent)` }} />
 
             {/* Plan name */}
-            <p className="text-[10px] font-black tracking-widest uppercase mb-1" style={{ color:'#8b5cf6' }}>
-              MÓDULO DE INTERVENÇÃO I
-            </p>
             <p className="text-base font-black text-white mb-4 leading-tight">
-              [ PROTOCOLO MANUAL:{' '}
+              [ PROTOCOLO BÁSICO:{' '}
               <span style={{ color:'#8b5cf6' }}>FLASHCARDS ]</span>
             </p>
 
@@ -576,6 +661,7 @@ export default function CheckoutPage() {
 
             {/* Price */}
             <div className="mb-3">
+              <p className="text-slate-600 text-xs line-through mb-0.5">era R$ 890,00</p>
               <span className="text-4xl font-black text-white">12x de R$&nbsp;59,16</span>
               <p className="text-xs font-semibold mt-0.5" style={{ color:'#8b5cf6' }}>no cartão de crédito</p>
             </div>
@@ -624,9 +710,11 @@ export default function CheckoutPage() {
 
             <button
               onClick={() => handleBuy('aceleracao')}
-              className="block w-full py-3 rounded-xl text-center text-sm font-black tracking-wider transition-all hover:opacity-80"
+              aria-label="Assinar Protocolo Básico — Flashcards"
+              disabled={!!buying}
+              className="block w-full py-3 rounded-xl text-center text-sm font-black tracking-wider transition-all hover:opacity-80 disabled:opacity-50 disabled:cursor-wait"
               style={{ background:'rgba(124,58,237,0.14)', border:'1px solid rgba(124,58,237,0.30)', color:'#a78bfa' }}>
-              [ EXECUTAR MÓDULO MANUAL ]
+              {buying === 'aceleracao' ? '[ AGUARDE... ]' : '[ COMEÇAR COM FLASHCARDS ]'}
             </button>
           </div>
 
@@ -649,21 +737,26 @@ export default function CheckoutPage() {
 
             {/* Top badge — inline, no overlap */}
             <div className="flex justify-center mb-4">
-              <span className="text-xs font-black px-3 py-1.5 rounded-full text-white text-center"
-                style={{ background:`linear-gradient(135deg,${EMERALD},${CYAN})`, boxShadow:`0 0 20px ${EMERALD}55` }}>
-                🏅 ESCOLHA DOS TOP 1% MEDICINA
+              <span className="text-xs font-black px-3 py-1.5 rounded-full text-white inline-flex items-center gap-1"
+                style={{ background:`linear-gradient(135deg,${EMERALD},${CYAN})`, boxShadow:`0 0 20px ${EMERALD}55`, minWidth:'22ch', justifyContent:'center' }}>
+                🏅 ESCOLHA DOS TOP 1%&nbsp;
+                <span style={{
+                  display:'inline-block',
+                  opacity: cursoVisible ? 1 : 0,
+                  transform: cursoVisible ? 'translateY(0px)' : 'translateY(-5px)',
+                  transition:'opacity 200ms ease, transform 200ms ease',
+                  letterSpacing:'0.04em',
+                }}>
+                  {CURSO_WORDS[cursoIdx]}
+                </span>
               </span>
             </div>
 
             {/* Plan name */}
-            <p className="text-[10px] font-black tracking-widest uppercase mb-1 relative"
-              style={{ color: EMERALD }}>
-              MÓDULO DE INTERVENÇÃO II
-            </p>
             <p className="text-base font-black mb-4 leading-tight relative"
               style={{ background:`linear-gradient(90deg,${EMERALD},${CYAN})`,
                 WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>
-              [ PROTOCOLO NEURAL: INTELIGÊNCIA COMPLETA ]
+              [ PROTOCOLO NEURAL: INTELIGÊNC.IA ]
             </p>
 
             {/* Validity */}
@@ -678,6 +771,7 @@ export default function CheckoutPage() {
 
             {/* Price */}
             <div className="mb-3 relative">
+              <p className="text-slate-600 text-xs line-through mb-0.5">era R$ 997,00</p>
               <span className="text-4xl font-black text-white">12x de R$&nbsp;66,41</span>
               <p className="text-xs font-semibold mt-0.5" style={{ color: EMERALD }}>no cartão de crédito</p>
             </div>
@@ -720,7 +814,9 @@ export default function CheckoutPage() {
 
             <button
               onClick={() => handleBuy('panteao_elite')}
-              className="relative block w-full py-4 rounded-xl text-center font-black text-white text-sm tracking-wider transition-all duration-200 hover:-translate-y-0.5"
+              aria-label="Assinar Protocolo Neural — Panteão Elite"
+              disabled={!!buying}
+              className="relative block w-full py-4 rounded-xl text-center font-black text-white text-sm tracking-wider transition-all duration-200 hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-wait"
               style={{
                 background:`linear-gradient(135deg,${EMERALD} 0%,${CYAN} 60%,#a78bfa 100%)`,
                 boxShadow:`0 0 40px ${EMERALD}55, 0 4px 20px rgba(0,0,0,0.50)`,
@@ -729,7 +825,7 @@ export default function CheckoutPage() {
                 <span className="absolute inset-0"
                   style={{ background:'linear-gradient(105deg,transparent 30%,rgba(255,255,255,0.12) 50%,transparent 70%)' }} />
               </span>
-              [ ATIVAR INTELIGÊNCIA PANTEÃO ]
+              {buying === 'panteao_elite' ? '[ AGUARDE... ]' : '[ ATIVAR PROTOCOLO NEURAL ]'}
             </button>
 
             {/* Micro trust */}
@@ -769,29 +865,28 @@ export default function CheckoutPage() {
         {/* ── Feature comparison ── */}
         <div className="rounded-2xl overflow-hidden mb-8"
           style={{ border:'1px solid rgba(255,255,255,0.06)', background:'rgba(10,5,20,0.60)' }}>
-          <div className="grid grid-cols-3 px-5 py-3 border-b border-white/5">
-            <span className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Recurso</span>
-            <span className="text-xs font-semibold text-center uppercase tracking-wider" style={{ color:'#8b5cf6' }}>
+          <div className="grid grid-cols-3 px-3 sm:px-5 py-3 border-b border-white/5">
+            <span className="text-[10px] sm:text-xs font-semibold text-slate-600 uppercase tracking-wider">Recurso</span>
+            <span className="text-[10px] sm:text-xs font-semibold text-center uppercase tracking-wider" style={{ color:'#8b5cf6' }}>
               ⚡ Módulo I
             </span>
-            <span className="text-xs font-semibold text-center uppercase tracking-widest"
+            <span className="text-[10px] sm:text-xs font-semibold text-center uppercase tracking-widest"
               style={{ background:`linear-gradient(90deg,${EMERALD},${CYAN})`, WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>
               🏆 Módulo II
             </span>
           </div>
           {[
-            ['Flashcards SRS ilimitados',                true,  true ],
-            ['Dashboard & heatmap',                      true,  true ],
-            ['Resumos Storytelling',                     false, true ],
-            ['Tabelas Comparativas',                     false, true ],
-            ['Áudio-Resumos IA',                         false, true ],
-            ['Exército de 15 Especialistas IA',          false, true ],
-            ['Redação Master — Tutor.IA Prof.ª Norma',  false, true ],
-            ['Acesso 2 anos (ENEM 2026 + 2027)',         false, true ],
+            ['Flashcards SRS ilimitados',               true,  true ],
+            ['Dashboard & heatmap',                     true,  true ],
+            ['Resumos Storytelling',                    false, true ],
+            ['Tabelas Comparativas',                    false, true ],
+            ['15 Especialistas IA',                     false, true ],
+            ['Prof.ª Norma — Redação',                  false, true ],
+            ['Acesso 2 anos (2026+2027)',                false, true ],
           ].map(([feat, flash, pro], i) => (
-            <div key={feat as string} className="grid grid-cols-3 px-5 py-3 text-sm"
+            <div key={feat as string} className="grid grid-cols-3 px-3 sm:px-5 py-3 text-xs sm:text-sm"
               style={{ borderTop:'1px solid rgba(255,255,255,0.04)', background:i%2===0?'rgba(255,255,255,0.012)':'transparent' }}>
-              <span className="text-slate-400">{feat as string}</span>
+              <span className="text-slate-400 leading-snug">{feat as string}</span>
               <span className="text-center font-semibold" style={{ color:flash?'#8b5cf6':'#1e1b4b' }}>{flash?'✓':'—'}</span>
               <span className="text-center font-semibold" style={{ color:pro?EMERALD:'#334155' }}>{pro?'✓':'—'}</span>
             </div>

@@ -67,7 +67,7 @@ export const REELS: Reel[] = [
     stories:   [1, 1, 1, 1],
   },
   {
-    img:       '/images/juliomed-ufrj.png',
+    img:       '/images/juliomed-ufrj.avif',
     tag:       'DOMINADO',   tagColor: '#fbbf24',
     score:     '960/1000',   course:   'MEDICINA · UFRJ',
     handle:    '@juliomed.ufrj',

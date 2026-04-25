@@ -311,9 +311,7 @@ function WritingStage() {
       className="relative rounded-2xl overflow-hidden flex flex-col"
       style={{
         minHeight: 580,
-        background: 'rgba(6,8,16,0.82)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
+        background: 'rgba(6,8,16,0.95)',
         border: `1px solid ${PURPLE}28`,
         boxShadow: `0 0 70px ${PURPLE}0a`,
       }}
@@ -734,9 +732,7 @@ function ScannerPanel() {
       className="relative rounded-2xl overflow-hidden flex flex-col"
       style={{
         minHeight: 580,
-        background: 'rgba(6,8,16,0.70)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
+        background: 'rgba(6,8,16,0.95)',
         border: `1px solid ${PURPLE}25`,
         boxShadow: `0 0 60px ${PURPLE}0a`,
       }}
@@ -796,11 +792,9 @@ function ScannerPanel() {
             transition={{ duration: 0.35, ease: [0.22, 0.61, 0.36, 1] }}
           >
             <div className="rounded-xl p-2.5" style={{
-              background: 'rgba(5,7,14,0.94)',
+              background: 'rgba(5,7,14,0.97)',
               border: `1px solid ${err.color}40`,
               boxShadow: `0 0 18px ${err.color}18, 0 4px 24px rgba(0,0,0,0.65)`,
-              backdropFilter: 'blur(14px)',
-              WebkitBackdropFilter: 'blur(14px)',
             }}>
               <div className="flex items-center gap-1.5 mb-1.5">
                 <motion.div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: err.color }}
@@ -874,9 +868,7 @@ function ScannerPanel() {
 function DossierScoreCard() {
   return (
     <div className="relative rounded-2xl overflow-hidden" style={{
-      background: 'rgba(6,8,16,0.70)',
-      backdropFilter: 'blur(20px)',
-      WebkitBackdropFilter: 'blur(20px)',
+      background: 'rgba(6,8,16,0.95)',
       border: `1px solid ${NEON}30`,
       boxShadow: `0 0 50px ${NEON}18, 0 0 100px ${NEON}0a`,
     }}>

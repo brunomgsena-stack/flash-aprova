@@ -17,6 +17,8 @@ function mapError(msg: string): string {
 
 // ─── Neon input ───────────────────────────────────────────────────────────────
 
+const MONO = "'JetBrains Mono', monospace";
+
 function NeonInput({
   label, type, value, onChange, placeholder,
 }: {
@@ -29,7 +31,16 @@ function NeonInput({
   const [focused, setFocused] = useState(false);
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="text-xs font-semibold tracking-widest uppercase text-slate-400">
+      <label
+        style={{
+          fontFamily:    MONO,
+          fontSize:      '10px',
+          letterSpacing: '0.15em',
+          textTransform: 'uppercase',
+          color:         focused ? '#00e5ff' : '#64748b',
+          transition:    'color 0.2s',
+        }}
+      >
         {label}
       </label>
       <input
@@ -39,14 +50,49 @@ function NeonInput({
         placeholder={placeholder}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
-        className="w-full px-4 py-3 rounded-xl bg-transparent text-white placeholder-slate-600 outline-none transition-all duration-200"
         style={{
-          background:  'rgba(255,255,255,0.04)',
-          border:      `1px solid ${focused ? 'rgba(0,229,255,0.7)' : 'rgba(255,255,255,0.1)'}`,
-          boxShadow:   focused ? '0 0 0 1px rgba(0,229,255,0.25), 0 0 20px rgba(0,229,255,0.12)' : 'none',
+          fontFamily:   MONO,
+          fontSize:     '13px',
+          width:        '100%',
+          padding:      '12px 16px',
+          borderRadius: '12px',
+          background:   'rgba(255,255,255,0.04)',
+          border:       `1px solid ${focused ? 'rgba(139,92,246,0.8)' : 'rgba(255,255,255,0.1)'}`,
+          boxShadow:    focused
+            ? '0 0 0 2px rgba(139,92,246,0.2), 0 0 28px rgba(139,92,246,0.25), inset 0 0 12px rgba(139,92,246,0.06)'
+            : 'none',
+          color:        'white',
+          outline:      'none',
+          transition:   'all 0.25s ease',
         }}
       />
     </div>
+  );
+}
+
+// ─── Cybernetic lock icon ─────────────────────────────────────────────────────
+
+function CyberLock() {
+  return (
+    <svg width="38" height="44" viewBox="0 0 38 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Shackle */}
+      <path d="M9 20V13C9 7.477 13.477 3 19 3C24.523 3 29 7.477 29 13V20"
+        stroke="#00e5ff" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+      {/* Body */}
+      <rect x="3" y="19" width="32" height="22" rx="3"
+        fill="rgba(0,229,255,0.05)" stroke="#00e5ff" strokeWidth="1" />
+      {/* Corner ticks */}
+      <line x1="3" y1="22" x2="8" y2="22" stroke="#00e5ff" strokeWidth="0.75" opacity="0.5" />
+      <line x1="30" y1="22" x2="35" y2="22" stroke="#00e5ff" strokeWidth="0.75" opacity="0.5" />
+      <line x1="3" y1="38" x2="8" y2="38" stroke="#00e5ff" strokeWidth="0.75" opacity="0.5" />
+      <line x1="30" y1="38" x2="35" y2="38" stroke="#00e5ff" strokeWidth="0.75" opacity="0.5" />
+      {/* Keyhole circle */}
+      <circle cx="19" cy="30" r="4" fill="none" stroke="#8b5cf6" strokeWidth="1" />
+      {/* Keyhole stem */}
+      <line x1="19" y1="34" x2="19" y2="38" stroke="#8b5cf6" strokeWidth="1.5" strokeLinecap="round" />
+      {/* Inner dot */}
+      <circle cx="19" cy="30" r="1.2" fill="#8b5cf6" />
+    </svg>
   );
 }
 
@@ -57,16 +103,14 @@ type Mode = 'login' | 'signup';
 export default function LoginPage() {
   const router = useRouter();
 
-  const [mode,    setMode]    = useState<Mode>('login');
-  const [email,   setEmail]   = useState('');
+  const [mode,     setMode]     = useState<Mode>('login');
+  const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error,   setError]   = useState('');
-  const [success, setSuccess] = useState('');
+  const [loading,  setLoading]  = useState(false);
+  const [error,    setError]    = useState('');
+  const [success,  setSuccess]  = useState('');
 
-  const switchMode = (m: Mode) => {
-    setMode(m); setError(''); setSuccess('');
-  };
+  const switchMode = (m: Mode) => { setMode(m); setError(''); setSuccess(''); };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,145 +129,262 @@ export default function LoginPage() {
     }
   };
 
-  const CYAN = '#00e5ff';
-
   return (
-    <main className="min-h-screen flex items-center justify-center px-4">
-      {/* Ambient glow */}
-      <div
-        className="fixed inset-0 pointer-events-none"
-        style={{
-          background: 'radial-gradient(ellipse at 50% 40%, rgba(0,229,255,0.05) 0%, transparent 60%)',
-        }}
-      />
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
-      <div className="w-full max-w-md relative z-10">
+        @keyframes neonPulse {
+          0%, 100% {
+            box-shadow: 0 0 60px rgba(0,229,255,0.07), 0 0 0 0.5px rgba(0,229,255,0.3);
+            border-color: rgba(0,229,255,0.3);
+          }
+          50% {
+            box-shadow: 0 0 90px rgba(139,92,246,0.15), 0 0 0 0.5px rgba(139,92,246,0.5);
+            border-color: rgba(139,92,246,0.45);
+          }
+        }
 
-        {/* Brand */}
-        <div className="text-center mb-8">
-          <p className="text-xs font-semibold tracking-widest uppercase mb-2" style={{ color: CYAN }}>
-            FlashAprova
-          </p>
-          <h1 className="text-3xl font-bold text-white">
-            {mode === 'login' ? 'Bem-vindo de volta' : 'Criar conta'}
-          </h1>
-          <p className="text-slate-400 text-sm mt-1">
-            {mode === 'login'
-              ? 'Entre para continuar seus estudos'
-              : 'Comece a estudar com repetição espaçada'}
-          </p>
-        </div>
+        @keyframes shimmer {
+          0%   { transform: translateX(-130%) skewX(-20deg); opacity: 0; }
+          8%   { opacity: 1; }
+          45%  { transform: translateX(220%) skewX(-20deg); opacity: 0; }
+          100% { transform: translateX(220%) skewX(-20deg); opacity: 0; }
+        }
 
-        {/* Card */}
+        @keyframes statusBlink {
+          0%, 88%, 100% { opacity: 0.45; }
+          93%           { opacity: 0.15; }
+        }
+
+        .login-card {
+          animation: neonPulse 3s ease-in-out infinite;
+        }
+
+        .shimmer-sweep {
+          animation: shimmer 3s ease-in-out infinite;
+        }
+
+        .status-line {
+          animation: statusBlink 4s ease-in-out infinite;
+        }
+      `}</style>
+
+      <main
+        className="min-h-screen flex items-center justify-center px-4"
+        style={{ fontFamily: MONO }}
+      >
+        {/* Ambient glow */}
         <div
-          className="rounded-2xl p-8 relative overflow-hidden"
+          className="fixed inset-0 pointer-events-none"
           style={{
-            background:           'rgba(255,255,255,0.04)',
-            backdropFilter:       'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-            border:               '1px solid rgba(0,229,255,0.2)',
-            boxShadow:            '0 0 60px rgba(0,229,255,0.06)',
+            background: 'radial-gradient(ellipse at 50% 38%, rgba(0,229,255,0.07) 0%, rgba(139,92,246,0.05) 35%, transparent 65%)',
           }}
-        >
-          {/* Top shimmer */}
-          <div
-            className="absolute inset-x-0 top-0 h-px"
-            style={{ background: 'linear-gradient(90deg, transparent, rgba(0,229,255,0.4), transparent)' }}
-          />
-          {/* Radial glow */}
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{ background: 'radial-gradient(ellipse at top, rgba(0,229,255,0.04) 0%, transparent 65%)' }}
-          />
+        />
 
-          {/* Mode tabs */}
-          <div
-            className="flex rounded-xl p-1 mb-7 relative z-10"
-            style={{ background: 'rgba(255,255,255,0.05)' }}
-          >
-            {(['login', 'signup'] as Mode[]).map((m) => (
-              <button
-                key={m}
-                onClick={() => switchMode(m)}
-                className="flex-1 py-2 rounded-lg text-sm font-semibold transition-all duration-200"
-                style={{
-                  color:      mode === m ? 'white' : '#64748b',
-                  background: mode === m ? 'rgba(0,229,255,0.15)' : 'transparent',
-                  border:     mode === m ? '1px solid rgba(0,229,255,0.3)' : '1px solid transparent',
-                  boxShadow:  mode === m ? '0 0 16px rgba(0,229,255,0.15)' : 'none',
-                }}
-              >
-                {m === 'login' ? 'Entrar' : 'Cadastrar'}
-              </button>
-            ))}
-          </div>
+        <div className="w-full max-w-md relative z-10">
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4 relative z-10">
-            <NeonInput
-              label="E-mail"
-              type="email"
-              value={email}
-              onChange={setEmail}
-              placeholder="seu@email.com"
-            />
-            <div>
-              <NeonInput
-                label="Senha"
-                type="password"
-                value={password}
-                onChange={setPassword}
-                placeholder={mode === 'signup' ? 'Mínimo 6 caracteres' : '••••••••'}
-              />
-              {mode === 'login' && (
-                <div className="flex justify-end mt-1.5">
-                  <a
-                    href="/forgot-password"
-                    className="text-xs text-slate-500 hover:text-[#00FF73] transition-colors duration-200"
-                  >
-                    Esqueci minha senha
-                  </a>
-                </div>
-              )}
+          {/* Header — above card */}
+          <div className="text-center mb-6">
+            {/* Lock */}
+            <div className="flex justify-center mb-4">
+              <CyberLock />
             </div>
 
-            {/* Error */}
-            {error && (
-              <div
-                className="px-4 py-3 rounded-xl text-sm text-red-300"
-                style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)' }}
-              >
-                {error}
-              </div>
-            )}
-
-            {/* Success */}
-            {success && (
-              <div
-                className="px-4 py-3 rounded-xl text-sm text-emerald-300"
-                style={{ background: 'rgba(0,255,128,0.08)', border: '1px solid rgba(0,255,128,0.25)' }}
-              >
-                {success}
-              </div>
-            )}
-
-            {/* Submit */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3.5 rounded-xl font-bold text-white transition-all duration-200 hover:-translate-y-0.5 active:scale-95 disabled:opacity-50 mt-1"
-              style={{
-                background: `linear-gradient(135deg, rgba(0,229,255,0.85), rgba(0,255,128,0.7))`,
-                boxShadow:  '0 0 24px rgba(0,229,255,0.3), 0 4px 12px rgba(0,0,0,0.4)',
-              }}
+            <p
+              className="text-[10px] font-semibold tracking-[0.35em] mb-2"
+              style={{ color: '#00e5ff' }}
             >
-              {loading
-                ? (mode === 'login' ? 'Entrando…' : 'Criando conta…')
-                : (mode === 'login' ? 'Entrar' : 'Criar conta')}
-            </button>
-          </form>
+              FLASHAPROVA // SYS-AUTH
+            </p>
+            <h1
+              className="text-lg font-bold text-white tracking-[0.08em]"
+              style={{ fontFamily: MONO }}
+            >
+              [ AUTENTICAÇÃO DO OPERADOR ]
+            </h1>
+            <p
+              className="text-[11px] mt-2 tracking-[0.2em]"
+              style={{ color: '#64748b', fontFamily: MONO }}
+            >
+              Inicie o protocolo de blindagem.
+            </p>
+          </div>
+
+          {/* Card */}
+          <div
+            className="login-card rounded-2xl p-8 relative overflow-hidden"
+            style={{
+              background:           'rgba(4,8,18,0.75)',
+              backdropFilter:       'blur(24px)',
+              WebkitBackdropFilter: 'blur(24px)',
+              border:               '0.5px solid rgba(0,229,255,0.3)',
+            }}
+          >
+            {/* Top neon line */}
+            <div
+              className="absolute inset-x-0 top-0 h-px pointer-events-none"
+              style={{ background: 'linear-gradient(90deg, transparent, rgba(0,229,255,0.6), rgba(139,92,246,0.4), transparent)' }}
+            />
+            {/* Left neon line */}
+            <div
+              className="absolute inset-y-0 left-0 w-px pointer-events-none"
+              style={{ background: 'linear-gradient(180deg, rgba(0,229,255,0.4), transparent 60%, rgba(139,92,246,0.2))' }}
+            />
+            {/* Radial glow */}
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{ background: 'radial-gradient(ellipse at top, rgba(0,229,255,0.05) 0%, transparent 60%)' }}
+            />
+
+            {/* Metadata — top-left */}
+            <div
+              className="absolute top-2 left-3 text-[8px] tracking-widest pointer-events-none"
+              style={{ color: '#00e5ff', lineHeight: '1.7', opacity: 0.4, fontFamily: MONO }}
+            >
+              <div>ID: 0x4FA2-C331</div>
+              <div>VER: 3.7.1-STABLE</div>
+            </div>
+
+            {/* Metadata — top-right */}
+            <div
+              className="absolute top-2 right-3 text-[8px] tracking-widest text-right pointer-events-none"
+              style={{ color: '#8b5cf6', lineHeight: '1.7', opacity: 0.4, fontFamily: MONO }}
+            >
+              <div>ENC: AES-256-GCM</div>
+              <div>SESSION: ACTIVE</div>
+            </div>
+
+            {/* Mode tabs */}
+            <div
+              className="flex rounded-xl p-1 mb-7 relative z-10 mt-5"
+              style={{ background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(255,255,255,0.07)' }}
+            >
+              {(['login', 'signup'] as Mode[]).map((m) => (
+                <button
+                  key={m}
+                  onClick={() => switchMode(m)}
+                  className="flex-1 py-2 rounded-lg text-[10px] font-semibold transition-all duration-200 tracking-[0.15em]"
+                  style={{
+                    fontFamily: MONO,
+                    color:      mode === m ? 'white' : '#475569',
+                    background: mode === m ? 'rgba(0,229,255,0.1)' : 'transparent',
+                    border:     mode === m ? '0.5px solid rgba(0,229,255,0.35)' : '0.5px solid transparent',
+                    boxShadow:  mode === m ? '0 0 16px rgba(0,229,255,0.12)' : 'none',
+                  }}
+                >
+                  {m === 'login' ? '// ENTRAR' : '// CADASTRAR'}
+                </button>
+              ))}
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4 relative z-10">
+              <NeonInput
+                label="// E-MAIL DO OPERADOR"
+                type="email"
+                value={email}
+                onChange={setEmail}
+                placeholder="operador@arsenal.io"
+              />
+              <div>
+                <NeonInput
+                  label="// CHAVE DE ACESSO"
+                  type="password"
+                  value={password}
+                  onChange={setPassword}
+                  placeholder={mode === 'signup' ? 'Mínimo 6 caracteres' : '••••••••'}
+                />
+                {mode === 'login' && (
+                  <div className="flex justify-end mt-2">
+                    <a
+                      href="/forgot-password"
+                      className="text-[10px] tracking-[0.12em] transition-colors duration-200"
+                      style={{ color: '#475569', fontFamily: MONO }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = '#00e5ff')}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = '#475569')}
+                    >
+                      RECUPERAR ACESSO →
+                    </a>
+                  </div>
+                )}
+              </div>
+
+              {/* Error */}
+              {error && (
+                <div
+                  className="px-4 py-3 rounded-xl text-[11px] tracking-wide"
+                  style={{
+                    fontFamily: MONO,
+                    background: 'rgba(239,68,68,0.08)',
+                    border:     '0.5px solid rgba(239,68,68,0.3)',
+                    color:      '#fca5a5',
+                  }}
+                >
+                  ⚠ {error}
+                </div>
+              )}
+
+              {/* Success */}
+              {success && (
+                <div
+                  className="px-4 py-3 rounded-xl text-[11px] tracking-wide"
+                  style={{
+                    fontFamily: MONO,
+                    background: 'rgba(0,255,128,0.06)',
+                    border:     '0.5px solid rgba(0,255,128,0.25)',
+                    color:      '#6ee7b7',
+                  }}
+                >
+                  ✓ {success}
+                </div>
+              )}
+
+              {/* Submit — shimmer button */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3.5 rounded-xl font-bold text-white transition-all duration-200 hover:-translate-y-0.5 active:scale-95 disabled:opacity-50 mt-1 relative overflow-hidden"
+                style={{
+                  fontFamily:    MONO,
+                  fontSize:      '12px',
+                  letterSpacing: '0.15em',
+                  background:    'linear-gradient(135deg, rgba(0,229,255,0.9), rgba(139,92,246,0.85))',
+                  boxShadow:     '0 0 32px rgba(0,229,255,0.2), 0 0 64px rgba(139,92,246,0.12), 0 4px 14px rgba(0,0,0,0.55)',
+                }}
+              >
+                {/* Shimmer sweep */}
+                <span
+                  className="shimmer-sweep absolute inset-0 pointer-events-none"
+                  style={{
+                    background: 'linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.45) 50%, transparent 65%)',
+                  }}
+                />
+                <span className="relative z-10">
+                  {loading
+                    ? '[ AUTENTICANDO... ]'
+                    : mode === 'login'
+                      ? '[ ACESSAR ARSENAL ]'
+                      : '[ CRIAR OPERADOR ]'}
+                </span>
+              </button>
+            </form>
+
+            {/* Footer status */}
+            <div
+              className="mt-6 pt-4 relative z-10"
+              style={{ borderTop: '0.5px solid rgba(255,255,255,0.06)' }}
+            >
+              <p
+                className="status-line text-center text-[8px] tracking-[0.28em]"
+                style={{ color: '#00e5ff', fontFamily: MONO }}
+              >
+                ● STATUS: SISTEMA PRONTO PARA SINCRONIZAÇÃO
+              </p>
+            </div>
+          </div>
         </div>
-      </div>
-    </main>
+      </main>
+    </>
   );
 }

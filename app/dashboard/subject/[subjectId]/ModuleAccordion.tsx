@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import DeckCard from './DeckCard';
 import { useTheme } from '@/components/ThemeProvider';
+import { getSubjectIcon } from '@/lib/iconMap';
 
 type Deck = {
   id:    string;
@@ -17,16 +18,15 @@ type Module = {
 };
 
 type Props = {
-  modules: Module[];
-  color:   string;
+  modules:      Module[];
+  color:        string;
+  subjectTitle: string;
+  subjectIcon:  string | null;
+  subjectCat:   string | null;
 };
 
-const MODULE_ICONS: Record<number, string> = {
-  1: '🌿', 2: '🫀', 3: '🔬', 4: '🧬',
-  5: '🦕', 6: '🌱', 7: '🦎', 8: '🦠',
-};
-
-export default function ModuleAccordion({ modules, color }: Props) {
+export default function ModuleAccordion({ modules, color, subjectTitle, subjectIcon, subjectCat }: Props) {
+  const moduleIcon = getSubjectIcon(subjectTitle, subjectIcon, subjectCat);
   const { theme } = useTheme();
   const isLight   = theme === 'light';
   const [open, setOpen] = useState<string | null>(modules[0]?.id ?? null);
@@ -43,8 +43,7 @@ export default function ModuleAccordion({ modules, color }: Props) {
   return (
     <div className="flex flex-col gap-3">
       {modules.map((mod, idx) => {
-        const isOpen    = open === mod.id;
-        const modIcon   = MODULE_ICONS[mod.order_index] ?? '📂';
+        const isOpen = open === mod.id;
         const deckCount = mod.decks.length;
 
         return (
@@ -86,7 +85,7 @@ export default function ModuleAccordion({ modules, color }: Props) {
 
               {/* Icon + Title */}
               <div className="flex items-center gap-3 flex-1 min-w-0">
-                <span className="text-xl">{modIcon}</span>
+                <span className="text-xl">{moduleIcon}</span>
                 <span
                   className="font-bold tracking-wide truncate transition-colors duration-200"
                   style={{

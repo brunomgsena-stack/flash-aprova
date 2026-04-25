@@ -32,9 +32,7 @@ function Card({ children, color, className = '' }: {
       variants={cardVariants}
       className={`relative rounded-2xl p-5 sm:p-6 overflow-hidden ${className}`}
       style={{
-        background:           'rgba(255,255,255,0.025)',
-        backdropFilter:       'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
+        background:           'rgba(18,18,18,0.92)',
         border: `1px solid ${hovered ? color + '50' : 'rgba(255,255,255,0.08)'}`,
         boxShadow: hovered ? `0 0 36px ${color}28, 0 0 0 1px ${color}35` : '0 0 0 0 transparent',
         transition: 'border-color 0.28s ease, box-shadow 0.28s ease',

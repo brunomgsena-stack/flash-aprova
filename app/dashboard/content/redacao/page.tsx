@@ -3,12 +3,14 @@ import { createClient } from '@/lib/supabase/server';
 import { type Plan } from '@/lib/plan';
 import RedacaoClient from './RedacaoClient';
 
+const MONO = 'var(--font-jetbrains), "JetBrains Mono", monospace';
+const CYAN   = '#06b6d4';
+const VIOLET = '#818cf8';
+
 export default async function RedacaoPage() {
   const serverClient = await createClient();
   const { data: { user } } = await serverClient.auth.getUser();
 
-  // Usa o serverClient (com auth correto) para evitar fallback para 'aceleracao'
-  // quando fetchUserPlan é chamado via browser client sem sessão no servidor.
   let plan: Plan = 'aceleracao';
   if (user) {
     const [statsResult, profileResult] = await Promise.all([
@@ -31,54 +33,111 @@ export default async function RedacaoPage() {
       : null;
     const expired   = expiresAt ? expiresAt < new Date() : false;
 
-    // Admin tem acesso total; plano expirado rebaixa para aceleracao
     plan = isAdmin || (rawPlan === 'panteao_elite' && !expired) ? 'panteao_elite' : 'aceleracao';
   }
 
-  const color = '#06b6d4';
-
   return (
-    <main className="min-h-screen px-4 py-12 sm:px-8">
-      <div className="max-w-3xl mx-auto">
+    <main
+      className="min-h-screen px-4 py-10 sm:px-8 relative overflow-hidden"
+      style={{ background: '#050814' }}
+    >
+      {/* ── Grid background ─────────────────────────────────────────── */}
+      <div
+        className="pointer-events-none fixed inset-0 z-0"
+        style={{
+          backgroundImage: `
+            linear-gradient(rgba(6,182,212,0.04) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(6,182,212,0.04) 1px, transparent 1px)
+          `,
+          backgroundSize: '40px 40px',
+        }}
+      />
+
+      {/* ── Scanlines overlay ────────────────────────────────────────── */}
+      <div
+        className="pointer-events-none fixed inset-0 z-0"
+        style={{
+          backgroundImage:
+            'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.18) 3px, rgba(0,0,0,0.18) 4px)',
+          opacity: 0.6,
+        }}
+      />
+
+      {/* ── Corner glow accents ──────────────────────────────────────── */}
+      <div
+        className="pointer-events-none fixed top-0 left-0 w-96 h-96 z-0"
+        style={{ background: `radial-gradient(ellipse at top left, ${CYAN}0d 0%, transparent 70%)` }}
+      />
+      <div
+        className="pointer-events-none fixed bottom-0 right-0 w-96 h-96 z-0"
+        style={{ background: `radial-gradient(ellipse at bottom right, ${VIOLET}0d 0%, transparent 70%)` }}
+      />
+
+      <div className="relative z-10 max-w-4xl mx-auto">
+
 
         {/* ── Breadcrumbs ───────────────────────────────────────────── */}
-        <nav className="flex items-center gap-1.5 text-xs text-slate-500 mb-8 flex-wrap">
+        <nav
+          className="flex items-center gap-1.5 mb-8 flex-wrap"
+          style={{ fontFamily: MONO, fontSize: '10px', color: 'rgba(255,255,255,0.28)', letterSpacing: '0.06em' }}
+        >
           <Link href="/dashboard" className="hover:text-white transition-colors">
-            Dashboard
+            DASHBOARD
           </Link>
           <span className="opacity-40">›</span>
-          <span style={{ color }}>Redação</span>
+          <span style={{ color: CYAN }}>REDAÇÃO</span>
           <span className="opacity-40">›</span>
-          <span className="text-white font-medium">Redação Flash+</span>
+          <span className="text-white">NORMA.AI</span>
         </nav>
 
         {/* ── Header ────────────────────────────────────────────────── */}
         <div className="flex items-center gap-5 mb-3">
           <div
-            className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"
+            className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0"
             style={{
-              background: `${color}22`,
-              border:     `1px solid ${color}55`,
-              boxShadow:  `0 0 24px ${color}33`,
+              background: `linear-gradient(135deg, ${CYAN}22, ${VIOLET}18)`,
+              border:     `1px solid ${CYAN}44`,
+              boxShadow:  `0 0 20px ${CYAN}22`,
             }}
           >
             ✒️
           </div>
           <div>
-            <p className="text-xs font-semibold tracking-widest uppercase mb-0.5" style={{ color }}>
-              Redação Flash+
+            <p
+              style={{
+                fontFamily:    MONO,
+                fontSize:      '9px',
+                letterSpacing: '0.18em',
+                color:         'rgba(255,255,255,0.28)',
+                marginBottom:  '4px',
+              }}
+            >
+              [ SISTEMA DE DIAGNÓSTICO ]
             </p>
-            <h1 className="text-2xl sm:text-3xl font-bold text-white leading-tight">
-              Correção IA & Base de Conhecimento
+            <h1
+              className="font-black leading-tight"
+              style={{
+                fontSize:   '22px',
+                background: `linear-gradient(135deg, ${CYAN} 0%, ${VIOLET} 60%, #c084fc 100%)`,
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+              }}
+            >
+              Redação | Norma.AI
             </h1>
-            <p className="text-slate-400 text-sm mt-0.5">Norma · Corretora AiPro+</p>
+            <p
+              style={{ fontFamily: MONO, fontSize: '9px', color: 'rgba(255,255,255,0.30)', letterSpacing: '0.08em', marginTop: '4px' }}
+            >
+              CORRETORA_IA · ANÁLISE_ENEM · BASE_CONHECIMENTO
+            </p>
           </div>
         </div>
 
         {/* Divider */}
         <div
-          className="h-px w-full mt-6 mb-8"
-          style={{ background: `linear-gradient(90deg, ${color}55, transparent)` }}
+          className="h-px w-full mt-5 mb-8"
+          style={{ background: `linear-gradient(90deg, ${CYAN}55, ${VIOLET}33, transparent)` }}
         />
 
         {/* ── Client component ──────────────────────────────────────── */}

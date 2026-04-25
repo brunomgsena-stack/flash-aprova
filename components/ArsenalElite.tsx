@@ -82,10 +82,8 @@ function ArsenalCard({
     <motion.div
       className="relative rounded-2xl p-5 overflow-hidden"
       style={{
-        background:          'rgba(255,255,255,0.025)',
+        background:          'rgba(18,18,18,0.92)',
         border:              `1px solid rgba(255,255,255,0.07)`,
-        backdropFilter:      'blur(14px)',
-        WebkitBackdropFilter:'blur(14px)',
       }}
       initial={{ opacity: 0, y: 28 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
@@ -200,10 +198,8 @@ export default function ArsenalElite() {
       <motion.div
         className="relative rounded-2xl overflow-hidden"
         style={{
-          background:          'rgba(255,255,255,0.018)',
+          background:          'rgba(18,18,18,0.92)',
           border:              '1px solid rgba(255,255,255,0.06)',
-          backdropFilter:      'blur(20px)',
-          WebkitBackdropFilter:'blur(20px)',
         }}
         initial={{ opacity: 0, y: 16 }}
         animate={inView ? { opacity: 1, y: 0 } : {}}

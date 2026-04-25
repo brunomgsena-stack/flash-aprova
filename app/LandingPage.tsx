@@ -6,8 +6,7 @@ import { motion } from 'framer-motion';
 import dynamic from 'next/dynamic';
 
 // ─── Above-the-fold: static import (needed for LCP / SSR) ─────────────────────
-import HeroSection    from '@/components/HeroSection';
-import AnkiComparison from '@/components/AnkiComparison';
+import HeroSection from '@/components/HeroSection';
 
 // ─── Below-the-fold: dynamic imports → separate JS chunks ─────────────────────
 // Each chunk is only downloaded when the section scrolls into view (see LazySection).
@@ -24,6 +23,7 @@ const SkeletonBlock = ({ h = 400 }: { h?: number }) => (
   />
 );
 
+const AnkiComparison     = dynamic(() => import('@/components/AnkiComparison'),     { ssr: false, loading: () => <SkeletonBlock h={400} /> });
 const EbbinghausSection  = dynamic(() => import('@/components/EbbinghausSection'), { ssr: false, loading: () => <SkeletonBlock h={340} /> });
 const NeuralBrainMap     = dynamic(() => import('@/components/NeuralBrainMap'),     { ssr: false, loading: () => <SkeletonBlock h={380} /> });
 const CardVaultSection   = dynamic(() => import('@/components/CardVaultSection'),   { ssr: false, loading: () => <SkeletonBlock h={480} /> });
@@ -125,9 +125,7 @@ function SubjectCard({ s }: { s: typeof SUBJECTS[number] }) {
     <div
       className="relative rounded-2xl p-5 overflow-hidden cursor-default"
       style={{
-        background:             'rgba(9,9,11,0.50)',
-        backdropFilter:         'blur(16px)',
-        WebkitBackdropFilter:   'blur(16px)',
+        background:             'rgba(9,9,11,0.92)',
         border:                 `1px solid ${hovered ? s.color + '45' : 'rgba(255,255,255,0.07)'}`,
         boxShadow:              hovered
           ? `0 0 32px ${s.color}18, 0 0 60px ${s.color}08`
@@ -387,10 +385,8 @@ function AuthorityBanner() {
       <div
         className="relative rounded-2xl overflow-hidden"
         style={{
-          background: 'rgba(255,255,255,0.03)',
+          background: 'rgba(18,18,18,0.92)',
           border: '1px solid rgba(255,255,255,0.07)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
         }}
       >
         <div className="absolute inset-x-0 top-0 h-px"
@@ -660,9 +656,13 @@ export default function LandingPage() {
         {/* ════════════════════════════ METHODS COMPARISON ══ */}
         <section className="max-w-5xl mx-auto px-4 sm:px-10 pb-12 sm:pb-24">
 
-          <EbbinghausSection />
+          <LazySection minHeight={340}>
+            <EbbinghausSection />
+          </LazySection>
 
-          <AnkiComparison />
+          <LazySection minHeight={400}>
+            <AnkiComparison />
+          </LazySection>
 
         </section>
 

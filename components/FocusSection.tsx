@@ -41,13 +41,11 @@ function Card({
       variants={card}
       className={`relative rounded-2xl p-5 sm:p-6 overflow-hidden ${className}`}
       style={{
-        background: 'rgba(255,255,255,0.025)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        border: `1px solid ${hovered ? color + '50' : 'rgba(255,255,255,0.08)'}`,
+        background: `radial-gradient(ellipse at top left, ${color}1a 0%, rgba(12,12,16,0.97) 65%)`,
+        border: `1px solid ${hovered ? color + '70' : color + '28'}`,
         boxShadow: hovered
-          ? `0 0 36px ${color}28, 0 0 0 1px ${color}35`
-          : '0 0 0 0 transparent',
+          ? `0 0 48px ${color}35, 0 0 0 1px ${color}45, inset 0 1px 0 ${color}20`
+          : `0 0 20px ${color}12, inset 0 1px 0 ${color}12`,
         transition: 'border-color 0.28s ease, box-shadow 0.28s ease',
       }}
       whileHover={{ scale: 1.018 }}
@@ -58,7 +56,7 @@ function Card({
       {/* Top shimmer line */}
       <div className="absolute inset-x-0 top-0 h-px pointer-events-none"
         style={{
-          background: `linear-gradient(90deg, transparent, ${color}${hovered ? '80' : '40'}, transparent)`,
+          background: `linear-gradient(90deg, transparent, ${color}${hovered ? 'cc' : '70'}, transparent)`,
           transition: 'opacity 0.28s',
         }} />
 
@@ -80,7 +78,6 @@ function Card({
                 background: `${color}15`,
                 border: `1px solid ${color}45`,
                 color,
-                backdropFilter: 'blur(12px)',
                 boxShadow: `0 0 14px ${color}28`,
               }}
             >
@@ -144,12 +141,12 @@ function HeatmapRadar({ inView }: { inView: boolean }) {
         {/* Rings */}
         {rings.map(r => (
           <polygon key={r} points={toPoly(FRAG_AXES.map(a => polar(r * R, a.deg)))}
-            fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="0.8" />
+            fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="1" />
         ))}
         {/* Axes */}
         {axisEnds.map((end, i) => (
           <line key={i} x1={CX} y1={CY} x2={end.x} y2={end.y}
-            stroke="rgba(255,255,255,0.07)" strokeWidth="0.8" />
+            stroke="rgba(255,255,255,0.14)" strokeWidth="0.9" />
         ))}
 
         {/* Data polygon — grows from center */}
@@ -184,7 +181,7 @@ function HeatmapRadar({ inView }: { inView: boolean }) {
         {FRAG_AXES.map((axis, i) => (
           <text key={i} x={labelPts[i].x} y={labelPts[i].y}
             textAnchor="middle" dominantBaseline="middle"
-            fontSize="7.5" fill="rgba(255,255,255,0.30)"
+            fontSize="7.5" fill="rgba(255,255,255,0.55)"
             fontFamily="ui-monospace, monospace">
             {axis.label}
           </text>
@@ -338,15 +335,15 @@ function CalendarWidget({ inView }: { inView: boolean }) {
       <div className="flex items-center gap-3 mt-3">
         <div className="flex items-center gap-1.5">
           <div className="w-2 h-2 rounded-sm" style={{ background: EMERALD }} />
-          <span className="text-[9px] text-slate-600" style={{ fontFamily: JETBRAINS }}>Concluído</span>
+          <span className="text-[9px] text-slate-400" style={{ fontFamily: JETBRAINS }}>Concluído</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-2 h-2 rounded-sm" style={{ background: NEON }} />
-          <span className="text-[9px] text-slate-600" style={{ fontFamily: JETBRAINS }}>Deadline IA</span>
+          <span className="text-[9px] text-slate-400" style={{ fontFamily: JETBRAINS }}>Deadline IA</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-2 h-2 rounded-sm" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)' }} />
-          <span className="text-[9px] text-slate-600" style={{ fontFamily: JETBRAINS }}>Agendado</span>
+          <span className="text-[9px] text-slate-400" style={{ fontFamily: JETBRAINS }}>Agendado</span>
         </div>
       </div>
     </div>
@@ -410,7 +407,7 @@ function ProgressBar({ label, pct, color, level, index, inView }: {
 
       {/* Track */}
       <div className="h-2 rounded-full overflow-hidden"
-        style={{ background: 'rgba(255,255,255,0.05)' }}>
+        style={{ background: 'rgba(255,255,255,0.09)' }}>
         <motion.div
           className="h-full rounded-full"
           style={{
@@ -432,30 +429,46 @@ export default function FocusSection() {
   const inView     = useInView(sectionRef, { once: true, margin: '-80px' });
 
   return (
-    <section ref={sectionRef} className="max-w-6xl mx-auto px-5 sm:px-10 pt-10 sm:pt-0 pb-24">
+    <section ref={sectionRef} className="isolate relative max-w-6xl mx-auto px-5 sm:px-10 pt-10 sm:pt-0 pb-24">
+      {/* Ambient color blobs */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
+        <div style={{ position: 'absolute', top: '5%', left: '-5%', width: 480, height: 480,
+          background: `radial-gradient(circle, ${VIOLET}55 0%, transparent 70%)`,
+          borderRadius: '50%', filter: 'blur(80px)' }} />
+        <div style={{ position: 'absolute', top: '15%', right: '-5%', width: 420, height: 420,
+          background: `radial-gradient(circle, ${CYAN}44 0%, transparent 70%)`,
+          borderRadius: '50%', filter: 'blur(80px)' }} />
+        <div style={{ position: 'absolute', bottom: '5%', left: '25%', width: 500, height: 320,
+          background: `radial-gradient(circle, ${NEON}33 0%, transparent 70%)`,
+          borderRadius: '50%', filter: 'blur(80px)' }} />
+        <div style={{ position: 'absolute', top: '40%', left: '40%', width: 300, height: 300,
+          background: `radial-gradient(circle, ${ORANGE}33 0%, transparent 70%)`,
+          borderRadius: '50%', filter: 'blur(60px)' }} />
+      </div>
 
       {/* ── Header ── */}
-      <div className="text-center mb-12">
+      <div className="relative text-center mb-12" style={{ zIndex: 1 }}>
         <p className="text-xs font-bold tracking-widest uppercase mb-3"
-          style={{ color: EMERALD, fontFamily: JETBRAINS }}>
+          style={{ color: NEON, fontFamily: JETBRAINS, textShadow: `0 0 16px ${NEON}80` }}>
           &gt; Mapeamento de Ameaças
         </p>
         <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">
           Radar de{' '}
           <span style={{
-            background: `linear-gradient(90deg, ${NEON}, ${EMERALD})`,
+            background: `linear-gradient(90deg, ${NEON}, ${CYAN}, ${EMERALD})`,
             WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+            filter: `drop-shadow(0 0 20px ${NEON}50)`,
           }}>
             Lacunas
           </span>
         </h2>
-        <p className="text-slate-500 text-base max-w-2xl mx-auto">
+        <p className="text-slate-400 text-base max-w-2xl mx-auto">
           O fim do estudo às cegas. O Radar utiliza a nossa Engenharia de Retenção para encontrar as falhas invisíveis que a TRI do ENEM não perdoa — antes que elas te reprovem.
         </p>
       </div>
 
       {/* ── 3-card grid ── */}
-      <div className="relative">
+      <div className="relative" style={{ zIndex: 1 }}>
         {/* Radar scan — purple horizontal beam cycling over the full grid */}
         {inView && (
           <motion.div
@@ -494,7 +507,7 @@ export default function FocusSection() {
                 style={{ color: ORANGE, fontFamily: JETBRAINS }}>
                 Visão de Raio-X
               </p>
-              <p className="text-[10px] text-slate-600 mt-0.5" style={{ fontFamily: JETBRAINS }}>Radar de competências ENEM</p>
+              <p className="text-[10px] text-slate-400 mt-0.5" style={{ fontFamily: JETBRAINS }}>Radar de competências ENEM</p>
             </div>
             {/* Live dot */}
             <motion.span className="ml-auto w-2 h-2 rounded-full shrink-0"
@@ -526,7 +539,7 @@ export default function FocusSection() {
                 style={{ color: CYAN, fontFamily: JETBRAINS }}>
                 Domínio do Edital
               </p>
-              <p className="text-[10px] text-slate-600 mt-0.5" style={{ fontFamily: JETBRAINS }}>Progresso por área ENEM</p>
+              <p className="text-[10px] text-slate-400 mt-0.5" style={{ fontFamily: JETBRAINS }}>Progresso por área ENEM</p>
             </div>
             <motion.span className="ml-auto w-2 h-2 rounded-full shrink-0"
               style={{ background: CYAN }}
@@ -546,7 +559,7 @@ export default function FocusSection() {
           </div>
 
           <div className="mt-4 px-3 py-2.5 rounded-xl"
-            style={{ background: `${CYAN}0a`, border: `1px solid ${CYAN}20` }}>
+            style={{ background: `${CYAN}14`, border: `1px solid ${CYAN}40` }}>
             <p className="text-[11px] font-semibold" style={{ color: CYAN }}>
               🧬 Nível geral: <span className="font-black">Intermediário+</span> — subindo
             </p>
@@ -562,7 +575,7 @@ export default function FocusSection() {
                 style={{ color: NEON, fontFamily: JETBRAINS }}>
                 Diretriz de Ataque
               </p>
-              <p className="text-[10px] text-slate-600 mt-0.5" style={{ fontFamily: JETBRAINS }}>Agendamento tático pela IA</p>
+              <p className="text-[10px] text-slate-400 mt-0.5" style={{ fontFamily: JETBRAINS }}>Agendamento tático pela IA</p>
             </div>
             <motion.span className="ml-auto w-2 h-2 rounded-full shrink-0"
               style={{ background: NEON }}
@@ -573,7 +586,7 @@ export default function FocusSection() {
           <CalendarWidget inView={inView} />
 
           <div className="mt-4 px-3 py-2.5 rounded-xl"
-            style={{ background: `${NEON}0a`, border: `1px solid ${NEON}20` }}>
+            style={{ background: `${NEON}14`, border: `1px solid ${NEON}40` }}>
             <p className="text-[11px] font-semibold" style={{ color: NEON }}>
               ⏱ Próxima revisão: <span className="font-black">Química</span> — hoje 19h
             </p>

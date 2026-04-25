@@ -151,9 +151,7 @@ export default function AnkiComparison() {
         <motion.div
           className="relative rounded-2xl p-6 overflow-hidden cursor-default"
           style={{
-            background: 'rgba(8,4,12,0.92)',
-            backdropFilter: 'blur(24px)',
-            WebkitBackdropFilter: 'blur(24px)',
+            background: 'rgba(8,4,12,0.95)',
             border: leftHover
               ? `1px solid ${RED}55`
               : '1px solid rgba(255,255,255,0.06)',
@@ -274,9 +272,7 @@ export default function AnkiComparison() {
         <motion.div
           className="relative rounded-2xl p-6 overflow-hidden cursor-default"
           style={{
-            background: 'rgba(5,4,18,0.95)',
-            backdropFilter: 'blur(24px)',
-            WebkitBackdropFilter: 'blur(24px)',
+            background: 'rgba(5,4,18,0.97)',
             border: rightHover
               ? `1px solid ${PURPLE}80`
               : `1px solid ${PURPLE}35`,

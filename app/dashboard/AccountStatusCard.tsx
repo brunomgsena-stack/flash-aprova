@@ -56,7 +56,7 @@ function UpgradeBanner() {
             className="font-black text-base leading-tight mb-1"
             style={{ color: '#0f172a' }}
           >
-            Evolua para o Próximo Nível: AiPro+ 🤖
+            Evolua para o Próximo Nível: Protocolo Neural 🤖
           </p>
           <p
             className="text-xs leading-relaxed"
@@ -114,7 +114,7 @@ function ActivePlanStrip({ info }: { info: PlanInfo }) {
           ⚡
         </div>
         <div>
-          <span className="text-white font-bold text-sm">Plano AiPro+</span>
+          <span className="text-white font-bold text-sm">Protocolo Neural</span>
           <span
             className="ml-2 text-xs px-1.5 py-0.5 rounded-full font-semibold"
             style={{ background: 'linear-gradient(135deg,#7C3AED,#06b6d4)', color: '#fff' }}

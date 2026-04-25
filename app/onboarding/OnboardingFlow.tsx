@@ -96,9 +96,8 @@ function LacunaAlert({ msg }: { msg: string | null }) {
   const color = msg.startsWith('🔴') ? RED : RED;
   return (
     <div
-      className="lacuna-alert fixed top-5 left-1/2 z-50 flex items-center gap-2.5 px-5 py-3 rounded-xl font-bold text-sm max-w-sm w-full"
+      className="lacuna-alert fixed top-5 left-4 right-4 mx-auto z-50 flex items-center gap-2.5 px-5 py-3 rounded-xl font-bold text-sm max-w-sm"
       style={{
-        transform: 'translateX(-50%)',
         background: `rgba(15,5,5,0.96)`,
         border: `1px solid ${color}45`,
         boxShadow: `0 0 32px ${color}25, 0 8px 32px rgba(0,0,0,0.60)`,

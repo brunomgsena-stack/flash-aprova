@@ -305,8 +305,6 @@ function OrbitalChip({
           background:           isActive
             ? `linear-gradient(135deg, rgba(8,4,20,0.92) 0%, ${ring.color}12 100%)`
             : 'rgba(8,4,20,0.78)',
-          backdropFilter:       'blur(24px)',
-          WebkitBackdropFilter: 'blur(24px)',
           border:               `1px solid ${ring.color}${isActive ? '55' : '22'}`,
           borderRadius:         12,
           padding:              '11px 14px 10px',

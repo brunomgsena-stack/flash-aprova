@@ -3,15 +3,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabaseClient';
-import { fetchUserPlan, type Plan } from '@/lib/plan';
-import { buildDomainMap } from '@/lib/domain';
+import { type Plan } from '@/lib/plan';
 import { getCategoryShort, ENEM_AREAS } from '@/lib/categories';
 import { getSubjectIcon } from '@/lib/iconMap';
 import {
   getFlashTutor,
   getSpecialistForArea,
 } from '@/lib/tutor-config';
+import { useDashboardData } from '@/lib/DashboardContext';
 import AiProUpgradeModal from '@/components/AiProUpgradeModal';
 import { useTheme } from '@/components/ThemeProvider';
 
@@ -24,6 +23,15 @@ const AMBER     = '#F59E0B';   // atenção suave (sem urgência)
 const NEON_CYAN = '#22d3ee';   // detalhe gráfico (heatmap)
 const NEON_GREEN = EMERALD;    // alias para heatmap (sem quebrar lógica existente)
 const NEON_PURPLE = OCEAN;     // alias legado — evita alterar refs internas
+
+// Mesma paleta do Radar ENEM — uma cor por área
+const AREA_COLORS: Record<string, string> = {
+  Natureza:   '#22d3ee',   // cyan
+  Humanas:    '#f97316',   // laranja
+  Linguagens: '#a855f7',   // roxo
+  Matemática: '#10b981',   // verde
+  Redação:    '#eab308',   // amarelo
+};
 
 // ─── Heatmap ──────────────────────────────────────────────────────────────────
 
@@ -64,6 +72,14 @@ function Heatmap({ dailyCounts, isLight }: { dailyCounts: Map<string, number>; i
   const numWeeks = (grid[grid.length - 1]?.weekIndex ?? 0) + 1;
   const CELL = 12, GAP = 3;
 
+  // ── Context stats ──────────────────────────────────────────────────────────
+  const { avgPerDay, bestDay } = useMemo(() => {
+    const activeDays = [...dailyCounts.values()].filter(v => v > 0);
+    const avg = activeDays.length > 0 ? Math.round(activeDays.reduce((a, b) => a + b, 0) / activeDays.length) : 0;
+    const best = activeDays.length > 0 ? Math.max(...activeDays) : 0;
+    return { avgPerDay: avg, bestDay: best };
+  }, [dailyCounts]);
+
   return (
     <div className="overflow-x-auto pb-1 -mx-1">
       <div style={{ minWidth: numWeeks * (CELL + GAP) + 36, paddingLeft: '4px' }}>
@@ -103,6 +119,16 @@ function Heatmap({ dailyCounts, isLight }: { dailyCounts: Map<string, number>; i
           ))}
           <span style={{ fontSize: '9px', color: isLight ? 'rgba(0,0,0,0.35)' : 'rgba(255,255,255,0.22)' }}>Mais</span>
         </div>
+        {avgPerDay > 0 && (
+          <div className="flex items-center gap-3 mt-2" style={{ paddingLeft: '18px' }}>
+            <span style={{ fontSize: '9px', color: isLight ? 'rgba(0,0,0,0.38)' : 'rgba(255,255,255,0.28)', fontFamily: 'ui-monospace,monospace' }}>
+              Média: <span style={{ color: NEON_GREEN, fontWeight: 700 }}>{avgPerDay}/dia</span>
+            </span>
+            <span style={{ fontSize: '9px', color: isLight ? 'rgba(0,0,0,0.38)' : 'rgba(255,255,255,0.28)', fontFamily: 'ui-monospace,monospace' }}>
+              Recorde: <span style={{ color: NEON_CYAN, fontWeight: 700 }}>{bestDay} cards</span>
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -522,14 +548,14 @@ function IntelReportModal({ report, isPro, flashTutorAvatar, onClose, onUpgrade 
                 <p className="text-base font-black text-white leading-snug mb-2">Relatório de Inteligência Detalhado</p>
                 <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>
                   Este recurso é exclusivo para assinantes{' '}
-                  <span className="font-bold" style={{ color: NEON_PURPLE }}>AiPro+</span>.
+                  <span className="font-bold" style={{ color: NEON_PURPLE }}>Protocolo Neural</span>.
                   Quer saber exatamente onde você está perdendo pontos?
                 </p>
               </div>
               <button onClick={onUpgrade}
                 className="w-full py-3.5 rounded-xl font-black text-white text-sm transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110 active:scale-[0.99]"
                 style={{ background: `linear-gradient(135deg, ${NEON_PURPLE} 0%, ${NEON_CYAN}99 100%)`, boxShadow: `0 0 28px ${NEON_PURPLE}55` }}>
-                🚀 Assinar AiPro+ e Ver Relatório
+                🚀 Ativar Protocolo Neural e Ver Relatório
               </button>
               <button onClick={onClose} className="text-xs transition-colors hover:text-slate-400"
                 style={{ color: 'rgba(255,255,255,0.25)' }}>Agora não</button>
@@ -605,7 +631,7 @@ function FlashTurboModal({ suggestions, onClose }: {
               <span className="text-lg font-black text-white">🚀 Sessão Focada</span>
               <span className="text-xs font-bold px-2 py-0.5 rounded-full"
                 style={{ background: `${EMERALD}22`, color: EMERALD, border: `1px solid ${EMERALD}44` }}>
-                AiPro+
+                Protocolo Neural
               </span>
             </div>
             <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
@@ -742,147 +768,101 @@ type Metrics = {
 export default function PerformanceMetrics() {
   const { theme } = useTheme();
   const isLight   = theme === 'light';
+  const dashState = useDashboardData();
 
-  const [metrics,     setMetrics]     = useState<Metrics | null>(null);
-  const [loading,     setLoading]     = useState(true);
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [showReport,  setShowReport]  = useState(false);
   const [showTurbo,   setShowTurbo]   = useState(false);
 
-  useEffect(() => {
-    async function load() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { setLoading(false); return; }
+  const metrics = useMemo((): Metrics | null => {
+    if (dashState.status !== 'ready') return null;
+    const { plan, normCards, progress, totalCardCount, domainMap, dailyCounts, totalReviews } = dashState.data;
 
-      const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toISOString().split('T')[0];
+    const progMap = new Map(progress.map(r => [r.card_id, r]));
 
-      const [planInfo, { data: allCards }, { data: progressRows }, { count: totalCards }] = await Promise.all([
-        fetchUserPlan(user.id),
-        supabase.from('cards').select('id, decks(id, title, subjects(id, title, icon_url, category))'),
-        supabase.from('user_progress').select('card_id, interval_days, next_review, lapses, history').eq('user_id', user.id),
-        supabase.from('cards').select('id', { count: 'exact', head: true }),
-      ]);
-
-      const rows  = progressRows ?? [];
-      const total = totalCards ?? 0;
-
-      // ── Normalize cards ───────────────────────────────────────────────────
-      type NormCard = {
-        id: string; deckId: string; deckTitle: string;
-        subjectId: string; subjectTitle: string; subjectIconUrl: string | null; subjectCategory: string | null;
-      };
-
-      const normCards: NormCard[] = [];
-      for (const rawCard of (allCards ?? []) as Array<{ id: string; decks: unknown }>) {
-        const rd = Array.isArray(rawCard.decks) ? (rawCard.decks[0] ?? null) : rawCard.decks as { id: string; title: string; subjects: unknown } | null;
-        if (!rd) continue;
-        const d  = rd as { id: string; title: string; subjects: unknown };
-        const rs = Array.isArray(d.subjects) ? (d.subjects[0] ?? null) : d.subjects as { id: string; title: string; icon_url: string | null; category: string | null } | null;
-        if (!rs) continue;
-        const s  = rs as { id: string; title: string; icon_url: string | null; category: string | null };
-        normCards.push({ id: rawCard.id, deckId: d.id, deckTitle: d.title, subjectId: s.id, subjectTitle: s.title, subjectIconUrl: s.icon_url, subjectCategory: s.category });
-      }
-
-      const progMap = new Map(rows.map(r => [r.card_id, r]));
-
-      // ── Due cards per deck ────────────────────────────────────────────────
-      const deckDueMap = new Map<string, { dueCount: number; deckTitle: string; subjectTitle: string; icon: string }>();
-      for (const c of normCards) {
-        const prog  = progMap.get(c.id);
-        const isDue = !prog || (prog.next_review !== null && prog.next_review <= today);
-        if (!isDue) continue;
-        const ex = deckDueMap.get(c.deckId);
-        if (ex) { ex.dueCount++; }
-        else deckDueMap.set(c.deckId, { dueCount: 1, deckTitle: c.deckTitle, subjectTitle: c.subjectTitle, icon: getSubjectIcon(c.subjectTitle, c.subjectIconUrl, c.subjectCategory) });
-      }
-
-      const topDecks: DeckPriority[] = Array.from(deckDueMap.entries())
-        .map(([deckId, v]) => ({ deckId, ...v }))
-        .sort((a, b) => b.dueCount - a.dueCount).slice(0, 3);
-      const totalDue   = Array.from(deckDueMap.values()).reduce((s, v) => s + v.dueCount, 0);
-      const maturePct  = total > 0 ? Math.round((rows.filter(r => (r.interval_days ?? 0) > 21).length / total) * 100) : 0;
-      const reviewedPct = total > 0 ? Math.round((rows.length / total) * 100) : 0;
-
-      // ── Heatmap + streak ──────────────────────────────────────────────────
-      const dailyCounts = new Map<string, number>();
-      let totalReviews  = 0;
-      for (const row of rows) {
-        for (const entry of (row.history as Array<{ reviewed_at: string }> | null) ?? []) {
-          const day = entry.reviewed_at?.slice(0, 10);
-          if (day) { dailyCounts.set(day, (dailyCounts.get(day) ?? 0) + 1); totalReviews++; }
-        }
-      }
-      const streak    = calcStreak(dailyCounts);
-      const maxStreak = calcMaxStreak(dailyCounts);
-
-      // ── Area scores ───────────────────────────────────────────────────────
-      const domainMap = buildDomainMap(
-        normCards.map(c => ({ id: c.id, decks: { subject_id: c.subjectId } })),
-        rows.map(r => ({ card_id: r.card_id, interval_days: r.interval_days ?? 0 })),
-      );
-      const subjAreaMap = new Map(normCards.map(c => [c.subjectId, getCategoryShort(c.subjectCategory)]));
-      const shortScore  = new Map<string, { sum: number; count: number }>();
-      for (const [sid, domain] of domainMap.entries()) {
-        const area = subjAreaMap.get(sid); if (!area) continue;
-        const s    = shortScore.get(area) ?? { sum: 0, count: 0 };
-        s.sum += domain.coverage; s.count++;   // coverage = cards revisados / total (0–1)
-        shortScore.set(area, s);
-      }
-      const areaScores = new Map<string, number>(
-        Array.from(shortScore.entries()).map(([a, s]) => [a, s.count > 0 ? Math.round((s.sum / s.count) * 100) : 0]),
-      );
-
-      // ── Top lapse deck ────────────────────────────────────────────────────
-      const lapsesMap    = new Map(rows.map(r => [r.card_id, r.lapses as number]));
-      const deckLapseMap = new Map<string, { deckTitle: string; subjectCategory: string | null; lapses: number }>();
-      for (const c of normCards) {
-        const lapses = lapsesMap.get(c.id); if (!lapses) continue;
-        const ex = deckLapseMap.get(c.deckId);
-        if (ex) { ex.lapses += lapses; }
-        else deckLapseMap.set(c.deckId, { deckTitle: c.deckTitle, subjectCategory: c.subjectCategory, lapses });
-      }
-      let topLapseDeck: TopLapseDeck | null = null;
-      for (const [deckId, agg] of deckLapseMap.entries()) {
-        if (!topLapseDeck || agg.lapses > topLapseDeck.lapses) topLapseDeck = { deckId, ...agg };
-      }
-
-      // ── Cards due per ENEM area ───────────────────────────────────────────
-      const areaCardsDueMap = new Map<string, number>();
-      for (const c of normCards) {
-        const prog  = progMap.get(c.id);
-        const isDue = !prog || (prog.next_review !== null && prog.next_review <= today);
-        if (!isDue) continue;
-        const area = getCategoryShort(c.subjectCategory);
-        areaCardsDueMap.set(area, (areaCardsDueMap.get(area) ?? 0) + 1);
-      }
-      const areaCardsDue = Object.fromEntries(areaCardsDueMap);
-
-      // ── FlashTurbo suggestions ────────────────────────────────────────────
-      const deckAreaMap = new Map<string, string>();
-      for (const c of normCards) {
-        if (!deckAreaMap.has(c.deckId)) deckAreaMap.set(c.deckId, getCategoryShort(c.subjectCategory));
-      }
-      const turboSuggestions: TurboSuggestion[] = Array.from(deckDueMap.entries())
-        .map(([deckId, v]) => {
-          const area     = deckAreaMap.get(deckId) ?? 'Outras';
-          const score    = areaScores.get(area) ?? 100;
-          const isWeak   = score > 0 && score < 40;
-          return { deckId, ...v, area, priority: (isWeak ? 'weak' : 'urgent') as 'urgent' | 'weak' };
-        })
-        .sort((a, b) => {
-          if (a.priority === 'weak' && b.priority !== 'weak') return -1;
-          if (a.priority !== 'weak' && b.priority === 'weak') return 1;
-          return b.dueCount - a.dueCount;
-        })
-        .slice(0, 6);
-
-      setMetrics({ totalDue, topDecks, maturePct, reviewedPct, dailyCounts, streak, maxStreak, plan: planInfo.plan, areaScores, topLapseDeck, totalReviews, turboSuggestions, areaCardsDue });
-      setLoading(false);
+    // ── Due cards per deck ────────────────────────────────────────────────
+    const deckDueMap = new Map<string, { dueCount: number; deckTitle: string; subjectTitle: string; icon: string }>();
+    for (const c of normCards) {
+      const prog  = progMap.get(c.id);
+      const isDue = !prog || (prog.next_review !== null && prog.next_review <= today);
+      if (!isDue) continue;
+      const ex = deckDueMap.get(c.deckId);
+      if (ex) { ex.dueCount++; }
+      else deckDueMap.set(c.deckId, { dueCount: 1, deckTitle: c.deckTitle, subjectTitle: c.subjectTitle, icon: getSubjectIcon(c.subjectTitle, c.subjectIconUrl, c.subjectCategory) });
     }
-    load();
-  }, []);
 
-  if (loading) return <Skeleton />;
+    const topDecks: DeckPriority[] = Array.from(deckDueMap.entries())
+      .map(([deckId, v]) => ({ deckId, ...v }))
+      .sort((a, b) => b.dueCount - a.dueCount).slice(0, 3);
+    const totalDue   = Array.from(deckDueMap.values()).reduce((s, v) => s + v.dueCount, 0);
+    const maturePct  = totalCardCount > 0 ? Math.round((progress.filter(r => (r.interval_days ?? 0) > 21).length / totalCardCount) * 100) : 0;
+    const reviewedPct = totalCardCount > 0 ? Math.round((progress.length / totalCardCount) * 100) : 0;
+
+    // ── Streak ──────────────────────────────────────────────────────────────
+    const streak    = calcStreak(dailyCounts);
+    const maxStreak = calcMaxStreak(dailyCounts);
+
+    // ── Area scores ───────────────────────────────────────────────────────
+    const subjAreaMap = new Map(normCards.map(c => [c.subjectId, getCategoryShort(c.subjectCategory)]));
+    const shortScore  = new Map<string, { sum: number; count: number }>();
+    for (const [sid, domain] of domainMap.entries()) {
+      const area = subjAreaMap.get(sid); if (!area) continue;
+      const s    = shortScore.get(area) ?? { sum: 0, count: 0 };
+      s.sum += domain.coverage; s.count++;
+      shortScore.set(area, s);
+    }
+    const areaScores = new Map<string, number>(
+      Array.from(shortScore.entries()).map(([a, s]) => [a, s.count > 0 ? Math.round((s.sum / s.count) * 100) : 0]),
+    );
+
+    // ── Top lapse deck ────────────────────────────────────────────────────
+    const deckLapseMap = new Map<string, { deckTitle: string; subjectCategory: string | null; lapses: number }>();
+    for (const c of normCards) {
+      const lapses = progMap.get(c.id)?.lapses; if (!lapses) continue;
+      const ex = deckLapseMap.get(c.deckId);
+      if (ex) { ex.lapses += lapses; }
+      else deckLapseMap.set(c.deckId, { deckTitle: c.deckTitle, subjectCategory: c.subjectCategory, lapses });
+    }
+    let topLapseDeck: TopLapseDeck | null = null;
+    for (const [deckId, agg] of deckLapseMap.entries()) {
+      if (!topLapseDeck || agg.lapses > topLapseDeck.lapses) topLapseDeck = { deckId, ...agg };
+    }
+
+    // ── Cards due per ENEM area ───────────────────────────────────────────
+    const areaCardsDueMap = new Map<string, number>();
+    for (const c of normCards) {
+      const prog  = progMap.get(c.id);
+      const isDue = !prog || (prog.next_review !== null && prog.next_review <= today);
+      if (!isDue) continue;
+      const area = getCategoryShort(c.subjectCategory);
+      areaCardsDueMap.set(area, (areaCardsDueMap.get(area) ?? 0) + 1);
+    }
+    const areaCardsDue = Object.fromEntries(areaCardsDueMap);
+
+    // ── FlashTurbo suggestions ────────────────────────────────────────────
+    const deckAreaMap = new Map<string, string>();
+    for (const c of normCards) {
+      if (!deckAreaMap.has(c.deckId)) deckAreaMap.set(c.deckId, getCategoryShort(c.subjectCategory));
+    }
+    const turboSuggestions: TurboSuggestion[] = Array.from(deckDueMap.entries())
+      .map(([deckId, v]) => {
+        const area     = deckAreaMap.get(deckId) ?? 'Outras';
+        const score    = areaScores.get(area) ?? 100;
+        const isWeak   = score > 0 && score < 40;
+        return { deckId, ...v, area, priority: (isWeak ? 'weak' : 'urgent') as 'urgent' | 'weak' };
+      })
+      .sort((a, b) => {
+        if (a.priority === 'weak' && b.priority !== 'weak') return -1;
+        if (a.priority !== 'weak' && b.priority === 'weak') return 1;
+        return b.dueCount - a.dueCount;
+      })
+      .slice(0, 6);
+
+    return { totalDue, topDecks, maturePct, reviewedPct, dailyCounts, streak, maxStreak, plan, areaScores, topLapseDeck, totalReviews, turboSuggestions, areaCardsDue };
+  }, [dashState]);
+
+  if (dashState.status === 'loading') return <Skeleton />;
   if (!metrics) return null;
 
   const flashTutor = getFlashTutor();
@@ -926,46 +906,64 @@ export default function PerformanceMetrics() {
         {/* ╔══════════════════════════════════════════════╗ */}
         {/* ║  CARD 3 — MEU MOMENTO DE FOCO ✨            ║ */}
         {/* ╚══════════════════════════════════════════════╝ */}
-        <div className="relative rounded-2xl p-4 flex flex-col gap-3 overflow-hidden fa-card fa-shimmer-top"
-          style={{ background: 'var(--fa-card)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-            border: '1px solid var(--fa-border)', boxShadow: 'var(--fa-shadow)' }}>
-          <div className="absolute inset-0 pointer-events-none"
-            style={{ background: `radial-gradient(ellipse at top left, var(--fa-iris-b) 0%, transparent 65%)` }} />
+        <div className="relative rounded-2xl p-4 flex flex-col gap-3 overflow-hidden"
+          style={{
+            background: 'rgba(10,10,14,0.95)',
+            backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+            border: '1px solid rgba(168,85,247,0.30)',
+            boxShadow: '0 0 32px rgba(168,85,247,0.12), 0 0 0 0 transparent',
+          }}>
+          {/* Multi-color ambient background */}
+          <div className="absolute inset-0 pointer-events-none">
+            <div style={{ position: 'absolute', top: '-20%', left: '-10%', width: 220, height: 220,
+              background: 'radial-gradient(circle, #a855f744 0%, transparent 70%)',
+              borderRadius: '50%', filter: 'blur(50px)' }} />
+            <div style={{ position: 'absolute', bottom: '-20%', right: '-10%', width: 200, height: 200,
+              background: 'radial-gradient(circle, #f9731630 0%, transparent 70%)',
+              borderRadius: '50%', filter: 'blur(50px)' }} />
+            <div style={{ position: 'absolute', top: '40%', left: '30%', width: 160, height: 160,
+              background: 'radial-gradient(circle, #22d3ee1a 0%, transparent 70%)',
+              borderRadius: '50%', filter: 'blur(40px)' }} />
+          </div>
+          {/* Rainbow shimmer top */}
           <div className="absolute inset-x-0 top-0 h-px pointer-events-none"
-            style={{ background: 'var(--fa-shimmer)' }} />
+            style={{ background: 'linear-gradient(90deg, #a855f7, #22d3ee, #10b981, #f97316, #eab308)' }} />
 
           {/* Header */}
-          <p className="text-xs font-semibold tracking-widest uppercase relative z-10" style={{ color: EMERALD }}>
-            Meu Momento de Foco ✨
+          <p className="text-xs font-black tracking-widest uppercase relative z-10"
+            style={{ background: 'linear-gradient(90deg, #a855f7, #22d3ee, #10b981)',
+              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            FOCO APROVAÇÃO
           </p>
 
           {/* ── Top row: FlashTurbo (left) + Heatmap (right) ── */}
           <div className="relative z-10 flex gap-3 items-stretch">
             {/* 4-Area selector — left col */}
             <div className="shrink-0 w-[44%] flex flex-col gap-1.5">
-              <p className="text-xs font-semibold tracking-wide uppercase" style={{ color: OCEAN, fontSize: '9px' }}>
+              <p className="text-xs font-semibold tracking-wide uppercase" style={{ color: '#a855f7', fontSize: '9px' }}>
                 🚀 Sessão Focada{!isPro && ' 🔒'}
               </p>
               <div className="grid grid-cols-2 gap-1 flex-1">
                 {ENEM_AREAS.slice(0, 4).map(area => {
-                  const due     = metrics.areaCardsDue[area.short] ?? 0;
-                  const mins    = Math.max(1, Math.ceil(due * 35 / 60));
+                  const areaColor = AREA_COLORS[area.short] ?? OCEAN;
+                  const due      = metrics.areaCardsDue[area.short] ?? 0;
                   const hasCards = due > 0;
                   return (
                     <button key={area.short}
                       onClick={() => hasCards ? (isPro ? setShowTurbo(true) : setShowUpgrade(true)) : undefined}
                       disabled={!hasCards}
-                      className="rounded-lg px-1.5 py-1.5 text-left transition-all duration-150 hover:brightness-110 active:scale-[0.97] disabled:opacity-50 disabled:cursor-default"
+                      className="rounded-lg px-1.5 py-1.5 text-left transition-all duration-150 hover:brightness-110 active:scale-[0.97] disabled:opacity-40 disabled:cursor-default"
                       style={{
-                        background: hasCards ? `${OCEAN}14` : 'rgba(255,255,255,0.03)',
-                        border: `1px solid ${hasCards ? OCEAN + '40' : 'rgba(255,255,255,0.07)'}`,
+                        background: hasCards ? `${areaColor}18` : 'rgba(255,255,255,0.03)',
+                        border: `1px solid ${hasCards ? areaColor + '50' : 'rgba(255,255,255,0.07)'}`,
+                        boxShadow: hasCards ? `0 0 8px ${areaColor}20` : 'none',
                       }}>
-                      <p className="font-bold text-white truncate leading-tight" style={{ fontSize: '8px' }}>{area.short}</p>
+                      <p className="font-bold truncate leading-tight"
+                        style={{ fontSize: '8px', color: hasCards ? areaColor : 'rgba(255,255,255,0.35)' }}>
+                        {area.short}
+                      </p>
                       {hasCards ? (
-                        <>
-                          <p className="font-black tabular-nums text-white leading-tight" style={{ fontSize: '12px' }}>{due}</p>
-                          <p style={{ fontSize: '8px', color: 'rgba(255,255,255,0.38)' }}>~{mins}min</p>
-                        </>
+                        <p className="font-black tabular-nums leading-tight text-white" style={{ fontSize: '12px' }}>{due}</p>
                       ) : (
                         <p style={{ fontSize: '8px', color: 'rgba(255,255,255,0.28)' }}>✓ em dia</p>
                       )}
@@ -992,7 +990,8 @@ export default function PerformanceMetrics() {
           </div>
 
           {/* ── Arsenal Status ── */}
-          <div className="relative z-10 pt-2" style={{ borderTop: `1px solid ${isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.06)'}` }}>
+          <div className="relative z-10 pt-2"
+            style={{ borderTop: '1px solid rgba(168,85,247,0.18)' }}>
             <ArsenalStatus maturePct={metrics.maturePct} reviewedPct={metrics.reviewedPct} isLight={isLight} />
           </div>
         </div>
@@ -1022,7 +1021,7 @@ export default function PerformanceMetrics() {
             <div className="flex-1 min-w-0">
               <p className="text-xs font-bold text-white leading-tight">FlashTutor</p>
               <p className="leading-tight truncate" style={{ color: isPro ? OCEAN : 'rgba(255,255,255,0.28)', letterSpacing: '0.04em', fontSize: '10px' }}>
-                {isPro ? '✨ Mentor IA' : '🔒 AIPRO+ EXCLUSIVO'}
+                {isPro ? '✨ Mentor IA' : '🔒 PROTOCOLO NEURAL'}
               </p>
             </div>
             <div className="flex items-center gap-1 shrink-0">

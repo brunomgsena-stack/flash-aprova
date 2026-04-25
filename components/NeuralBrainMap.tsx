@@ -399,9 +399,7 @@ export default function NeuralBrainMap() {
               key={i}
               className="rounded-xl p-4"
               style={{
-                background:           `${log.color}07`,
-                backdropFilter:       'blur(12px)',
-                WebkitBackdropFilter: 'blur(12px)',
+                background:           `${log.color}12`,
                 borderStyle:          'solid',
                 borderTopWidth:       '2px',
                 borderTopColor:       `${log.color}50`,
@@ -440,9 +438,8 @@ export default function NeuralBrainMap() {
           <motion.div
             className="rounded-xl px-4 py-3 grid grid-cols-2 gap-4"
             style={{
-              background:  'rgba(0,0,0,0.50)',
+              background:  'rgba(0,0,0,0.80)',
               border:      '1px solid rgba(0,255,115,0.12)',
-              backdropFilter: 'blur(8px)',
             }}
             initial={{ opacity: 0, x: 22 }}
             animate={inView ? { opacity: 1, x: 0 } : {}}

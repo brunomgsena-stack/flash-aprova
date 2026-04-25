@@ -1,12 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabaseClient';
-import { buildDomainMap, type DomainLevel } from '@/lib/domain';
-import { getCategoryInfo, ENEM_AREAS } from '@/lib/categories';
-import { fetchUserPlan } from '@/lib/plan';
+import { useMemo, useState } from 'react';
+import { type DomainLevel } from '@/lib/domain';
+import { getCategoryInfo, getCategoryShort, ENEM_AREAS } from '@/lib/categories';
+import { useDashboardData } from '@/lib/DashboardContext';
 import SubjectCard from './SubjectCard';
 import AiProUpgradeModal from '@/components/AiProUpgradeModal';
+import WritingAuditModule from './WritingAuditModule';
+import MathPrecisionModule from './MathPrecisionModule';
+
+const EMERALD = '#10B981';
 
 type Subject = {
   id:       string;
@@ -31,9 +34,10 @@ function SectionBlock({
   info,
   domainMap,
   onLockedClickFor,
-}: SectionData & { domainMap: Map<string, DomainLevel>; onLockedClickFor?: (id: string) => (() => void) | undefined }) {
+  isPriority,
+}: SectionData & { domainMap: Map<string, DomainLevel>; onLockedClickFor?: (id: string) => (() => void) | undefined; isPriority?: boolean }) {
   return (
-    <section>
+    <section id={`area-${info.short.toLowerCase()}`}>
       {/* Section header */}
       <div className="flex items-center gap-3 mb-5">
         <div
@@ -42,9 +46,15 @@ function SectionBlock({
         >
           {info.icon}
         </div>
-        <h2 className="text-lg font-bold text-white">{info.displayName}</h2>
+        <h2 className="text-lg font-bold" style={{ color: 'var(--fa-text)' }}>{info.displayName}</h2>
+        {isPriority && (
+          <span className="text-xs font-bold px-2 py-0.5 rounded-full"
+            style={{ background: `${EMERALD}18`, color: EMERALD, border: `1px solid ${EMERALD}35` }}>
+            💡 Sugerido
+          </span>
+        )}
         <div className="flex-1 h-px" style={{ background: `linear-gradient(90deg, ${info.color}33, transparent)` }} />
-        <span className="text-xs text-slate-600">
+        <span className="text-xs" style={{ color: 'var(--fa-text-2)' }}>
           {items.length} matéria{items.length !== 1 ? 's' : ''}
         </span>
       </div>
@@ -70,36 +80,33 @@ function SectionBlock({
 // ─── Main component ────────────────────────────────────────────────────────────
 
 export default function SubjectsWithDomain({ subjects }: Props) {
-  const [domainMap,      setDomainMap]      = useState<Map<string, DomainLevel>>(new Map());
-  const [isFlash,        setIsFlash]        = useState(false);
+  const dashState = useDashboardData();
   const [upgradeVisible, setUpgradeVisible] = useState(false);
 
-  useEffect(() => {
-    async function load() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user || subjects.length === 0) return;
+  const domainMap = dashState.status === 'ready' ? dashState.data.domainMap : new Map<string, DomainLevel>();
+  const isFlash   = dashState.status === 'ready' ? dashState.data.plan === 'aceleracao' : false;
 
-      const [{ data: allCards }, { data: progress }, planInfo] = await Promise.all([
-        supabase.from('cards').select('id, decks(subject_id)'),
-        supabase.from('user_progress').select('card_id, interval_days').eq('user_id', user.id),
-        fetchUserPlan(user.id),
-      ]);
-
-      setIsFlash(planInfo.plan === 'aceleracao');
-
-      if (!allCards || !progress) return;
-
-      const normalised = (allCards as { id: string; decks: unknown }[]).map(c => ({
-        id:    c.id,
-        decks: Array.isArray(c.decks)
-          ? (c.decks[0] as { subject_id: string } ?? null)
-          : (c.decks as { subject_id: string } | null),
-      }));
-
-      setDomainMap(buildDomainMap(normalised, progress));
+  // ── Determine priority area (weakest with progress) ────────────────────────
+  const priorityArea = useMemo(() => {
+    if (dashState.status !== 'ready') return null;
+    const { normCards, domainMap: dm } = dashState.data;
+    const subjAreaMap = new Map(normCards.map(c => [c.subjectId, getCategoryShort(c.subjectCategory)]));
+    const shortScore = new Map<string, { sum: number; count: number }>();
+    for (const [sid, domain] of dm.entries()) {
+      const area = subjAreaMap.get(sid);
+      if (!area) continue;
+      const s = shortScore.get(area) ?? { sum: 0, count: 0 };
+      s.sum += domain.coverage; s.count++;
+      shortScore.set(area, s);
     }
-    load();
-  }, [subjects]);
+    let weakest: string | null = null, weakestScore = 101;
+    for (const area of ENEM_AREAS) {
+      const s = shortScore.get(area.short);
+      const score = s && s.count > 0 ? (s.sum / s.count) * 100 : 0;
+      if (score > 0 && score < weakestScore) { weakestScore = score; weakest = area.short; }
+    }
+    return weakest;
+  }, [dashState]);
 
   if (subjects.length === 0) {
     return <p className="text-slate-500 text-center py-20">Nenhuma matéria encontrada.</p>;
@@ -115,12 +122,18 @@ export default function SubjectsWithDomain({ subjects }: Props) {
     groupedByShort.get(short)!.subjects.push(s);
   }
 
-  // ── Order: ENEM canonical order first, then extras ─────────────────────────
+  // ── Order: priority area first, then ENEM canonical order, then extras ──────
   const ordered: SectionData[] = [];
   const placed  = new Set<string>();
 
+  // Priority area goes first
+  if (priorityArea && groupedByShort.has(priorityArea)) {
+    ordered.push(groupedByShort.get(priorityArea)!);
+    placed.add(priorityArea);
+  }
+
   for (const area of ENEM_AREAS) {
-    if (groupedByShort.has(area.short)) {
+    if (groupedByShort.has(area.short) && !placed.has(area.short)) {
       ordered.push(groupedByShort.get(area.short)!);
       placed.add(area.short);
     }
@@ -129,33 +142,9 @@ export default function SubjectsWithDomain({ subjects }: Props) {
     if (!placed.has(short)) ordered.push(group);
   }
 
-  // ── Build render groups: Matemática + Redação are paired side-by-side ──────
-  const PAIRED = new Set(['Matemática', 'Redação']);
-
-  type RenderGroup =
-    | { type: 'solo';   section: SectionData }
-    | { type: 'paired'; sections: [SectionData, SectionData] };
-
-  const renderGroups: RenderGroup[] = [];
-  const pairBuffer: SectionData[]   = [];
-
-  for (const section of ordered) {
-    if (PAIRED.has(section.short)) {
-      pairBuffer.push(section);
-      if (pairBuffer.length === 2) {
-        renderGroups.push({ type: 'paired', sections: [pairBuffer[0], pairBuffer[1]] });
-        pairBuffer.length = 0;
-      }
-    } else {
-      // flush any lone paired item as solo before continuing
-      if (pairBuffer.length > 0) {
-        renderGroups.push({ type: 'solo', section: pairBuffer[0] });
-        pairBuffer.length = 0;
-      }
-      renderGroups.push({ type: 'solo', section });
-    }
-  }
-  for (const s of pairBuffer) renderGroups.push({ type: 'solo', section: s });
+  // ── Render groups: each section is standalone ──────────────────────────────
+  type RenderGroup = { type: 'solo'; section: SectionData };
+  const renderGroups: RenderGroup[] = ordered.map(section => ({ type: 'solo', section }));
 
   // ── Helper: returns locked click handler for Flash + Redação ───────────────
   function lockedClickFor(id: string): (() => void) | undefined {
@@ -167,56 +156,40 @@ export default function SubjectsWithDomain({ subjects }: Props) {
     <>
     {upgradeVisible && <AiProUpgradeModal onClose={() => setUpgradeVisible(false)} />}
     <div className="flex flex-col gap-12">
-      {renderGroups.map((group) => {
-        if (group.type === 'solo') {
+      {renderGroups.map(({ section }) => {
+        if (section.short === 'Redação') {
           return (
-            <SectionBlock
-              key={group.section.short}
-              {...group.section}
+            <WritingAuditModule
+              key="writing-audit"
+              subjects={section.subjects}
               domainMap={domainMap}
               onLockedClickFor={lockedClickFor}
             />
           );
         }
 
-        // Paired: single full-width header + 2-column card grid
-        const pairedColor = '#7C3AED';
-        const allPairedSubjects = group.sections.flatMap(s => s.subjects);
-        return (
-          <section key="paired-mat-red">
-            {/* Full-width section header */}
-            <div className="flex items-center gap-3 mb-5">
-              <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-base"
-                style={{ background: `${pairedColor}18`, border: `1px solid ${pairedColor}44` }}
-              >
-                📐✒️
-              </div>
-              <h2 className="text-lg font-bold text-white">Matemática e Redação</h2>
-              <div className="flex-1 h-px" style={{ background: `linear-gradient(90deg, ${pairedColor}33, transparent)` }} />
-              <span className="text-xs text-slate-600">
-                {allPairedSubjects.length} matéria{allPairedSubjects.length !== 1 ? 's' : ''}
-              </span>
-            </div>
+        if (section.short === 'Matemática') {
+          return (
+            <MathPrecisionModule
+              key="math-precision"
+              subjects={section.subjects}
+              domainMap={domainMap}
+            />
+          );
+        }
 
-            {/* Cards: 2 columns */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {allPairedSubjects.map(s => (
-                <SubjectCard
-                  key={s.id}
-                  id={s.id}
-                  title={s.title}
-                  icon={s.icon}
-                  color={s.color}
-                  domain={domainMap.get(s.id)}
-                  onLockedClick={lockedClickFor(s.id)}
-                />
-              ))}
-            </div>
-          </section>
+        return (
+          <SectionBlock
+            key={section.short}
+            {...section}
+            domainMap={domainMap}
+            onLockedClickFor={lockedClickFor}
+            isPriority={section.short === priorityArea}
+          />
         );
       })}
     </div>
     </>
   );
 }
+

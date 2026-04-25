@@ -346,7 +346,7 @@ export default function LeadGate({ health, subjectName, onSubmit }: LeadGateProp
 
       {/* ── Full-screen wrapper ── */}
       <div
-        className="relative min-h-screen flex items-center justify-center px-4 py-10 overflow-hidden"
+        className="relative min-h-screen flex items-start sm:items-center justify-center px-4 pt-6 pb-10 sm:py-10 overflow-hidden"
         style={{ background: '#08040f' }}
       >
         <DataBackground />
@@ -399,10 +399,8 @@ export default function LeadGate({ health, subjectName, onSubmit }: LeadGateProp
             <h1 className="text-white font-black text-2xl sm:text-3xl leading-tight mb-3 tracking-tight"
               style={{ fontFamily: MONO }}>
               <span style={{ color: VIOLET }}>[</span>
-              {' '}VEREDITO PRONTO{' '}
-              <span style={{ color: NEON, textShadow:`0 0 20px ${NEON}80, 0 0 40px ${NEON}40` }}>
-                PARA EMISSÃO
-              </span>
+              {' '}<span style={{ color: NEON, textShadow:`0 0 20px ${NEON}80, 0 0 40px ${NEON}40` }}>VEREDITO PRONTO</span>{' '}
+              PARA EMISSÃO
               {' '}<span style={{ color: VIOLET }}>]</span>
             </h1>
 
@@ -493,21 +491,35 @@ export default function LeadGate({ health, subjectName, onSubmit }: LeadGateProp
               {/* ── Submit button ── */}
               <motion.button
                 type="submit"
-                whileHover={{ scale: 1.01, y: -2 }}
-                whileTap={{ scale: 0.98 }}
-                className="mt-1 w-full py-4 rounded-xl font-black text-sm tracking-widest uppercase"
+                animate={{
+                  scale:     [1, 1.03, 1],
+                  boxShadow: [
+                    `0 0 30px ${VIOLET}70, 0 0 60px ${VIOLET}35, 0 4px 20px ${VIOLET}50, inset 0 1px 0 rgba(255,255,255,0.10)`,
+                    `0 0 70px ${VIOLET}cc, 0 0 140px ${VIOLET}60, 0 6px 32px ${VIOLET}80, inset 0 1px 0 rgba(255,255,255,0.18)`,
+                    `0 0 30px ${VIOLET}70, 0 0 60px ${VIOLET}35, 0 4px 20px ${VIOLET}50, inset 0 1px 0 rgba(255,255,255,0.10)`,
+                  ],
+                }}
+                transition={{ duration: 1.9, repeat: Infinity, ease: 'easeInOut' }}
+                whileHover={{ scale: 1.04, y: -2 }}
+                whileTap={{ scale: 0.97 }}
+                className="mt-1 w-full py-5 rounded-xl font-black text-sm tracking-widest uppercase relative overflow-hidden"
                 style={{
                   fontFamily:    MONO,
-                  background:    `linear-gradient(135deg, ${VIOLET} 0%, #5b21b6 100%)`,
+                  background:    `linear-gradient(135deg, ${VIOLET} 0%, #5b21b6 50%, ${VIOLET} 100%)`,
+                  backgroundSize: '200% 100%',
                   color:         '#fff',
-                  letterSpacing: '0.10em',
-                  border:        `1px solid ${VIOLET}70`,
-                  boxShadow: hasInput
-                    ? `0 0 50px ${VIOLET}80, 0 0 100px ${VIOLET}40, 0 4px 24px ${VIOLET}50, inset 0 1px 0 rgba(255,255,255,0.12)`
-                    : `0 0 20px ${VIOLET}35, 0 2px 12px ${VIOLET}20`,
-                  transition: 'box-shadow 0.35s ease',
+                  letterSpacing: '0.12em',
+                  border:        `1.5px solid ${VIOLET}90`,
                 }}
               >
+                {/* Shimmer sweep */}
+                <motion.span
+                  aria-hidden
+                  className="absolute inset-y-0 w-1/2 pointer-events-none"
+                  animate={{ x: ['-100%', '300%'] }}
+                  transition={{ duration: 2.2, repeat: Infinity, ease: 'linear', repeatDelay: 1.2 }}
+                  style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent)' }}
+                />
                 [ DESBLOQUEAR MEU RAIO-X ]
               </motion.button>
 

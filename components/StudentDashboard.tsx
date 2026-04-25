@@ -8,24 +8,33 @@
  * Remoção:   vermelho, linguagem de crise, contadores de "atraso", ícones de alerta
  */
 
-import { useEffect, useState, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import Image                                   from 'next/image';
 import Link                                    from 'next/link';
 import { useRouter }                           from 'next/navigation';
-import { supabase }                            from '@/lib/supabaseClient';
-import { fetchUserPlan, type Plan }            from '@/lib/plan';
-import { buildDomainMap }                      from '@/lib/domain';
 import { getCategoryShort, ENEM_AREAS }        from '@/lib/categories';
 import { getFlashTutor }                       from '@/lib/tutor-config';
+import { useDashboardData }                    from '@/lib/DashboardContext';
 import UserMenu                                from '@/app/dashboard/UserMenu';
 import StreakBadge                             from '@/app/dashboard/StreakBadge';
-import EnemCountdown                           from '@/app/dashboard/EnemCountdown';
 import AiProUpgradeModal                       from '@/components/AiProUpgradeModal';
 
 // ─── Paleta "Copiloto Amigável" ───────────────────────────────────────────────
 const EMERALD = '#10B981';  // progresso, conquista, força
 const FOCUS   = '#0EA5E9';  // informação, foco, próximo passo
 const AMBER   = '#F59E0B';  // atenção suave (nunca vermelho)
+const MONO    = 'var(--font-jetbrains), "JetBrains Mono", monospace';
+
+const SESSION_BTN_STYLE = `
+@keyframes sd-glow-pulse {
+  0%,100% {
+    box-shadow: 0 0 14px #10B98155, 0 0 28px #10B98122;
+  }
+  50% {
+    box-shadow: 0 0 32px #10B98199, 0 0 64px #10B98155, 0 0 96px #10B98122;
+  }
+}
+`;
 
 // ─── Config das 4 Áreas ENEM ─────────────────────────────────────────────────
 const AREA_CONFIG = [
@@ -36,6 +45,18 @@ const AREA_CONFIG = [
 ] as const;
 
 const SECS_PER_CARD = 35; // estimativa realista por cartão
+
+// ─── Logo inline ──────────────────────────────────────────────────────────────
+function FlashAprovaLogo() {
+  return (
+    <div className="flex items-center gap-1" style={{ lineHeight: 1 }}>
+      <span style={{ fontSize: 14 }}>⚡</span>
+      <span style={{ fontFamily: MONO, fontSize: '11px', fontWeight: 900, letterSpacing: '0.06em', color: EMERALD }}>
+        Flash<span style={{ color: 'var(--fa-text)' }}>Aprova</span>
+      </span>
+    </div>
+  );
+}
 
 function minsForCards(n: number) {
   return Math.max(1, Math.round((n * SECS_PER_CARD) / 60));
@@ -125,31 +146,6 @@ function buildCopilotMsg(p: {
   return `${hi} Você está em ${p.maturePct}% do edital consolidado. Cada revisão de hoje soma. 📈`;
 }
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-type DashData = {
-  userName:            string;
-  maturePct:           number;
-  streak:              number;
-  dailyGoal:           number;
-  cardsReviewedToday:  number;
-  cardsToday:          number;          // total disponíveis (para o cap)
-  areaCards:           Record<string, number>;  // cards disponíveis por área
-  topStrength:         string | null;
-  nextArea:            string | null;
-  plan:                Plan;
-  profile: {
-    target_course?:       string | null;
-    target_university?:   string | null;
-    difficulty_subjects?: string[] | null;
-  };
-  areaScores:       Record<string, number>;
-  hasHistory:       boolean;
-  nextAreaDeckIds:  string[];
-};
-
-type State = { status: 'loading' } | { status: 'ready'; data: DashData };
-
 // ─── Skeletons ────────────────────────────────────────────────────────────────
 
 function HeaderSkeleton() {
@@ -183,11 +179,11 @@ function DailyProgressBar({ done, goal }: { done: number; goal: number }) {
   return (
     <div className="mb-5">
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.55)' }}>
-          Meta de hoje
+        <span style={{ fontFamily: MONO, fontSize: '8px', color: 'rgba(255,255,255,0.40)', letterSpacing: '0.10em' }}>
+          META DIÁRIA
         </span>
-        <span className="text-xs font-black tabular-nums" style={{ color: pct >= 100 ? EMERALD : FOCUS }}>
-          {done_}&thinsp;<span style={{ color: 'rgba(255,255,255,0.30)', fontWeight: 400 }}>/ {goal} cards</span>
+        <span className="font-black tabular-nums" style={{ fontFamily: MONO, fontSize: '11px', color: pct >= 100 ? EMERALD : FOCUS }}>
+          {done_}<span style={{ color: 'rgba(255,255,255,0.30)', fontWeight: 400 }}> / {goal}</span>
           {pct >= 100 && ' 🎉'}
         </span>
       </div>
@@ -218,39 +214,56 @@ function DailyProgressBar({ done, goal }: { done: number; goal: number }) {
 // ─── Area Focus Card ──────────────────────────────────────────────────────────
 
 function AreaFocusCard({
-  icon, label, cardsDue, score, isStrength, isNext,
+  icon, label, cardsDue, score, isStrength, isNext, deckIds, isPro, onUpgrade,
 }: {
   icon: string; label: string; cardsDue: number; score: number;
   isStrength: boolean; isNext: boolean;
+  deckIds: string[]; isPro: boolean; onUpgrade: () => void;
 }) {
+  const router = useRouter();
   const color  = isStrength ? EMERALD : isNext ? AMBER : FOCUS;
   const mins   = minsForCards(cardsDue);
   const badge  = isStrength ? '⭐ Ponto Forte' : isNext ? '💡 Destaque de Aprendizado' : null;
+  const hasCards = cardsDue > 0;
+
+  function handleClick() {
+    if (!hasCards) return;
+    if (!isPro) { onUpgrade(); return; }
+    const ids = deckIds.join(',');
+    router.push(ids ? `/study/turbo?decks=${ids}` : '/study/turbo');
+  }
 
   return (
-    <div
-      className="flex flex-col gap-2 rounded-xl p-3.5 transition-all duration-200 hover:-translate-y-0.5 cursor-default"
+    <button
+      onClick={handleClick}
+      disabled={!hasCards}
+      className="flex flex-col gap-2 rounded-xl p-3.5 text-left transition-all duration-200 disabled:cursor-default"
       style={{
         background: `${color}0A`,
         border:     `1px solid ${color}${isStrength || isNext ? '40' : '22'}`,
         boxShadow:  isStrength || isNext ? `0 0 16px ${color}12` : 'none',
+        cursor:     hasCards ? 'pointer' : 'default',
+        transform:  undefined,
       }}
+      onMouseEnter={e => { if (hasCards) (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'; }}
+      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ''; }}
     >
       {/* Icon + label */}
       <div className="flex items-center gap-2">
         <span className="text-xl leading-none">{icon}</span>
         <span className="text-sm font-bold text-white leading-tight truncate">{label}</span>
+        {hasCards && isPro && <span className="ml-auto text-xs opacity-40">▶</span>}
       </div>
 
       {/* Stats row */}
       <div className="flex items-center justify-between gap-1">
         <span className="text-xs" style={{ color: 'rgba(255,255,255,0.40)' }}>
-          {cardsDue > 0 ? `${cardsDue} cards · ~${mins} min` : 'Em dia ✓'}
+          {hasCards ? `${cardsDue} cards` : 'Em dia ✓'}
         </span>
         {score > 0 && (
           <span
-            className="text-xs font-bold tabular-nums rounded-full px-2 py-0.5"
-            style={{ background: `${color}18`, color }}
+            className="font-bold tabular-nums rounded-full px-2 py-0.5"
+            style={{ fontFamily: MONO, fontSize: '10px', background: `${color}18`, color }}
           >
             {score}%
           </span>
@@ -266,7 +279,7 @@ function AreaFocusCard({
           {badge}
         </span>
       )}
-    </div>
+    </button>
   );
 }
 
@@ -276,12 +289,12 @@ function StatPill({ value, label, color }: { value: string; label: string; color
   return (
     <div
       className="flex flex-col items-center justify-center rounded-xl px-3 py-2 gap-0.5"
-      style={{ background: `${color}12`, border: `1px solid ${color}30`, minWidth: 62 }}
+      style={{ background: `${color}12`, border: `1px solid ${color}30`, minWidth: 62, fontFamily: MONO }}
     >
       <span className="text-lg font-black tabular-nums leading-none" style={{ color }}>{value}</span>
       <span
-        className="text-center leading-tight uppercase tracking-wider"
-        style={{ fontSize: '8px', color: 'rgba(255,255,255,0.28)', whiteSpace: 'pre-line' }}
+        className="text-center leading-tight uppercase"
+        style={{ fontSize: '7px', color: 'rgba(255,255,255,0.28)', whiteSpace: 'pre-line', letterSpacing: '0.08em' }}
       >
         {label}
       </span>
@@ -293,148 +306,103 @@ function StatPill({ value, label, color }: { value: string; label: string; color
 
 export default function StudentDashboard({ children }: { children?: ReactNode }) {
   const router = useRouter();
-  const [state,       setState]  = useState<State>({ status: 'loading' });
+  const dashState = useDashboardData();
   const [showUpgrade, setUpgrade] = useState(false);
 
-  useEffect(() => {
-    async function load() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { setState({ status: 'ready', data: emptyData() }); return; }
+  // ── Derive component-specific data from shared context ──────────────────────
+  const derived = useMemo(() => {
+    if (dashState.status !== 'ready') return null;
+    const { plan, profile, normCards, progress, totalCardCount, domainMap, dailyCounts, totalReviews } = dashState.data;
 
-      const [planInfo, cardsRes, progressRes, countRes, profileRes] = await Promise.all([
-        fetchUserPlan(user.id),
-        supabase.from('cards').select('id, decks(id, subject_id, subjects(id, category))'),
-        supabase.from('user_progress').select('card_id, interval_days, next_review, history').eq('user_id', user.id),
-        supabase.from('cards').select('id', { count: 'exact', head: true }),
-        supabase.from('profiles')
-          .select('target_course, target_university, difficulty_subjects, daily_card_goal, full_name')
-          .eq('id', user.id)
-          .maybeSingle(),
-      ]);
+    const today = new Date().toISOString().split('T')[0];
+    const dailyGoal = profile.daily_card_goal ?? 50;
+    const userName  = firstName(profile.full_name);
 
-      const plan  = planInfo.plan;
-      const rows  = progressRes.data ?? [];
-      const total = countRes.count ?? 0;
-      const today = new Date().toISOString().split('T')[0];
+    // maturePct
+    const maturePct = totalCardCount > 0
+      ? Math.round((progress.filter(r => (r.interval_days ?? 0) > 21).length / totalCardCount) * 100)
+      : 0;
 
-      type ProfileRow = {
-        target_course?:       string | null;
-        target_university?:   string | null;
-        difficulty_subjects?: string[] | null;
-        daily_card_goal?:     number | null;
-        full_name?:           string | null;
-      } | null;
-      const pd = profileRes.data as ProfileRow;
-
-      const dailyGoal = pd?.daily_card_goal ?? 50;
-      const userName  = firstName(pd?.full_name ?? user.user_metadata?.full_name ?? user.email);
-      const profile   = {
-        target_course:       pd?.target_course       ?? null,
-        target_university:   pd?.target_university   ?? null,
-        difficulty_subjects: pd?.difficulty_subjects ?? [],
-      };
-
-      // ── maturePct ────────────────────────────────────────────────────────────
-      const maturePct = total > 0
-        ? Math.round((rows.filter(r => (r.interval_days ?? 0) > 21).length / total) * 100)
-        : 0;
-
-      // ── Normalize cards (com categoria) ──────────────────────────────────────
-      type NormCard = { id: string; deckId: string; subjectId: string; category: string | null };
-      const normCards: NormCard[] = [];
-      for (const rawCard of (cardsRes.data ?? []) as Array<{ id: string; decks: unknown }>) {
-        const rd = Array.isArray(rawCard.decks) ? rawCard.decks[0] : rawCard.decks as { id: string; subject_id: string; subjects: unknown } | null;
-        if (!rd) continue;
-        const d  = rd as { id: string; subject_id: string; subjects: unknown };
-        const rs = Array.isArray(d.subjects) ? d.subjects[0] : d.subjects as { id: string; category: string | null } | null;
-        if (!rs) continue;
-        const s  = rs as { id: string; category: string | null };
-        normCards.push({ id: rawCard.id, deckId: d.id, subjectId: d.subject_id, category: s.category });
-      }
-
-      // ── Cards disponíveis hoje (total + por área) ─────────────────────────────
-      const nrMap     = new Map(rows.map(r => [r.card_id, r.next_review as string | null]));
-      const areaCards: Record<string, number> = {};
-      let cardsToday = 0;
-
-      for (const c of normCards) {
-        const nr    = nrMap.get(c.id);
-        const isDue = nr === undefined || (nr !== null && nr <= today);
-        if (!isDue) continue;
-        cardsToday++;
-        const area = getCategoryShort(c.category);
-        if (area) areaCards[area] = (areaCards[area] ?? 0) + 1;
-      }
-
-      // ── Cards revisados hoje (da history) ────────────────────────────────────
-      const dailyCounts = new Map<string, number>();
-      let totalReviews       = 0;
-      let cardsReviewedToday = 0;
-      for (const row of rows) {
-        for (const entry of (row.history as Array<{ reviewed_at: string }> | null) ?? []) {
-          const day = entry.reviewed_at?.slice(0, 10);
-          if (!day) continue;
-          dailyCounts.set(day, (dailyCounts.get(day) ?? 0) + 1);
-          totalReviews++;
-          if (day === today) cardsReviewedToday++;
-        }
-      }
-      const streak     = calcStreak(dailyCounts);
-      const hasHistory = totalReviews > 0;
-
-      // ── Area scores ───────────────────────────────────────────────────────────
-      const domainMap = buildDomainMap(
-        normCards.map(c => ({ id: c.id, decks: { subject_id: c.subjectId } })),
-        rows.map(r => ({ card_id: r.card_id, interval_days: r.interval_days ?? 0 })),
-      );
-      const subjAreaMap = new Map(normCards.map(c => [c.subjectId, getCategoryShort(c.category)]));
-
-      const shortScore = new Map<string, { sum: number; count: number }>();
-      for (const [sid, domain] of domainMap.entries()) {
-        const area = subjAreaMap.get(sid);
-        if (!area) continue;
-        const s = shortScore.get(area) ?? { sum: 0, count: 0 };
-        s.sum += domain.level; s.count++;
-        shortScore.set(area, s);
-      }
-
-      const areaScores: Record<string, number> = {};
-      let topStrength: string | null = null, topScore    = 0;
-      let nextArea:    string | null = null, lowestScore = 101;
-      for (const area of ENEM_AREAS) {
-        const s     = shortScore.get(area.short);
-        const score = s && s.count > 0 ? Math.round((s.sum / s.count / 5) * 100) : 0;
-        areaScores[area.short] = score;
-        if (score > 0 && score > topScore)    { topScore    = score; topStrength = area.short; }
-        if (score > 0 && score < lowestScore) { lowestScore = score; nextArea    = area.short; }
-      }
-
-      // Deck IDs with due cards in the suggested next area (for "Iniciar Sessão")
-      const nextAreaDeckSet = new Set<string>();
-      if (nextArea) {
-        for (const c of normCards) {
-          if (getCategoryShort(c.category) !== nextArea) continue;
-          const nr    = nrMap.get(c.id);
-          const isDue = nr === undefined || (nr !== null && nr <= today);
-          if (isDue) nextAreaDeckSet.add(c.deckId);
-        }
-      }
-      const nextAreaDeckIds = [...nextAreaDeckSet];
-
-      setState({
-        status: 'ready',
-        data: {
-          userName, maturePct, streak, dailyGoal, cardsReviewedToday,
-          cardsToday, areaCards, topStrength, nextArea,
-          plan, profile, areaScores, hasHistory, nextAreaDeckIds,
-        },
-      });
+    // Cards due today (total + per area)
+    const nrMap = new Map(progress.map(r => [r.card_id, r.next_review]));
+    const areaCards: Record<string, number> = {};
+    let cardsToday = 0;
+    for (const c of normCards) {
+      const nr    = nrMap.get(c.id);
+      const isDue = nr === undefined || (nr !== null && nr <= today);
+      if (!isDue) continue;
+      cardsToday++;
+      const area = getCategoryShort(c.subjectCategory);
+      if (area) areaCards[area] = (areaCards[area] ?? 0) + 1;
     }
-    load();
-  }, []);
+
+    // Cards reviewed today
+    let cardsReviewedToday = 0;
+    for (const row of progress) {
+      for (const entry of row.history ?? []) {
+        if (entry.reviewed_at?.slice(0, 10) === today) cardsReviewedToday++;
+      }
+    }
+
+    const streak     = calcStreak(dailyCounts);
+    const hasHistory = totalReviews > 0;
+
+    // Area scores
+    const subjAreaMap = new Map(normCards.map(c => [c.subjectId, getCategoryShort(c.subjectCategory)]));
+    const shortScore = new Map<string, { sum: number; count: number }>();
+    for (const [sid, domain] of domainMap.entries()) {
+      const area = subjAreaMap.get(sid);
+      if (!area) continue;
+      const s = shortScore.get(area) ?? { sum: 0, count: 0 };
+      s.sum += domain.level; s.count++;
+      shortScore.set(area, s);
+    }
+
+    const areaScores: Record<string, number> = {};
+    let topStrength: string | null = null, topScore    = 0;
+    let nextArea:    string | null = null, lowestScore = 101;
+    for (const area of ENEM_AREAS) {
+      const s     = shortScore.get(area.short);
+      const score = s && s.count > 0 ? Math.round((s.sum / s.count / 5) * 100) : 0;
+      areaScores[area.short] = score;
+      if (score > 0 && score > topScore)    { topScore    = score; topStrength = area.short; }
+      if (score > 0 && score < lowestScore) { lowestScore = score; nextArea    = area.short; }
+    }
+
+    // Deck IDs per area (for clickable area cards)
+    const areaDeckIds: Record<string, string[]> = {};
+    for (const c of normCards) {
+      const area = getCategoryShort(c.subjectCategory);
+      if (!area) continue;
+      const nr    = nrMap.get(c.id);
+      const isDue = nr === undefined || (nr !== null && nr <= today);
+      if (isDue) {
+        if (!areaDeckIds[area]) areaDeckIds[area] = [];
+        if (!areaDeckIds[area].includes(c.deckId)) areaDeckIds[area].push(c.deckId);
+      }
+    }
+
+    return {
+      userName, maturePct, streak, dailyGoal, cardsReviewedToday,
+      cardsToday, areaCards, topStrength, nextArea,
+      plan, profile, areaScores, hasHistory,
+      nextAreaDeckIds: areaDeckIds[nextArea ?? ''] ?? [],
+      areaDeckIds,
+    };
+  }, [dashState]);
 
   // ── Skeleton ────────────────────────────────────────────────────────────────
-  if (state.status === 'loading') {
+  if (dashState.status === 'loading') {
+    return (
+      <>
+        <HeaderSkeleton />
+        <CopilotSkeleton />
+        {children}
+      </>
+    );
+  }
+
+  if (!derived) {
     return (
       <>
         <HeaderSkeleton />
@@ -446,33 +414,101 @@ export default function StudentDashboard({ children }: { children?: ReactNode })
 
   const {
     userName, maturePct, streak, dailyGoal, cardsReviewedToday,
-    areaCards, topStrength, nextArea, plan, profile, areaScores, hasHistory,
-    nextAreaDeckIds,
-  } = state.data;
+    areaCards, topStrength, nextArea, plan, areaScores, hasHistory,
+    nextAreaDeckIds, areaDeckIds,
+  } = derived;
 
   const isPro        = plan === 'panteao_elite';
   const tutor        = getFlashTutor();
   const focusStatus  = buildFocusStatus({ hasHistory, streak, cardsReviewedToday, dailyGoal, nextArea, maturePct });
   const copilotMsg   = buildCopilotMsg({ name: userName, hasHistory, cardsReviewedToday, dailyGoal, nextArea, topStrength, maturePct, streak });
 
+  const jarvisGreeting = (() => {
+    const name = userName ? `, ${userName}` : '';
+    const greetings = [
+      `Sinta-se em casa${name}.`,
+      `Tudo pronto pra você${name}.`,
+      `Seus cards te esperaram${name}.`,
+      `Sistema online${name}.`,
+      `Missão retomada${name}.`,
+    ];
+    // Estável por dia — não muda a cada render
+    const idx = new Date().getDate() % greetings.length;
+    return greetings[idx];
+  })();
+
+  // ── Empty state para novos alunos ──────────────────────────────────────────
+  if (!hasHistory) {
+    return (
+      <>
+        {showUpgrade && <AiProUpgradeModal onClose={() => setUpgrade(false)} />}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-2">
+            <FlashAprovaLogo />
+            <div className="flex items-center gap-3">
+              <StreakBadge /><UserMenu />
+            </div>
+          </div>
+          <h1 className="text-4xl font-bold leading-tight" style={{ color: 'var(--fa-text)' }}>
+            {userName ? `Bem-vindo, ${userName}!` : 'Bem-vindo!'}
+          </h1>
+          <p className="mt-2 text-sm font-medium" style={{ color: 'var(--fa-text-2)' }}>
+            <span className="inline-block w-1.5 h-1.5 rounded-full mr-2 align-middle" style={{ background: EMERALD, boxShadow: `0 0 5px ${EMERALD}` }} />
+            Tudo pronto — comece seu primeiro estudo agora
+          </p>
+        </div>
+
+        <div className="mb-10">
+          <div className="relative rounded-2xl p-8 overflow-hidden fa-card fa-shimmer-top flex flex-col items-center gap-5 text-center"
+            style={{ background: 'var(--fa-card)', border: '1px solid var(--fa-border)', boxShadow: 'var(--fa-shadow)' }}>
+            <div className="absolute inset-0 pointer-events-none"
+              style={{ background: `radial-gradient(ellipse at top, ${EMERALD}0A 0%, transparent 60%)` }} />
+            <div className="rounded-full overflow-hidden relative z-10"
+              style={{ width: 64, height: 64, border: `2px solid ${EMERALD}60`, boxShadow: `0 0 24px ${EMERALD}28` }}>
+              <img src={tutor.avatar_url} alt={tutor.name} width={64} height={64} />
+            </div>
+            <div className="relative z-10">
+              <p className="text-lg font-bold text-white mb-1">{tutor.name} está pronto para te guiar</p>
+              <p className="text-sm leading-relaxed" style={{ color: 'var(--fa-text-2)' }}>
+                Não precisa ser longo — <strong>5 minutinhos</strong> já ativam o diagnóstico e o SRS começa a trabalhar por você.
+              </p>
+            </div>
+            <button
+              onClick={() => router.push('/study/turbo')}
+              className="relative z-10 inline-flex items-center gap-2 rounded-xl px-6 py-3.5 text-sm font-black text-white transition-all duration-150 hover:brightness-110 active:scale-95"
+              style={{ background: `linear-gradient(135deg, ${EMERALD}, #059669)`, boxShadow: `0 0 24px ${EMERALD}40` }}
+            >
+              ⚡ Começar Primeira Sessão
+            </button>
+            <p className="text-xs relative z-10" style={{ color: 'rgba(255,255,255,0.25)' }}>
+              Você escolhe o ritmo. Pode parar quando quiser.
+            </p>
+          </div>
+        </div>
+
+        {children}
+      </>
+    );
+  }
+
   return (
     <>
+      <style>{SESSION_BTN_STYLE}</style>
       {showUpgrade && <AiProUpgradeModal onClose={() => setUpgrade(false)} />}
 
       {/* ════ Header "Meu Foco" ════════════════════════════════════════════════ */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-2">
-          <p className="text-xs font-bold tracking-widest uppercase" style={{ color: EMERALD }}>
-            FlashAprova
-          </p>
+          <FlashAprovaLogo />
           <div className="flex items-center gap-3">
             <StreakBadge />
-            <EnemCountdown />
             <UserMenu />
           </div>
         </div>
 
-        <h1 className="text-4xl font-bold leading-tight" style={{ color: 'var(--fa-text)' }}>Meu Foco</h1>
+        <h1 className="text-2xl sm:text-4xl font-bold leading-tight tracking-tight" style={{ color: 'var(--fa-text)' }}>
+          {jarvisGreeting}
+        </h1>
 
         {/* Status "Energia Mental" — nunca negativo */}
         <p className="mt-2 text-sm font-medium" style={{ color: 'var(--fa-text-2)' }}>
@@ -524,7 +560,7 @@ export default function StudentDashboard({ children }: { children?: ReactNode })
                 style={{ background: isPro ? EMERALD : 'rgba(255,255,255,0.18)', boxShadow: isPro ? `0 0 6px ${EMERALD}` : 'none' }}
               />
               <span className="text-xs font-semibold" style={{ color: isPro ? EMERALD : 'rgba(255,255,255,0.28)' }}>
-                {isPro ? 'AiPro+ Ativo' : 'Plano Flash'}
+                {isPro ? '[SISTEMA OPERANDO]' : 'Plano Flash'}
               </span>
             </div>
           </div>
@@ -588,28 +624,15 @@ export default function StudentDashboard({ children }: { children?: ReactNode })
                 </div>
 
                 {/* Mensagem empática — sempre positiva, nunca culpa */}
-                {isPro ? (
-                  <p className="text-sm leading-relaxed" style={{ color: 'var(--fa-text-2)' }}>
-                    {copilotMsg}
+                <p className="text-sm leading-relaxed" style={{ color: 'var(--fa-text-2)' }}>
+                  {copilotMsg}
+                </p>
+
+                {/* Upsell suave para plano Flash */}
+                {!isPro && (
+                  <p className="text-xs mt-2 leading-relaxed" style={{ color: 'rgba(255,255,255,0.38)' }}>
+                    Com <span style={{ color: EMERALD, fontWeight: 700 }}>Protocolo Neural</span> você recebe sessões personalizadas por área e cronograma semanal IA.
                   </p>
-                ) : (
-                  <>
-                    <p className="text-sm leading-relaxed text-white font-medium">
-                      {/* Mostra só a primeira frase para o plano flash */}
-                      {copilotMsg.split('?')[0] + (copilotMsg.includes('?') ? '?' : '')}
-                    </p>
-                    <div className="relative mt-1">
-                      <p className="text-sm leading-relaxed select-none"
-                        style={{ color: 'rgba(255,255,255,0.55)', filter: 'blur(3px)', userSelect: 'none' }}
-                        aria-hidden
-                      >
-                        {copilotMsg.split('?').slice(1).join('?')}
-                      </p>
-                      <div className="absolute inset-0"
-                        style={{ background: 'linear-gradient(90deg, transparent 15%, rgba(10,12,20,0.65))' }}
-                      />
-                    </div>
-                  </>
                 )}
 
                 {/* CTA */}
@@ -622,16 +645,21 @@ export default function StudentDashboard({ children }: { children?: ReactNode })
                           : null;
                         router.push(ids ? `/study/turbo?decks=${ids}` : '/study/turbo');
                       }}
-                      className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition-all duration-150 active:scale-95 hover:brightness-110"
+                      className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-bold active:scale-95 hover:brightness-115"
                       style={{
                         background: `linear-gradient(135deg, ${EMERALD}, #059669)`,
-                        border:     `1px solid ${EMERALD}60`,
-                        boxShadow:  `0 0 14px ${EMERALD}28`,
+                        border:     `1px solid ${EMERALD}88`,
                         color:      'white',
+                        animation:  'sd-glow-pulse 2.4s ease-in-out infinite',
+                        transition: 'filter 0.15s',
                       }}
                     >
-                      ⚡ Iniciar Sessão Sugerida
-                      {nextArea && <span style={{ opacity: 0.75 }}>· {nextArea}</span>}
+                      ⚡ Iniciar Sessão
+                      {nextArea && (
+                        <span style={{ opacity: 0.80, fontFamily: MONO, fontSize: '10px', letterSpacing: '0.04em' }}>
+                          · {nextArea}
+                        </span>
+                      )}
                     </button>
                   ) : (
                     <button
@@ -651,7 +679,7 @@ export default function StudentDashboard({ children }: { children?: ReactNode })
               </div>
             </div>
 
-            {/* Stats pills (sm+) */}
+            {/* Stats pills (sm+ — vertical) */}
             <div className="shrink-0 hidden sm:flex flex-col gap-2">
               <StatPill value={`${maturePct}%`} label={`EDITAL\nDOMINADO`} color={EMERALD} />
               {streak > 0 && (
@@ -664,10 +692,27 @@ export default function StudentDashboard({ children }: { children?: ReactNode })
             </div>
           </div>
 
+          {/* Stats pills (mobile only — horizontal row) */}
+          <div className="hidden gap-2 relative z-10 mb-4">
+            <StatPill value={`${maturePct}%`} label={`EDITAL\nDOMINADO`} color={EMERALD} />
+            {streak > 0 && (
+              <StatPill
+                value={`${streak}${streak >= 7 ? '🔥' : ''}`}
+                label={`DIAS EM\nSEQUÊNCIA`}
+                color={AMBER}
+              />
+            )}
+            <StatPill
+              value={`${cardsReviewedToday}`}
+              label={`CARDS\nHOJE`}
+              color={FOCUS}
+            />
+          </div>
+
           {/* ════ Seleção de Áreas ENEM ═══════════════════════════════════════ */}
           <div className="relative z-10">
             <p className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: 'rgba(255,255,255,0.30)' }}>
-              Áreas disponíveis para estudar
+              FRENTES DE ATAQUE:
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
               {AREA_CONFIG.map(area => (
@@ -679,6 +724,9 @@ export default function StudentDashboard({ children }: { children?: ReactNode })
                   score={areaScores[area.key] ?? 0}
                   isStrength={topStrength === area.key}
                   isNext={nextArea === area.key && topStrength !== area.key}
+                  deckIds={areaDeckIds[area.key] ?? []}
+                  isPro={isPro}
+                  onUpgrade={() => setUpgrade(true)}
                 />
               ))}
             </div>
@@ -711,7 +759,7 @@ export default function StudentDashboard({ children }: { children?: ReactNode })
                   textDecoration: 'none',
                 }}
               >
-                🗓️ Cronograma Semanal IA
+                🗓️ Cronograma IA
               </Link>
             ) : (
               <button
@@ -723,7 +771,7 @@ export default function StudentDashboard({ children }: { children?: ReactNode })
                   color:      'rgba(255,255,255,0.35)',
                 }}
               >
-                🔒 Cronograma Semanal IA
+                🔒 Cronograma IA
               </button>
             )}
           </div>
@@ -734,13 +782,4 @@ export default function StudentDashboard({ children }: { children?: ReactNode })
       {children}
     </>
   );
-}
-
-function emptyData(): DashData {
-  return {
-    userName: '', maturePct: 0, streak: 0, dailyGoal: 50,
-    cardsReviewedToday: 0, cardsToday: 0, areaCards: {},
-    topStrength: null, nextArea: null, plan: 'aceleracao',
-    profile: {}, areaScores: {}, hasHistory: false, nextAreaDeckIds: [],
-  };
 }

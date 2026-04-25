@@ -23,13 +23,14 @@ const NEON_CYAN   = '#22d3ee';
 const NEON_ORANGE = '#f97316';
 const NEON_GREEN  = '#00ff80';
 const RED_ALERT   = '#ef4444';
+const MONO        = 'var(--font-jetbrains), "JetBrains Mono", monospace';
 
 // ─── CSS ──────────────────────────────────────────────────────────────────────
 
 const STYLE = `
 @keyframes ft-scan {
-  0%   { transform: translateY(-100%); opacity: 0.45; }
-  100% { transform: translateY(600%);  opacity: 0; }
+  0%   { transform: translateY(-100%); opacity: 0.55; }
+  100% { transform: translateY(800%);  opacity: 0; }
 }
 @keyframes ft-pulse {
   0%,100% { opacity: 0.45; }
@@ -43,6 +44,14 @@ const STYLE = `
 @keyframes ft-appear {
   from { opacity: 0; transform: translateY(4px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes ft-blink {
+  0%,49% { opacity: 1; }
+  50%,100% { opacity: 0; }
+}
+@keyframes ft-border-pulse {
+  0%,100% { box-shadow: 0 0 0 1px rgba(168,85,247,0.25), 0 0 40px rgba(168,85,247,0.06); }
+  50%      { box-shadow: 0 0 0 1px rgba(168,85,247,0.55), 0 0 60px rgba(168,85,247,0.14); }
 }
 `;
 
@@ -443,35 +452,45 @@ function StatsBadges({ maturePct, streak }: { maturePct: number; streak: number 
   return (
     <div className="shrink-0 hidden sm:flex flex-col gap-2">
       <div
-        className="flex flex-col items-center justify-center rounded-xl px-3 py-2 gap-0.5"
-        style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', minWidth: 62 }}
+        className="flex flex-col items-center justify-center rounded px-3 py-2 gap-0.5"
+        style={{
+          background: 'rgba(255,255,255,0.04)',
+          border: `1px solid ${maturePct > 0 ? NEON_GREEN + '44' : 'rgba(255,255,255,0.07)'}`,
+          minWidth: 66,
+          fontFamily: MONO,
+        }}
       >
-        <span className="text-xl font-black tabular-nums leading-none"
-          style={{ color: maturePct > 0 ? NEON_GREEN : 'rgba(255,255,255,0.20)' }}>
+        <span
+          className="text-xl font-black tabular-nums leading-none"
+          style={{ color: maturePct > 0 ? NEON_GREEN : 'rgba(255,255,255,0.20)' }}
+        >
           {maturePct}%
         </span>
         <span className="text-center leading-tight"
-          style={{ fontSize: '8px', color: 'rgba(255,255,255,0.28)', letterSpacing: '0.04em' }}>
-          DO EDITAL<br/>DOMINADO
+          style={{ fontSize: '7px', color: 'rgba(255,255,255,0.28)', letterSpacing: '0.06em' }}>
+          EDITAL<br/>DOMINADO
         </span>
       </div>
 
       {streak > 0 && (
         <div
-          className="flex flex-col items-center justify-center rounded-xl px-3 py-2 gap-0.5"
+          className="flex flex-col items-center justify-center rounded px-3 py-2 gap-0.5"
           style={{
-            background: streak >= 7 ? `${NEON_ORANGE}18` : 'rgba(255,255,255,0.04)',
-            border:     streak >= 7 ? `1px solid ${NEON_ORANGE}44` : '1px solid rgba(255,255,255,0.07)',
-            minWidth:   62,
-            animation:  streak >= 7 ? 'ft-pop 0.4s ease-out both' : 'none',
+            background:  streak >= 7 ? `${NEON_ORANGE}18` : 'rgba(255,255,255,0.04)',
+            border:      streak >= 7 ? `1px solid ${NEON_ORANGE}55` : '1px solid rgba(255,255,255,0.07)',
+            minWidth:    66,
+            animation:   streak >= 7 ? 'ft-pop 0.4s ease-out both' : 'none',
+            fontFamily:  MONO,
           }}
         >
-          <span className="font-black tabular-nums leading-none"
-            style={{ fontSize: streak < 10 ? '1.25rem' : '1rem', color: streak >= 7 ? NEON_ORANGE : 'rgba(255,255,255,0.45)' }}>
+          <span
+            className="font-black tabular-nums leading-none"
+            style={{ fontSize: streak < 10 ? '1.25rem' : '1rem', color: streak >= 7 ? NEON_ORANGE : 'rgba(255,255,255,0.45)' }}
+          >
             {streak}{streakFire(streak)}
           </span>
           <span className="text-center leading-tight"
-            style={{ fontSize: '8px', color: 'rgba(255,255,255,0.28)', letterSpacing: '0.04em' }}>
+            style={{ fontSize: '7px', color: 'rgba(255,255,255,0.28)', letterSpacing: '0.06em' }}>
             DIAS DE<br/>SEQUÊNCIA
           </span>
         </div>
@@ -642,50 +661,75 @@ export default function PantheonInsights() {
         <div
           className="relative rounded-2xl p-6 overflow-hidden"
           style={{
-            background:           'rgba(255,255,255,0.025)',
-            backdropFilter:       'blur(24px)',
-            WebkitBackdropFilter: 'blur(24px)',
-            border:               `1px solid ${borderColor}`,
-            boxShadow:            `0 0 60px ${isPro ? NEON_PURPLE + '08' : 'transparent'}, inset 0 0 30px rgba(168,85,247,0.02)`,
+            background:           'rgba(4,4,14,0.80)',
+            backdropFilter:       'blur(32px) saturate(160%)',
+            WebkitBackdropFilter: 'blur(32px) saturate(160%)',
+            border:               `1px solid ${isPro ? NEON_PURPLE + '77' : NEON_PURPLE + '33'}`,
+            boxShadow:            isPro
+              ? `0 0 0 1px ${NEON_PURPLE}22, 0 0 60px ${NEON_PURPLE}12, inset 0 0 40px rgba(168,85,247,0.04)`
+              : `0 0 0 1px rgba(168,85,247,0.08), inset 0 0 20px rgba(168,85,247,0.02)`,
+            animation: isPro ? 'ft-border-pulse 4s ease-in-out infinite' : 'none',
           }}
         >
           {/* Top shimmer */}
           <div className="absolute inset-x-0 top-0 h-px pointer-events-none"
             style={{
               background: isPro
-                ? `linear-gradient(90deg, transparent, ${NEON_PURPLE}88, ${NEON_CYAN}55, transparent)`
-                : `linear-gradient(90deg, transparent, ${NEON_PURPLE}44, transparent)`,
+                ? `linear-gradient(90deg, transparent, ${NEON_PURPLE}cc, ${NEON_CYAN}77, transparent)`
+                : `linear-gradient(90deg, transparent, ${NEON_PURPLE}55, transparent)`,
               animation: isPro ? 'ft-pulse 3s ease-in-out infinite' : 'none',
             }}
           />
           {/* Radial bg */}
           <div className="absolute inset-0 pointer-events-none"
-            style={{ background: 'radial-gradient(ellipse at top left, rgba(168,85,247,0.055) 0%, transparent 58%)' }}
+            style={{ background: 'radial-gradient(ellipse at top left, rgba(168,85,247,0.07) 0%, transparent 55%)' }}
           />
-          {/* Scan line */}
-          {isPro && (
-            <div className="absolute inset-x-0 pointer-events-none"
-              style={{ height: '1px', top: '0', animation: 'ft-scan 5s linear infinite',
-                background: `linear-gradient(90deg, transparent, ${NEON_PURPLE}55, ${NEON_CYAN}33, transparent)` }}
-            />
-          )}
+          {/* Scan line (always on, more visible for pro) */}
+          <div className="absolute inset-x-0 pointer-events-none"
+            style={{
+              height: '1px', top: '0',
+              animation: 'ft-scan 6s linear infinite',
+              background: isPro
+                ? `linear-gradient(90deg, transparent, ${NEON_PURPLE}88, ${NEON_CYAN}55, transparent)`
+                : `linear-gradient(90deg, transparent, ${NEON_PURPLE}33, transparent)`,
+            }}
+          />
+          {/* Corner brackets — terminal aesthetic */}
+          <div className="absolute top-2 left-2 w-3 h-3 pointer-events-none"
+            style={{ borderTop: `1px solid ${NEON_PURPLE}88`, borderLeft: `1px solid ${NEON_PURPLE}88` }} />
+          <div className="absolute top-2 right-2 w-3 h-3 pointer-events-none"
+            style={{ borderTop: `1px solid ${NEON_PURPLE}88`, borderRight: `1px solid ${NEON_PURPLE}88` }} />
+          <div className="absolute bottom-2 left-2 w-3 h-3 pointer-events-none"
+            style={{ borderBottom: `1px solid ${NEON_PURPLE}88`, borderLeft: `1px solid ${NEON_PURPLE}88` }} />
+          <div className="absolute bottom-2 right-2 w-3 h-3 pointer-events-none"
+            style={{ borderBottom: `1px solid ${NEON_PURPLE}88`, borderRight: `1px solid ${NEON_PURPLE}88` }} />
 
           {/* ── Header ──────────────────────────────────────────────────────── */}
           <div className="flex items-center justify-between mb-5 relative z-10">
-            <p className="text-xs font-semibold tracking-widest uppercase" style={{ color: NEON_PURPLE }}>
-              Insights do Panteão 🏛️
-            </p>
-            <div className="flex items-center gap-1.5 rounded-full px-2.5 py-0.5"
+            {/* Terminal label */}
+            <div className="flex items-center gap-2">
+              <span style={{ fontFamily: MONO, fontSize: '9px', color: NEON_PURPLE, letterSpacing: '0.12em' }}>
+                SISTEMA://PANTEÃO_INSIGHTS
+              </span>
+            </div>
+            {/* Agent status badge */}
+            <div className="flex items-center gap-1.5 rounded px-2.5 py-1"
               style={{
-                background: isPro ? `${NEON_PURPLE}1A` : 'rgba(255,255,255,0.04)',
-                border:     `1px solid ${isPro ? NEON_PURPLE + '44' : 'rgba(255,255,255,0.08)'}`,
+                background: isPro ? `${NEON_PURPLE}14` : 'rgba(255,255,255,0.03)',
+                border:     `1px solid ${isPro ? NEON_PURPLE + '55' : 'rgba(255,255,255,0.08)'}`,
+                fontFamily: MONO,
               }}
             >
-              <span className="w-1.5 h-1.5 rounded-full"
-                style={{ background: isPro ? NEON_PURPLE : 'rgba(255,255,255,0.18)', boxShadow: isPro ? `0 0 6px ${NEON_PURPLE}` : 'none' }}
+              <span
+                className="w-1.5 h-1.5 rounded-full"
+                style={{
+                  background: isPro ? NEON_PURPLE : 'rgba(255,255,255,0.18)',
+                  boxShadow:  isPro ? `0 0 8px ${NEON_PURPLE}` : 'none',
+                  animation:  isPro ? 'ft-blink 1.2s step-end infinite' : 'none',
+                }}
               />
-              <span className="text-xs font-semibold" style={{ color: isPro ? NEON_PURPLE : 'rgba(255,255,255,0.28)' }}>
-                {isPro ? 'AiPro+ Ativo' : 'Plano Flash · Prévia'}
+              <span style={{ fontSize: '9px', fontWeight: 700, color: isPro ? NEON_PURPLE : 'rgba(255,255,255,0.25)', letterSpacing: '0.08em' }}>
+                {isPro ? 'AGENTE: ONLINE' : 'AGENTE: STANDBY'}
               </span>
             </div>
           </div>
