@@ -16,7 +16,8 @@ const ORANGE  = '#f97316';
 const EMERALD = '#10b981';
 
 // ─── Radar Chart ─────────────────────────────────────────────────────────────
-const RADAR_ORDER: SubjectId[] = ['biologia', 'quimica', 'historia', 'geografia'];
+type RadarSubjectId = 'biologia' | 'quimica' | 'historia' | 'geografia';
+const RADAR_ORDER: RadarSubjectId[] = ['biologia', 'quimica', 'historia', 'geografia'];
 const RADAR_LABELS = ['Bio', 'Quím', 'Hist', 'Geo'];
 const RADAR_COLORS = [GREEN, CYAN, '#eab308', '#10b981'];
 
@@ -523,7 +524,7 @@ export default function CheckoutPage() {
   const deficitPts  = health < 55 ? 500 : health < 65 ? 400 : health < 72 ? 300 : 200;
 
   const subjectScore = health > 80 ? 0.76 : health > 60 ? 0.52 : health > 40 ? 0.32 : 0.18;
-  const defaultScores: Record<SubjectId, number> = { biologia: 0.60, quimica: 0.42, historia: 0.55, geografia: 0.68 };
+  const defaultScores: Record<RadarSubjectId, number> = { biologia: 0.60, quimica: 0.42, historia: 0.55, geografia: 0.68 };
   const scores = RADAR_ORDER.map(id => {
     if (id === subjectId) return subjectScore;
     if (data?.radar) {
