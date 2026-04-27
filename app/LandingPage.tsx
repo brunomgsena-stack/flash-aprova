@@ -334,7 +334,7 @@ function CTAButton({ size = 'lg', label }: { size?: 'sm' | 'lg'; label?: string 
   const text = label ?? 'Gerar meu Diagnóstico IA';
   return (
     <Link
-      href="/onboarding"
+      href="/quizz"
       className={`cta-pulse relative flex sm:inline-flex w-full sm:w-auto justify-center items-center gap-3 rounded-2xl font-black text-black overflow-hidden whitespace-nowrap transition-all duration-200 hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.99] ${big ? 'px-8 py-5 text-lg' : 'px-6 py-4 text-sm'}`}
       style={{
         background:    `linear-gradient(135deg, ${NEON} 0%, #00cc5a 100%)`,

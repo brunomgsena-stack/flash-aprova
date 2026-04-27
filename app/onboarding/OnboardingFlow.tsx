@@ -419,7 +419,7 @@ export default function OnboardingFlow() {
               </div>
 
               <p className="text-center text-slate-700 text-xs mt-6">
-                10 questões · ~3 minutos · Resultado imediato
+                5 questões · ~1 minuto · Resultado imediato
               </p>
             </div>
           )}
@@ -438,7 +438,7 @@ export default function OnboardingFlow() {
                 <div className="text-right">
                   <p className="text-xs text-slate-500">Questão</p>
                   <p className="font-black text-white text-lg tabular-nums">
-                    {cardIndex + 1}<span className="text-slate-700 font-normal text-sm">/10</span>
+                    {cardIndex + 1}<span className="text-slate-700 font-normal text-sm">/{testDeck.length}</span>
                   </p>
                 </div>
               </div>
@@ -447,7 +447,7 @@ export default function OnboardingFlow() {
               <div className="h-1 rounded-full overflow-hidden mb-5" style={{ background: 'rgba(255,255,255,0.06)' }}>
                 <div className="h-full rounded-full transition-all duration-500"
                   style={{
-                    width: `${(cardIndex / 10) * 100}%`,
+                    width: `${(cardIndex / testDeck.length) * 100}%`,
                     background: `linear-gradient(90deg, ${VIOLET}, ${CYAN})`,
                     boxShadow: `0 0 8px ${CYAN}60`,
                   }} />

@@ -1,8 +1,5 @@
 'use client';
 
-// TODO: substituir CHECKOUT_URL pelo link de cobrança AbacatePay quando gerado
-const CHECKOUT_URL = process.env.NEXT_PUBLIC_ABACATEPAY_CHECKOUT_URL ?? '';
-
 type Props = { onClose: () => void };
 
 const BENEFITS = [
@@ -26,12 +23,7 @@ const BENEFITS = [
 
 export default function AiProUpgradeModal({ onClose }: Props) {
   function handleUpgrade() {
-    if (CHECKOUT_URL) {
-      window.location.href = CHECKOUT_URL;
-    } else {
-      // Link temporário enquanto o AbacatePay não está configurado
-      window.open('https://wa.me/5511999999999?text=Quero+assinar+o+AiPro%2B', '_blank');
-    }
+    window.location.href = '/checkout';
   }
 
   return (

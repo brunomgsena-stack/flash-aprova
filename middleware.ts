@@ -36,14 +36,14 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // ── Auth guards ─────────────────────────────────────────────────────────────
-  const isProtected = ['/dashboard', '/admin', '/study'].some((p) =>
+  const isProtected = ['/dashboard', '/admin', '/study', '/welcome'].some((p) =>
     pathname.startsWith(p),
   );
   const isSetup = pathname.startsWith('/setup');
 
-  // ── Exceção: /director, /dashboard e /study nunca redirecionam para /setup ──
-  // /study deve ser permissivo: se o aluno está logado, pode estudar independente do onboarding.
-  const isDirectorOrDashboard = pathname.startsWith('/director') || pathname.startsWith('/dashboard') || pathname.startsWith('/study');
+  // ── Exceção: /director, /dashboard, /study e /welcome nunca redirecionam para /setup ──
+  // /study e /welcome devem ser permissivos: se o aluno está logado, pode acessar independente do onboarding.
+  const isDirectorOrDashboard = pathname.startsWith('/director') || pathname.startsWith('/dashboard') || pathname.startsWith('/study') || pathname.startsWith('/welcome');
 
   // Rotas protegidas e /setup exigem login
   if ((isProtected || isSetup) && !user) {
@@ -54,14 +54,16 @@ export async function middleware(request: NextRequest) {
     // Fonte de verdade: tabela profiles no banco.
     // Não confia no JWT (pode estar desatualizado após o onboarding).
     let onboardingDone = false;
+    let firstSessionDone = false;
+    let profileChecked = false;
 
-    if (isProtected || isSetup) {
+    if (isProtected || isSetup || pathname === '/') {
       // maybeSingle() evita erro 406 quando a row ainda não existe (novo usuário
       // cujo trigger de criação de perfil ainda não disparou). Com .single(),
       // profile viria null + erro, fazendo onboardingDone = false incorretamente.
       const { data: profile, error: profileErr } = await supabase
         .from('profiles')
-        .select('onboarding_completed', { count: 'exact' })
+        .select('onboarding_completed, first_session_completed', { count: 'exact' })
         .eq('id', user.id)
         .maybeSingle();
 
@@ -70,6 +72,8 @@ export async function middleware(request: NextRequest) {
       }
 
       onboardingDone = profile?.onboarding_completed === true;
+      firstSessionDone = profile?.first_session_completed === true;
+      profileChecked = true;
     }
 
     // Usuário logado em rota protegida sem ter completado o setup → redireciona
@@ -87,14 +91,27 @@ export async function middleware(request: NextRequest) {
     if (onboardingDone && isSetup && !comingFromSetup) {
       return NextResponse.redirect(new URL('/dashboard', request.url));
     }
+
+    // Redireciona para /welcome se onboarding feito mas primeira sessão pendente
+    if (onboardingDone && !firstSessionDone && pathname.startsWith('/dashboard')) {
+      const hasTourParam = request.nextUrl.searchParams.get('tour') === '1';
+      if (!hasTourParam) {
+        return NextResponse.redirect(new URL('/welcome', request.url));
+      }
+    }
+
+    // Home: redireciona de acordo com status de onboarding
+    if (pathname === '/' && profileChecked) {
+      if (!onboardingDone) {
+        return NextResponse.redirect(new URL('/setup', request.url));
+      }
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
   }
 
   const authOnlyPages = ['/login', '/forgot-password', '/update-password'];
   if (authOnlyPages.includes(pathname) && user && pathname !== '/update-password') {
     // Não redireciona /update-password — o usuário precisa estar logado para updateUser()
-    return NextResponse.redirect(new URL('/dashboard', request.url));
-  }
-  if (pathname === '/' && user) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 

@@ -1425,7 +1425,7 @@ export default function HeroSection() {
     e.preventDefault();
     if (ctaState === 'loading') return;
     setCtaState('loading');
-    setTimeout(() => router.push('/onboarding'), 820);
+    setTimeout(() => router.push('/quizz'), 820);
   }, [ctaState, router]);
 
   const mouseX = useMotionValue(0);

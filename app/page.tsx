@@ -121,7 +121,7 @@ const jsonLd = {
       publisher: { '@id': `${SITE_URL}/#org` },
       potentialAction: {
         '@type': 'SearchAction',
-        target: `${SITE_URL}/onboarding`,
+        target: `${SITE_URL}/quizz`,
         'query-input': 'required name=search_term_string',
       },
     },

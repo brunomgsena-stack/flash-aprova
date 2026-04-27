@@ -44,7 +44,10 @@ const AREA_CONFIG = [
   { key: 'Matemática', icon: '📐', label: 'Matemática'          },
 ] as const;
 
-const SECS_PER_CARD = 35; // estimativa realista por cartão
+// ─── Cálculo de tempo: 10 flashcards = 1 minuto ───────────────────────────────
+function minsForCards(n: number) {
+  return Math.max(1, Math.round(n / 10));
+}
 
 // ─── Logo inline ──────────────────────────────────────────────────────────────
 function FlashAprovaLogo() {
@@ -56,10 +59,6 @@ function FlashAprovaLogo() {
       </span>
     </div>
   );
-}
-
-function minsForCards(n: number) {
-  return Math.max(1, Math.round((n * SECS_PER_CARD) / 60));
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -344,8 +343,9 @@ export default function StudentDashboard({ children }: { children?: ReactNode })
       }
     }
 
-    const streak     = calcStreak(dailyCounts);
-    const hasHistory = totalReviews > 0;
+    const streak          = calcStreak(dailyCounts);
+    const hasHistory      = totalReviews > 0;
+    const firstSessionDone = profile.first_session_completed === true;
 
     // Area scores
     const subjAreaMap = new Map(normCards.map(c => [c.subjectId, getCategoryShort(c.subjectCategory)]));
@@ -385,7 +385,7 @@ export default function StudentDashboard({ children }: { children?: ReactNode })
     return {
       userName, maturePct, streak, dailyGoal, cardsReviewedToday,
       cardsToday, areaCards, topStrength, nextArea,
-      plan, profile, areaScores, hasHistory,
+      plan, profile, areaScores, hasHistory, firstSessionDone,
       nextAreaDeckIds: areaDeckIds[nextArea ?? ''] ?? [],
       areaDeckIds,
     };
@@ -414,7 +414,7 @@ export default function StudentDashboard({ children }: { children?: ReactNode })
 
   const {
     userName, maturePct, streak, dailyGoal, cardsReviewedToday,
-    areaCards, topStrength, nextArea, plan, areaScores, hasHistory,
+    areaCards, topStrength, nextArea, plan, areaScores, hasHistory, firstSessionDone,
     nextAreaDeckIds, areaDeckIds,
   } = derived;
 
@@ -437,8 +437,8 @@ export default function StudentDashboard({ children }: { children?: ReactNode })
     return greetings[idx];
   })();
 
-  // ── Empty state para novos alunos ──────────────────────────────────────────
-  if (!hasHistory) {
+  // ── Empty state para novos alunos (sem histórico OU primeira sessão pendente) ──
+  if (!hasHistory || !firstSessionDone) {
     return (
       <>
         {showUpgrade && <AiProUpgradeModal onClose={() => setUpgrade(false)} />}
@@ -474,7 +474,7 @@ export default function StudentDashboard({ children }: { children?: ReactNode })
               </p>
             </div>
             <button
-              onClick={() => router.push('/study/turbo')}
+              onClick={() => router.push('/welcome/first-session')}
               className="relative z-10 inline-flex items-center gap-2 rounded-xl px-6 py-3.5 text-sm font-black text-white transition-all duration-150 hover:brightness-110 active:scale-95"
               style={{ background: `linear-gradient(135deg, ${EMERALD}, #059669)`, boxShadow: `0 0 24px ${EMERALD}40` }}
             >
@@ -521,7 +521,7 @@ export default function StudentDashboard({ children }: { children?: ReactNode })
       </div>
 
       {/* ════ Copiloto Card ═══════════════════════════════════════════════════ */}
-      <div className="mb-10">
+      <div className="mb-10" id="tour-copilot">
         <div
           className="relative rounded-2xl p-6 overflow-hidden fa-card fa-shimmer-top"
           style={{
@@ -710,7 +710,7 @@ export default function StudentDashboard({ children }: { children?: ReactNode })
           </div>
 
           {/* ════ Seleção de Áreas ENEM ═══════════════════════════════════════ */}
-          <div className="relative z-10">
+          <div className="relative z-10" id="tour-areas">
             <p className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: 'rgba(255,255,255,0.30)' }}>
               FRENTES DE ATAQUE:
             </p>
@@ -735,6 +735,7 @@ export default function StudentDashboard({ children }: { children?: ReactNode })
           {/* ── Action buttons ── */}
           <div className="relative z-10 flex gap-3 mt-5">
             <Link
+              id="tour-report-btn"
               href="/dashboard/reports"
               className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 hover:-translate-y-0.5"
               style={{
@@ -749,6 +750,7 @@ export default function StudentDashboard({ children }: { children?: ReactNode })
 
             {isPro ? (
               <Link
+                id="tour-schedule-btn"
                 href="/dashboard/schedule"
                 className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 hover:-translate-y-0.5"
                 style={{
@@ -763,6 +765,7 @@ export default function StudentDashboard({ children }: { children?: ReactNode })
               </Link>
             ) : (
               <button
+                id="tour-schedule-btn"
                 onClick={() => setUpgrade(true)}
                 className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 hover:-translate-y-0.5"
                 style={{

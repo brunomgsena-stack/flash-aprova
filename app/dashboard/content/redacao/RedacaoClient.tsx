@@ -1094,7 +1094,7 @@ export default function RedacaoClient({ plan }: { plan: Plan }) {
   ];
 
   return (
-    <>
+    <div id="tour-redacao">
       {modalOpen     && <EssayModal      plan={plan} onClose={() => setModalOpen(false)}     onSubmit={handleSubmit} />}
       {chatModalOpen && <NormaChatModal               onClose={() => setChatModalOpen(false)} />}
       {showUpgrade   && <UpgradeModal                 onClose={() => setShowUpgrade(false)} />}
@@ -1478,6 +1478,6 @@ export default function RedacaoClient({ plan }: { plan: Plan }) {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }

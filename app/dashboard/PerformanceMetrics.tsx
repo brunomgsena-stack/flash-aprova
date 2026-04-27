@@ -906,7 +906,7 @@ export default function PerformanceMetrics() {
         {/* ╔══════════════════════════════════════════════╗ */}
         {/* ║  CARD 3 — MEU MOMENTO DE FOCO ✨            ║ */}
         {/* ╚══════════════════════════════════════════════╝ */}
-        <div className="relative rounded-2xl p-4 flex flex-col gap-3 overflow-hidden"
+        <div id="tour-foco" className="relative rounded-2xl p-4 flex flex-col gap-3 overflow-hidden"
           style={{
             background: 'rgba(10,10,14,0.95)',
             backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
@@ -999,7 +999,7 @@ export default function PerformanceMetrics() {
         {/* ╔══════════════════════════════════════════════╗ */}
         {/* ║  CARD 4 — MEU MENTOR IA 💡                  ║ */}
         {/* ╚══════════════════════════════════════════════╝ */}
-        <div className="relative rounded-2xl p-4 flex flex-col gap-3 overflow-hidden fa-card fa-shimmer-top"
+        <div id="tour-mentor" className="relative rounded-2xl p-4 flex flex-col gap-3 overflow-hidden fa-card fa-shimmer-top"
           style={{ background: 'var(--fa-card)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
             border: '1px solid var(--fa-border)', boxShadow: 'var(--fa-shadow)' }}>
           <div className="absolute inset-0 pointer-events-none"

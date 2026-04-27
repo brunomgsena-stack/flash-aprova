@@ -27,8 +27,8 @@ const AREA_ICONS: Record<string, string> = {
 };
 
 const DAYS_SHORT = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
-const MINS_PER_BLOCK = 15;   // 75 cards × 12s = 15 min por bloco
-const SECS_PER_CARD  = 12;
+const MINS_PER_BLOCK = 15;   // 150 cards × 6s = 15 min por bloco (10 cards/min)
+const CARDS_PER_MIN = 10;    // Regra: 10 flashcards = 1 minuto
 
 // ─── AI Plan types ────────────────────────────────────────────────────────────
 
@@ -119,7 +119,7 @@ function generateSchedule(
   aiPlan:          AiStudyPlan | null,
 ): WeekBlock[][] {
   const blocksPerDay = Math.max(1, Math.floor((hoursPerDay * 60) / MINS_PER_BLOCK));
-  const MAX_CARDS    = Math.floor((MINS_PER_BLOCK * 60) / SECS_PER_CARD); // 75
+  const MAX_CARDS    = MINS_PER_BLOCK * CARDS_PER_MIN; // 150 cards
 
   // Sort areas: AI peso → dificuldade → menor mastery
   const sortedAreas = [...ENEM_AREAS]
@@ -196,7 +196,7 @@ function generateSchedule(
         deckTitle:   deck.title,
         deckId:      deck.id,
         cards:       cardsInBlock,
-        mins:        Math.ceil((cardsInBlock * SECS_PER_CARD) / 60),
+        mins:        Math.ceil(cardsInBlock / CARDS_PER_MIN),
         isNew,
       });
     }

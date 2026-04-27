@@ -332,7 +332,7 @@ export default function SetupPage() {
 
       // ── 4. Hard redirect — mata cache do Next.js e força o navegador a ────
       //       bater no banco do zero (window.location.href ignora cache de rota)
-      window.location.href = '/director';
+      window.location.href = '/welcome';
     } catch (e) {
       setLoading(false);
       setError(e instanceof Error ? e.message : 'Erro ao gerar plano. Tente novamente.');

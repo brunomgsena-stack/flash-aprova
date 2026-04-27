@@ -1,23 +1,25 @@
-export type SubjectId = 'historia' | 'biologia' | 'quimica' | 'geografia';
+export type SubjectId = 'biologia' | 'quimica' | 'historia' | 'filosofia' | 'sociologia';
 
 export const SUBJECT_META: Record<SubjectId, {
   name: string; icon: string; color: string; area: string;
 }> = {
-  historia:  { name: 'História',  icon: '⏳', color: '#eab308', area: 'Ciências Humanas' },
-  biologia:  { name: 'Biologia',  icon: '🧬', color: '#22c55e', area: 'Ciências da Natureza' },
-  quimica:   { name: 'Química',   icon: '⚗️', color: '#06b6d4', area: 'Ciências da Natureza' },
-  geografia: { name: 'Geografia', icon: '🌐', color: '#10b981', area: 'Ciências Humanas' },
+  biologia:  { name: 'Biologia',          icon: '🧬', color: '#22c55e', area: 'Ciências da Natureza' },
+  quimica:   { name: 'Química',           icon: '⚗️', color: '#06b6d4', area: 'Ciências da Natureza' },
+  historia:  { name: 'História do Brasil', icon: '🏛️', color: '#eab308', area: 'Ciências Humanas' },
+  filosofia: { name: 'Filosofia',         icon: '🤔', color: '#a78bfa', area: 'Ciências Humanas' },
+  sociologia:{ name: 'Sociologia',        icon: '👥', color: '#f97316', area: 'Ciências Humanas' },
 };
 
 // ─── ENEM area mapping (for Radar) ──────────────────────────────────────────
 export const AREA_MAP: Record<SubjectId, 'natureza' | 'humanas'> = {
-  biologia:  'natureza',
-  quimica:   'natureza',
-  historia:  'humanas',
-  geografia: 'humanas',
+  biologia:   'natureza',
+  quimica:    'natureza',
+  historia:   'humanas',
+  filosofia:  'humanas',
+  sociologia: 'humanas',
 };
 
-// ─── Diagnostic Deck — 15 Elite Cards ───────────────────────────────────────
+// ─── Tutorial Deck — 1 card per subject (medium level) ──────────────────────
 export interface DiagnosticCard {
   id: string;
   subject: SubjectId;
@@ -26,58 +28,25 @@ export interface DiagnosticCard {
 }
 
 export const DIAGNOSTIC_DECK: DiagnosticCard[] = [
-  // ── Biologia (4) ──
   { id: 'bio1', subject: 'biologia',
-    q: 'Fase da respiração celular que produz a maior parte do ATP',
-    a: 'Cadeia Respiratória' },
-  { id: 'bio2', subject: 'biologia',
-    q: 'Organela responsável pela digestão intracelular',
-    a: 'Lisossomos' },
-  { id: 'bio3', subject: 'biologia',
-    q: 'Processo de divisão celular que resulta em 4 células filhas haploides',
-    a: 'Meiose' },
-  { id: 'bio4', subject: 'biologia',
-    q: 'Nome do transporte de membrana que gasta energia (ATP)',
-    a: 'Transporte Ativo' },
+    q: 'Qual processo garante a variabilidade genética durante a formação dos gametas?',
+    a: 'Crossing-over' },
 
-  // ── Química (4) ──
   { id: 'qui1', subject: 'quimica',
-    q: 'Ligação química caracterizada pela transferência de elétrons',
-    a: 'Ligação Iônica' },
-  { id: 'qui2', subject: 'quimica',
-    q: 'Propriedade periódica que mede a atração por elétrons em uma ligação',
-    a: 'Eletronegatividade' },
-  { id: 'qui3', subject: 'quimica',
-    q: 'Função orgânica com uma carbonila (C=O) em carbono secundário',
-    a: 'Cetona' },
-  { id: 'qui4', subject: 'quimica',
-    q: 'Substância que libera íons H⁺ em solução aquosa (Arrhenius)',
-    a: 'Ácido' },
+    q: 'Como se chama a reação entre ácido e base que produz sal e água?',
+    a: 'Neutralização' },
 
-  // ── História (4) ──
   { id: 'his1', subject: 'historia',
-    q: 'Sistema econômico baseado no acúmulo de metais (Brasil Colônia)',
-    a: 'Mercantilismo' },
-  { id: 'his2', subject: 'historia',
-    q: 'Nome da primeira constituição do Brasil (1824)',
-    a: 'Outorgada' },
-  { id: 'his3', subject: 'historia',
-    q: 'Fenômeno de dispersão dos judeus após a conquista romana',
-    a: 'Diáspora' },
-  { id: 'his4', subject: 'historia',
-    q: 'Principal conflito que marcou o início da Idade Contemporânea',
-    a: 'Revolução Francesa' },
+    q: 'Como ficou conhecido o período de governo autoritário de Getúlio Vargas entre 1937 e 1945?',
+    a: 'Estado Novo' },
 
-  // ── Geografia (3) ──
-  { id: 'geo1', subject: 'geografia',
-    q: "Bioma brasileiro conhecido como a 'Savana mais biodiversa do mundo'",
-    a: 'Cerrado' },
-  { id: 'geo2', subject: 'geografia',
-    q: 'Fenômeno climático de aquecimento anormal das águas do Pacífico',
-    a: 'El Niño' },
-  { id: 'geo3', subject: 'geografia',
-    q: 'Projeção cartográfica eurocêntrica que preserva as formas',
-    a: 'Mercator' },
+  { id: 'fil1', subject: 'filosofia',
+    q: 'Qual filósofo grego utilizava o método da maiêutica para "parir" ideias nos seus interlocutores?',
+    a: 'Sócrates' },
+
+  { id: 'soc1', subject: 'sociologia',
+    q: 'Conceito de Durkheim que descreve a falta de normas sociais em períodos de ruptura',
+    a: 'Anomia' },
 ];
 
 // ─── Build 10-card test deck ─────────────────────────────────────────────────

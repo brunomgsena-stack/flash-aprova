@@ -155,7 +155,7 @@ export default function SubjectsWithDomain({ subjects }: Props) {
   return (
     <>
     {upgradeVisible && <AiProUpgradeModal onClose={() => setUpgradeVisible(false)} />}
-    <div className="flex flex-col gap-12">
+    <div id="tour-subjects" className="flex flex-col gap-12">
       {renderGroups.map(({ section }) => {
         if (section.short === 'Redação') {
           return (

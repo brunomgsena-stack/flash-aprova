@@ -36,6 +36,7 @@ export type ProfileData = {
   difficulty_subjects?: string[] | null;
   daily_card_goal?: number | null;
   full_name?: string | null;
+  first_session_completed?: boolean | null;
 };
 
 // ─── Normalized card (computed once, used by all components) ──────────────────
@@ -128,7 +129,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
         supabase.from('user_progress').select('card_id, interval_days, next_review, lapses, history').eq('user_id', user.id),
         supabase.from('cards').select('id', { count: 'exact', head: true }),
         supabase.from('profiles')
-          .select('target_course, target_university, difficulty_subjects, daily_card_goal, full_name')
+          .select('target_course, target_university, difficulty_subjects, daily_card_goal, full_name, first_session_completed')
           .eq('id', user.id)
           .maybeSingle(),
       ]);

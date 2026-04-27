@@ -1,0 +1,42 @@
+{
+  "name": "FlashAprova",
+  "short_name": "FlashAprova",
+  "description": "Memorização com IA + SRS para o ENEM. Retenha 97% do conteúdo.",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#0a0514",
+  "theme_color": "#22c55e",
+  "orientation": "portrait-primary",
+  "lang": "pt-BR",
+  "categories": ["education"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Estudar agora",
+      "short_name": "Estudar",
+      "description": "Iniciar sessão de revisão",
+      "url": "/study/turbo",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "url": "/dashboard",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

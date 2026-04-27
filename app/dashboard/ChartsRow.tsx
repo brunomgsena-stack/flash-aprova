@@ -109,7 +109,7 @@ export default function ChartsRow({ subjects }: { subjects: SubjectRow[] }) {
     <div className="max-w-5xl mx-auto mb-6 grid grid-cols-1 md:grid-cols-2 gap-5">
 
       {/* Radar */}
-      <div className="relative rounded-2xl p-6 overflow-hidden" style={cardStyle}>
+      <div id="tour-radar" className="relative rounded-2xl p-6 overflow-hidden" style={cardStyle}>
         <div className="absolute inset-0 pointer-events-none"
           style={{ background: 'radial-gradient(ellipse at top left, rgba(0,229,255,0.05) 0%, transparent 65%)' }} />
         <div className="absolute inset-x-0 top-0 h-px pointer-events-none"
@@ -120,7 +120,7 @@ export default function ChartsRow({ subjects }: { subjects: SubjectRow[] }) {
       </div>
 
       {/* Retention */}
-      <div className="relative rounded-2xl p-6 overflow-hidden" style={cardStyle}>
+      <div id="tour-retention" className="relative rounded-2xl p-6 overflow-hidden" style={cardStyle}>
         <div className="absolute inset-0 pointer-events-none"
           style={{ background: 'radial-gradient(ellipse at top right, rgba(0,255,128,0.05) 0%, transparent 65%)' }} />
         <div className="absolute inset-x-0 top-0 h-px pointer-events-none"
