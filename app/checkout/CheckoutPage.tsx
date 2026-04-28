@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { motion, useMotionValue, useAnimationFrame } from 'framer-motion';
 import Link from 'next/link';
 import { type SubjectId, SUBJECT_META } from '../onboarding/flashcardData';
@@ -476,6 +476,10 @@ export default function CheckoutPage() {
   const [cursoIdx, setCursoIdx] = useState(0);
   const [cursoVisible, setCursoVisible] = useState(true);
   const [buying, setBuying] = useState<PlanId | null>(null);
+  const [emailInput, setEmailInput] = useState('');
+  const [emailError, setEmailError] = useState('');
+  // planId pré-selecionado via URL (?plan=aceleracao ou ?plan=panteao_elite)
+  const [urlPlan, setUrlPlan] = useState<PlanId | null>(null);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -493,22 +497,54 @@ export default function CheckoutPage() {
       const raw = localStorage.getItem('flashAprovaOnboarding');
       if (raw) setData(JSON.parse(raw) as OnboardingData);
     } catch { /* ignore */ }
+
+    // Lê o plano da URL: /checkout?plan=aceleracao
+    const params = new URLSearchParams(window.location.search);
+    const plan = params.get('plan') as PlanId | null;
+    if (plan === 'aceleracao' || plan === 'panteao_elite') setUrlPlan(plan);
   }, []);
 
-  const CHECKOUT_URLS: Record<PlanId, string> = {
-    aceleracao:    'https://www.asaas.com/c/5eavmb23sffhvvni',
-    panteao_elite: 'https://www.asaas.com/c/cahneqkzx0cn05yh',
-  };
-
-  function handleBuy(planId: PlanId) {
+  const handleBuy = useCallback(async (planId: PlanId) => {
     if (buying) return;
+
+    const email = data?.email || emailInput.trim().toLowerCase();
+    const name  = data?.name  || email.split('@')[0];
+
+    if (!email || !email.includes('@')) {
+      setEmailError('Digite seu e-mail para continuar.');
+      return;
+    }
+
+    setEmailError('');
     setBuying(planId);
-    window.location.href = CHECKOUT_URLS[planId];
-  }
+
+    try {
+      const res = await fetch('/api/asaas/create-payment', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ email, name, planId }),
+      });
+
+      const json = (await res.json()) as { paymentUrl?: string; error?: string };
+
+      if (!res.ok || !json.paymentUrl) {
+        console.error('[checkout] Falha ao criar cobrança:', json.error);
+        setBuying(null);
+        setEmailError('Erro ao iniciar pagamento. Tente novamente.');
+        return;
+      }
+
+      window.location.href = json.paymentUrl;
+    } catch (e) {
+      console.error('[checkout] Erro de rede:', e);
+      setBuying(null);
+      setEmailError('Erro de conexão. Verifique sua internet e tente novamente.');
+    }
+  }, [buying, data, emailInput]);
 
   const health      = data?.memoryHealth ?? 62;
   const subjectId   = data?.subject ?? 'biologia';
-  const subjectMeta = SUBJECT_META[subjectId];
+  const subjectMeta = SUBJECT_META[subjectId] ?? SUBJECT_META['biologia'];
   const hardCount   = data?.results.filter(r => r.rating === 'dificil').length ?? 3;
 
   const status      = health < 55 ? 'CRÍTICO' : health < 72 ? 'EM RISCO' : 'ATENÇÃO';
@@ -630,6 +666,32 @@ export default function CheckoutPage() {
 
         {/* ── Visual Insights ── */}
         <InsightsPanel health={health} />
+
+        {/* ── E-mail (quando não vem do quiz) ── */}
+        {!data?.email && (
+          <div className="mb-6 rounded-2xl p-5"
+            style={{ ...cardStyle, border: '1px solid rgba(124,58,237,0.22)' }}>
+            <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: VIOLET }}>
+              // IDENTIFICAÇÃO DO OPERADOR
+            </p>
+            <label className="block text-slate-400 text-xs mb-1.5">E-mail para receber o acesso</label>
+            <input
+              type="email"
+              value={emailInput}
+              onChange={e => { setEmailInput(e.target.value); setEmailError(''); }}
+              placeholder="seu@email.com"
+              className="w-full rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 outline-none focus:ring-1"
+              style={{
+                background: 'rgba(255,255,255,0.04)',
+                border: emailError ? '1px solid #ef4444' : '1px solid rgba(124,58,237,0.30)',
+                transition: 'border-color 150ms',
+              }}
+            />
+            {emailError && (
+              <p className="text-xs mt-1.5" style={{ color: RED }}>{emailError}</p>
+            )}
+          </div>
+        )}
 
         {/* ── Plan cards ── */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8 items-start">

@@ -236,31 +236,10 @@ function ShieldIcon() {
   );
 }
 
-// ─── Asaas direct links ───────────────────────────────────────────────────────
+// ─── Redireciona para /checkout com o plano selecionado ──────────────────────
 
-const ASAAS_LINKS: Record<string, string> = {
-  aceleracao:    'https://www.asaas.com/c/5eavmb23sffhvvni',
-  panteao_elite: 'https://www.asaas.com/c/cahneqkzx0cn05yh',
-};
-
-function goToCheckout(planId: string, userEmail?: string, userName?: string) {
-  try {
-    // Prioridade: dados do usuário autenticado → localStorage → sem pré-preenchimento
-    const raw    = localStorage.getItem('flashAprovaOnboarding');
-    const cached = raw ? JSON.parse(raw) as { name?: string; email?: string } : {};
-
-    const email = userEmail || cached.email || '';
-    const name  = userName  || cached.name  || '';
-
-    const params = new URLSearchParams();
-    if (email) params.set('email', email);
-    if (name)  params.set('name',  name);
-
-    const query = params.toString();
-    window.location.href = query ? `${ASAAS_LINKS[planId]}?${query}` : ASAAS_LINKS[planId];
-  } catch {
-    window.location.href = ASAAS_LINKS[planId];
-  }
+function goToCheckout(planId: string) {
+  window.location.href = `/checkout?plan=${planId}`;
 }
 
 // ─── Sales page (non-subscribers) ─────────────────────────────────────────────
@@ -268,13 +247,9 @@ function goToCheckout(planId: string, userEmail?: string, userName?: string) {
 function SalesPage({
   userPlan,
   currentPlan,
-  userEmail,
-  userName,
 }: {
   userPlan:    PlanInfo | null;
   currentPlan: Plan;
-  userEmail?:  string;
-  userName?:   string;
 }) {
 
   return (
@@ -363,7 +338,7 @@ function SalesPage({
             </div>
           ) : (
             <button
-              onClick={() => goToCheckout('aceleracao', userEmail, userName)}
+              onClick={() => goToCheckout('aceleracao')}
               className="w-full py-3 rounded-xl text-sm font-bold text-white transition-all duration-200 hover:opacity-80"
               style={{ background: 'rgba(124,58,237,0.25)', border: '1px solid rgba(124,58,237,0.40)' }}
             >
@@ -459,7 +434,7 @@ function SalesPage({
           </div>
 
           <button
-            onClick={() => goToCheckout('panteao_elite', userEmail, userName)}
+            onClick={() => goToCheckout('panteao_elite')}
             className="relative w-full py-4 rounded-xl font-black text-white text-base transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.99]"
             style={{
               background: 'linear-gradient(135deg, #7C3AED 0%, #06b6d4 60%, #ec4899 100%)',
@@ -540,23 +515,12 @@ function SalesPage({
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function SubscriptionPage() {
-  const [userPlan,  setUserPlan]  = useState<PlanInfo | null>(null);
-  const [userEmail, setUserEmail] = useState<string | undefined>(undefined);
-  const [userName,  setUserName]  = useState<string | undefined>(undefined);
+  const [userPlan, setUserPlan] = useState<PlanInfo | null>(null);
 
   useEffect(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-
-      // Armazena email e nome para pré-preencher o checkout do Asaas
-      setUserEmail(user.email ?? undefined);
-      setUserName(
-        (user.user_metadata?.name as string | undefined) ||
-        (user.user_metadata?.full_name as string | undefined) ||
-        undefined,
-      );
-
       setUserPlan(await fetchUserPlan(user.id));
     }
     load();
@@ -576,8 +540,6 @@ export default function SubscriptionPage() {
         <SalesPage
           userPlan={userPlan}
           currentPlan={currentPlan}
-          userEmail={userEmail}
-          userName={userName}
         />
       )}
     </main>

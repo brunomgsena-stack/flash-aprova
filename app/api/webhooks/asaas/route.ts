@@ -239,8 +239,16 @@ export async function POST(req: NextRequest) {
   let email = '';
   let name  = '';
 
+  // Prioridade 0: externalReference — enviado por nós ao criar a cobrança (mais confiável)
+  const externalRef = (payment.externalReference as string | undefined) ?? null;
+  if (externalRef?.includes('@')) {
+    email = externalRef.trim().toLowerCase();
+    name  = email.split('@')[0];
+    console.log(`[webhook/asaas] E-mail obtido via payment.externalReference: ${email}`);
+  }
+
   // Prioridade 1: campo customerEmail direto no payload
-  if (customerEmail?.includes('@')) {
+  if (!email && customerEmail?.includes('@')) {
     email = customerEmail.trim().toLowerCase();
     name  = email.split('@')[0];
     console.log(`[webhook/asaas] E-mail obtido via payment.customerEmail: ${email}`);
