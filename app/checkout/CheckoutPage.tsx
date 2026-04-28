@@ -495,22 +495,15 @@ export default function CheckoutPage() {
     } catch { /* ignore */ }
   }, []);
 
-  async function handleBuy(planId: PlanId) {
+  const CHECKOUT_URLS: Record<PlanId, string> = {
+    aceleracao:    'https://www.asaas.com/c/5eavmb23sffhvvni',
+    panteao_elite: 'https://www.asaas.com/c/cahneqkzx0cn05yh',
+  };
+
+  function handleBuy(planId: PlanId) {
     if (buying) return;
     setBuying(planId);
-    try {
-      const res = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ planId, email: data?.email, name: data?.name }),
-      });
-      const json = await res.json() as { url?: string; error?: string };
-      if (!res.ok || !json.url) throw new Error(json.error ?? 'Erro ao gerar link de pagamento.');
-      window.location.href = json.url;
-    } catch (e) {
-      alert(e instanceof Error ? e.message : 'Erro inesperado. Tente novamente.');
-      setBuying(null);
-    }
+    window.location.href = CHECKOUT_URLS[planId];
   }
 
   const health      = data?.memoryHealth ?? 62;

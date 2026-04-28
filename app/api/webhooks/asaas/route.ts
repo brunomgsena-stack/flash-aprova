@@ -22,7 +22,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient }              from '@supabase/supabase-js';
-import { timingSafeEqual }           from 'crypto';
+import { timingSafeEqual, randomBytes } from 'crypto';
+import { sendAccessGrantedEmail }    from '@/lib/mail';
 
 export const runtime = 'nodejs';
 
@@ -38,14 +39,14 @@ interface PlanInfo {
 }
 
 const PLANS: Record<PlanSlug, PlanInfo> = {
-  aceleracao:    { slug: 'aceleracao',    name: 'Aceleração'    },
-  panteao_elite: { slug: 'panteao_elite', name: 'Panteão Elite' },
+  aceleracao:    { slug: 'aceleracao',    name: 'Protocolo Básico' },
+  panteao_elite: { slug: 'panteao_elite', name: 'Protocolo Neural' },
 };
 
 // Mapeamento dos IDs dos payment links do Asaas → plano
 const PAYMENT_LINK_PLANS: Record<string, PlanSlug> = {
-  '49ydadcmmrrzmigg': 'aceleracao',
-  '7tv0nhdilq1frb4s': 'panteao_elite',
+  '5eavmb23sffhvvni': 'aceleracao',
+  'cahneqkzx0cn05yh': 'panteao_elite',
 };
 
 // ── Admin client — ignora RLS ─────────────────────────────────────────────────
@@ -111,8 +112,8 @@ function resolvePlan(
   // 2. Pela descrição do pagamento como fallback
   if (description) {
     const d = description.toLowerCase();
-    if (d.includes('panteao') || d.includes('panteão') || d.includes('elite')) return PLANS.panteao_elite;
-    if (d.includes('aceleracao') || d.includes('aceleração'))                   return PLANS.aceleracao;
+    if (d.includes('panteao') || d.includes('panteão') || d.includes('elite') || d.includes('neural')) return PLANS.panteao_elite;
+    if (d.includes('aceleracao') || d.includes('aceleração') || d.includes('basico') || d.includes('básico')) return PLANS.aceleracao;
   }
 
   return null;
@@ -217,11 +218,11 @@ export async function POST(req: NextRequest) {
   const customerId    = (payment.customer      as string | undefined) ?? null;
   const paymentLinkId = (payment.paymentLink   as string | undefined) ?? null;
   const description   = (payment.description   as string | undefined) ?? null;
-  const externalRef   = (payment.externalReference as string | undefined) ?? null;
+  const customerEmail = (payment.customerEmail as string | undefined) ?? null;
 
   console.log(
     `[webhook/asaas] Dados extraídos: paymentId=${paymentId} customerId=${customerId}` +
-    ` paymentLink=${paymentLinkId} externalRef=${externalRef}`,
+    ` paymentLink=${paymentLinkId} customerEmail=${customerEmail}`,
   );
 
   // 5. Resolve o plano ───────────────────────────────────────────────────────────
@@ -238,14 +239,14 @@ export async function POST(req: NextRequest) {
   let email = '';
   let name  = '';
 
-  // Tenta externalReference primeiro (enviado via parâmetro ?email= na URL do Asaas)
-  if (externalRef && externalRef.includes('@')) {
-    email = externalRef.trim().toLowerCase();
+  // Prioridade 1: campo customerEmail direto no payload
+  if (customerEmail?.includes('@')) {
+    email = customerEmail.trim().toLowerCase();
     name  = email.split('@')[0];
-    console.log(`[webhook/asaas] E-mail obtido via externalReference: ${email}`);
+    console.log(`[webhook/asaas] E-mail obtido via payment.customerEmail: ${email}`);
   }
 
-  // Se não encontrou, busca na Asaas API usando o customerId
+  // Prioridade 2: busca o objeto customer na API Asaas pelo customerId
   if (!email && customerId) {
     console.log(`[webhook/asaas] Buscando cliente na Asaas API. customerId=${customerId}`);
     const customer = await fetchAsaasCustomer(customerId);
@@ -257,11 +258,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (!email) {
-    console.error(
-      `[webhook/asaas] E-mail do cliente não encontrado.` +
-      ` customerId=${customerId} externalRef=${externalRef}` +
-      ` — verifique se o ?email= está sendo enviado na URL de checkout.`,
-    );
+    console.error('[ WEBHOOK: ERRO CRÍTICO - PAGAMENTO SEM IDENTIFICAÇÃO DE E-MAIL ]');
     return NextResponse.json({ error: 'E-mail do comprador não encontrado.' }, { status: 400 });
   }
 
@@ -295,39 +292,79 @@ export async function POST(req: NextRequest) {
   }
 
   // 9. Atualiza ou cria o usuário ────────────────────────────────────────────────
+  const baseUrl  = process.env.NEXT_PUBLIC_URL ?? 'https://flashaprova.com.br';
+  const loginUrl = `${baseUrl}/login`;
+
   try {
     const existingId = await findUserIdByEmail(adminClient, email);
 
     if (existingId) {
+      // Usuário existente: apenas atualiza plano e notifica
       await grantPlan(adminClient, existingId, plan);
+      console.log(`[ WEBHOOK: NOVO OPERADOR CRIADO E SINCRONIZADO: ${email} ]`);
+
+      // Email não-fatal — falha silenciosa para não bloquear o 200
+      sendAccessGrantedEmail({
+        to:       email,
+        name,
+        planName: plan.name,
+        loginUrl,
+      }).catch(err => console.error('[webhook/asaas] Falha ao enviar email (usuário existente):', err instanceof Error ? err.message : String(err)));
+
       return NextResponse.json({ received: true, action: 'plan_updated', plan: plan.slug, userId: existingId });
     }
 
-    // Usuário novo: cria conta via invite
-    const baseUrl = process.env.NEXT_PUBLIC_URL ?? 'https://flashaprova.app';
-    const { data: inviteData, error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(email, {
-      data:       { name, plan: plan.slug },
-      redirectTo: `${baseUrl}/dashboard`,
+    // Usuário novo: gera senha e cria conta com acesso imediato
+    const tempPassword = generatePassword();
+    const { data: createData, error: createError } = await adminClient.auth.admin.createUser({
+      email,
+      password:      tempPassword,
+      email_confirm: true,
+      user_metadata: { name, plan: plan.slug },
     });
 
-    if (inviteError) {
-      // Race condition: usuário pode ter sido criado entre o find e o invite
-      console.error(`[webhook/asaas] inviteUserByEmail falhou: ${inviteError.message}. Tentando fallback…`);
+    if (createError) {
+      // Race condition: usuário criado entre o find e o createUser
+      console.error(`[webhook/asaas] createUser falhou: ${createError.message}. Tentando fallback…`);
       const fallbackId = await findUserIdByEmail(adminClient, email);
       if (fallbackId) {
         await grantPlan(adminClient, fallbackId, plan);
+        console.log(`[ WEBHOOK: NOVO OPERADOR CRIADO E SINCRONIZADO: ${email} ]`);
+
+        sendAccessGrantedEmail({ to: email, name, planName: plan.name, loginUrl })
+          .catch(err => console.error('[webhook/asaas] Falha ao enviar email (fallback):', err instanceof Error ? err.message : String(err)));
+
         return NextResponse.json({ received: true, action: 'plan_updated_fallback', plan: plan.slug, userId: fallbackId });
       }
-      throw inviteError;
+      throw createError;
     }
 
-    const newUserId = inviteData.user.id;
+    const newUserId = createData.user.id;
     await grantPlan(adminClient, newUserId, plan);
+    console.log(`[ WEBHOOK: NOVO OPERADOR CRIADO E SINCRONIZADO: ${email} ]`);
+
+    sendAccessGrantedEmail({
+      to:           email,
+      name,
+      planName:     plan.name,
+      loginUrl,
+      tempPassword,
+    }).catch(err => console.error('[webhook/asaas] Falha ao enviar email (novo usuário):', err instanceof Error ? err.message : String(err)));
+
     return NextResponse.json({ received: true, action: 'user_created', plan: plan.slug, userId: newUserId });
 
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e);
-    console.error('[webhook/asaas] Erro ao processar plano:', msg);
+    console.error(`[ WEBHOOK: FALHA CRÍTICA NA OPERAÇÃO: ${msg} ]`);
     return NextResponse.json({ error: `Falha ao processar plano: ${msg}` }, { status: 500 });
   }
+}
+
+// ── Gerador de senha segura ───────────────────────────────────────────────────
+
+function generatePassword(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789@#$!';
+  return Array.from(randomBytes(12))
+    .map(b => chars[b % chars.length])
+    .join('');
 }

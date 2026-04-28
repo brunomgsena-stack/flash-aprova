@@ -10,8 +10,8 @@ export type PlanInfo = {
 };
 
 const PLAN_LABEL: Record<Plan, string> = {
-  aceleracao:    'Aceleração',
-  panteao_elite: 'Panteão Elite',
+  aceleracao:    'Protocolo Básico',
+  panteao_elite: 'Protocolo Neural',
 };
 
 export function planLabel(plan: Plan): string {

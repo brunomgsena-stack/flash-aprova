@@ -239,8 +239,8 @@ function ShieldIcon() {
 // ─── Asaas direct links ───────────────────────────────────────────────────────
 
 const ASAAS_LINKS: Record<string, string> = {
-  aceleracao:    'https://www.asaas.com/c/49ydadcmmrrzmigg',
-  panteao_elite: 'https://www.asaas.com/c/7tv0nhdilq1frb4s',
+  aceleracao:    'https://www.asaas.com/c/5eavmb23sffhvvni',
+  panteao_elite: 'https://www.asaas.com/c/cahneqkzx0cn05yh',
 };
 
 function goToCheckout(planId: string, userEmail?: string, userName?: string) {
