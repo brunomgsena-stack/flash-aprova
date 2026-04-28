@@ -10,7 +10,7 @@ function getResend(): Resend {
   return _resend;
 }
 
-const FROM = 'FlashAprova <noreply@flashaprova.app>';
+const FROM = 'FlashAprova <contato@flashaprova.app>';
 
 // ─── Boas-vindas AiPro+ ───────────────────────────────────────────────────────
 export async function sendWelcomeEmail(to: string, name?: string) {
@@ -30,7 +30,7 @@ export async function sendAccessGrantedEmail(opts: {
   loginUrl:     string;
   tempPassword?: string;
 }) {
-  return getResend().emails.send({
+  const result = await getResend().emails.send({
     from:    FROM,
     to:      opts.to,
     subject: `[ VEREDITO: ACESSO CONCEDIDO — ${opts.planName.toUpperCase()} ]`,
@@ -42,6 +42,8 @@ export async function sendAccessGrantedEmail(opts: {
       tempPassword: opts.tempPassword,
     }),
   });
+  console.log('[mail] sendAccessGrantedEmail result:', JSON.stringify(result));
+  return result;
 }
 
 // ─── Reset de senha ───────────────────────────────────────────────────────────

@@ -300,7 +300,7 @@ export async function POST(req: NextRequest) {
   }
 
   // 9. Atualiza ou cria o usuário ────────────────────────────────────────────────
-  const baseUrl  = process.env.NEXT_PUBLIC_URL ?? 'https://flashaprova.com.br';
+  const baseUrl  = process.env.NEXT_PUBLIC_URL ?? 'https://flashaprova.app';
   const loginUrl = `${baseUrl}/login`;
 
   try {
