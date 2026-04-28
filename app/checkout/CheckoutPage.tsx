@@ -463,6 +463,11 @@ interface OnboardingData {
 
 type PlanId = 'aceleracao' | 'panteao_elite';
 
+const ASAAS_LINKS: Record<PlanId, string> = {
+  aceleracao:    'https://www.asaas.com/c/5eavmb23sffhvvni',
+  panteao_elite: 'https://www.asaas.com/c/cahneqkzx0cn05yh',
+};
+
 const cardStyle = {
   background: 'rgba(10,5,20,0.88)',
   backdropFilter: 'blur(24px)',
@@ -504,11 +509,10 @@ export default function CheckoutPage() {
     if (plan === 'aceleracao' || plan === 'panteao_elite') setUrlPlan(plan);
   }, []);
 
-  const handleBuy = useCallback(async (planId: PlanId) => {
+  const handleBuy = useCallback((planId: PlanId) => {
     if (buying) return;
 
     const email = data?.email || emailInput.trim().toLowerCase();
-    const name  = data?.name  || email.split('@')[0];
 
     if (!email || !email.includes('@')) {
       setEmailError('Digite seu e-mail para continuar.');
@@ -518,28 +522,8 @@ export default function CheckoutPage() {
     setEmailError('');
     setBuying(planId);
 
-    try {
-      const res = await fetch('/api/asaas/create-payment', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ email, name, planId }),
-      });
-
-      const json = (await res.json()) as { paymentUrl?: string; error?: string };
-
-      if (!res.ok || !json.paymentUrl) {
-        console.error('[checkout] Falha ao criar cobrança:', json.error);
-        setBuying(null);
-        setEmailError('Erro ao iniciar pagamento. Tente novamente.');
-        return;
-      }
-
-      window.location.href = json.paymentUrl;
-    } catch (e) {
-      console.error('[checkout] Erro de rede:', e);
-      setBuying(null);
-      setEmailError('Erro de conexão. Verifique sua internet e tente novamente.');
-    }
+    const url = `${ASAAS_LINKS[planId]}?email=${encodeURIComponent(email)}`;
+    window.location.href = url;
   }, [buying, data, emailInput]);
 
   const health      = data?.memoryHealth ?? 62;
