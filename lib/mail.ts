@@ -43,6 +43,9 @@ export async function sendAccessGrantedEmail(opts: {
     }),
   });
   console.log('[mail] sendAccessGrantedEmail result:', JSON.stringify(result));
+  if (result.error) {
+    throw new Error(`Resend error: ${result.error.name} — ${result.error.message}`);
+  }
   return result;
 }
 

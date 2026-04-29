@@ -321,8 +321,8 @@ export async function POST(req: NextRequest) {
       try {
         const emailPromise = sendAccessGrantedEmail({ to: email, name, planName: plan.name, loginUrl });
         const timeoutPromise = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Resend timeout após 8s')), 8000));
-        await Promise.race([emailPromise, timeoutPromise]);
-        console.log('[ CHECKPOINT 3 ] Email enviado com sucesso (usuário existente)');
+        const res = await Promise.race([emailPromise, timeoutPromise]);
+        console.log('[ CHECKPOINT 3 ] ID do Resend:', res.data?.id || 'SEM ID', 'Erro:', res.error);
       } catch (err) {
         console.error('[ CHECKPOINT 3 ERRO ] Falha ao enviar email (usuário existente):', err instanceof Error ? err.message : String(err));
       }
@@ -353,8 +353,8 @@ export async function POST(req: NextRequest) {
         try {
           const emailPromise = sendAccessGrantedEmail({ to: email, name, planName: plan.name, loginUrl });
           const timeoutPromise = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Resend timeout após 8s')), 8000));
-          await Promise.race([emailPromise, timeoutPromise]);
-          console.log('[ CHECKPOINT 3 ] Email enviado com sucesso (fallback)');
+          const res = await Promise.race([emailPromise, timeoutPromise]);
+          console.log('[ CHECKPOINT 3 ] ID do Resend:', res.data?.id || 'SEM ID', 'Erro:', res.error);
         } catch (err) {
           console.error('[ CHECKPOINT 3 ERRO ] Falha ao enviar email (fallback):', err instanceof Error ? err.message : String(err));
         }
@@ -374,8 +374,8 @@ export async function POST(req: NextRequest) {
     try {
       const emailPromise = sendAccessGrantedEmail({ to: email, name, planName: plan.name, loginUrl, tempPassword });
       const timeoutPromise = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Resend timeout após 8s')), 8000));
-      await Promise.race([emailPromise, timeoutPromise]);
-      console.log('[ CHECKPOINT 3 ] Email enviado com sucesso (novo usuário)');
+      const res = await Promise.race([emailPromise, timeoutPromise]);
+      console.log('[ CHECKPOINT 3 ] ID do Resend:', res.data?.id || 'SEM ID', 'Erro:', res.error);
     } catch (err) {
       console.error('[ CHECKPOINT 3 ERRO ] Falha ao enviar email (novo usuário):', err instanceof Error ? err.message : String(err));
     }
