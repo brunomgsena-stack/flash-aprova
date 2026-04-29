@@ -319,7 +319,7 @@ export async function POST(req: NextRequest) {
       const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
         type: 'magiclink',
         email,
-        options: { redirectTo: `${baseUrl}/dashboard` },
+        options: { redirectTo: `${baseUrl}/auth/callback?next=/dashboard` },
       });
       if (linkError) console.error('[webhook/asaas] Erro ao gerar magic link (existente):', linkError.message);
       const actionLink = linkData?.properties?.action_link ?? loginUrl;
@@ -357,7 +357,7 @@ export async function POST(req: NextRequest) {
         const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
           type: 'magiclink',
           email,
-          options: { redirectTo: `${baseUrl}/dashboard` },
+          options: { redirectTo: `${baseUrl}/auth/callback?next=/dashboard` },
         });
         if (linkError) console.error('[webhook/asaas] Erro ao gerar magic link (fallback):', linkError.message);
         const actionLink = linkData?.properties?.action_link ?? loginUrl;
@@ -386,7 +386,7 @@ export async function POST(req: NextRequest) {
     const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
       type: 'magiclink',
       email,
-      options: { redirectTo: `${baseUrl}/dashboard` },
+      options: { redirectTo: `${baseUrl}/auth/callback?next=/dashboard` },
     });
     if (linkError) console.error('[webhook/asaas] Erro ao gerar magic link (novo):', linkError.message);
     const actionLink = linkData?.properties?.action_link ?? loginUrl;

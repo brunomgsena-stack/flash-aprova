@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabaseClient';
+import { useState }          from 'react';
+import { useRouter }         from 'next/navigation';
+import { useSearchParams }   from 'next/navigation';
+import { supabase }          from '@/lib/supabaseClient';
 
 // ─── Error mapping ────────────────────────────────────────────────────────────
 
@@ -101,7 +102,9 @@ function CyberLock() {
 type Mode = 'login' | 'signup';
 
 export default function LoginPage() {
-  const router = useRouter();
+  const router       = useRouter();
+  const searchParams = useSearchParams();
+  const urlMessage   = searchParams.get('message') ?? '';
 
   const [mode,     setMode]     = useState<Mode>('login');
   const [email,    setEmail]    = useState('');
@@ -277,6 +280,21 @@ export default function LoginPage() {
                 </button>
               ))}
             </div>
+
+            {/* Erro vindo do auth callback (link expirado, etc.) */}
+            {urlMessage && (
+              <div
+                className="px-4 py-3 rounded-xl text-[11px] tracking-wide mb-2 relative z-10"
+                style={{
+                  fontFamily: MONO,
+                  background: 'rgba(239,68,68,0.08)',
+                  border:     '0.5px solid rgba(239,68,68,0.3)',
+                  color:      '#fca5a5',
+                }}
+              >
+                ⚠ {urlMessage}
+              </div>
+            )}
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="flex flex-col gap-4 relative z-10">
