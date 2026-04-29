@@ -319,10 +319,11 @@ export async function POST(req: NextRequest) {
       const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
         type: 'magiclink',
         email,
-        options: { redirectTo: `${baseUrl}/auth/callback?next=/dashboard` },
+        options: { redirectTo: `${baseUrl}/auth/callback` },
       });
       if (linkError) console.error('[webhook/asaas] Erro ao gerar magic link (existente):', linkError.message);
       const actionLink = linkData?.properties?.action_link ?? loginUrl;
+      console.log('[webhook/asaas] action_link gerado (existente):', actionLink);
 
       console.log(`[ CHECKPOINT 2 ] Antes do Resend — RESEND_API_KEY existe: ${!!process.env.RESEND_API_KEY}`);
       await new Promise(resolve => setTimeout(resolve, 10)); // flush logs
@@ -355,12 +356,13 @@ export async function POST(req: NextRequest) {
         console.log(`[ WEBHOOK: NOVO OPERADOR CRIADO E SINCRONIZADO: ${email} ]`);
 
         const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
-          type: 'magiclink',
+          type: 'signup',
           email,
-          options: { redirectTo: `${baseUrl}/auth/callback?next=/dashboard` },
+          options: { redirectTo: `${baseUrl}/auth/callback` },
         });
-        if (linkError) console.error('[webhook/asaas] Erro ao gerar magic link (fallback):', linkError.message);
+        if (linkError) console.error('[webhook/asaas] Erro ao gerar link (fallback):', linkError.message);
         const actionLink = linkData?.properties?.action_link ?? loginUrl;
+        console.log('[webhook/asaas] action_link gerado (fallback):', actionLink);
 
         console.log(`[ CHECKPOINT 2 ] Antes do Resend — RESEND_API_KEY existe: ${!!process.env.RESEND_API_KEY}`);
         await new Promise(resolve => setTimeout(resolve, 10)); // flush logs
@@ -384,12 +386,13 @@ export async function POST(req: NextRequest) {
     console.log(`[ WEBHOOK: NOVO OPERADOR CRIADO E SINCRONIZADO: ${email} ]`);
 
     const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
-      type: 'magiclink',
+      type: 'signup',
       email,
-      options: { redirectTo: `${baseUrl}/auth/callback?next=/dashboard` },
+      options: { redirectTo: `${baseUrl}/auth/callback` },
     });
-    if (linkError) console.error('[webhook/asaas] Erro ao gerar magic link (novo):', linkError.message);
+    if (linkError) console.error('[webhook/asaas] Erro ao gerar link (novo):', linkError.message);
     const actionLink = linkData?.properties?.action_link ?? loginUrl;
+    console.log('[webhook/asaas] action_link gerado (novo):', actionLink);
 
     console.log(`[ CHECKPOINT 2 ] Antes do Resend — RESEND_API_KEY existe: ${!!process.env.RESEND_API_KEY}`);
     await new Promise(resolve => setTimeout(resolve, 10)); // flush logs
