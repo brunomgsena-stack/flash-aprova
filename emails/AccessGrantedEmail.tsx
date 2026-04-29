@@ -10,24 +10,20 @@ const CARD    = '#0a0a0a';
 const CARD2   = '#111111';
 const TEXT    = '#e2e8f0';
 const MUTED   = '#475569';
-const RED     = '#ef4444';
 
 interface AccessGrantedEmailProps {
-  name:        string;
-  email:       string;
-  planName:    string;
-  loginUrl:    string;
-  tempPassword?: string; // presente apenas para novos usuários
+  name:       string;
+  email:      string;
+  planName:   string;
+  actionLink: string;
 }
 
 export function AccessGrantedEmail({
   name,
   email,
   planName,
-  loginUrl,
-  tempPassword,
+  actionLink,
 }: AccessGrantedEmailProps) {
-  const isNewUser = !!tempPassword;
 
   return (
     <Html lang="pt-BR">
@@ -106,99 +102,31 @@ export function AccessGrantedEmail({
 
             <Hr style={{ borderColor: '#ffffff0a', margin: '0 0 28px' }} />
 
-            {/* Credenciais (apenas para novos usuários) */}
-            {isNewUser && (
-              <Section style={{ marginBottom: 28 }}>
-                <Text style={{
-                  fontSize: 10, color: CYAN, margin: '0 0 12px',
-                  letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 700,
-                }}>
-                  // credenciais de acesso
+            {/* Acesso direto */}
+            <Section style={{ marginBottom: 28 }}>
+              <Text style={{
+                fontSize: 10, color: CYAN, margin: '0 0 12px',
+                letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 700,
+              }}>
+                // acesso imediato
+              </Text>
+              <Section style={{
+                backgroundColor: CARD2,
+                border: `1px solid ${EMERALD}25`,
+                borderRadius: 8,
+                padding: '16px 20px',
+              }}>
+                <Text style={{ margin: 0, fontSize: 13, color: TEXT, lineHeight: 1.6 }}>
+                  Clique no botão abaixo para entrar diretamente no painel — sem precisar digitar senha.
+                  O link é válido por <span style={{ color: EMERALD, fontWeight: 700 }}>24 horas</span>.
                 </Text>
-
-                <Section style={{
-                  backgroundColor: CARD2,
-                  border: `1px solid rgba(255,255,255,0.08)`,
-                  borderRadius: 8,
-                  padding: '16px 20px',
-                  marginBottom: 8,
-                }}>
-                  <Row>
-                    <Column style={{ width: 80 }}>
-                      <Text style={{ margin: 0, fontSize: 10, color: MUTED, letterSpacing: '0.10em', textTransform: 'uppercase' }}>
-                        login
-                      </Text>
-                    </Column>
-                    <Column>
-                      <Text style={{ margin: 0, fontSize: 13, color: TEXT, fontWeight: 700 }}>
-                        {email}
-                      </Text>
-                    </Column>
-                  </Row>
-                </Section>
-
-                <Section style={{
-                  backgroundColor: CARD2,
-                  border: `1px solid ${EMERALD}30`,
-                  borderRadius: 8,
-                  padding: '16px 20px',
-                }}>
-                  <Row>
-                    <Column style={{ width: 80 }}>
-                      <Text style={{ margin: 0, fontSize: 10, color: MUTED, letterSpacing: '0.10em', textTransform: 'uppercase' }}>
-                        senha
-                      </Text>
-                    </Column>
-                    <Column>
-                      <Text style={{ margin: 0, fontSize: 15, color: EMERALD, fontWeight: 900, letterSpacing: '0.10em' }}>
-                        {tempPassword}
-                      </Text>
-                    </Column>
-                  </Row>
-                </Section>
-
-                <Section style={{
-                  backgroundColor: `${RED}0f`,
-                  border: `1px solid ${RED}25`,
-                  borderRadius: 6,
-                  padding: '10px 14px',
-                  marginTop: 10,
-                }}>
-                  <Text style={{ margin: 0, fontSize: 11, color: '#fca5a5', lineHeight: 1.5 }}>
-                    ⚠ Altere sua senha após o primeiro acesso em Configurações → Segurança.
-                  </Text>
-                </Section>
               </Section>
-            )}
-
-            {/* Mensagem para usuário existente */}
-            {!isNewUser && (
-              <Section style={{ marginBottom: 28 }}>
-                <Text style={{
-                  fontSize: 10, color: CYAN, margin: '0 0 12px',
-                  letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 700,
-                }}>
-                  // status da operação
-                </Text>
-                <Section style={{
-                  backgroundColor: CARD2,
-                  border: `1px solid ${EMERALD}25`,
-                  borderRadius: 8,
-                  padding: '16px 20px',
-                }}>
-                  <Text style={{ margin: 0, fontSize: 13, color: TEXT, lineHeight: 1.6 }}>
-                    Sua conta existente foi atualizada para{' '}
-                    <span style={{ color: EMERALD, fontWeight: 700 }}>{planName}</span>.{' '}
-                    Use suas credenciais normais para acessar.
-                  </Text>
-                </Section>
-              </Section>
-            )}
+            </Section>
 
             {/* CTA */}
             <Section style={{ textAlign: 'center' }}>
               <Button
-                href={loginUrl}
+                href={actionLink}
                 style={{
                   backgroundColor: EMERALD,
                   color: '#000000',
@@ -233,7 +161,7 @@ export function AccessGrantedEmail({
               // arsenal ativado
             </Text>
             {[
-              { icon: '⚡', label: '5.700+ Flashcards táticos com SRS inteligente' },
+              { icon: '⚡', label: 'Milhares de Flashcards táticos com SRS inteligente' },
               { icon: '🧠', label: 'Neural Core — gestão automática de retenção' },
               { icon: '🤖', label: '15 Especialistas IA em prontidão 24/7' },
               { icon: '✍️', label: 'Prof.ª Norma — auditoria de redação em 30s' },

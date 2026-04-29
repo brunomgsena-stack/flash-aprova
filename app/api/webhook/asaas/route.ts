@@ -22,7 +22,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient }              from '@supabase/supabase-js';
-import { timingSafeEqual, randomBytes } from 'crypto';
+import { timingSafeEqual } from 'crypto';
 import { sendAccessGrantedEmail }    from '@/lib/mail';
 
 export const runtime = 'nodejs';
@@ -311,15 +311,23 @@ export async function POST(req: NextRequest) {
     const existingId = await findUserIdByEmail(adminClient, email);
 
     if (existingId) {
-      // Usuário existente: apenas atualiza plano e notifica
+      // Usuário existente: atualiza plano e envia magic link
       await grantPlan(adminClient, existingId, plan);
       console.log(`[ CHECKPOINT 1 ] grantPlan concluído para ${email}`);
       console.log(`[ WEBHOOK: NOVO OPERADOR CRIADO E SINCRONIZADO: ${email} ]`);
-      console.log(`[ CHECKPOINT 2 ] Antes do Resend — RESEND_API_KEY existe: ${!!process.env.RESEND_API_KEY}`);
 
+      const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
+        type: 'magiclink',
+        email,
+        options: { redirectTo: `${baseUrl}/dashboard` },
+      });
+      if (linkError) console.error('[webhook/asaas] Erro ao gerar magic link (existente):', linkError.message);
+      const actionLink = linkData?.properties?.action_link ?? loginUrl;
+
+      console.log(`[ CHECKPOINT 2 ] Antes do Resend — RESEND_API_KEY existe: ${!!process.env.RESEND_API_KEY}`);
       await new Promise(resolve => setTimeout(resolve, 10)); // flush logs
       try {
-        const emailPromise = sendAccessGrantedEmail({ to: email, name, planName: plan.name, loginUrl });
+        const emailPromise = sendAccessGrantedEmail({ to: email, name, planName: plan.name, actionLink });
         const timeoutPromise = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Resend timeout após 8s')), 8000));
         const res = await Promise.race([emailPromise, timeoutPromise]);
         console.log('[ CHECKPOINT 3 ] ID do Resend:', res.data?.id || 'SEM ID', 'Erro:', res.error);
@@ -330,11 +338,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ received: true, action: 'plan_updated', plan: plan.slug, userId: existingId });
     }
 
-    // Usuário novo: gera senha e cria conta com acesso imediato
-    const tempPassword = generatePassword();
+    // Usuário novo: cria conta com e-mail confirmado e envia magic link
     const { data: createData, error: createError } = await adminClient.auth.admin.createUser({
       email,
-      password:      tempPassword,
       email_confirm: true,
       user_metadata: { name, plan: plan.slug },
     });
@@ -347,11 +353,19 @@ export async function POST(req: NextRequest) {
         await grantPlan(adminClient, fallbackId, plan);
         console.log(`[ CHECKPOINT 1 ] grantPlan concluído para ${email} (fallback)`);
         console.log(`[ WEBHOOK: NOVO OPERADOR CRIADO E SINCRONIZADO: ${email} ]`);
-        console.log(`[ CHECKPOINT 2 ] Antes do Resend — RESEND_API_KEY existe: ${!!process.env.RESEND_API_KEY}`);
 
+        const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
+          type: 'magiclink',
+          email,
+          options: { redirectTo: `${baseUrl}/dashboard` },
+        });
+        if (linkError) console.error('[webhook/asaas] Erro ao gerar magic link (fallback):', linkError.message);
+        const actionLink = linkData?.properties?.action_link ?? loginUrl;
+
+        console.log(`[ CHECKPOINT 2 ] Antes do Resend — RESEND_API_KEY existe: ${!!process.env.RESEND_API_KEY}`);
         await new Promise(resolve => setTimeout(resolve, 10)); // flush logs
         try {
-          const emailPromise = sendAccessGrantedEmail({ to: email, name, planName: plan.name, loginUrl });
+          const emailPromise = sendAccessGrantedEmail({ to: email, name, planName: plan.name, actionLink });
           const timeoutPromise = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Resend timeout após 8s')), 8000));
           const res = await Promise.race([emailPromise, timeoutPromise]);
           console.log('[ CHECKPOINT 3 ] ID do Resend:', res.data?.id || 'SEM ID', 'Erro:', res.error);
@@ -368,11 +382,19 @@ export async function POST(req: NextRequest) {
     await grantPlan(adminClient, newUserId, plan);
     console.log(`[ CHECKPOINT 1 ] grantPlan concluído para ${email} (novo usuário)`);
     console.log(`[ WEBHOOK: NOVO OPERADOR CRIADO E SINCRONIZADO: ${email} ]`);
-    console.log(`[ CHECKPOINT 2 ] Antes do Resend — RESEND_API_KEY existe: ${!!process.env.RESEND_API_KEY}`);
 
+    const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
+      type: 'magiclink',
+      email,
+      options: { redirectTo: `${baseUrl}/dashboard` },
+    });
+    if (linkError) console.error('[webhook/asaas] Erro ao gerar magic link (novo):', linkError.message);
+    const actionLink = linkData?.properties?.action_link ?? loginUrl;
+
+    console.log(`[ CHECKPOINT 2 ] Antes do Resend — RESEND_API_KEY existe: ${!!process.env.RESEND_API_KEY}`);
     await new Promise(resolve => setTimeout(resolve, 10)); // flush logs
     try {
-      const emailPromise = sendAccessGrantedEmail({ to: email, name, planName: plan.name, loginUrl, tempPassword });
+      const emailPromise = sendAccessGrantedEmail({ to: email, name, planName: plan.name, actionLink });
       const timeoutPromise = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Resend timeout após 8s')), 8000));
       const res = await Promise.race([emailPromise, timeoutPromise]);
       console.log('[ CHECKPOINT 3 ] ID do Resend:', res.data?.id || 'SEM ID', 'Erro:', res.error);
@@ -389,11 +411,3 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// ── Gerador de senha segura ───────────────────────────────────────────────────
-
-function generatePassword(): string {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789@#$!';
-  return Array.from(randomBytes(12))
-    .map(b => chars[b % chars.length])
-    .join('');
-}

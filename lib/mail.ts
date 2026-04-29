@@ -24,22 +24,20 @@ export async function sendWelcomeEmail(to: string, name?: string) {
 
 // ─── Acesso concedido (pós-pagamento) ────────────────────────────────────────
 export async function sendAccessGrantedEmail(opts: {
-  to:           string;
-  name:         string;
-  planName:     string;
-  loginUrl:     string;
-  tempPassword?: string;
+  to:        string;
+  name:      string;
+  planName:  string;
+  actionLink: string;
 }) {
   const result = await getResend().emails.send({
     from:    FROM,
     to:      opts.to,
     subject: `[ VEREDITO: ACESSO CONCEDIDO — ${opts.planName.toUpperCase()} ]`,
     react:   AccessGrantedEmail({
-      name:         opts.name,
-      email:        opts.to,
-      planName:     opts.planName,
-      loginUrl:     opts.loginUrl,
-      tempPassword: opts.tempPassword,
+      name:       opts.name,
+      email:      opts.to,
+      planName:   opts.planName,
+      actionLink: opts.actionLink,
     }),
   });
   console.log('[mail] sendAccessGrantedEmail result:', JSON.stringify(result));
