@@ -27,7 +27,7 @@ export async function sendAccessGrantedEmail(opts: {
   to:           string;
   name:         string;
   planName:     string;
-  actionLink:   string;
+  loginUrl:     string;
   tempPassword?: string;
 }) {
   const result = await getResend().emails.send({
@@ -38,7 +38,7 @@ export async function sendAccessGrantedEmail(opts: {
       name:         opts.name,
       email:        opts.to,
       planName:     opts.planName,
-      actionLink:   opts.actionLink,
+      loginUrl:     opts.loginUrl,
       tempPassword: opts.tempPassword,
     }),
   });

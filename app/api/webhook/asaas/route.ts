@@ -311,35 +311,21 @@ export async function POST(req: NextRequest) {
     const existingId = await findUserIdByEmail(adminClient, email);
 
     if (existingId) {
-      // Usuário existente: atualiza plano e envia magic link
+      // Usuário existente: atualiza plano e notifica
       await grantPlan(adminClient, existingId, plan);
-      console.log(`[ CHECKPOINT 1 ] grantPlan concluído para ${email}`);
-      console.log(`[ WEBHOOK: NOVO OPERADOR CRIADO E SINCRONIZADO: ${email} ]`);
+      console.log(`[ WEBHOOK: PLANO ATUALIZADO: ${email} ]`);
 
-      const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
-        type: 'magiclink',
-        email,
-        options: { redirectTo: `${baseUrl}/auth/callback` },
-      });
-      if (linkError) console.error('[webhook/asaas] Erro ao gerar magic link (existente):', linkError.message);
-      const actionLink = linkData?.properties?.action_link ?? loginUrl;
-      console.log('[webhook/asaas] action_link gerado (existente):', actionLink);
-
-      console.log(`[ CHECKPOINT 2 ] Antes do Resend — RESEND_API_KEY existe: ${!!process.env.RESEND_API_KEY}`);
-      await new Promise(resolve => setTimeout(resolve, 10)); // flush logs
       try {
-        const emailPromise = sendAccessGrantedEmail({ to: email, name, planName: plan.name, actionLink });
-        const timeoutPromise = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Resend timeout após 8s')), 8000));
-        const res = await Promise.race([emailPromise, timeoutPromise]);
-        console.log('[ CHECKPOINT 3 ] ID do Resend:', res.data?.id || 'SEM ID', 'Erro:', res.error);
+        const res = await sendAccessGrantedEmail({ to: email, name, planName: plan.name, loginUrl });
+        console.log('[ EMAIL ENVIADO ] ID do Resend:', res.data?.id || 'SEM ID');
       } catch (err) {
-        console.error('[ CHECKPOINT 3 ERRO ] Falha ao enviar email (usuário existente):', err instanceof Error ? err.message : String(err));
+        console.error('[ EMAIL ERRO ] Falha ao enviar email (usuário existente):', err instanceof Error ? err.message : String(err));
       }
 
       return NextResponse.json({ received: true, action: 'plan_updated', plan: plan.slug, userId: existingId });
     }
 
-    // Usuário novo: cria conta com senha temporária + magic link como acesso rápido
+    // Usuário novo: cria conta com senha temporária
     const tempPassword = generatePassword();
     const { data: createData, error: createError } = await adminClient.auth.admin.createUser({
       email,
@@ -354,27 +340,13 @@ export async function POST(req: NextRequest) {
       const fallbackId = await findUserIdByEmail(adminClient, email);
       if (fallbackId) {
         await grantPlan(adminClient, fallbackId, plan);
-        console.log(`[ CHECKPOINT 1 ] grantPlan concluído para ${email} (fallback)`);
         console.log(`[ WEBHOOK: NOVO OPERADOR CRIADO E SINCRONIZADO: ${email} ]`);
 
-        const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
-          type: 'magiclink',
-          email,
-          options: { redirectTo: `${baseUrl}/auth/callback` },
-        });
-        if (linkError) console.error('[webhook/asaas] Erro ao gerar magic link (fallback):', linkError.message);
-        const actionLink = linkData?.properties?.action_link ?? loginUrl;
-        console.log('[webhook/asaas] action_link gerado (fallback):', actionLink);
-
-        console.log(`[ CHECKPOINT 2 ] Antes do Resend — RESEND_API_KEY existe: ${!!process.env.RESEND_API_KEY}`);
-        await new Promise(resolve => setTimeout(resolve, 10)); // flush logs
         try {
-          const emailPromise = sendAccessGrantedEmail({ to: email, name, planName: plan.name, actionLink, tempPassword });
-          const timeoutPromise = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Resend timeout após 8s')), 8000));
-          const res = await Promise.race([emailPromise, timeoutPromise]);
-          console.log('[ CHECKPOINT 3 ] ID do Resend:', res.data?.id || 'SEM ID', 'Erro:', res.error);
+          const res = await sendAccessGrantedEmail({ to: email, name, planName: plan.name, loginUrl, tempPassword });
+          console.log('[ EMAIL ENVIADO ] ID do Resend:', res.data?.id || 'SEM ID');
         } catch (err) {
-          console.error('[ CHECKPOINT 3 ERRO ] Falha ao enviar email (fallback):', err instanceof Error ? err.message : String(err));
+          console.error('[ EMAIL ERRO ] Falha ao enviar email (fallback):', err instanceof Error ? err.message : String(err));
         }
 
         return NextResponse.json({ received: true, action: 'plan_updated_fallback', plan: plan.slug, userId: fallbackId });
@@ -384,27 +356,13 @@ export async function POST(req: NextRequest) {
 
     const newUserId = createData.user.id;
     await grantPlan(adminClient, newUserId, plan);
-    console.log(`[ CHECKPOINT 1 ] grantPlan concluído para ${email} (novo usuário)`);
     console.log(`[ WEBHOOK: NOVO OPERADOR CRIADO E SINCRONIZADO: ${email} ]`);
 
-    const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
-      type: 'magiclink',
-      email,
-      options: { redirectTo: `${baseUrl}/auth/callback` },
-    });
-    if (linkError) console.error('[webhook/asaas] Erro ao gerar magic link (novo):', linkError.message);
-    const actionLink = linkData?.properties?.action_link ?? loginUrl;
-    console.log('[webhook/asaas] action_link gerado (novo):', actionLink);
-
-    console.log(`[ CHECKPOINT 2 ] Antes do Resend — RESEND_API_KEY existe: ${!!process.env.RESEND_API_KEY}`);
-    await new Promise(resolve => setTimeout(resolve, 10)); // flush logs
     try {
-      const emailPromise = sendAccessGrantedEmail({ to: email, name, planName: plan.name, actionLink, tempPassword });
-      const timeoutPromise = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Resend timeout após 8s')), 8000));
-      const res = await Promise.race([emailPromise, timeoutPromise]);
-      console.log('[ CHECKPOINT 3 ] ID do Resend:', res.data?.id || 'SEM ID', 'Erro:', res.error);
+      const res = await sendAccessGrantedEmail({ to: email, name, planName: plan.name, loginUrl, tempPassword });
+      console.log('[ EMAIL ENVIADO ] ID do Resend:', res.data?.id || 'SEM ID');
     } catch (err) {
-      console.error('[ CHECKPOINT 3 ERRO ] Falha ao enviar email (novo usuário):', err instanceof Error ? err.message : String(err));
+      console.error('[ EMAIL ERRO ] Falha ao enviar email (novo usuário):', err instanceof Error ? err.message : String(err));
     }
 
     return NextResponse.json({ received: true, action: 'user_created', plan: plan.slug, userId: newUserId });

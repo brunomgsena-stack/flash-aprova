@@ -16,7 +16,7 @@ interface AccessGrantedEmailProps {
   name:          string;
   email:         string;
   planName:      string;
-  actionLink:    string;
+  loginUrl:      string;
   tempPassword?: string;
 }
 
@@ -24,7 +24,7 @@ export function AccessGrantedEmail({
   name,
   email,
   planName,
-  actionLink,
+  loginUrl,
   tempPassword,
 }: AccessGrantedEmailProps) {
   const isNewUser = !!tempPassword;
@@ -106,42 +106,14 @@ export function AccessGrantedEmail({
 
             <Hr style={{ borderColor: '#ffffff0a', margin: '0 0 28px' }} />
 
-            {/* CTA principal */}
-            <Section style={{ textAlign: 'center', marginBottom: 24 }}>
-              <Text style={{
-                fontSize: 10, color: CYAN, margin: '0 0 14px',
-                letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 700,
-              }}>
-                // acesso imediato
-              </Text>
-              <Button
-                href={actionLink}
-                style={{
-                  backgroundColor: EMERALD,
-                  color: '#000000',
-                  fontSize: 13,
-                  fontWeight: 900,
-                  borderRadius: 8,
-                  padding: '14px 36px',
-                  textDecoration: 'none',
-                  display: 'inline-block',
-                  letterSpacing: '0.08em',
-                  textTransform: 'uppercase',
-                  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-                }}
-              >
-                [ ACESSAR O PAINEL ]
-              </Button>
-            </Section>
-
-            {/* Credenciais de fallback — apenas para novos usuários */}
+            {/* Credenciais — novo utilizador */}
             {isNewUser && (
-              <Section style={{ marginBottom: 8 }}>
+              <Section style={{ marginBottom: 28 }}>
                 <Text style={{
-                  fontSize: 10, color: MUTED, margin: '0 0 10px',
-                  letterSpacing: '0.14em', textTransform: 'uppercase',
+                  fontSize: 10, color: CYAN, margin: '0 0 12px',
+                  letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 700,
                 }}>
-                  // credenciais de acesso (caso o botão não funcione)
+                  // credenciais de acesso
                 </Text>
 
                 <Section style={{
@@ -198,6 +170,52 @@ export function AccessGrantedEmail({
                 </Section>
               </Section>
             )}
+
+            {/* Mensagem para utilizador existente */}
+            {!isNewUser && (
+              <Section style={{ marginBottom: 28 }}>
+                <Text style={{
+                  fontSize: 10, color: CYAN, margin: '0 0 12px',
+                  letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 700,
+                }}>
+                  // status da operação
+                </Text>
+                <Section style={{
+                  backgroundColor: CARD2,
+                  border: `1px solid ${EMERALD}25`,
+                  borderRadius: 8,
+                  padding: '14px 18px',
+                }}>
+                  <Text style={{ margin: 0, fontSize: 13, color: TEXT, lineHeight: 1.6 }}>
+                    Sua conta foi atualizada para{' '}
+                    <span style={{ color: EMERALD, fontWeight: 700 }}>{planName}</span>.{' '}
+                    Acesse com as suas credenciais habituais.
+                  </Text>
+                </Section>
+              </Section>
+            )}
+
+            {/* CTA */}
+            <Section style={{ textAlign: 'center' }}>
+              <Button
+                href={loginUrl}
+                style={{
+                  backgroundColor: EMERALD,
+                  color: '#000000',
+                  fontSize: 13,
+                  fontWeight: 900,
+                  borderRadius: 8,
+                  padding: '14px 36px',
+                  textDecoration: 'none',
+                  display: 'inline-block',
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+                }}
+              >
+                [ ACESSAR O PAINEL ]
+              </Button>
+            </Section>
           </Section>
 
           {/* ── O que está desbloqueado ── */}
