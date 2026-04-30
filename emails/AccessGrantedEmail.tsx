@@ -10,12 +10,14 @@ const CARD    = '#0a0a0a';
 const CARD2   = '#111111';
 const TEXT    = '#e2e8f0';
 const MUTED   = '#475569';
+const RED     = '#ef4444';
 
 interface AccessGrantedEmailProps {
-  name:       string;
-  email:      string;
-  planName:   string;
-  actionLink: string;
+  name:          string;
+  email:         string;
+  planName:      string;
+  actionLink:    string;
+  tempPassword?: string;
 }
 
 export function AccessGrantedEmail({
@@ -23,7 +25,9 @@ export function AccessGrantedEmail({
   email,
   planName,
   actionLink,
+  tempPassword,
 }: AccessGrantedEmailProps) {
+  const isNewUser = !!tempPassword;
 
   return (
     <Html lang="pt-BR">
@@ -102,29 +106,14 @@ export function AccessGrantedEmail({
 
             <Hr style={{ borderColor: '#ffffff0a', margin: '0 0 28px' }} />
 
-            {/* Acesso direto */}
-            <Section style={{ marginBottom: 28 }}>
+            {/* CTA principal */}
+            <Section style={{ textAlign: 'center', marginBottom: 24 }}>
               <Text style={{
-                fontSize: 10, color: CYAN, margin: '0 0 12px',
+                fontSize: 10, color: CYAN, margin: '0 0 14px',
                 letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 700,
               }}>
                 // acesso imediato
               </Text>
-              <Section style={{
-                backgroundColor: CARD2,
-                border: `1px solid ${EMERALD}25`,
-                borderRadius: 8,
-                padding: '16px 20px',
-              }}>
-                <Text style={{ margin: 0, fontSize: 13, color: TEXT, lineHeight: 1.6 }}>
-                  Clique no botão abaixo para entrar diretamente no painel — sem precisar digitar senha.
-                  O link é válido por <span style={{ color: EMERALD, fontWeight: 700 }}>24 horas</span>.
-                </Text>
-              </Section>
-            </Section>
-
-            {/* CTA */}
-            <Section style={{ textAlign: 'center' }}>
               <Button
                 href={actionLink}
                 style={{
@@ -144,6 +133,71 @@ export function AccessGrantedEmail({
                 [ ACESSAR O PAINEL ]
               </Button>
             </Section>
+
+            {/* Credenciais de fallback — apenas para novos usuários */}
+            {isNewUser && (
+              <Section style={{ marginBottom: 8 }}>
+                <Text style={{
+                  fontSize: 10, color: MUTED, margin: '0 0 10px',
+                  letterSpacing: '0.14em', textTransform: 'uppercase',
+                }}>
+                  // credenciais de acesso (caso o botão não funcione)
+                </Text>
+
+                <Section style={{
+                  backgroundColor: CARD2,
+                  border: `1px solid rgba(255,255,255,0.08)`,
+                  borderRadius: 8,
+                  padding: '14px 18px',
+                  marginBottom: 6,
+                }}>
+                  <Row>
+                    <Column style={{ width: 72 }}>
+                      <Text style={{ margin: 0, fontSize: 10, color: MUTED, letterSpacing: '0.10em', textTransform: 'uppercase' }}>
+                        login
+                      </Text>
+                    </Column>
+                    <Column>
+                      <Text style={{ margin: 0, fontSize: 13, color: TEXT, fontWeight: 700 }}>
+                        {email}
+                      </Text>
+                    </Column>
+                  </Row>
+                </Section>
+
+                <Section style={{
+                  backgroundColor: CARD2,
+                  border: `1px solid ${EMERALD}30`,
+                  borderRadius: 8,
+                  padding: '14px 18px',
+                  marginBottom: 8,
+                }}>
+                  <Row>
+                    <Column style={{ width: 72 }}>
+                      <Text style={{ margin: 0, fontSize: 10, color: MUTED, letterSpacing: '0.10em', textTransform: 'uppercase' }}>
+                        senha
+                      </Text>
+                    </Column>
+                    <Column>
+                      <Text style={{ margin: 0, fontSize: 15, color: EMERALD, fontWeight: 900, letterSpacing: '0.10em' }}>
+                        {tempPassword}
+                      </Text>
+                    </Column>
+                  </Row>
+                </Section>
+
+                <Section style={{
+                  backgroundColor: `${RED}0f`,
+                  border: `1px solid ${RED}25`,
+                  borderRadius: 6,
+                  padding: '10px 14px',
+                }}>
+                  <Text style={{ margin: 0, fontSize: 11, color: '#fca5a5', lineHeight: 1.5 }}>
+                    ⚠ Altere sua senha após o primeiro acesso em Configurações → Segurança.
+                  </Text>
+                </Section>
+              </Section>
+            )}
           </Section>
 
           {/* ── O que está desbloqueado ── */}

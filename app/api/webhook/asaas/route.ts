@@ -22,7 +22,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient }              from '@supabase/supabase-js';
-import { timingSafeEqual } from 'crypto';
+import { timingSafeEqual, randomBytes } from 'crypto';
 import { sendAccessGrantedEmail }    from '@/lib/mail';
 
 export const runtime = 'nodejs';
@@ -339,9 +339,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ received: true, action: 'plan_updated', plan: plan.slug, userId: existingId });
     }
 
-    // Usuário novo: cria conta com e-mail confirmado e envia magic link
+    // Usuário novo: cria conta com senha temporária + magic link como acesso rápido
+    const tempPassword = generatePassword();
     const { data: createData, error: createError } = await adminClient.auth.admin.createUser({
       email,
+      password:      tempPassword,
       email_confirm: true,
       user_metadata: { name, plan: plan.slug },
     });
@@ -356,18 +358,18 @@ export async function POST(req: NextRequest) {
         console.log(`[ WEBHOOK: NOVO OPERADOR CRIADO E SINCRONIZADO: ${email} ]`);
 
         const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
-          type: 'signup',
+          type: 'magiclink',
           email,
           options: { redirectTo: `${baseUrl}/auth/callback` },
         });
-        if (linkError) console.error('[webhook/asaas] Erro ao gerar link (fallback):', linkError.message);
+        if (linkError) console.error('[webhook/asaas] Erro ao gerar magic link (fallback):', linkError.message);
         const actionLink = linkData?.properties?.action_link ?? loginUrl;
         console.log('[webhook/asaas] action_link gerado (fallback):', actionLink);
 
         console.log(`[ CHECKPOINT 2 ] Antes do Resend — RESEND_API_KEY existe: ${!!process.env.RESEND_API_KEY}`);
         await new Promise(resolve => setTimeout(resolve, 10)); // flush logs
         try {
-          const emailPromise = sendAccessGrantedEmail({ to: email, name, planName: plan.name, actionLink });
+          const emailPromise = sendAccessGrantedEmail({ to: email, name, planName: plan.name, actionLink, tempPassword });
           const timeoutPromise = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Resend timeout após 8s')), 8000));
           const res = await Promise.race([emailPromise, timeoutPromise]);
           console.log('[ CHECKPOINT 3 ] ID do Resend:', res.data?.id || 'SEM ID', 'Erro:', res.error);
@@ -386,18 +388,18 @@ export async function POST(req: NextRequest) {
     console.log(`[ WEBHOOK: NOVO OPERADOR CRIADO E SINCRONIZADO: ${email} ]`);
 
     const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
-      type: 'signup',
+      type: 'magiclink',
       email,
       options: { redirectTo: `${baseUrl}/auth/callback` },
     });
-    if (linkError) console.error('[webhook/asaas] Erro ao gerar link (novo):', linkError.message);
+    if (linkError) console.error('[webhook/asaas] Erro ao gerar magic link (novo):', linkError.message);
     const actionLink = linkData?.properties?.action_link ?? loginUrl;
     console.log('[webhook/asaas] action_link gerado (novo):', actionLink);
 
     console.log(`[ CHECKPOINT 2 ] Antes do Resend — RESEND_API_KEY existe: ${!!process.env.RESEND_API_KEY}`);
     await new Promise(resolve => setTimeout(resolve, 10)); // flush logs
     try {
-      const emailPromise = sendAccessGrantedEmail({ to: email, name, planName: plan.name, actionLink });
+      const emailPromise = sendAccessGrantedEmail({ to: email, name, planName: plan.name, actionLink, tempPassword });
       const timeoutPromise = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Resend timeout após 8s')), 8000));
       const res = await Promise.race([emailPromise, timeoutPromise]);
       console.log('[ CHECKPOINT 3 ] ID do Resend:', res.data?.id || 'SEM ID', 'Erro:', res.error);
@@ -412,5 +414,14 @@ export async function POST(req: NextRequest) {
     console.error(`[ WEBHOOK: FALHA CRÍTICA NA OPERAÇÃO: ${msg} ]`);
     return NextResponse.json({ error: `Falha ao processar plano: ${msg}` }, { status: 500 });
   }
+}
+
+// ── Gerador de senha segura ───────────────────────────────────────────────────
+
+function generatePassword(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789@#$!';
+  return Array.from(randomBytes(12))
+    .map(b => chars[b % chars.length])
+    .join('');
 }
 
