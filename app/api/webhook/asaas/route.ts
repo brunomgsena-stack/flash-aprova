@@ -144,7 +144,6 @@ async function grantPlan(
   adminClient: ReturnType<typeof makeAdminClient>,
   userId: string,
   plan:   PlanInfo,
-  email:  string,
 ): Promise<void> {
   const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
 
@@ -314,7 +313,7 @@ export async function POST(req: NextRequest) {
 
     if (existingId) {
       // Usuário existente: atualiza plano e notifica
-      await grantPlan(adminClient, existingId, plan, email);
+      await grantPlan(adminClient, existingId, plan);
       console.log(`[ WEBHOOK: PLANO ATUALIZADO: ${email} ]`);
 
       try {
@@ -338,10 +337,15 @@ export async function POST(req: NextRequest) {
 
     if (createError) {
       // Race condition: usuário criado entre o find e o createUser
-      console.error(`[webhook/asaas] createUser falhou: ${createError.message}. Tentando fallback…`);
+      console.error(
+        `[webhook/asaas] createUser falhou: ${createError.message}`,
+        `status=${createError.status} code=${(createError as Record<string, unknown>).code ?? 'n/a'}`,
+        JSON.stringify(createError),
+      );
+      console.error('[webhook/asaas] Tentando fallback por e-mail…');
       const fallbackId = await findUserIdByEmail(adminClient, email);
       if (fallbackId) {
-        await grantPlan(adminClient, fallbackId, plan, email);
+        await grantPlan(adminClient, fallbackId, plan);
         console.log(`[ WEBHOOK: NOVO OPERADOR CRIADO E SINCRONIZADO: ${email} ]`);
 
         try {
@@ -357,7 +361,7 @@ export async function POST(req: NextRequest) {
     }
 
     const newUserId = createData.user.id;
-    await grantPlan(adminClient, newUserId, plan, email);
+    await grantPlan(adminClient, newUserId, plan);
     console.log(`[ WEBHOOK: NOVO OPERADOR CRIADO E SINCRONIZADO: ${email} ]`);
 
     try {
