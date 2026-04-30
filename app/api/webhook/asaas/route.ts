@@ -157,29 +157,8 @@ async function grantPlan(
     throw new Error(`Falha ao gravar user_stats: ${statsError.message}`);
   }
 
-  // Limpa perfil órfão: se existir um profile com este e-mail mas id diferente
-  // (ex: utilizador foi apagado do Auth mas o profile ficou), apaga antes de inserir.
-  const { data: orphan } = await adminClient
-    .from('profiles')
-    .select('id')
-    .eq('email', email)
-    .neq('id', userId)
-    .maybeSingle();
-
-  if (orphan) {
-    console.log(`[webhook/asaas] Profile órfão detectado. email=${email} orphanId=${orphan.id} — a apagar…`);
-    const { error: deleteError } = await adminClient
-      .from('profiles')
-      .delete()
-      .eq('id', orphan.id);
-
-    if (deleteError) {
-      console.error(`[webhook/asaas] Falha ao apagar profile órfão. email=${email}`, deleteError);
-      throw new Error(`Falha ao apagar profile órfão: ${deleteError.message}`);
-    }
-    console.log(`[webhook/asaas] Profile órfão apagado. email=${email} orphanId=${orphan.id}`);
-  }
-
+  // O trigger do Supabase pode criar o perfil automaticamente ao criar o utilizador.
+  // Upsert (onConflict: 'id') garante que apenas actualiza se já existir, sem erro 23505.
   const { error: profileError } = await adminClient
     .from('profiles')
     .upsert({ id: userId, plan: plan.slug, plan_name: plan.name }, { onConflict: 'id' });
