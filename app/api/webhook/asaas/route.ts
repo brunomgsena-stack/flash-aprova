@@ -337,11 +337,7 @@ export async function POST(req: NextRequest) {
 
     if (createError) {
       // Race condition: usuário criado entre o find e o createUser
-      console.error(
-        `[webhook/asaas] createUser falhou: ${createError.message}`,
-        `status=${createError.status} code=${(createError as Record<string, unknown>).code ?? 'n/a'}`,
-        JSON.stringify(createError),
-      );
+      console.error(`[webhook/asaas] createUser falhou: ${createError.message} status=${createError.status}`, createError);
       console.error('[webhook/asaas] Tentando fallback por e-mail…');
       const fallbackId = await findUserIdByEmail(adminClient, email);
       if (fallbackId) {
