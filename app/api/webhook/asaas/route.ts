@@ -157,8 +157,8 @@ async function grantPlan(
     throw new Error(`Falha ao gravar user_stats: ${statsError.message}`);
   }
 
-  // Reconcilia perfil órfão: se existir um profile com este e-mail mas id diferente
-  // (ex: utilizador foi apagado do Auth mas o profile ficou), actualiza o id para o novo userId.
+  // Limpa perfil órfão: se existir um profile com este e-mail mas id diferente
+  // (ex: utilizador foi apagado do Auth mas o profile ficou), apaga antes de inserir.
   const { data: orphan } = await adminClient
     .from('profiles')
     .select('id')
@@ -167,17 +167,17 @@ async function grantPlan(
     .maybeSingle();
 
   if (orphan) {
-    console.log(`[webhook/asaas] Profile órfão detectado. email=${email} oldId=${orphan.id} newId=${userId} — a re-vincular…`);
-    const { error: relinkError } = await adminClient
+    console.log(`[webhook/asaas] Profile órfão detectado. email=${email} orphanId=${orphan.id} — a apagar…`);
+    const { error: deleteError } = await adminClient
       .from('profiles')
-      .update({ id: userId })
+      .delete()
       .eq('id', orphan.id);
 
-    if (relinkError) {
-      console.error(`[webhook/asaas] Falha ao re-vincular profile órfão. email=${email}`, relinkError);
-      throw new Error(`Falha ao re-vincular profile: ${relinkError.message}`);
+    if (deleteError) {
+      console.error(`[webhook/asaas] Falha ao apagar profile órfão. email=${email}`, deleteError);
+      throw new Error(`Falha ao apagar profile órfão: ${deleteError.message}`);
     }
-    console.log(`[webhook/asaas] Profile re-vinculado com sucesso. email=${email} newId=${userId}`);
+    console.log(`[webhook/asaas] Profile órfão apagado. email=${email} orphanId=${orphan.id}`);
   }
 
   const { error: profileError } = await adminClient
@@ -311,19 +311,18 @@ export async function POST(req: NextRequest) {
   }
 
   // 8. Idempotência ──────────────────────────────────────────────────────────────
+  // Usa upsert para não bloquear reprocessamento manual (testes e reenvios de acesso).
   if (paymentId) {
     const eventKey = `asaas_${paymentId}`;
-    const { error: insertError } = await adminClient
+    const { error: upsertError } = await adminClient
       .from('webhook_events')
-      .insert({ event_id: eventKey, payload });
+      .upsert({ event_id: eventKey, payload }, { onConflict: 'event_id' });
 
-    if (insertError) {
-      if (insertError.code === '23505') {
-        console.log(`[webhook/asaas] Evento já processado anteriormente: ${eventKey}`);
-        return NextResponse.json({ received: true, action: 'already_processed' });
-      }
+    if (upsertError) {
       // Não-fatal: loga mas continua o processamento
-      console.error('[webhook/asaas] Erro ao registrar webhook_event (não-fatal):', insertError.message);
+      console.error('[webhook/asaas] Erro ao registrar webhook_event (não-fatal):', upsertError.message);
+    } else {
+      console.log(`[webhook/asaas] webhook_event registado/actualizado: ${eventKey}`);
     }
   }
 
