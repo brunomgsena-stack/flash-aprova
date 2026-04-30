@@ -144,6 +144,7 @@ async function grantPlan(
   adminClient: ReturnType<typeof makeAdminClient>,
   userId: string,
   plan:   PlanInfo,
+  email:  string,
 ): Promise<void> {
   const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
 
@@ -154,6 +155,29 @@ async function grantPlan(
   if (statsError) {
     console.error(`[webhook/asaas] Falha ao gravar user_stats. userId=${userId}`, statsError);
     throw new Error(`Falha ao gravar user_stats: ${statsError.message}`);
+  }
+
+  // Reconcilia perfil órfão: se existir um profile com este e-mail mas id diferente
+  // (ex: utilizador foi apagado do Auth mas o profile ficou), actualiza o id para o novo userId.
+  const { data: orphan } = await adminClient
+    .from('profiles')
+    .select('id')
+    .eq('email', email)
+    .neq('id', userId)
+    .maybeSingle();
+
+  if (orphan) {
+    console.log(`[webhook/asaas] Profile órfão detectado. email=${email} oldId=${orphan.id} newId=${userId} — a re-vincular…`);
+    const { error: relinkError } = await adminClient
+      .from('profiles')
+      .update({ id: userId })
+      .eq('id', orphan.id);
+
+    if (relinkError) {
+      console.error(`[webhook/asaas] Falha ao re-vincular profile órfão. email=${email}`, relinkError);
+      throw new Error(`Falha ao re-vincular profile: ${relinkError.message}`);
+    }
+    console.log(`[webhook/asaas] Profile re-vinculado com sucesso. email=${email} newId=${userId}`);
   }
 
   const { error: profileError } = await adminClient
@@ -312,7 +336,7 @@ export async function POST(req: NextRequest) {
 
     if (existingId) {
       // Usuário existente: atualiza plano e notifica
-      await grantPlan(adminClient, existingId, plan);
+      await grantPlan(adminClient, existingId, plan, email);
       console.log(`[ WEBHOOK: PLANO ATUALIZADO: ${email} ]`);
 
       try {
@@ -339,7 +363,7 @@ export async function POST(req: NextRequest) {
       console.error(`[webhook/asaas] createUser falhou: ${createError.message}. Tentando fallback…`);
       const fallbackId = await findUserIdByEmail(adminClient, email);
       if (fallbackId) {
-        await grantPlan(adminClient, fallbackId, plan);
+        await grantPlan(adminClient, fallbackId, plan, email);
         console.log(`[ WEBHOOK: NOVO OPERADOR CRIADO E SINCRONIZADO: ${email} ]`);
 
         try {
@@ -355,7 +379,7 @@ export async function POST(req: NextRequest) {
     }
 
     const newUserId = createData.user.id;
-    await grantPlan(adminClient, newUserId, plan);
+    await grantPlan(adminClient, newUserId, plan, email);
     console.log(`[ WEBHOOK: NOVO OPERADOR CRIADO E SINCRONIZADO: ${email} ]`);
 
     try {
