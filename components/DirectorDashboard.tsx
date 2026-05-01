@@ -661,10 +661,14 @@ export default function DirectorDashboard({
   data = MOCK_DATA,
   isLoading = false,
   period = '7d',
+  adminSchools,
+  currentSchoolId,
 }: {
   data?: DirectorDashboardData;
   isLoading?: boolean;
   period?: DashboardPeriod;
+  adminSchools?: { id: string; name: string }[];
+  currentSchoolId?: string;
 }) {
   const { school, engagement_pct, memory_score, students_at_risk, top_subject, critical_subject, radar, classes, critical_subjects } = data;
   const primaryRgb = hexToRgb(school.primary_color);
@@ -817,6 +821,31 @@ export default function DirectorDashboard({
                 {p === '7d' ? '7 dias' : p === '30d' ? '30 dias' : '90 dias'}
               </button>
             ))}
+
+            {/* Admin school-switcher (only for admin users with multiple schools) */}
+            {adminSchools && adminSchools.length > 1 && (
+              <select
+                value={currentSchoolId ?? ''}
+                onChange={(e) => {
+                  const params = new URLSearchParams();
+                  params.set('school', e.target.value);
+                  params.set('period', period);
+                  router.push(`/director?${params.toString()}`);
+                }}
+                className="text-xs rounded-lg px-3 py-1.5 font-semibold outline-none"
+                style={{
+                  background: 'rgba(255,255,255,0.06)',
+                  border:     '1px solid rgba(255,255,255,0.12)',
+                  color:      'rgba(255,255,255,0.7)',
+                }}
+              >
+                {adminSchools.map((s) => (
+                  <option key={s.id} value={s.id} style={{ background: '#1a1a2e' }}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+            )}
 
             {/* Export CSV button */}
             <a

@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { getDirectorDashboardData } from '@/lib/director-data';
+import { getDirectorDashboardData, getAllSchools } from '@/lib/director-data';
 import DirectorDashboard, { type DashboardPeriod } from '@/components/DirectorDashboard';
 
 export const metadata = {
@@ -10,10 +10,12 @@ export const metadata = {
 export default async function DirectorPage({
   searchParams,
 }: {
-  searchParams: Promise<{ period?: string }>;
+  searchParams: Promise<{ period?: string; school?: string }>;
 }) {
   const params = await searchParams;
-  const rawPeriod = params.period;
+  const rawPeriod  = params.period;
+  const schoolParam = params.school;
+
   const period: DashboardPeriod =
     rawPeriod === '30d' ? '30d' : rawPeriod === '90d' ? '90d' : '7d';
   const days = period === '7d' ? 7 : period === '30d' ? 30 : 90;
@@ -25,7 +27,19 @@ export default async function DirectorPage({
 
   if (!user) redirect('/login');
 
-  const data = await getDirectorDashboardData(user.id, days);
+  // Check role to decide if admin school-switcher is needed
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  const isAdmin = profile?.role === 'admin';
+
+  const [data, allSchools] = await Promise.all([
+    getDirectorDashboardData(user.id, days, schoolParam),
+    isAdmin ? getAllSchools(user.id) : Promise.resolve([]),
+  ]);
 
   if (!data) {
     return (
@@ -35,12 +49,18 @@ export default async function DirectorPage({
       >
         <p className="text-white/60 text-lg font-semibold">Escola não configurada</p>
         <p className="text-white/30 text-sm max-w-xs">
-          Sua conta de diretor ainda não está vinculada a uma escola.
-          Entre em contato com o suporte FlashAprova.
+          Sua conta ainda não está vinculada a uma escola.
         </p>
       </div>
     );
   }
 
-  return <DirectorDashboard data={data} period={period} />;
+  return (
+    <DirectorDashboard
+      data={data}
+      period={period}
+      adminSchools={isAdmin ? allSchools : undefined}
+      currentSchoolId={schoolParam}
+    />
+  );
 }
