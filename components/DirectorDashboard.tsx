@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   RadarChart,
@@ -625,17 +626,27 @@ function BurnoutBadge({ type }: { type: 'burnout' | 'nocturnal' }) {
 
 // ── DirectorDashboard ─────────────────────────────────────────────────────────
 
+export type DashboardPeriod = '7d' | '30d' | '90d';
+
 type ViewState = 'escola' | 'turma' | 'aluno';
 
 export default function DirectorDashboard({
   data = MOCK_DATA,
   isLoading = false,
+  period = '7d',
 }: {
   data?: DirectorDashboardData;
   isLoading?: boolean;
+  period?: DashboardPeriod;
 }) {
   const { school, engagement_pct, memory_score, students_at_risk, top_subject, critical_subject, radar, classes, critical_subjects } = data;
   const primaryRgb = hexToRgb(school.primary_color);
+
+  const router = useRouter();
+
+  function handlePeriodChange(newPeriod: DashboardPeriod) {
+    router.push(`/director?period=${newPeriod}`);
+  }
 
   const [view,            setView           ] = useState<ViewState>('escola');
   const [selectedClass,   setSelectedClass  ] = useState<ClassRoom | null>(null);
@@ -758,17 +769,25 @@ export default function DirectorDashboard({
             </div>
           </div>
 
-          <div className="ml-auto hidden sm:block flex-shrink-0">
-            <span
-              className="text-xs px-3 py-1.5 rounded-full font-semibold"
-              style={{
-                background: `rgba(${primaryRgb},0.1)`,
-                border:     `1px solid rgba(${primaryRgb},0.3)`,
-                color:      school.primary_color,
-              }}
-            >
-              Ano Letivo 2026
-            </span>
+          <div className="ml-auto hidden sm:flex items-center gap-2 flex-shrink-0">
+            {(['7d', '30d', '90d'] as DashboardPeriod[]).map((p) => (
+              <button
+                key={p}
+                onClick={() => handlePeriodChange(p)}
+                className="text-xs px-3 py-1.5 rounded-full font-semibold transition-all"
+                style={period === p ? {
+                  background: `rgba(${primaryRgb},0.15)`,
+                  border:     `1px solid rgba(${primaryRgb},0.4)`,
+                  color:      school.primary_color,
+                } : {
+                  background: 'rgba(255,255,255,0.04)',
+                  border:     '1px solid rgba(255,255,255,0.1)',
+                  color:      'rgba(255,255,255,0.4)',
+                }}
+              >
+                {p === '7d' ? '7 dias' : p === '30d' ? '30 dias' : '90 dias'}
+              </button>
+            ))}
           </div>
         </motion.header>
 

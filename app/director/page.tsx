@@ -1,14 +1,23 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getDirectorDashboardData } from '@/lib/director-data';
-import DirectorDashboard from '@/components/DirectorDashboard';
+import DirectorDashboard, { type DashboardPeriod } from '@/components/DirectorDashboard';
 
 export const metadata = {
   title: 'Painel do Diretor — FlashAprova',
 };
 
-export default async function DirectorPage() {
-  // Auth: get logged-in user from session cookie
+export default async function DirectorPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ period?: string }>;
+}) {
+  const params = await searchParams;
+  const rawPeriod = params.period;
+  const period: DashboardPeriod =
+    rawPeriod === '30d' ? '30d' : rawPeriod === '90d' ? '90d' : '7d';
+  const days = period === '7d' ? 7 : period === '30d' ? 30 : 90;
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -16,8 +25,7 @@ export default async function DirectorPage() {
 
   if (!user) redirect('/login');
 
-  // Fetch real data (null = not a director or school not configured)
-  const data = await getDirectorDashboardData(user.id);
+  const data = await getDirectorDashboardData(user.id, days);
 
   if (!data) {
     return (
@@ -34,5 +42,5 @@ export default async function DirectorPage() {
     );
   }
 
-  return <DirectorDashboard data={data} />;
+  return <DirectorDashboard data={data} period={period} />;
 }
