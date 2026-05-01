@@ -627,7 +627,13 @@ function BurnoutBadge({ type }: { type: 'burnout' | 'nocturnal' }) {
 
 type ViewState = 'escola' | 'turma' | 'aluno';
 
-export default function DirectorDashboard({ data = MOCK_DATA }: { data?: DirectorDashboardData }) {
+export default function DirectorDashboard({
+  data = MOCK_DATA,
+  isLoading = false,
+}: {
+  data?: DirectorDashboardData;
+  isLoading?: boolean;
+}) {
   const { school, engagement_pct, memory_score, students_at_risk, top_subject, critical_subject, radar, classes, critical_subjects } = data;
   const primaryRgb = hexToRgb(school.primary_color);
 
@@ -675,6 +681,17 @@ export default function DirectorDashboard({ data = MOCK_DATA }: { data?: Directo
         `,
         backgroundSize: '48px 48px',
       }} />
+
+      {/* ── Loading overlay ── */}
+      {isLoading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{ background: 'rgba(12,12,20,0.85)', backdropFilter: 'blur(8px)' }}>
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-10 h-10 rounded-full border-2 border-emerald-400 border-t-transparent animate-spin" />
+            <p className="text-white/50 text-sm">Carregando dados da escola...</p>
+          </div>
+        </div>
+      )}
 
       <div className="relative z-10 max-w-6xl mx-auto space-y-6">
 
@@ -857,7 +874,12 @@ export default function DirectorDashboard({ data = MOCK_DATA }: { data?: Directo
                     </div>
                     <p className="text-xs text-white/40 mb-4 pl-6">Clique em uma turma para ver detalhes</p>
                     <div className="space-y-4">
-                      {classes.map((cls, i) => {
+                      {classes.length === 0 ? (
+                        <div className="py-8 text-center">
+                          <p className="text-white/30 text-sm">Nenhuma turma cadastrada ainda.</p>
+                          <p className="text-white/20 text-xs mt-1">Crie turmas e convide alunos para começar.</p>
+                        </div>
+                      ) : classes.map((cls, i) => {
                         const isHigh = cls.retention_avg >= 75;
                         return (
                           <motion.button
@@ -1024,7 +1046,12 @@ export default function DirectorDashboard({ data = MOCK_DATA }: { data?: Directo
                     </div>
                     <p className="text-xs text-white/40 mb-4 pl-6">Clique em um aluno para ver o dossiê</p>
                     <div className="space-y-3">
-                      {selectedClass.students.map((student, i) => {
+                      {selectedClass.students.length === 0 ? (
+                        <div className="py-8 text-center">
+                          <p className="text-white/30 text-sm">Nenhum aluno nesta turma ainda.</p>
+                          <p className="text-white/20 text-xs mt-1">Compartilhe o link de convite da turma.</p>
+                        </div>
+                      ) : selectedClass.students.map((student, i) => {
                         const burnout = detectBurnout(student);
                         const color   = retentionColor(student.retention);
                         return (
