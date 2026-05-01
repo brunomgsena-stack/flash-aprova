@@ -2,6 +2,24 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getDirectorDashboardData } from '@/lib/director-data';
 
+// RFC 4180 quoting: escape embedded double-quotes and neutralize formula injection.
+function csvCell(value: string | number): string {
+  const s = String(value);
+  // Prefix with tab to neutralize spreadsheet formula injection (=, +, -, @)
+  const safe = /^[=+\-@\t\r]/.test(s) ? `\t${s}` : s;
+  return `"${safe.replace(/"/g, '""')}"`;
+}
+
+// Strips diacritics and non-ASCII chars for a safe ASCII filename.
+function safeFilename(name: string): string {
+  return name
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, '-')
+    .replace(/-+/g, '-');
+}
+
 // GET /api/director/export?period=30d
 // Returns CSV of all students with their metrics
 export async function GET(request: NextRequest) {
@@ -20,7 +38,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Escola não configurada' }, { status: 403 });
   }
 
-  // Build CSV rows
+  // Build CSV rows (UTF-8 BOM ensures Excel on Windows renders accents correctly)
   const rows: string[] = [
     'Escola,Turma,Aluno,Retenção (%),Engajamento (%),Sessões Noturnas,Status',
   ];
@@ -39,20 +57,20 @@ export async function GET(request: NextRequest) {
 
       rows.push(
         [
-          `"${data.school.name}"`,
-          `"${cls.name}"`,
-          `"${student.name}"`,
+          csvCell(data.school.name),
+          csvCell(cls.name),
+          csvCell(student.name),
           student.retention,
           student.engagement,
           nightSessions,
-          `"${status}"`,
+          csvCell(status),
         ].join(','),
       );
     }
   }
 
-  const csv = rows.join('\n');
-  const filename = `flashaprova-${data.school.name.toLowerCase().replace(/\s+/g, '-')}-${rawPeriod}-${new Date().toISOString().substring(0, 10)}.csv`;
+  const csv = '\uFEFF' + rows.join('\n');
+  const filename = `flashaprova-${safeFilename(data.school.name)}-${rawPeriod}-${new Date().toISOString().substring(0, 10)}.csv`;
 
   return new NextResponse(csv, {
     headers: {
