@@ -676,7 +676,11 @@ export default function DirectorDashboard({
   const router = useRouter();
 
   function handlePeriodChange(newPeriod: DashboardPeriod) {
-    router.push(`/director?period=${newPeriod}`);
+    const params = new URLSearchParams();
+    params.set('period', newPeriod);
+    // Preserve ?school= so admins don't lose their selected school on period switch
+    if (currentSchoolId) params.set('school', currentSchoolId);
+    router.push(`/director?${params.toString()}`);
   }
 
   const [view,            setView           ] = useState<ViewState>('escola');
@@ -770,7 +774,8 @@ export default function DirectorDashboard({
               boxShadow:  `0 0 20px rgba(${primaryRgb},0.2)`,
             }}
           >
-            {school.logo_url
+            {/* Only render logo for relative paths — prevents rendering arbitrary external URLs from DB */}
+            {school.logo_url && /^\//.test(school.logo_url)
               ? <img src={school.logo_url} alt={school.name} className="w-7 h-7 object-contain" /> // eslint-disable-line @next/next/no-img-element
               : <GraduationCap className="w-6 h-6" style={{ color: school.primary_color }} />
             }
