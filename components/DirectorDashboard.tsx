@@ -365,6 +365,7 @@ function ReportModal({
       onClick={onClose}
     >
       <motion.div
+        id="report-modal"
         initial={{ opacity: 0, scale: 0.92, y: 24 }}
         animate={{ opacity: 1, scale: 1,    y: 0   }}
         exit={{    opacity: 0, scale: 0.92, y: 24  }}
@@ -373,6 +374,32 @@ function ReportModal({
         className="w-full max-w-lg rounded-2xl overflow-hidden"
         style={{ background: '#0f1520', border: '1px solid rgba(16,185,129,0.3)', boxShadow: '0 0 60px rgba(16,185,129,0.15)' }}
       >
+          {/* Print-only CSS: white background, black text */}
+          <style>{`
+            @media print {
+              body * { visibility: hidden !important; }
+              #report-modal, #report-modal * { visibility: visible !important; }
+              #report-modal {
+                position: fixed !important;
+                top: 0 !important; left: 0 !important;
+                width: 100vw !important; height: auto !important;
+                background: #fff !important;
+                color: #111 !important;
+                border: none !important;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+              }
+              #report-modal p, #report-modal span, #report-modal h2 {
+                color: #111 !important;
+              }
+              #report-modal [style*="rgba"] {
+                background: #f5f5f5 !important;
+                border-color: #ddd !important;
+              }
+              .recharts-wrapper { break-inside: avoid; }
+              button { display: none !important; }
+            }
+          `}</style>
         {/* Modal header */}
         <div
           className="flex items-center justify-between px-6 py-4"
