@@ -80,6 +80,8 @@ export async function middleware(request: NextRequest) {
 
     // Usuário logado em rota protegida sem ter completado o setup → redireciona
     // Exceção: /director, /dashboard e /study nunca são redirecionados para /setup
+    // Directors and admins bypass the onboarding gate by design:
+    // they manage the school and do not complete the student onboarding flow.
     if (!onboardingDone && isProtected && !isDirectorOrDashboard) {
       return NextResponse.redirect(new URL('/setup', request.url));
     }
@@ -102,9 +104,16 @@ export async function middleware(request: NextRequest) {
       }
     }
 
-    // Director role guard
-    if (pathname.startsWith('/director') && profile?.role !== 'director') {
-      return NextResponse.redirect(new URL('/dashboard', request.url));
+    // Director role guard — allow 'director' and 'admin' roles.
+    // Admins manage multiple schools (Phase 3 multi-school support).
+    if (pathname.startsWith('/director')) {
+      if (profile === null) {
+        console.warn('[Middleware] /director: profile row missing for user:', user.id);
+        return NextResponse.redirect(new URL('/dashboard', request.url));
+      }
+      if (profile.role !== 'director' && profile.role !== 'admin') {
+        return NextResponse.redirect(new URL('/dashboard', request.url));
+      }
     }
 
     // Home: redireciona de acordo com status de onboarding
