@@ -29,6 +29,14 @@ function makeAdmin() {
   );
 }
 
+function sanitizeForPrompt(value: unknown): string {
+  if (typeof value !== 'string') return String(value ?? '');
+  return value
+    .replace(/[<>{}\\]/g, '') // remove chars used in prompt injection
+    .slice(0, 200)             // hard cap
+    .trim();
+}
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type SubjectStat = {
@@ -52,17 +60,20 @@ function buildPrompt(
   const sorted = [...stats].sort((a, b) => a.coverage - b.coverage);
 
   const statsText = sorted.map(s =>
-    `- ${s.subject} (${s.area}): cobertura ${Math.round(s.coverage * 100)}%, taxa de erro ${Math.round(s.errorRate * 100)}%, cards revisados ${s.reviewed}/${s.total}`
+    `- ${sanitizeForPrompt(s.subject)} (${sanitizeForPrompt(s.area)}): cobertura ${Math.round(s.coverage * 100)}%, taxa de erro ${Math.round(s.errorRate * 100)}%, cards revisados ${s.reviewed}/${s.total}`
   ).join('\n');
 
   // Identify weakest and strongest for the feedback line
-  const weakest   = sorted[0]?.subject ?? '';
-  const strongest = sorted[sorted.length - 1]?.subject ?? '';
+  const weakest   = sanitizeForPrompt(sorted[0]?.subject ?? '');
+  const strongest = sanitizeForPrompt(sorted[sorted.length - 1]?.subject ?? '');
+
+  const safeCurso     = sanitizeForPrompt(curso);
+  const safeFirstName = sanitizeForPrompt(firstName);
 
   return `Você é o FlashTutor, especialista em aprovação no ENEM com metodologia 80/20.
 
-Aluno: ${firstName}
-Curso alvo: ${curso}
+Aluno: ${safeFirstName}
+Curso alvo: ${safeCurso}
 Horas disponíveis por dia: ${horasPerDia}h
 
 DESEMPENHO REAL DO ALUNO (ordenado do mais fraco para o mais forte):

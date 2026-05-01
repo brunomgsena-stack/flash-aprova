@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
     serverClient.from('profiles').select('role').eq('id', user.id).maybeSingle(),
   ]);
   const isAdmin   = profileResult.data?.role === 'admin';
-  const rawPlan   = (statsResult.data?.plan as string | undefined) ?? 'aceleracao';
+  const rawPlan   = statsResult.data?.plan as string | undefined;
   const expiresAt = statsResult.data?.plan_expires_at ? new Date(statsResult.data.plan_expires_at) : null;
   const expired   = expiresAt ? expiresAt < new Date() : false;
   const hasAccess = isAdmin || (rawPlan === 'panteao_elite' && !expired);
@@ -67,6 +67,20 @@ export async function POST(req: NextRequest) {
 
   if (!userMessage) {
     return NextResponse.json({ error: 'message é obrigatório.' }, { status: 400 });
+  }
+
+  const MAX_STRING = 500;
+  const MAX_MESSAGE = 4_000;
+  if (
+    tutorId.length > MAX_STRING ||
+    deckTitle.length > MAX_STRING ||
+    subjectTitle.length > MAX_STRING ||
+    userMessage.length > MAX_MESSAGE
+  ) {
+    return NextResponse.json(
+      { error: 'Conteúdo muito longo.' },
+      { status: 400 }
+    );
   }
 
   // ── Resolve tutor from tutor-config (single source of truth) ────────────────
@@ -113,7 +127,6 @@ export async function POST(req: NextRequest) {
 
   } catch (e: unknown) {
     console.error('[/api/chat/tutor] error:', e);
-    const msg = e instanceof Error ? e.message : String(e);
-    return NextResponse.json({ error: `Erro na consulta: ${msg}` }, { status: 500 });
+    return NextResponse.json({ error: 'Erro interno ao processar. Tente novamente.' }, { status: 500 });
   }
 }

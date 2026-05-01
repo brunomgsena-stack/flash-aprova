@@ -372,7 +372,7 @@ export async function POST(req: NextRequest) {
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e);
     console.error(`[ WEBHOOK: FALHA CRÍTICA NA OPERAÇÃO: ${msg} ]`);
-    return NextResponse.json({ error: `Falha ao processar plano: ${msg}` }, { status: 500 });
+    return NextResponse.json({ error: 'Erro interno ao processar.' }, { status: 500 });
   }
 }
 

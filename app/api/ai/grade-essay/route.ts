@@ -86,13 +86,20 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  const MAX_TEMA = 300;
+  const MAX_TEXTO = 50_000; // ~50KB
+  if (tema.length > MAX_TEMA || texto.length > MAX_TEXTO) {
+    return NextResponse.json(
+      { error: 'Conteúdo muito longo. Reduza o texto e tente novamente.' },
+      { status: 400 }
+    );
+  }
+
   // ── OpenAI call ─────────────────────────────────────────────────────────────
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    return NextResponse.json(
-      { error: 'Chave OPENAI_API_KEY não configurada no servidor.' },
-      { status: 500 },
-    );
+    console.error('[grade-essay] OPENAI_API_KEY não configurada no servidor.');
+    return NextResponse.json({ error: 'Erro interno ao processar. Tente novamente.' }, { status: 500 });
   }
 
   let gradeResult: GradeResult;
@@ -159,11 +166,11 @@ export async function POST(req: NextRequest) {
         tema,
         texto,
         nota_total:     gradeResult.nota_total,
-        feedback_json:  gradeResult,
+        analise_completa:  gradeResult,
         created_at:     new Date().toISOString(),
       });
-  } catch {
-    // Table may not exist yet — non-blocking
+  } catch (e) {
+    console.error('[grade-essay] Falha ao salvar submission:', e);
   }
 
   return NextResponse.json(gradeResult);

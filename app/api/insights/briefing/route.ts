@@ -13,6 +13,14 @@ export const runtime = 'nodejs';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
+function sanitizeForPrompt(value: unknown): string {
+  if (typeof value !== 'string') return String(value ?? '');
+  return value
+    .replace(/[<>{}\\]/g, '') // remove chars used in prompt injection
+    .slice(0, 200)             // hard cap
+    .trim();
+}
+
 type BriefingInput = {
   maturePct:    number;
   areaScores:   Record<string, number>;

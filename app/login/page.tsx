@@ -13,7 +13,7 @@ function mapError(msg: string): string {
   if (msg.includes('Password should be'))         return 'A senha deve ter pelo menos 6 caracteres.';
   if (msg.includes('Unable to validate email'))   return 'E-mail inválido.';
   if (msg.includes('Email not confirmed'))        return 'Confirme seu e-mail antes de entrar.';
-  return msg;
+  return 'Ocorreu um erro. Tente novamente.';
 }
 
 // ─── Neon input ───────────────────────────────────────────────────────────────

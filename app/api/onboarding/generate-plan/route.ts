@@ -158,6 +158,21 @@ async function handlePost(req: NextRequest): Promise<Response> {
     experiencia: string;
   };
 
+  // Validate inputs
+  const MAX_STR = 200;
+  if (
+    typeof curso !== 'string' || curso.length > MAX_STR ||
+    typeof base !== 'string' || base.length > MAX_STR ||
+    typeof dificuldade !== 'string' || dificuldade.length > MAX_STR ||
+    typeof experiencia !== 'string' || experiencia.length > MAX_STR
+  ) {
+    return NextResponse.json({ error: 'Dados de entrada inválidos.' }, { status: 400 });
+  }
+
+  if (typeof tempo !== 'number' || !isFinite(tempo) || tempo <= 0 || tempo > 24) {
+    return NextResponse.json({ error: 'Valor de horas inválido.' }, { status: 400 });
+  }
+
   const cardsDay = tempo <= 2 ? 25 : tempo <= 4 ? 50 : tempo <= 6 ? 75 : 100;
 
   // ── PASSO 1: gravar onboarding_completed = true ─────────────────────────────
