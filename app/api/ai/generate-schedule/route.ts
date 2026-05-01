@@ -105,20 +105,20 @@ Retorne SOMENTE o JSON válido abaixo, sem markdown:
   "pontos_criticos": [
     "matéria com menor cobertura",
     "matéria com maior taxa de erro",
-    "matéria de maior peso para ${curso}"
+    "matéria de maior peso para ${safeCurso}"
   ],
   "meta_diaria_cards": ${Math.round(horasPerDia * 25)},
   "meta_semanal_cards": ${Math.round(horasPerDia * 25 * 7)},
   "horas_por_dia": ${horasPerDia},
-  "dica_tutor": "Mensagem geral de 2-3 frases motivacional para ${firstName} com base nos dados reais.",
-  "feedback_tutor": "Frase CURTA e DIRETA com máximo 150 caracteres. Dirija-se a ${firstName} pelo nome. Mencione UMA matéria específica: ou onde ele está tropeçando (${weakest}) ou onde evoluiu bem (${strongest}). Tom: mentor direto e honesto, não robótico. Ex: '${firstName}, ${weakest} está sangrando. Reforço garantido na quarta. Bora fechar essa lacuna!'"
+  "dica_tutor": "Mensagem geral de 2-3 frases motivacional para ${safeFirstName} com base nos dados reais.",
+  "feedback_tutor": "Frase CURTA e DIRETA com máximo 150 caracteres. Dirija-se a ${safeFirstName} pelo nome. Mencione UMA matéria específica: ou onde ele está tropeçando (${weakest}) ou onde evoluiu bem (${strongest}). Tom: mentor direto e honesto, não robótico. Ex: '${safeFirstName}, ${weakest} está sangrando. Reforço garantido na quarta. Bora fechar essa lacuna!'"
 }
 
 Regras:
 - Os pesos em "prioridades" devem somar exatamente 100
 - Inclua apenas 1 semana em "semanas" (cronograma da próxima semana)
 - pontos_criticos: as 3 matérias de maior impacto AGORA com base nos dados reais
-- feedback_tutor: máximo 150 caracteres, menciona o nome ${firstName} e uma matéria real dos dados
+- feedback_tutor: máximo 150 caracteres, menciona o nome ${safeFirstName} e uma matéria real dos dados
 - Responda SOMENTE com o JSON válido`;
 }
 

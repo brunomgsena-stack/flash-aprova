@@ -328,46 +328,55 @@ export async function POST(req: NextRequest) {
 
     // Usuário novo: cria conta com senha temporária
     const tempPassword = generatePassword();
-    const { data: createData, error: createError } = await adminClient.auth.admin.createUser({
-      email,
-      password:      tempPassword,
-      email_confirm: true,
-      user_metadata: { name, plan: plan.slug },
-    });
+    let newUserId: string;
+    let isRaceConditionFallback = false;
 
-    if (createError) {
-      // Race condition: usuário criado entre o find e o createUser
-      console.error(`[webhook/asaas] createUser falhou: ${createError.message} status=${createError.status}`, createError);
-      console.error('[webhook/asaas] Tentando fallback por e-mail…');
+    try {
+      const { data: createData, error: createError } = await adminClient.auth.admin.createUser({
+        email,
+        password:      tempPassword,
+        email_confirm: true,
+        user_metadata: { name, plan: plan.slug },
+      });
+
+      if (createError) throw createError;
+
+      newUserId = createData.user.id;
+    } catch (createErr: unknown) {
+      // Race condition: another webhook request created the user between our
+      // findUserIdByEmail check and this createUser call. Try to find them again.
+      console.error(
+        `[webhook/asaas] createUser falhou — possível race condition. Tentando fallback por e-mail…`,
+        createErr instanceof Error ? createErr.message : String(createErr),
+      );
+
       const fallbackId = await findUserIdByEmail(adminClient, email);
-      if (fallbackId) {
-        await grantPlan(adminClient, fallbackId, plan);
-        console.log(`[ WEBHOOK: NOVO OPERADOR CRIADO E SINCRONIZADO: ${email} ]`);
-
-        try {
-          const res = await sendAccessGrantedEmail({ to: email, name, planName: plan.name, loginUrl, tempPassword });
-          console.log('[ EMAIL ENVIADO ] ID do Resend:', res.data?.id || 'SEM ID');
-        } catch (err) {
-          console.error('[ EMAIL ERRO ] Falha ao enviar email (fallback):', err instanceof Error ? err.message : String(err));
-        }
-
-        return NextResponse.json({ received: true, action: 'plan_updated_fallback', plan: plan.slug, userId: fallbackId });
+      if (!fallbackId) {
+        console.error('[webhook/asaas] Falha ao criar ou encontrar usuário:', createErr);
+        throw createErr;
       }
-      throw createError;
+
+      newUserId = fallbackId;
+      isRaceConditionFallback = true;
+      console.log(`[webhook/asaas] Fallback bem-sucedido — usuário encontrado via e-mail. userId=${newUserId}`);
     }
 
-    const newUserId = createData.user.id;
     await grantPlan(adminClient, newUserId, plan);
     console.log(`[ WEBHOOK: NOVO OPERADOR CRIADO E SINCRONIZADO: ${email} ]`);
 
     try {
-      const res = await sendAccessGrantedEmail({ to: email, name, planName: plan.name, loginUrl, tempPassword });
+      // Do not send tempPassword in the fallback case: we did not set it on this user.
+      const emailPayload = isRaceConditionFallback
+        ? { to: email, name, planName: plan.name, loginUrl }
+        : { to: email, name, planName: plan.name, loginUrl, tempPassword };
+      const res = await sendAccessGrantedEmail(emailPayload);
       console.log('[ EMAIL ENVIADO ] ID do Resend:', res.data?.id || 'SEM ID');
     } catch (err) {
       console.error('[ EMAIL ERRO ] Falha ao enviar email (novo usuário):', err instanceof Error ? err.message : String(err));
     }
 
-    return NextResponse.json({ received: true, action: 'user_created', plan: plan.slug, userId: newUserId });
+    const action = isRaceConditionFallback ? 'plan_updated_fallback' : 'user_created';
+    return NextResponse.json({ received: true, action, plan: plan.slug, userId: newUserId });
 
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e);

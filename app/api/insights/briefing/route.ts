@@ -32,17 +32,19 @@ type BriefingInput = {
 
 function buildPrompt(d: BriefingInput): string {
   const areaLines = Object.entries(d.areaScores)
-    .map(([area, score]) => `  - ${area}: ${score}%`)
+    .map(([area, score]) => `  - ${sanitizeForPrompt(area)}: ${score}%`)
     .join('\n') || '  (sem dados de área ainda)';
 
+  const safeTargetCourse = sanitizeForPrompt(d.targetCourse ?? 'não informado');
+
   const lapseInfo = d.topLapseInfo
-    ? `Deck com mais lapsos: "${d.topLapseInfo.deckTitle}" (${d.topLapseInfo.area}, ${d.topLapseInfo.lapses} lapso(s))`
+    ? `Deck com mais lapsos: "${sanitizeForPrompt(d.topLapseInfo.deckTitle)}" (${sanitizeForPrompt(d.topLapseInfo.area)}, ${d.topLapseInfo.lapses} lapso(s))`
     : 'Nenhum lapse crítico identificado';
 
   return `Você é o FlashTutor, Diretor Pedagógico com 20 anos de experiência em aprovação no ENEM. Seu estilo é o de um briefing de inteligência militar: zero clichês, zero motivação vazia, 100% estratégia cirúrgica baseada em dados.
 
 Dados do aluno:
-- Curso-alvo: ${d.targetCourse ?? 'não informado'}
+- Curso-alvo: ${safeTargetCourse}
 - Edital dominado (cards maduros): ${d.maturePct}%
 - Cards em atraso hoje: ${d.totalDue}
 - Sequência de estudos: ${d.streak} dia(s)
