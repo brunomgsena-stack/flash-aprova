@@ -655,7 +655,7 @@ function BurnoutBadge({ type }: { type: 'burnout' | 'nocturnal' }) {
 
 export type DashboardPeriod = '7d' | '30d' | '90d';
 
-type ViewState = 'escola' | 'turma' | 'aluno';
+type ViewState = 'escola' | 'turma' | 'aluno' | 'comparar';
 
 export default function DirectorDashboard({
   data = MOCK_DATA,
@@ -680,6 +680,7 @@ export default function DirectorDashboard({
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [reportModal,     setReportModal    ] = useState(false);
   const [toast,           setToast          ] = useState(false);
+  const [compareClass,    setCompareClass   ] = useState<ClassRoom | null>(null);
 
   const goToClass = useCallback((cls: ClassRoom) => {
     setSelectedClass(cls);
@@ -693,8 +694,9 @@ export default function DirectorDashboard({
   }, []);
 
   const goBack = useCallback(() => {
-    if (view === 'aluno') { setView('turma'); setSelectedStudent(null); }
-    else                  { setView('escola'); setSelectedClass(null); setSelectedStudent(null); }
+    if (view === 'aluno')    { setView('turma');  setSelectedStudent(null); }
+    else if (view === 'comparar') { setView('escola'); setCompareClass(null); setSelectedClass(null); }
+    else                     { setView('escola'); setSelectedClass(null);  setSelectedStudent(null); }
   }, [view]);
 
   function handleGenerateReport() {
@@ -957,6 +959,23 @@ export default function DirectorDashboard({
                                 <span className="font-bold tabular-nums" style={{ color: isHigh ? '#00FF73' : '#f59e0b' }}>
                                   {cls.retention_avg}%
                                 </span>
+                              {selectedClass && selectedClass.id !== cls.id && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setCompareClass(cls);
+                                    setView('comparar');
+                                  }}
+                                  className="text-[10px] px-2 py-0.5 rounded-full transition-colors"
+                                  style={{
+                                    background: 'rgba(99,102,241,0.1)',
+                                    border: '1px solid rgba(99,102,241,0.3)',
+                                    color: '#818cf8',
+                                  }}
+                                >
+                                  Comparar
+                                </button>
+                              )}
                                 <ChevronRight className="w-3.5 h-3.5 text-white/20 group-hover:text-white/50 transition-colors" />
                               </div>
                             </div>
@@ -1291,6 +1310,117 @@ export default function DirectorDashboard({
                   </div>
                 </div>
               </motion.div>
+            </motion.div>
+          )}
+
+          {/* ══ VIEW: COMPARAR ══════════════════════════════════════════════════ */}
+          {view === 'comparar' && selectedClass && compareClass && (
+            <motion.div
+              key="comparar"
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-6"
+            >
+              <motion.p
+                {...fadeUp(0.05)}
+                className="text-xs text-white/35 text-center"
+              >
+                Comparando turmas • Clique na seta para voltar
+              </motion.p>
+
+              {/* Metrics comparison row */}
+              <div className="grid grid-cols-2 gap-4">
+                {[selectedClass, compareClass].map((cls, idx) => (
+                  <motion.div
+                    key={cls.id}
+                    {...fadeUp(0.05 + idx * 0.08)}
+                    style={CARD}
+                    className="relative overflow-hidden p-5"
+                  >
+                    <div
+                      className="absolute inset-x-0 top-0 h-px pointer-events-none"
+                      style={{
+                        background: idx === 0
+                          ? `linear-gradient(90deg, transparent, rgba(${primaryRgb},0.4), transparent)`
+                          : 'linear-gradient(90deg, transparent, rgba(99,102,241,0.4), transparent)',
+                      }}
+                    />
+                    <p className="text-xs text-white/40 uppercase tracking-widest mb-1">{cls.name}</p>
+                    <div className="flex items-baseline gap-2 mb-3">
+                      <span
+                        className="text-3xl font-black"
+                        style={{ color: cls.retention_avg >= 75 ? '#00FF73' : '#f59e0b' }}
+                      >
+                        {cls.retention_avg}%
+                      </span>
+                      <span className="text-xs text-white/30">retenção média</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-center">
+                      <div className="rounded-lg p-2" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                        <p className="text-lg font-black text-white">{cls.student_count}</p>
+                        <p className="text-[10px] text-white/30">alunos</p>
+                      </div>
+                      <div className="rounded-lg p-2" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                        <p className="text-lg font-black" style={{ color: '#ef4444' }}>
+                          {cls.students.filter(s => s.retention < 50).length}
+                        </p>
+                        <p className="text-[10px] text-white/30">em risco</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* Radar comparison — side by side */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                {[selectedClass, compareClass].map((cls, idx) => (
+                  <motion.div
+                    key={cls.id}
+                    {...fadeUp(0.18 + idx * 0.08)}
+                    style={CARD}
+                    className="relative overflow-hidden p-6"
+                  >
+                    <div
+                      className="absolute inset-0 pointer-events-none"
+                      style={{
+                        background: idx === 0
+                          ? `radial-gradient(ellipse at top left, rgba(${primaryRgb},0.08) 0%, transparent 65%)`
+                          : 'radial-gradient(ellipse at top left, rgba(99,102,241,0.08) 0%, transparent 65%)',
+                      }}
+                    />
+                    <div className="relative z-10">
+                      <div className="flex items-center gap-2 mb-1">
+                        <BookOpen
+                          className="w-4 h-4"
+                          style={{ color: idx === 0 ? school.primary_color : '#818cf8' }}
+                        />
+                        <p className="text-sm font-semibold text-white">{cls.name}</p>
+                      </div>
+                      <p className="text-xs text-white/40 mb-4 pl-6">Desempenho por área ENEM</p>
+                      <div style={{ height: 200 }}>
+                        <ResponsiveContainer width="100%" height="100%">
+                          <RadarChart data={cls.radar} margin={{ top: 10, right: 20, bottom: 10, left: 20 }}>
+                            <PolarGrid stroke="rgba(255,255,255,0.07)" />
+                            <PolarAngleAxis
+                              dataKey="area"
+                              tick={{ fill: 'rgba(255,255,255,0.55)', fontSize: 10, fontWeight: 600 }}
+                            />
+                            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                            <Tooltip content={RadarTooltip as any} />
+                            <Radar
+                              dataKey="value"
+                              stroke={idx === 0 ? school.primary_color : '#818cf8'}
+                              fill={idx === 0 ? school.primary_color : '#818cf8'}
+                              fillOpacity={0.15}
+                              strokeWidth={2}
+                            />
+                          </RadarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
