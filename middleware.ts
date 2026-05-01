@@ -36,7 +36,7 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // ── Auth guards ─────────────────────────────────────────────────────────────
-  const isProtected = ['/dashboard', '/admin', '/study', '/welcome'].some((p) =>
+  const isProtected = ['/dashboard', '/admin', '/study', '/welcome', '/director'].some((p) =>
     pathname.startsWith(p),
   );
   const isSetup = pathname.startsWith('/setup');
@@ -56,14 +56,15 @@ export async function middleware(request: NextRequest) {
     let onboardingDone = false;
     let firstSessionDone = false;
     let profileChecked = false;
+    let profile: { onboarding_completed: boolean | null; first_session_completed: boolean | null; role: string | null } | null = null;
 
     if (isProtected || isSetup || pathname === '/') {
       // maybeSingle() evita erro 406 quando a row ainda não existe (novo usuário
       // cujo trigger de criação de perfil ainda não disparou). Com .single(),
       // profile viria null + erro, fazendo onboardingDone = false incorretamente.
-      const { data: profile, error: profileErr } = await supabase
+      const { data: profileData, error: profileErr } = await supabase
         .from('profiles')
-        .select('onboarding_completed, first_session_completed', { count: 'exact' })
+        .select('onboarding_completed, first_session_completed, role', { count: 'exact' })
         .eq('id', user.id)
         .maybeSingle();
 
@@ -71,6 +72,7 @@ export async function middleware(request: NextRequest) {
         console.error('[Middleware] Erro ao ler profile:', profileErr.message, '| code:', profileErr.code);
       }
 
+      profile = profileData;
       onboardingDone = profile?.onboarding_completed === true;
       firstSessionDone = profile?.first_session_completed === true;
       profileChecked = true;
@@ -98,6 +100,11 @@ export async function middleware(request: NextRequest) {
       if (!hasTourParam) {
         return NextResponse.redirect(new URL('/welcome', request.url));
       }
+    }
+
+    // Director role guard
+    if (pathname.startsWith('/director') && profile?.role !== 'director') {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
     }
 
     // Home: redireciona de acordo com status de onboarding
