@@ -192,6 +192,15 @@ export default function UserMenu() {
               <span className="text-base">🏠</span>
               <span>Dashboard</span>
             </Link>
+
+            <button
+              onClick={() => { toggle(); setOpen(false); }}
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-black/5 transition-colors text-left"
+              style={{ color: 'var(--fa-text-2)' }}
+            >
+              <span className="text-base">{isLight ? '🌙' : '☀️'}</span>
+              <span>{isLight ? 'Modo Escuro' : 'Modo Claro'}</span>
+            </button>
           </div>
 
           <div className="h-px mx-4" style={{ background: 'var(--fa-border-dim)' }} />
