@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import type { DomainLevel } from '@/lib/domain';
+import { useTheme } from '@/components/ThemeProvider';
 
 const MONO = 'var(--font-jetbrains), "JetBrains Mono", monospace';
 
@@ -23,15 +24,21 @@ function integrityColor(pct: number): string {
 
 export default function SubjectCard({ id, title, icon, color, domain, onLockedClick }: Props) {
   const [hovered, setHovered] = useState(false);
+  const { theme } = useTheme();
+  const isLight   = theme === 'light';
 
   const cardStyle = {
-    background: 'rgba(6,6,18,0.72)',
-    backdropFilter: 'blur(36px) saturate(180%)',
-    WebkitBackdropFilter: 'blur(36px) saturate(180%)',
-    border: `1px solid ${hovered ? `${color}cc` : `${color}44`}`,
+    background:           isLight ? '#FFFFFF' : 'rgba(6,6,18,0.72)',
+    backdropFilter:       isLight ? 'none' : 'blur(36px) saturate(180%)',
+    WebkitBackdropFilter: isLight ? 'none' : 'blur(36px) saturate(180%)',
+    border: `1px solid ${hovered ? `${color}cc` : isLight ? `${color}30` : `${color}44`}`,
     boxShadow: hovered
-      ? `0 0 28px 4px ${color}44, 0 0 72px 8px ${color}18, inset 0 1px 0 rgba(255,255,255,0.10), inset 0 0 24px rgba(255,255,255,0.02)`
-      : `0 0 0 1px rgba(255,255,255,0.03), inset 0 1px 0 rgba(255,255,255,0.04)`,
+      ? isLight
+        ? `0 4px 24px ${color}28, 0 1px 4px rgba(0,0,0,0.08)`
+        : `0 0 28px 4px ${color}44, 0 0 72px 8px ${color}18, inset 0 1px 0 rgba(255,255,255,0.10), inset 0 0 24px rgba(255,255,255,0.02)`
+      : isLight
+        ? '0 1px 3px rgba(15,23,42,0.08), 0 4px 16px rgba(15,23,42,0.06)'
+        : `0 0 0 1px rgba(255,255,255,0.03), inset 0 1px 0 rgba(255,255,255,0.04)`,
   };
 
   const cardClasses = 'group relative block rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02]';
@@ -71,12 +78,12 @@ export default function SubjectCard({ id, title, icon, color, domain, onLockedCl
       {/* Title */}
       <h2
         className="text-xl font-bold mb-1 relative z-10"
-        style={id === 'redacao-flash' ? {
+        style={id === 'redacao-flash' && !isLight ? {
           background: 'linear-gradient(135deg, #06b6d4 0%, #818cf8 50%, #a855f7 100%)',
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
           backgroundClip: 'text',
-        } : { color: 'white' }}
+        } : { color: 'var(--fa-text)' }}
       >
         {title}
       </h2>
@@ -89,7 +96,7 @@ export default function SubjectCard({ id, title, icon, color, domain, onLockedCl
           return (
             <>
               <div className="flex items-center justify-between mb-1.5">
-                <span style={{ fontFamily: MONO, fontSize: '8px', color: 'rgba(255,255,255,0.30)', letterSpacing: '0.10em' }}>
+                <span style={{ fontFamily: MONO, fontSize: '8px', color: 'var(--fa-text-3)', letterSpacing: '0.10em' }}>
                   INTEGRIDADE DE MEMÓRIA
                 </span>
                 <span style={{ fontFamily: MONO, fontSize: '10px', fontWeight: 700, color: barClr }}>
@@ -97,7 +104,7 @@ export default function SubjectCard({ id, title, icon, color, domain, onLockedCl
                 </span>
               </div>
               {/* Bar track */}
-              <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+              <div className="h-1.5 rounded-full overflow-hidden" style={{ background: isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.06)' }}>
                 <div
                   className="h-full rounded-full transition-all duration-700"
                   style={{
@@ -114,7 +121,7 @@ export default function SubjectCard({ id, title, icon, color, domain, onLockedCl
             </>
           );
         })() : (
-          <p style={{ fontFamily: MONO, fontSize: '8px', color: 'rgba(255,255,255,0.22)', letterSpacing: '0.06em' }}>
+          <p style={{ fontFamily: MONO, fontSize: '8px', color: 'var(--fa-text-3)', letterSpacing: '0.06em' }}>
             SEM DADOS · INICIAR PROTOCOLO
           </p>
         )}
