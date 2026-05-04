@@ -176,5 +176,28 @@ export default async function DemoPage({ params, searchParams }: Props) {
     },
   };
 
-  return <DirectorDashboard data={data} />;
+  const alunoLink = `/demo/${slug}/aluno?token=${token}`;
+
+  return (
+    <div>
+      {/* Banner de navegação entre os dois painéis */}
+      <div
+        className="flex items-center justify-center gap-3 py-3 px-4"
+        style={{ background: `${school.primary_color}12`, borderBottom: `1px solid ${school.primary_color}30` }}
+      >
+        <span className="text-xs font-semibold" style={{ color: `${school.primary_color}CC` }}>
+          Você está vendo o painel do diretor
+        </span>
+        <span style={{ color: `${school.primary_color}40` }}>·</span>
+        <a
+          href={alunoLink}
+          className="text-xs font-bold underline underline-offset-2"
+          style={{ color: school.primary_color }}
+        >
+          Ver como o aluno vê →
+        </a>
+      </div>
+      <DirectorDashboard data={data} />
+    </div>
+  );
 }
