@@ -100,7 +100,7 @@ export default async function SubjectPage({ params }: Props) {
       <div className="max-w-3xl mx-auto">
 
         {/* ── Breadcrumbs — hidden on mobile ────────────────────────── */}
-        <nav className="hidden sm:flex items-center gap-1.5 text-xs text-slate-500 mb-8 flex-wrap">
+        <nav className="hidden sm:flex items-center gap-1.5 text-xs text-[var(--fa-text-3)] mb-8 flex-wrap">
           <Link href="/dashboard" className="hover:text-[var(--fa-text)] transition-colors">
             Dashboard
           </Link>
