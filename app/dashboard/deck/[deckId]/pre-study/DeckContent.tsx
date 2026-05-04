@@ -29,23 +29,23 @@ type ChatMessage = {
 // ─── Markdown renderers ───────────────────────────────────────────────────────
 
 const md: Components = {
-  h1: ({ children }) => <h1 className="text-white text-lg font-bold mt-4 mb-2 first:mt-0">{children}</h1>,
-  h2: ({ children }) => <h2 className="text-white text-base font-bold mt-4 mb-2 first:mt-0">{children}</h2>,
-  h3: ({ children }) => <h3 className="text-white text-sm font-semibold mt-3 mb-1 first:mt-0">{children}</h3>,
-  p:  ({ children }) => <p  className="text-slate-300 text-sm leading-relaxed mb-3 last:mb-0">{children}</p>,
-  strong: ({ children }) => <strong className="text-white font-semibold">{children}</strong>,
-  em:     ({ children }) => <em className="text-slate-400 italic">{children}</em>,
-  ul: ({ children }) => <ul className="list-disc list-inside space-y-1 mb-3 text-slate-300 text-sm">{children}</ul>,
-  ol: ({ children }) => <ol className="list-decimal list-inside space-y-1 mb-3 text-slate-300 text-sm">{children}</ol>,
-  li: ({ children }) => <li className="text-slate-300 text-sm leading-relaxed">{children}</li>,
+  h1: ({ children }) => <h1 className="text-[var(--fa-text)] text-lg font-bold mt-4 mb-2 first:mt-0">{children}</h1>,
+  h2: ({ children }) => <h2 className="text-[var(--fa-text)] text-base font-bold mt-4 mb-2 first:mt-0">{children}</h2>,
+  h3: ({ children }) => <h3 className="text-[var(--fa-text)] text-sm font-semibold mt-3 mb-1 first:mt-0">{children}</h3>,
+  p:  ({ children }) => <p  className="text-[var(--fa-text-2)] text-sm leading-relaxed mb-3 last:mb-0">{children}</p>,
+  strong: ({ children }) => <strong className="text-[var(--fa-text)] font-semibold">{children}</strong>,
+  em:     ({ children }) => <em className="text-[var(--fa-text-2)] italic">{children}</em>,
+  ul: ({ children }) => <ul className="list-disc list-inside space-y-1 mb-3 text-[var(--fa-text-2)] text-sm">{children}</ul>,
+  ol: ({ children }) => <ol className="list-decimal list-inside space-y-1 mb-3 text-[var(--fa-text-2)] text-sm">{children}</ol>,
+  li: ({ children }) => <li className="text-[var(--fa-text-2)] text-sm leading-relaxed">{children}</li>,
   blockquote: ({ children }) => (
-    <blockquote className="border-l-2 border-violet-500 pl-4 my-3 text-slate-400 text-sm italic">{children}</blockquote>
+    <blockquote className="border-l-2 border-violet-500 pl-4 my-3 text-[var(--fa-text-2)] text-sm italic">{children}</blockquote>
   ),
   code: ({ children, className }) =>
     className?.includes('language-')
-      ? <pre className="bg-black/30 border border-white/10 rounded-lg p-3 overflow-x-auto my-3 text-xs text-slate-300"><code>{children}</code></pre>
+      ? <pre className="bg-[var(--fa-card)] border border-[var(--fa-border)] rounded-lg p-3 overflow-x-auto my-3 text-xs text-[var(--fa-text-2)]"><code>{children}</code></pre>
       : <code className="text-violet-300 bg-violet-950/40 px-1 py-0.5 rounded text-xs">{children}</code>,
-  hr: () => <hr className="border-white/10 my-4" />,
+  hr: () => <hr className="border-[var(--fa-border)] my-4" />,
 };
 
 // ─── Tutor card ───────────────────────────────────────────────────────────────
