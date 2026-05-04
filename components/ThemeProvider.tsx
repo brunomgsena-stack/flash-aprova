@@ -10,16 +10,20 @@ const ThemeCtx = createContext<{ theme: Theme; toggle: () => void }>({
 });
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme] = useState<Theme>('dark');
+  const [theme, setTheme] = useState<Theme>('dark');
 
-  // Force dark mode — light mode temporarily disabled
   useEffect(() => {
-    localStorage.removeItem('fa-theme');
-    applyTheme('dark');
+    const saved = (localStorage.getItem('fa-theme') as Theme) ?? 'dark';
+    setTheme(saved);
+    applyTheme(saved);
   }, []);
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  function toggle() {}
+  function toggle() {
+    const next: Theme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(next);
+    localStorage.setItem('fa-theme', next);
+    applyTheme(next);
+  }
 
   return <ThemeCtx.Provider value={{ theme, toggle }}>{children}</ThemeCtx.Provider>;
 }
