@@ -114,7 +114,7 @@ function ActivePlanStrip({ info }: { info: PlanInfo }) {
           ⚡
         </div>
         <div>
-          <span className="text-white font-bold text-sm">Protocolo Neural</span>
+          <span className="text-[var(--fa-text)] font-bold text-sm">Protocolo Neural</span>
           <span
             className="ml-2 text-xs px-1.5 py-0.5 rounded-full font-semibold"
             style={{ background: 'linear-gradient(135deg,#7C3AED,#06b6d4)', color: '#fff' }}
@@ -127,7 +127,7 @@ function ActivePlanStrip({ info }: { info: PlanInfo }) {
       <div className="text-right shrink-0">
         <p className="text-xs font-semibold" style={{ color: '#06b6d4' }}>{renewalText}</p>
         {info.expiresAt && (
-          <p className="text-slate-600 text-xs mt-0.5">
+          <p className="text-[var(--fa-text-3)] text-xs mt-0.5">
             {info.expiresAt.toLocaleDateString('pt-BR')}
           </p>
         )}
