@@ -101,13 +101,13 @@ export default async function SubjectPage({ params }: Props) {
 
         {/* ── Breadcrumbs — hidden on mobile ────────────────────────── */}
         <nav className="hidden sm:flex items-center gap-1.5 text-xs text-slate-500 mb-8 flex-wrap">
-          <Link href="/dashboard" className="hover:text-white transition-colors">
+          <Link href="/dashboard" className="hover:text-[var(--fa-text)] transition-colors">
             Dashboard
           </Link>
           <span className="opacity-40">›</span>
           <span style={{ color: catInfo.color }}>{catInfo.short}</span>
           <span className="opacity-40">›</span>
-          <span className="text-white font-medium">{subject.title}</span>
+          <span className="text-[var(--fa-text)] font-medium">{subject.title}</span>
         </nav>
 
         {/* ── Header ────────────────────────────────────────────────── */}
@@ -126,10 +126,10 @@ export default async function SubjectPage({ params }: Props) {
             <p className="text-xs font-semibold tracking-widest uppercase mb-0.5" style={{ color }}>
               {subject.category ?? 'Matéria'}
             </p>
-            <h1 className="text-2xl sm:text-3xl font-bold text-white leading-tight">
+            <h1 className="text-2xl sm:text-3xl font-bold text-[var(--fa-text)] leading-tight">
               {subject.title}
             </h1>
-            <p className="text-slate-400 text-sm mt-0.5">
+            <p className="text-[var(--fa-text-2)] text-sm mt-0.5">
               {hasModules
                 ? `${modules.length} módulo${modules.length !== 1 ? 's' : ''} · ${totalDecks} deck${totalDecks !== 1 ? 's' : ''}`
                 : totalDecks === 0
@@ -152,7 +152,7 @@ export default async function SubjectPage({ params }: Props) {
         {/* ── Module accordion ──────────────────────────────────────── */}
         {hasModules && (
           <>
-            <p className="text-xs font-semibold tracking-widest uppercase text-slate-500 mb-4">
+            <p className="text-xs font-semibold tracking-widest uppercase text-[var(--fa-text-3)] mb-4">
               Módulos
             </p>
             <ModuleAccordion
@@ -168,7 +168,7 @@ export default async function SubjectPage({ params }: Props) {
         {/* ── Orphan decks (fallback) ────────────────────────────────── */}
         {orphanDecks.length > 0 && (
           <>
-            <p className="text-xs font-semibold tracking-widest uppercase text-slate-500 mb-4 mt-8">
+            <p className="text-xs font-semibold tracking-widest uppercase text-[var(--fa-text-3)] mb-4 mt-8">
               {hasModules ? 'Outros Decks' : 'Introdução'}
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -188,7 +188,7 @@ export default async function SubjectPage({ params }: Props) {
         {!hasModules && orphanDecks.length === 0 && (
           <div className="flex flex-col items-center justify-center py-24 gap-4">
             <span className="text-5xl">🃏</span>
-            <p className="text-slate-500 text-lg">Nenhum deck por aqui ainda.</p>
+            <p className="text-[var(--fa-text-3)] text-lg">Nenhum deck por aqui ainda.</p>
           </div>
         )}
 
