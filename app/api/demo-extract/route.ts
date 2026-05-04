@@ -40,11 +40,19 @@ export async function POST(request: NextRequest) {
 
   const origin = new URL(url).origin;
 
-  // Extrai nome: <title>
+  function toAbsoluteUrl(raw: string): string {
+    if (raw.startsWith('http')) return raw;
+    if (raw.startsWith('//')) return `https:${raw}`;
+    return `${origin}${raw.startsWith('/') ? '' : '/'}${raw}`;
+  }
+
+  // Extrai nome: <title> (pega só o primeiro segmento antes de separador)
   const nameMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
   const name = nameMatch ? nameMatch[1].trim().split(/[\|\-–—]/)[0].trim() : undefined;
 
-  // Extrai logo com prioridade: apple-touch-icon > og:image > shortcut icon > icon
+  // Extrai logo com prioridade:
+  // 1. apple-touch-icon  2. og:image  3. <img> com "logo" no src/alt/class
+  // 4. icon/shortcut icon  5. /favicon.ico
   let logo_url: string | undefined;
 
   const appleTouchMatch =
@@ -55,22 +63,53 @@ export async function POST(request: NextRequest) {
     html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i) ??
     html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i);
 
-  const iconMatch =
-    html.match(/<link[^>]+rel=["'](?:shortcut icon|icon)["'][^>]+href=["']([^"']+)["']/i) ??
-    html.match(/<link[^>]+href=["']([^"']+)["'][^>]+rel=["'](?:shortcut icon|icon)["']/i);
+  // <img> que contenha "logo" no src, alt ou class
+  const imgLogoMatch = html.match(
+    /<img[^>]+(?:src|alt|class)=["'][^"']*logo[^"']*["'][^>]*src=["']([^"']+)["']/i
+  ) ?? html.match(
+    /<img[^>]+src=["']([^"']+logo[^"']+)["']/i
+  );
 
-  const rawLogoUrl = appleTouchMatch?.[1] ?? ogImageMatch?.[1] ?? iconMatch?.[1];
+  const iconMatch =
+    html.match(/<link[^>]+rel=["'](?:shortcut icon|icon)["'][^>]+href=["']([^"'?#]+)["']/i) ??
+    html.match(/<link[^>]+href=["']([^"'?#]+)["'][^>]+rel=["'](?:shortcut icon|icon)["']/i);
+
+  const rawLogoUrl =
+    appleTouchMatch?.[1] ??
+    ogImageMatch?.[1] ??
+    imgLogoMatch?.[1] ??
+    iconMatch?.[1];
+
   if (rawLogoUrl) {
-    logo_url = rawLogoUrl.startsWith('http')
-      ? rawLogoUrl
-      : `${origin}${rawLogoUrl.startsWith('/') ? '' : '/'}${rawLogoUrl}`;
+    logo_url = toAbsoluteUrl(rawLogoUrl);
+  } else {
+    // Fallback: tenta /favicon.ico (quase todo site tem)
+    logo_url = `${origin}/favicon.ico`;
   }
 
-  // Extrai cor: <meta name="theme-color" content="#...">
-  const colorMatch =
+  // Extrai cor primária — várias estratégias em ordem de confiança:
+  // 1. <meta name="theme-color">
+  // 2. CSS: background-color em <header> ou <nav>
+  // 3. CSS: primeira cor hex em variável --primary ou --brand
+  let primary_color: string | undefined;
+
+  const themeColorMatch =
     html.match(/<meta[^>]+name=["']theme-color["'][^>]+content=["'](#[0-9a-fA-F]{3,6})["']/i) ??
     html.match(/<meta[^>]+content=["'](#[0-9a-fA-F]{3,6})["'][^>]+name=["']theme-color["']/i);
-  const primary_color = colorMatch?.[1];
+
+  if (themeColorMatch) {
+    primary_color = themeColorMatch[1];
+  } else {
+    // Procura cor em variáveis CSS comuns
+    const cssVarMatch = html.match(/--(?:primary|brand|main|accent|color-primary)[^:]*:\s*(#[0-9a-fA-F]{3,6})/i);
+    if (cssVarMatch) {
+      primary_color = cssVarMatch[1];
+    } else {
+      // Procura background-color dentro de <header> ou <nav>
+      const headerBlock = html.match(/<(?:header|nav)[^>]*style=["'][^"']*background(?:-color)?:\s*(#[0-9a-fA-F]{3,6})/i);
+      if (headerBlock) primary_color = headerBlock[1];
+    }
+  }
 
   return NextResponse.json({
     name: name ?? undefined,
