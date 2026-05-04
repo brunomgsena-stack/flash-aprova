@@ -13,16 +13,19 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>('dark');
 
   useEffect(() => {
-    const saved = (localStorage.getItem('fa-theme') as Theme) ?? 'dark';
+    const raw = localStorage.getItem('fa-theme');
+    const saved: Theme = raw === 'light' ? 'light' : 'dark';
     setTheme(saved);
     applyTheme(saved);
   }, []);
 
   function toggle() {
-    const next: Theme = theme === 'dark' ? 'light' : 'dark';
-    setTheme(next);
-    localStorage.setItem('fa-theme', next);
-    applyTheme(next);
+    setTheme(prev => {
+      const next: Theme = prev === 'dark' ? 'light' : 'dark';
+      localStorage.setItem('fa-theme', next);
+      applyTheme(next);
+      return next;
+    });
   }
 
   return <ThemeCtx.Provider value={{ theme, toggle }}>{children}</ThemeCtx.Provider>;
