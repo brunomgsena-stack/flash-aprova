@@ -146,37 +146,6 @@ html.light .fa-text   { color: #0A0A0A !important; }
 html.light .fa-text-2 { color: #334155 !important; }
 html.light .fa-text-3 { color: #64748B !important; }
 
-/* Global Tailwind text overrides for light mode — broad coverage */
-html.light .text-white                           { color: #0A0A0A !important; }
-html.light .text-slate-100, html.light .text-slate-200,
-html.light .text-slate-300, html.light .text-slate-400 { color: #475569 !important; }
-html.light .text-slate-500                       { color: #334155 !important; }
-html.light .text-slate-600, html.light .text-slate-700 { color: #1E293B !important; }
-
-/* Gray variants */
-html.light .text-gray-100, html.light .text-gray-200,
-html.light .text-gray-300, html.light .text-gray-400 { color: #4B5563 !important; }
-html.light .text-gray-500                        { color: #374151 !important; }
-html.light .text-gray-600, html.light .text-gray-700 { color: #1F2937 !important; }
-
-/* Zinc / Neutral variants */
-html.light .text-zinc-300, html.light .text-zinc-400,
-html.light .text-neutral-300, html.light .text-neutral-400 { color: #52525B !important; }
-
-/* Functional semantic — keep accent colors as-is (green, blue, amber, red) */
-/* but remove any transparent text that was designed for dark backgrounds */
-html.light .text-transparent { color: #0A0A0A !important; }
-
-/* Deck count / caption labels */
-html.light .text-slate-500 { color: #334155 !important; }
-html.light .text-slate-600 { color: #1E293B !important; }
-
-/* Card backgrounds stuck in dark glassmorphism */
-html.light [class*="backdrop-blur"] {
-  background: #FFFFFF !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
 
 /* ── Light mode: block gradient text (illegible on white) ─────────────────── */
 html.light .bg-clip-text,
