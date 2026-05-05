@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { DomainLevel } from '@/lib/domain';
 import SubjectCard from './SubjectCard';
+import { useTheme } from '@/components/ThemeProvider';
 
 const MONO        = 'var(--font-jetbrains), "JetBrains Mono", monospace';
 const MATH_COLOR  = '#6366f1';   // indigo — sóbrio
@@ -23,18 +24,20 @@ type Props = {
 
 export default function MathPrecisionModule({ subjects, domainMap }: Props) {
   const [hovered, setHovered] = useState(false);
+  const { theme } = useTheme();
+  const isLight   = theme === 'light';
 
   return (
     <section
       className="relative w-full rounded-2xl p-6 transition-all duration-300"
       style={{
-        background:      'rgba(6,6,18,0.72)',
-        backdropFilter:  'blur(36px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(36px) saturate(180%)',
+        background:      isLight ? '#FFFFFF' : 'rgba(6,6,18,0.72)',
+        backdropFilter:  isLight ? 'none' : 'blur(36px) saturate(180%)',
+        WebkitBackdropFilter: isLight ? 'none' : 'blur(36px) saturate(180%)',
         border:          `1px solid ${hovered ? MATH_COLOR + '66' : MATH_COLOR + '28'}`,
         boxShadow:       hovered
-          ? `0 0 32px 4px ${MATH_COLOR}1a, inset 0 1px 0 rgba(255,255,255,0.05)`
-          : `0 0 0 1px rgba(255,255,255,0.02)`,
+          ? `0 0 32px 4px ${MATH_COLOR}1a${isLight ? '' : ', inset 0 1px 0 rgba(255,255,255,0.05)'}`
+          : isLight ? 'none' : `0 0 0 1px rgba(255,255,255,0.02)`,
       }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
