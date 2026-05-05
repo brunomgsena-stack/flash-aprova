@@ -15,8 +15,8 @@ import {
 const MINT  = '#34D399';
 const OCEAN = '#0EA5E9';
 const AMBER = '#F59E0B';
-const DIM   = 'rgba(255,255,255,0.38)';
-const CARD  = { background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' };
+const DIM   = 'var(--fa-text-2)';
+const CARD  = { background: 'var(--fa-card)', border: '1px solid var(--fa-border)' };
 
 // ─── Mapeamento de pesos SISU por curso ───────────────────────────────────────
 const COURSE_WEIGHTS: Record<string, Record<string, number>> = {
@@ -115,8 +115,7 @@ type ReportData = {
 
 function SectionCard({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={`rounded-2xl p-5 ${className}`}
-      style={{ ...CARD, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}>
+    <div className={`rounded-2xl p-5 ${className}`} style={CARD}>
       {children}
     </div>
   );
