@@ -625,7 +625,7 @@ function FlashTurboModal({ suggestions, onClose }: {
 
         {/* Header */}
         <div className="relative flex items-center justify-between px-6 pt-6 pb-4"
-          style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+          style={{ borderBottom: '1px solid var(--fa-border)' }}>
           <div>
             <div className="flex items-center gap-2 mb-0.5">
               <span className="text-lg font-black text-[var(--fa-text)]">🚀 Sessão Focada</span>
@@ -640,13 +640,13 @@ function FlashTurboModal({ suggestions, onClose }: {
           </div>
           <button onClick={onClose}
             className="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:text-white transition-colors"
-            style={{ background: 'rgba(255,255,255,0.06)' }}>✕</button>
+            style={{ background: 'var(--fa-card)' }}>✕</button>
         </div>
 
         {/* Suggestions list */}
         <div className="relative flex flex-col gap-2 p-6 overflow-y-auto" style={{ maxHeight: '50vh' }}>
           {suggestions.length === 0 ? (
-            <p className="text-center text-sm py-4" style={{ color: 'rgba(255,255,255,0.35)' }}>
+            <p className="text-center text-sm py-4" style={{ color: 'var(--fa-text-3)' }}>
               Nenhum card pendente no momento. Volte quando tiver revisões acumuladas.
             </p>
           ) : suggestions.map((s) => {
@@ -665,8 +665,8 @@ function FlashTurboModal({ suggestions, onClose }: {
                 {/* Custom checkbox */}
                 <div className="w-5 h-5 rounded-md shrink-0 flex items-center justify-center transition-all"
                   style={{
-                    background: isChecked ? OCEAN : 'rgba(255,255,255,0.08)',
-                    border:     `1.5px solid ${isChecked ? OCEAN : 'rgba(255,255,255,0.20)'}`,
+                    background: isChecked ? OCEAN : 'var(--fa-card)',
+                    border:     `1.5px solid ${isChecked ? OCEAN : 'var(--fa-border)'}`,
                   }}>
                   {isChecked && <span style={{ fontSize: '11px', color: 'white', fontWeight: 800 }}>✓</span>}
                 </div>
