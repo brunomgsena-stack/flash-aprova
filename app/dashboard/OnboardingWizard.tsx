@@ -45,7 +45,7 @@ function Dots({ step }: { step: number }) {
           style={{
             width:      s === step ? 20 : 8,
             height:     8,
-            background: s === step ? VIOLET : s < step ? `${NEON}80` : 'rgba(255,255,255,0.12)',
+            background: s === step ? VIOLET : s < step ? `${NEON}80` : 'var(--fa-border)',
           }}
         />
       ))}
@@ -62,7 +62,7 @@ function TutorBubble({ msg }: { msg: string }) {
       style={{
         background:   `${VIOLET}12`,
         border:       `1px solid ${VIOLET}35`,
-        color:        'rgba(255,255,255,0.80)',
+        color:        'var(--fa-text-2)',
         borderRadius: '4px 18px 18px 18px',
       }}
     >
@@ -185,8 +185,8 @@ export default function OnboardingWizard() {
                   placeholder="Ex: Medicina, Direito, Engenharia..."
                   className="w-full rounded-xl px-4 py-3 text-sm text-white outline-none transition-all"
                   style={{
-                    background:   'rgba(255,255,255,0.05)',
-                    border:       `1px solid ${course.length > 1 ? VIOLET + '70' : 'rgba(255,255,255,0.12)'}`,
+                    background:   'var(--fa-card)',
+                    border:       `1px solid ${course.length > 1 ? VIOLET + '70' : 'var(--fa-border)'}`,
                     caretColor:   VIOLET,
                   }}
                   onKeyDown={e => e.key === 'Enter' && canProceed1 && setStep(2)}
@@ -202,8 +202,8 @@ export default function OnboardingWizard() {
                   placeholder="Ex: USP, UFPE, UNICAMP..."
                   className="w-full rounded-xl px-4 py-3 text-sm text-white outline-none"
                   style={{
-                    background: 'rgba(255,255,255,0.05)',
-                    border:     `1px solid ${university.length > 1 ? VIOLET + '70' : 'rgba(255,255,255,0.12)'}`,
+                    background: 'var(--fa-card)',
+                    border:     `1px solid ${university.length > 1 ? VIOLET + '70' : 'var(--fa-border)'}`,
                     caretColor: VIOLET,
                   }}
                   onKeyDown={e => e.key === 'Enter' && canProceed1 && setStep(2)}
@@ -223,7 +223,7 @@ export default function OnboardingWizard() {
                   style={
                     goal === g
                       ? { background: `${VIOLET}20`, border: `1px solid ${VIOLET}70`, boxShadow: `0 0 16px ${VIOLET}25` }
-                      : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.10)' }
+                      : { background: 'var(--fa-card)', border: '1px solid var(--fa-border)' }
                   }
                 >
                   <span className="font-bold text-sm text-white">{GOAL_LABELS[g].label}</span>
@@ -252,7 +252,7 @@ export default function OnboardingWizard() {
                     style={
                       selected
                         ? { background: `${VIOLET}20`, border: `1px solid ${VIOLET}70` }
-                        : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.10)' }
+                        : { background: 'var(--fa-card)', border: '1px solid var(--fa-border)' }
                     }
                   >
                     <span className="text-xl">{area.icon}</span>
@@ -273,7 +273,7 @@ export default function OnboardingWizard() {
               {/* Summary */}
               <div
                 className="rounded-2xl px-4 py-4 flex flex-col gap-2"
-                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+                style={{ background: 'var(--fa-card)', border: '1px solid var(--fa-border)' }}
               >
                 <Row label="Curso" value={course || '—'} />
                 <Row label="Universidade" value={university || '—'} />
@@ -293,9 +293,9 @@ export default function OnboardingWizard() {
                 onClick={() => setStep(s => s - 1)}
                 className="px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200"
                 style={{
-                  background: 'rgba(255,255,255,0.05)',
-                  border:     '1px solid rgba(255,255,255,0.10)',
-                  color:      'rgba(255,255,255,0.50)',
+                  background: 'var(--fa-card)',
+                  border:     '1px solid var(--fa-border)',
+                  color:      'var(--fa-text-2)',
                 }}
               >
                 ← Voltar
@@ -322,7 +322,7 @@ export default function OnboardingWizard() {
             <button
               onClick={() => setStep(4)}
               className="w-full mt-3 text-xs text-center transition-opacity hover:opacity-100"
-              style={{ color: 'rgba(255,255,255,0.20)', opacity: 0.7 }}
+              style={{ color: 'var(--fa-text-3)', opacity: 0.7 }}
             >
               Pular configuração
             </button>
