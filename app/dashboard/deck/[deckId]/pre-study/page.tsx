@@ -86,7 +86,7 @@ export default async function DeckPreStudyPage({ params }: Props) {
         {/* ── Back button ─────────────────────────────────────────────── */}
         <Link
           href="/dashboard"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-white transition-colors mb-6 group"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--fa-text-2)] hover:text-[var(--fa-text)] transition-colors mb-6 group"
         >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="group-hover:-translate-x-0.5 transition-transform">
             <path d="M10 3L5 8l5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -95,8 +95,8 @@ export default async function DeckPreStudyPage({ params }: Props) {
         </Link>
 
         {/* ── Breadcrumbs — hidden on mobile ──────────────────────────── */}
-        <nav className="hidden sm:flex items-center gap-1.5 text-xs text-slate-500 mb-8 flex-wrap">
-          <Link href="/dashboard" className="hover:text-white transition-colors shrink-0">
+        <nav className="hidden sm:flex items-center gap-1.5 text-xs text-[var(--fa-text-3)] mb-8 flex-wrap">
+          <Link href="/dashboard" className="hover:text-[var(--fa-text)] transition-colors shrink-0">
             Dashboard
           </Link>
           {subject.category && (
@@ -108,7 +108,7 @@ export default async function DeckPreStudyPage({ params }: Props) {
           <span className="opacity-40 shrink-0">›</span>
           <Link
             href={`/dashboard/subject/${subject.id}`}
-            className="hover:text-white transition-colors"
+            className="hover:text-[var(--fa-text)] transition-colors"
           >
             {subject.title}
           </Link>
@@ -121,7 +121,7 @@ export default async function DeckPreStudyPage({ params }: Props) {
             </>
           )}
           <span className="opacity-40">›</span>
-          <span className="text-white font-medium">{deck.title}</span>
+          <span className="text-[var(--fa-text)] font-medium">{deck.title}</span>
         </nav>
 
         {/* ── Header ──────────────────────────────────────────────────── */}
@@ -140,7 +140,7 @@ export default async function DeckPreStudyPage({ params }: Props) {
             <p className="text-xs font-semibold tracking-widest uppercase mb-0.5" style={{ color }}>
               {subject.title}
             </p>
-            <h1 className="text-xl sm:text-2xl font-bold text-white leading-tight">
+            <h1 className="text-xl sm:text-2xl font-bold text-[var(--fa-text)] leading-tight">
               {deck.title}
             </h1>
           </div>
@@ -168,8 +168,8 @@ export default async function DeckPreStudyPage({ params }: Props) {
           />
 
           <div className="flex-1 text-center sm:text-left">
-            <p className="text-white font-bold text-base">Pronto para revisar?</p>
-            <p className="text-slate-400 text-sm mt-0.5">
+            <p className="text-[var(--fa-text)] font-bold text-base">Pronto para revisar?</p>
+            <p className="text-[var(--fa-text-2)] text-sm mt-0.5">
               Inicie sua sessão de repetição espaçada agora.
             </p>
           </div>

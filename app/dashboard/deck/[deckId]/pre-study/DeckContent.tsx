@@ -6,6 +6,7 @@ import ReactMarkdown, { type Components } from 'react-markdown';
 import { getTutor, getOpeningMessage, type Tutor } from '@/lib/tutor-engine';
 import AiProUpgradeModal from '@/components/AiProUpgradeModal';
 import { supabase } from '@/lib/supabaseClient';
+import { useTheme } from '@/components/ThemeProvider';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -50,7 +51,7 @@ const md: Components = {
 
 // ─── Tutor card ───────────────────────────────────────────────────────────────
 
-function TutorCard({ tutor, plan, subjectTitle, onStartChat, onUpgradeClick }: { tutor: Tutor; plan: 'aceleracao' | 'panteao_elite'; subjectTitle: string | null; onStartChat: () => void; onUpgradeClick: () => void }) {
+function TutorCard({ tutor, plan, subjectTitle, onStartChat, onUpgradeClick, isLight }: { tutor: Tutor; plan: 'aceleracao' | 'panteao_elite'; subjectTitle: string | null; onStartChat: () => void; onUpgradeClick: () => void; isLight: boolean }) {
   const isPro   = plan === 'panteao_elite';
   const VIOLET  = '#a855f7';
 
@@ -59,10 +60,10 @@ function TutorCard({ tutor, plan, subjectTitle, onStartChat, onUpgradeClick }: {
       id="tour-tutor-chat"
       className="relative rounded-2xl p-4 sm:p-5 mb-4 overflow-hidden"
       style={{
-        background:           'rgba(10,5,20,0.88)',
+        background:           isLight ? '#FFFFFF' : 'rgba(10,5,20,0.88)',
         border:               `1px solid rgba(168,85,247,0.35)`,
-        backdropFilter:       'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
+        backdropFilter:       isLight ? 'none' : 'blur(20px)',
+        WebkitBackdropFilter: isLight ? 'none' : 'blur(20px)',
         boxShadow:            `0 0 48px rgba(168,85,247,0.14)`,
       }}
     >
@@ -98,10 +99,10 @@ function TutorCard({ tutor, plan, subjectTitle, onStartChat, onUpgradeClick }: {
 
         {/* Text */}
         <div className="flex-1 min-w-0">
-          <p className="text-white font-black text-sm sm:text-base leading-tight mb-1">
+          <p className="text-[var(--fa-text)] font-black text-sm sm:text-base leading-tight mb-1">
             {tutor.name}: Sua Dúvida Resolvida AGORA.
           </p>
-          <p className="text-slate-400 text-xs leading-relaxed">
+          <p className="text-[var(--fa-text-2)] text-xs leading-relaxed">
             {isPro
               ? `Trava em ${subjectTitle ?? tutor.specialty}? Pergunte agora e desbloqueie o caminho mais rápido.`
               : `Desbloqueie o ${tutor.name} com o Protocolo Neural e tenha um especialista 24h ao seu lado.`}
@@ -151,9 +152,10 @@ type ProgressStats = {
   dueToday:   number;
 };
 
-function DonutChart({ segments, size = 120 }: {
+function DonutChart({ segments, size = 120, isLight }: {
   segments: { value: number; color: string }[];
   size?: number;
+  isLight: boolean;
 }) {
   const r   = 42;
   const cx  = 50;
@@ -161,13 +163,14 @@ function DonutChart({ segments, size = 120 }: {
   const circ = 2 * Math.PI * r;
   const total = segments.reduce((s, seg) => s + seg.value, 0);
   let offset  = 0;
+  const trackColor = isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.06)';
 
   return (
     <svg width={size} height={size} viewBox="0 0 100 100">
       {/* Track */}
-      <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="14" />
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke={trackColor} strokeWidth="14" />
       {total === 0 ? (
-        <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="14" />
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke={trackColor} strokeWidth="14" />
       ) : (
         segments.map((seg, i) => {
           const dash  = (seg.value / total) * circ;
@@ -193,7 +196,7 @@ function DonutChart({ segments, size = 120 }: {
   );
 }
 
-function PerformanceChart({ deckId, color }: { deckId: string; color: string }) {
+function PerformanceChart({ deckId, color, isLight }: { deckId: string; color: string; isLight: boolean }) {
   const [stats, setStats] = useState<ProgressStats | null>(null);
 
   useEffect(() => {
@@ -249,12 +252,14 @@ function PerformanceChart({ deckId, color }: { deckId: string; color: string }) 
     ? Math.round(((stats.easy + stats.good) / stats.reviewed) * 100)
     : 0;
 
+  const dimColor = isLight ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.08)';
+
   const donutSegments = [
     { value: stats.easy,   color: '#22c55e' },
     { value: stats.good,   color: color },
     { value: stats.hard,   color: '#f59e0b' },
     { value: stats.wrong,  color: '#ef4444' },
-    { value: notReviewed,  color: 'rgba(255,255,255,0.08)' },
+    { value: notReviewed,  color: dimColor },
   ];
 
   const legend = [
@@ -262,35 +267,35 @@ function PerformanceChart({ deckId, color }: { deckId: string; color: string }) 
     { label: 'Bom',          count: stats.good,    color: color },
     { label: 'Difícil',      count: stats.hard,    color: '#f59e0b' },
     { label: 'Errei',        count: stats.wrong,   color: '#ef4444' },
-    { label: 'Não revisado', count: notReviewed,   color: 'rgba(255,255,255,0.18)' },
+    { label: 'Não revisado', count: notReviewed,   color: dimColor },
   ];
 
   return (
     <div
       className="rounded-2xl p-5 mb-4"
       style={{
-        background:           'rgba(10,5,20,0.80)',
-        backdropFilter:       'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        border:               '1px solid rgba(255,255,255,0.09)',
-        boxShadow:            '0 2px 12px rgba(0,0,0,0.20)',
+        background:           isLight ? '#FFFFFF' : 'rgba(10,5,20,0.80)',
+        backdropFilter:       isLight ? 'none' : 'blur(20px)',
+        WebkitBackdropFilter: isLight ? 'none' : 'blur(20px)',
+        border:               '1px solid var(--fa-border)',
+        boxShadow:            '0 2px 12px rgba(0,0,0,0.10)',
       }}
     >
       {/* Top shimmer */}
       <div className="h-px mb-4"
         style={{ background: `linear-gradient(90deg, transparent, ${color}55, transparent)` }} />
 
-      <p className="text-xs font-semibold tracking-widest uppercase text-slate-500 mb-4">
+      <p className="text-xs font-semibold tracking-widest uppercase text-[var(--fa-text-3)] mb-4">
         Seu Aproveitamento
       </p>
 
       <div className="flex items-center gap-6">
         {/* Donut + center text */}
         <div className="relative shrink-0">
-          <DonutChart segments={donutSegments} size={110} />
+          <DonutChart segments={donutSegments} size={110} isLight={isLight} />
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-xl font-black text-white leading-none">{accuracy}%</span>
-            <span className="text-[10px] text-slate-500 mt-0.5">acertos</span>
+            <span className="text-xl font-black text-[var(--fa-text)] leading-none">{accuracy}%</span>
+            <span className="text-[10px] text-[var(--fa-text-3)] mt-0.5">acertos</span>
           </div>
         </div>
 
@@ -300,8 +305,8 @@ function PerformanceChart({ deckId, color }: { deckId: string; color: string }) 
           {legend.filter(l => l.count > 0).map(l => (
             <div key={l.label} className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full shrink-0" style={{ background: l.color }} />
-              <span className="text-xs text-slate-400 flex-1">{l.label}</span>
-              <span className="text-xs font-semibold text-white">{l.count}</span>
+              <span className="text-xs text-[var(--fa-text-2)] flex-1">{l.label}</span>
+              <span className="text-xs font-semibold text-[var(--fa-text)]">{l.count}</span>
             </div>
           ))}
         </div>
@@ -310,17 +315,17 @@ function PerformanceChart({ deckId, color }: { deckId: string; color: string }) 
       {/* Stat pills */}
       <div className="flex gap-2 mt-4 flex-wrap">
         {[
-          { label: 'Total',    value: stats.total,    c: 'rgba(255,255,255,0.07)' },
+          { label: 'Total',     value: stats.total,    c: 'var(--fa-card)' },
           { label: 'Revisadas', value: stats.reviewed, c: `${color}18` },
-          { label: 'Para hoje', value: stats.dueToday, c: stats.dueToday > 0 ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.05)' },
+          { label: 'Para hoje', value: stats.dueToday, c: stats.dueToday > 0 ? 'rgba(239,68,68,0.15)' : 'var(--fa-card)' },
         ].map(pill => (
           <div
             key={pill.label}
             className="flex-1 min-w-[70px] rounded-xl px-3 py-2 text-center"
-            style={{ background: pill.c, border: '1px solid rgba(255,255,255,0.07)' }}
+            style={{ background: pill.c, border: '1px solid var(--fa-border)' }}
           >
-            <p className="text-base font-black text-white leading-none">{pill.value}</p>
-            <p className="text-[10px] text-slate-500 mt-0.5">{pill.label}</p>
+            <p className="text-base font-black text-[var(--fa-text)] leading-none">{pill.value}</p>
+            <p className="text-[10px] text-[var(--fa-text-3)] mt-0.5">{pill.label}</p>
           </div>
         ))}
       </div>
@@ -713,6 +718,8 @@ function ChatView({
 export default function DeckContent({ color, plan, subjectTitle, deckTitle, deckId }: Props) {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [view, setView]                         = useState<'knowledge' | 'chat'>('knowledge');
+  const { theme } = useTheme();
+  const isLight   = theme === 'light';
   const tutor = getTutor(subjectTitle);
 
   if (view === 'chat' && tutor) {
@@ -739,11 +746,12 @@ export default function DeckContent({ color, plan, subjectTitle, deckTitle, deck
           subjectTitle={subjectTitle}
           onStartChat={() => setView('chat')}
           onUpgradeClick={() => setShowUpgradeModal(true)}
+          isLight={isLight}
         />
       )}
 
       {/* ── Gráfico de aproveitamento ── */}
-      <PerformanceChart deckId={deckId} color={color} />
+      <PerformanceChart deckId={deckId} color={color} isLight={isLight} />
     </>
   );
 }
