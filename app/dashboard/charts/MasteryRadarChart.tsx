@@ -56,12 +56,12 @@ function CustomTooltip({ active, payload }: { active?: boolean; payload?: { payl
     <div
       className="px-3 py-2 rounded-xl text-sm"
       style={{
-        background: 'rgba(5,11,20,0.96)',
+        background: 'var(--fa-card)',
         border:     `1px solid ${color}45`,
         boxShadow:  `0 0 20px ${color}25`,
       }}
     >
-      <p className="font-semibold mb-0.5 text-white">{d.area}</p>
+      <p className="font-semibold mb-0.5 text-[var(--fa-text)]">{d.area}</p>
       <p style={{ color }}>{label}</p>
     </div>
   );
@@ -99,7 +99,7 @@ function CustomDot(props: {
 function ColoredTick(props: { x?: number; y?: number; payload?: { value: string } }) {
   const { x = 0, y = 0, payload } = props;
   if (!payload) return null;
-  const color = AREA_COLORS[payload.value] ?? 'rgba(255,255,255,0.40)';
+  const color = AREA_COLORS[payload.value] ?? 'var(--fa-text-3)';
 
   function handleClick() {
     const id = `area-${payload!.value.toLowerCase()}`;
@@ -137,13 +137,13 @@ export default function MasteryRadarChart({ data }: { data: RadarPoint[] }) {
       <p className="text-xs font-bold tracking-widest uppercase mb-0.5" style={{ color: NEON, textShadow: `0 0 8px ${NEON}80` }}>
         Radar ENEM
       </p>
-      <p className="text-xs mb-3" style={{ color: 'rgba(255,255,255,0.28)' }}>
+      <p className="text-xs mb-3" style={{ color: 'var(--fa-text-3)' }}>
         Clique numa área para ver as matérias
       </p>
 
       {!hasData ? (
         <div className="flex-1 flex items-center justify-center">
-          <p className="text-slate-600 text-sm text-center">
+          <p className="text-[var(--fa-text-3)] text-sm text-center">
             Estude cards para<br />ver seu radar de domínio
           </p>
         </div>
