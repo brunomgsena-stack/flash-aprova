@@ -424,13 +424,13 @@ function computeMicroKPIs(p: {
                 : p.totalDue > 10  ? { v: 'Leve',   c: OCEAN   }
                 :                    { v: 'Mínimo', c: EMERALD };
 
-  const domColor = avgScore === null ? 'rgba(255,255,255,0.30)'
+  const domColor = avgScore === null ? 'var(--fa-text-3)'
                  : avgScore >= 50    ? EMERALD
                  : avgScore < 30     ? OCEAN
                  : NEON_CYAN;
 
   const memColor = p.maturePct >= 30 ? EMERALD
-                 : p.maturePct === 0 ? 'rgba(255,255,255,0.30)'
+                 : p.maturePct === 0 ? 'var(--fa-text-3)'
                  : NEON_CYAN;
 
   return [
@@ -454,9 +454,9 @@ function SectionLabel({ color, children }: { color: string; children: React.Reac
 function ReportCard({ item, badgeColor }: { item: ReportItem; badgeColor: string }) {
   return (
     <div className="flex items-start gap-3 py-2.5 px-3 rounded-xl"
-      style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+      style={{ background: 'var(--fa-card)', border: '1px solid var(--fa-border)' }}>
       <span className="shrink-0 text-base mt-0.5">{item.emoji}</span>
-      <p className="flex-1 text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.72)' }}>{item.text}</p>
+      <p className="flex-1 text-sm leading-relaxed" style={{ color: 'var(--fa-text-2)' }}>{item.text}</p>
       <span className="shrink-0 text-xs font-bold px-2 py-0.5 rounded-full whitespace-nowrap"
         style={{ background: badgeColor + '22', color: badgeColor, border: `1px solid ${badgeColor}44` }}>
         {item.badge}
@@ -628,13 +628,13 @@ function FlashTurboModal({ suggestions, onClose }: {
           style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
           <div>
             <div className="flex items-center gap-2 mb-0.5">
-              <span className="text-lg font-black text-white">🚀 Sessão Focada</span>
+              <span className="text-lg font-black text-[var(--fa-text)]">🚀 Sessão Focada</span>
               <span className="text-xs font-bold px-2 py-0.5 rounded-full"
                 style={{ background: `${EMERALD}22`, color: EMERALD, border: `1px solid ${EMERALD}44` }}>
                 Protocolo Neural
               </span>
             </div>
-            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
+            <p className="text-xs" style={{ color: 'var(--fa-text-3)' }}>
               Mix de Estudos Sugerido pelo Mentor
             </p>
           </div>
@@ -659,8 +659,8 @@ function FlashTurboModal({ suggestions, onClose }: {
               <button key={s.deckId} onClick={() => toggle(s.deckId)}
                 className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all duration-150"
                 style={{
-                  background: isChecked ? `${OCEAN}12` : 'rgba(255,255,255,0.03)',
-                  border:     `1px solid ${isChecked ? OCEAN + '44' : 'rgba(255,255,255,0.08)'}`,
+                  background: isChecked ? `${OCEAN}12` : 'var(--fa-card)',
+                  border:     `1px solid ${isChecked ? OCEAN + '44' : 'var(--fa-border)'}`,
                 }}>
                 {/* Custom checkbox */}
                 <div className="w-5 h-5 rounded-md shrink-0 flex items-center justify-center transition-all"
@@ -673,14 +673,14 @@ function FlashTurboModal({ suggestions, onClose }: {
 
                 {/* Deck icon */}
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center text-base shrink-0"
-                  style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.09)' }}>
+                  style={{ background: 'var(--fa-card)', border: '1px solid var(--fa-border)' }}>
                   {s.icon}
                 </div>
 
                 {/* Labels */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-white truncate leading-tight">{s.subjectTitle}</p>
-                  <p className="text-xs truncate leading-tight" style={{ color: 'rgba(255,255,255,0.38)' }}>{s.deckTitle}</p>
+                  <p className="text-xs font-semibold text-[var(--fa-text)] truncate leading-tight">{s.subjectTitle}</p>
+                  <p className="text-xs truncate leading-tight" style={{ color: 'var(--fa-text-3)' }}>{s.deckTitle}</p>
                 </div>
 
                 {/* Priority + count */}
@@ -689,7 +689,7 @@ function FlashTurboModal({ suggestions, onClose }: {
                     style={{ background: badgeColor + '18', color: badgeColor, border: `1px solid ${badgeColor}35`, fontSize: '9px' }}>
                     {badgeLabel}
                   </span>
-                  <span className="text-xs font-bold tabular-nums" style={{ color: 'rgba(255,255,255,0.50)' }}>
+                  <span className="text-xs font-bold tabular-nums" style={{ color: 'var(--fa-text-2)' }}>
                     {s.dueCount} cards
                   </span>
                 </div>
@@ -699,7 +699,7 @@ function FlashTurboModal({ suggestions, onClose }: {
         </div>
 
         {/* CTA */}
-        <div className="relative px-6 pb-6 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+        <div className="relative px-6 pb-6 pt-3" style={{ borderTop: '1px solid var(--fa-border)' }}>
           <button onClick={handleStart} disabled={selected.size === 0}
             className="w-full py-3.5 rounded-xl font-black text-white text-sm transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0"
             style={{
@@ -724,7 +724,7 @@ function Skeleton() {
     <div className="max-w-5xl mx-auto mb-10 grid grid-cols-1 md:grid-cols-2 gap-5">
       {[0, 1].map(i => (
         <div key={i} className="rounded-2xl animate-pulse"
-          style={{ height: '340px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }} />
+          style={{ height: '340px', background: 'var(--fa-card)', border: '1px solid var(--fa-border)' }} />
       ))}
     </div>
   );
@@ -908,8 +908,9 @@ export default function PerformanceMetrics() {
         {/* ╚══════════════════════════════════════════════╝ */}
         <div id="tour-foco" className="relative rounded-2xl p-4 flex flex-col gap-3 overflow-hidden"
           style={{
-            background: 'rgba(10,10,14,0.95)',
-            backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+            background: isLight ? '#FFFFFF' : 'rgba(10,10,14,0.95)',
+            backdropFilter: isLight ? 'none' : 'blur(20px)',
+            WebkitBackdropFilter: isLight ? 'none' : 'blur(20px)',
             border: '1px solid rgba(168,85,247,0.30)',
             boxShadow: '0 0 32px rgba(168,85,247,0.12), 0 0 0 0 transparent',
           }}>
@@ -954,18 +955,18 @@ export default function PerformanceMetrics() {
                       disabled={!hasCards}
                       className="rounded-lg px-1.5 py-1.5 text-left transition-all duration-150 hover:brightness-110 active:scale-[0.97] disabled:opacity-40 disabled:cursor-default"
                       style={{
-                        background: hasCards ? `${areaColor}18` : 'rgba(255,255,255,0.03)',
-                        border: `1px solid ${hasCards ? areaColor + '50' : 'rgba(255,255,255,0.07)'}`,
+                        background: hasCards ? `${areaColor}18` : 'var(--fa-card)',
+                        border: `1px solid ${hasCards ? areaColor + '50' : 'var(--fa-border)'}`,
                         boxShadow: hasCards ? `0 0 8px ${areaColor}20` : 'none',
                       }}>
                       <p className="font-bold truncate leading-tight"
-                        style={{ fontSize: '8px', color: hasCards ? areaColor : 'rgba(255,255,255,0.35)' }}>
+                        style={{ fontSize: '8px', color: hasCards ? areaColor : 'var(--fa-text-3)' }}>
                         {area.short}
                       </p>
                       {hasCards ? (
-                        <p className="font-black tabular-nums leading-tight text-white" style={{ fontSize: '12px' }}>{due}</p>
+                        <p className="font-black tabular-nums leading-tight text-[var(--fa-text)]" style={{ fontSize: '12px' }}>{due}</p>
                       ) : (
-                        <p style={{ fontSize: '8px', color: 'rgba(255,255,255,0.28)' }}>✓ em dia</p>
+                        <p style={{ fontSize: '8px', color: 'var(--fa-text-3)' }}>✓ em dia</p>
                       )}
                     </button>
                   );
@@ -978,11 +979,11 @@ export default function PerformanceMetrics() {
               {/* Streak inline */}
               <div className="flex items-center gap-2 mb-2">
                 <span style={{ fontSize: '13px' }}>{metrics.streak >= 7 ? '🔥' : '⚡'}</span>
-                <span className="text-xs font-bold text-white">{metrics.streak}</span>
-                <span className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>dias</span>
+                <span className="text-xs font-bold text-[var(--fa-text)]">{metrics.streak}</span>
+                <span className="text-xs" style={{ color: 'var(--fa-text-3)' }}>dias</span>
                 <div className="w-px h-3 mx-0.5" style={{ background: 'rgba(255,255,255,0.08)' }} />
                 <span style={{ fontSize: '12px' }}>🏆</span>
-                <span className="text-xs font-bold text-white">{metrics.maxStreak}</span>
+                <span className="text-xs font-bold text-[var(--fa-text)]">{metrics.maxStreak}</span>
                 <span className="text-xs" style={{ color: isLight ? 'rgba(0,0,0,0.35)' : 'rgba(255,255,255,0.22)' }}>recorde</span>
               </div>
               <Heatmap dailyCounts={metrics.dailyCounts} isLight={isLight} />
@@ -1019,20 +1020,20 @@ export default function PerformanceMetrics() {
               <Image src={flashTutor.avatar_url} alt="FlashTutor" width={32} height={32} unoptimized />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-white leading-tight">FlashTutor</p>
-              <p className="leading-tight truncate" style={{ color: isPro ? OCEAN : 'rgba(255,255,255,0.28)', letterSpacing: '0.04em', fontSize: '10px' }}>
+              <p className="text-xs font-bold text-[var(--fa-text)] leading-tight">FlashTutor</p>
+              <p className="leading-tight truncate" style={{ color: isPro ? OCEAN : 'var(--fa-text-3)', letterSpacing: '0.04em', fontSize: '10px' }}>
                 {isPro ? '✨ Mentor IA' : '🔒 PROTOCOLO NEURAL'}
               </p>
             </div>
             <div className="flex items-center gap-1 shrink-0">
               <div className="w-1.5 h-1.5 rounded-full"
-                style={{ background: isPro ? NEON_GREEN : 'rgba(255,255,255,0.15)', boxShadow: isPro ? `0 0 5px ${NEON_GREEN}` : 'none' }} />
-              <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.25)' }}>{isPro ? 'online' : 'bloqueado'}</span>
+                style={{ background: isPro ? NEON_GREEN : 'var(--fa-border)', boxShadow: isPro ? `0 0 5px ${NEON_GREEN}` : 'none' }} />
+              <span style={{ fontSize: '10px', color: 'var(--fa-text-3)' }}>{isPro ? 'online' : 'bloqueado'}</span>
             </div>
           </div>
 
           {/* ── Live Briefing + Micro-KPIs ── */}
-          <div className="relative z-10 flex gap-3 pt-2.5" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+          <div className="relative z-10 flex gap-3 pt-2.5" style={{ borderTop: '1px solid var(--fa-border)' }}>
 
             {/* Briefing text — left */}
             <div className="flex-1 flex flex-col gap-1.5">
@@ -1043,7 +1044,7 @@ export default function PerformanceMetrics() {
               {briefing.lines.map((line, i) => (
                 <p key={i} style={{
                   fontSize: '11px', lineHeight: '1.55',
-                  color: i === 0 ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.48)',
+                  color: i === 0 ? 'var(--fa-text)' : 'var(--fa-text-2)',
                   fontWeight: i === 0 ? 600 : 400,
                   fontStyle: i > 0 ? 'italic' : 'normal',
                 }}>
@@ -1057,8 +1058,8 @@ export default function PerformanceMetrics() {
             <div className="shrink-0 flex flex-col gap-2" style={{ minWidth: '90px' }}>
               {microKPIs.map((kpi, i) => (
                 <div key={i} className="rounded-lg px-2 py-1.5 flex flex-col"
-                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                  <span style={{ fontSize: '8px', color: 'rgba(255,255,255,0.30)', letterSpacing: '0.06em',
+                  style={{ background: 'var(--fa-card)', border: '1px solid var(--fa-border)' }}>
+                  <span style={{ fontSize: '8px', color: 'var(--fa-text-3)', letterSpacing: '0.06em',
                     textTransform: 'uppercase', fontFamily: 'ui-monospace,monospace' }}>
                     {kpi.label}
                   </span>
@@ -1074,10 +1075,10 @@ export default function PerformanceMetrics() {
 
           {/* ── Deep Dive footer ── */}
           <div className="relative z-10 flex items-center justify-end pt-1"
-            style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+            style={{ borderTop: '1px solid var(--fa-border)' }}>
             <button onClick={() => setShowReport(true)}
               className="flex items-center gap-1.5 transition-all duration-150 hover:brightness-125 active:scale-95"
-              style={{ fontSize: '10px', color: isPro ? OCEAN : 'rgba(255,255,255,0.30)',
+              style={{ fontSize: '10px', color: isPro ? OCEAN : 'var(--fa-text-3)',
                 fontFamily: 'ui-monospace,monospace', fontWeight: 700, letterSpacing: '0.04em' }}>
               {isPro ? '📊' : '🔒'} Relatório Profundo (Deep Dive)
               <span style={{ fontSize: '9px', opacity: 0.6 }}>→</span>
