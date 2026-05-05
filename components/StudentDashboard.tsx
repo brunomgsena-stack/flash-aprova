@@ -18,6 +18,7 @@ import { useDashboardData }                    from '@/lib/DashboardContext';
 import UserMenu                                from '@/app/dashboard/UserMenu';
 import StreakBadge                             from '@/app/dashboard/StreakBadge';
 import AiProUpgradeModal                       from '@/components/AiProUpgradeModal';
+import { useTheme }                            from '@/components/ThemeProvider';
 
 // ─── Paleta "Copiloto Amigável" ───────────────────────────────────────────────
 const EMERALD = '#10B981';  // progresso, conquista, força
@@ -151,11 +152,11 @@ function HeaderSkeleton() {
   return (
     <div className="mb-8 animate-pulse">
       <div className="flex items-center justify-between mb-3">
-        <div className="h-3 w-20 rounded" style={{ background: 'rgba(255,255,255,0.07)' }} />
-        <div className="h-8 w-28 rounded-xl" style={{ background: 'rgba(255,255,255,0.05)' }} />
+        <div className="h-3 w-20 rounded" style={{ background: 'var(--fa-border)' }} />
+        <div className="h-8 w-28 rounded-xl" style={{ background: 'var(--fa-border)' }} />
       </div>
-      <div className="h-9 w-44 rounded mb-2" style={{ background: 'rgba(255,255,255,0.08)' }} />
-      <div className="h-4 w-72 rounded" style={{ background: 'rgba(255,255,255,0.05)' }} />
+      <div className="h-9 w-44 rounded mb-2" style={{ background: 'var(--fa-border)' }} />
+      <div className="h-4 w-72 rounded" style={{ background: 'var(--fa-border)' }} />
     </div>
   );
 }
@@ -164,31 +165,31 @@ function CopilotSkeleton() {
   return (
     <div
       className="mb-10 rounded-2xl animate-pulse"
-      style={{ height: 280, background: 'rgba(255,255,255,0.03)', border: `1px solid ${EMERALD}10` }}
+      style={{ height: 280, background: 'var(--fa-card)', border: `1px solid ${EMERALD}10` }}
     />
   );
 }
 
 // ─── Daily Progress Bar ───────────────────────────────────────────────────────
 
-function DailyProgressBar({ done, goal }: { done: number; goal: number }) {
+function DailyProgressBar({ done, goal, isLight }: { done: number; goal: number; isLight: boolean }) {
   const pct  = goal > 0 ? Math.min(100, Math.round((done / goal) * 100)) : 0;
   const done_ = Math.min(done, goal);
 
   return (
     <div className="mb-5">
       <div className="flex items-center justify-between mb-1.5">
-        <span style={{ fontFamily: MONO, fontSize: '8px', color: 'rgba(255,255,255,0.40)', letterSpacing: '0.10em' }}>
+        <span style={{ fontFamily: MONO, fontSize: '8px', color: 'var(--fa-text-3)', letterSpacing: '0.10em' }}>
           META DIÁRIA
         </span>
         <span className="font-black tabular-nums" style={{ fontFamily: MONO, fontSize: '11px', color: pct >= 100 ? EMERALD : FOCUS }}>
-          {done_}<span style={{ color: 'rgba(255,255,255,0.30)', fontWeight: 400 }}> / {goal}</span>
+          {done_}<span style={{ color: 'var(--fa-text-3)', fontWeight: 400 }}> / {goal}</span>
           {pct >= 100 && ' 🎉'}
         </span>
       </div>
       <div
         className="h-2 rounded-full overflow-hidden"
-        style={{ background: 'rgba(255,255,255,0.07)' }}
+        style={{ background: isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.07)' }}
       >
         <div
           className="h-full rounded-full transition-all duration-700 fa-progress-bar"
@@ -202,7 +203,7 @@ function DailyProgressBar({ done, goal }: { done: number; goal: number }) {
         />
       </div>
       {pct > 0 && pct < 100 && (
-        <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.30)' }}>
+        <p className="text-xs mt-1" style={{ color: 'var(--fa-text-3)' }}>
           Faltam {goal - done_} cards · ~{minsForCards(goal - done_)} min
         </p>
       )}
@@ -250,13 +251,13 @@ function AreaFocusCard({
       {/* Icon + label */}
       <div className="flex items-center gap-2">
         <span className="text-xl leading-none">{icon}</span>
-        <span className="text-sm font-bold text-white leading-tight truncate">{label}</span>
+        <span className="text-sm font-bold text-[var(--fa-text)] leading-tight truncate">{label}</span>
         {hasCards && isPro && <span className="ml-auto text-xs opacity-40">▶</span>}
       </div>
 
       {/* Stats row */}
       <div className="flex items-center justify-between gap-1">
-        <span className="text-xs" style={{ color: 'rgba(255,255,255,0.40)' }}>
+        <span className="text-xs" style={{ color: 'var(--fa-text-3)' }}>
           {hasCards ? `${cardsDue} cards` : 'Em dia ✓'}
         </span>
         {score > 0 && (
@@ -293,7 +294,7 @@ function StatPill({ value, label, color }: { value: string; label: string; color
       <span className="text-lg font-black tabular-nums leading-none" style={{ color }}>{value}</span>
       <span
         className="text-center leading-tight uppercase"
-        style={{ fontSize: '7px', color: 'rgba(255,255,255,0.28)', whiteSpace: 'pre-line', letterSpacing: '0.08em' }}
+        style={{ fontSize: '7px', color: 'var(--fa-text-3)', whiteSpace: 'pre-line', letterSpacing: '0.08em' }}
       >
         {label}
       </span>
@@ -307,6 +308,8 @@ export default function StudentDashboard({ children }: { children?: ReactNode })
   const router = useRouter();
   const dashState = useDashboardData();
   const [showUpgrade, setUpgrade] = useState(false);
+  const { theme } = useTheme();
+  const isLight   = theme === 'light';
 
   // ── Derive component-specific data from shared context ──────────────────────
   const derived = useMemo(() => {
@@ -468,7 +471,7 @@ export default function StudentDashboard({ children }: { children?: ReactNode })
               <img src={tutor.avatar_url} alt={tutor.name} width={64} height={64} />
             </div>
             <div className="relative z-10">
-              <p className="text-lg font-bold text-white mb-1">{tutor.name} está pronto para te guiar</p>
+              <p className="text-lg font-bold text-[var(--fa-text)] mb-1">{tutor.name} está pronto para te guiar</p>
               <p className="text-sm leading-relaxed" style={{ color: 'var(--fa-text-2)' }}>
                 Não precisa ser longo — <strong>5 minutinhos</strong> já ativam o diagnóstico e o SRS começa a trabalhar por você.
               </p>
@@ -480,7 +483,7 @@ export default function StudentDashboard({ children }: { children?: ReactNode })
             >
               ⚡ Começar Primeira Sessão
             </button>
-            <p className="text-xs relative z-10" style={{ color: 'rgba(255,255,255,0.25)' }}>
+            <p className="text-xs relative z-10" style={{ color: 'var(--fa-text-3)' }}>
               Você escolhe o ritmo. Pode parar quando quiser.
             </p>
           </div>
@@ -551,15 +554,15 @@ export default function StudentDashboard({ children }: { children?: ReactNode })
             <div
               className="flex items-center gap-1.5 rounded-full px-2.5 py-0.5"
               style={{
-                background: isPro ? `${EMERALD}18` : 'rgba(255,255,255,0.04)',
-                border:     `1px solid ${isPro ? EMERALD + '44' : 'rgba(255,255,255,0.08)'}`,
+                background: isPro ? `${EMERALD}18` : 'var(--fa-card)',
+                border:     `1px solid ${isPro ? EMERALD + '44' : 'var(--fa-border)'}`,
               }}
             >
               <span
                 className="w-1.5 h-1.5 rounded-full"
-                style={{ background: isPro ? EMERALD : 'rgba(255,255,255,0.18)', boxShadow: isPro ? `0 0 6px ${EMERALD}` : 'none' }}
+                style={{ background: isPro ? EMERALD : 'var(--fa-border)', boxShadow: isPro ? `0 0 6px ${EMERALD}` : 'none' }}
               />
-              <span className="text-xs font-semibold" style={{ color: isPro ? EMERALD : 'rgba(255,255,255,0.28)' }}>
+              <span className="text-xs font-semibold" style={{ color: isPro ? EMERALD : 'var(--fa-text-3)' }}>
                 {isPro ? '[SISTEMA OPERANDO]' : 'Plano Flash'}
               </span>
             </div>
@@ -567,7 +570,7 @@ export default function StudentDashboard({ children }: { children?: ReactNode })
 
           {/* ── Daily Progress Bar ── */}
           <div className="relative z-10">
-            <DailyProgressBar done={cardsReviewedToday} goal={dailyGoal} />
+            <DailyProgressBar done={cardsReviewedToday} goal={dailyGoal} isLight={isLight} />
           </div>
 
           {/* ── Avatar + mensagem empática ── */}
@@ -604,7 +607,7 @@ export default function StudentDashboard({ children }: { children?: ReactNode })
                   height:       0,
                   borderTop:    '7px solid transparent',
                   borderBottom: '7px solid transparent',
-                  borderRight:  '7px solid rgba(255,255,255,0.04)',
+                  borderRight:  isLight ? '7px solid rgba(0,0,0,0.04)' : '7px solid rgba(255,255,255,0.04)',
                   filter:       `drop-shadow(-1px 0 0 ${EMERALD}20)`,
                 }}
               />
@@ -620,7 +623,7 @@ export default function StudentDashboard({ children }: { children?: ReactNode })
                 {/* Tutor identity */}
                 <div className="flex items-center gap-2 flex-wrap mb-2">
                   <span className="text-sm font-bold" style={{ color: EMERALD }}>{tutor.name}</span>
-                  <span className="text-xs" style={{ color: 'rgba(255,255,255,0.25)' }}>{tutor.title}</span>
+                  <span className="text-xs" style={{ color: 'var(--fa-text-3)' }}>{tutor.title}</span>
                 </div>
 
                 {/* Mensagem empática — sempre positiva, nunca culpa */}
@@ -630,7 +633,7 @@ export default function StudentDashboard({ children }: { children?: ReactNode })
 
                 {/* Upsell suave para plano Flash */}
                 {!isPro && (
-                  <p className="text-xs mt-2 leading-relaxed" style={{ color: 'rgba(255,255,255,0.38)' }}>
+                  <p className="text-xs mt-2 leading-relaxed" style={{ color: 'var(--fa-text-3)' }}>
                     Com <span style={{ color: EMERALD, fontWeight: 700 }}>Protocolo Neural</span> você recebe sessões personalizadas por área e cronograma semanal IA.
                   </p>
                 )}
@@ -711,7 +714,7 @@ export default function StudentDashboard({ children }: { children?: ReactNode })
 
           {/* ════ Seleção de Áreas ENEM ═══════════════════════════════════════ */}
           <div className="relative z-10" id="tour-areas">
-            <p className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: 'rgba(255,255,255,0.30)' }}>
+            <p className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: 'var(--fa-text-3)' }}>
               FRENTES DE ATAQUE:
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
@@ -771,7 +774,7 @@ export default function StudentDashboard({ children }: { children?: ReactNode })
                 style={{
                   background: `${FOCUS}08`,
                   border:     `1px solid ${FOCUS}18`,
-                  color:      'rgba(255,255,255,0.35)',
+                  color:      'var(--fa-text-3)',
                 }}
               >
                 🔒 Cronograma IA
