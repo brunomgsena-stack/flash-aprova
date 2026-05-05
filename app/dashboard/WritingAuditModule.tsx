@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { DomainLevel } from '@/lib/domain';
 import SubjectCard from './SubjectCard';
+import { useTheme } from '@/components/ThemeProvider';
 
 const MONO         = 'var(--font-jetbrains), "JetBrains Mono", monospace';
 const NEON_PURPLE  = '#a855f7';
@@ -25,12 +26,14 @@ type Props = {
 
 export default function WritingAuditModule({ subjects, domainMap, onLockedClickFor }: Props) {
   const [hovered, setHovered] = useState(false);
+  const { theme } = useTheme();
+  const isLight   = theme === 'light';
 
   return (
     <section
       className="relative w-full rounded-2xl overflow-hidden transition-all duration-300"
       style={{
-        background:   'rgba(6,4,20,0.88)',
+        background:   isLight ? '#FFFFFF' : 'rgba(6,4,20,0.88)',
         border:       `1px solid ${hovered ? NEON_PURPLE + 'aa' : DIM_PURPLE + '44'}`,
         boxShadow:    hovered
           ? `0 0 40px 6px ${NEON_PURPLE}1a, inset 0 0 60px rgba(168,85,247,0.04)`
@@ -45,7 +48,7 @@ export default function WritingAuditModule({ subjects, domainMap, onLockedClickF
         style={{
           backgroundImage:
             'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.20) 3px, rgba(0,0,0,0.20) 4px)',
-          opacity: 0.55,
+          opacity: isLight ? 0 : 0.55,
         }}
       />
 
@@ -109,7 +112,7 @@ export default function WritingAuditModule({ subjects, domainMap, onLockedClickF
         <div
           className="rounded-xl p-4 flex flex-col mb-6"
           style={{
-            background: 'rgba(0,0,0,0.40)',
+            background: isLight ? 'var(--fa-card)' : 'rgba(0,0,0,0.40)',
             border:     '1px solid rgba(168,85,247,0.12)',
             fontFamily: MONO,
           }}
@@ -121,15 +124,15 @@ export default function WritingAuditModule({ subjects, domainMap, onLockedClickF
           <div
             className="flex-1 rounded-lg p-3"
             style={{
-              background: 'rgba(6,4,20,0.65)',
+              background: isLight ? 'rgba(168,85,247,0.04)' : 'rgba(6,4,20,0.65)',
               border:     '1px solid rgba(168,85,247,0.20)',
             }}
           >
-            <p style={{ fontSize: '11px', color: '#e2e8f0', lineHeight: 1.7 }}>
+            <p style={{ fontSize: '11px', color: 'var(--fa-text)', lineHeight: 1.7 }}>
               <span style={{ color: 'rgba(168,85,247,0.65)' }}>NORMA_IA_LOG:</span>{' '}
-              <span style={{ color: '#f1f5f9' }}>"Reforce a proposta de intervenção no D3."</span>
+              <span style={{ color: 'var(--fa-text)' }}>"Reforce a proposta de intervenção no D3."</span>
             </p>
-            <p style={{ fontSize: '9px', color: 'rgba(255,255,255,0.22)', marginTop: '10px', lineHeight: 1.5 }}>
+            <p style={{ fontSize: '9px', color: 'var(--fa-text-3)', marginTop: '10px', lineHeight: 1.5 }}>
               › C5 abaixo do limiar crítico (38%)<br />
               › Treino focado recomendado: Agentes Intervenção
             </p>
@@ -140,7 +143,7 @@ export default function WritingAuditModule({ subjects, domainMap, onLockedClickF
               className="w-1.5 h-1.5 rounded-full animate-pulse"
               style={{ background: NEON_PURPLE, boxShadow: `0 0 6px ${NEON_PURPLE}` }}
             />
-            <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.28)', letterSpacing: '0.08em' }}>
+            <span style={{ fontSize: '9px', color: 'var(--fa-text-3)', letterSpacing: '0.08em' }}>
               NORMA_IA v2.4 · OPERANDO
             </span>
           </div>
