@@ -13,7 +13,7 @@ const EMERALD = '#10B981';
 const OCEAN   = '#0EA5E9';
 const AMBER   = '#F59E0B';
 const VIOLET  = '#8B5CF6';
-const DIM     = 'rgba(255,255,255,0.35)';
+const DIM     = 'var(--fa-text-2)';
 
 const AREA_COLORS: Record<string, string> = {
   Natureza:   EMERALD,
@@ -255,7 +255,7 @@ function AiPlanBanner({
             style={
               selectedWeek === i
                 ? { background: `${VIOLET}30`, border: `1px solid ${VIOLET}70`, color: '#fff' }
-                : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.10)', color: DIM }
+                : { background: 'var(--fa-card)', border: '1px solid var(--fa-border)', color: DIM }
             }
           >
             Semana {s.numero}
@@ -290,12 +290,12 @@ function AiPlanBanner({
                 </span>
               </div>
               {mod.topicos.slice(0, 2).map((t, j) => (
-                <p key={j} style={{ fontSize: '10px', color: 'rgba(255,255,255,0.50)', lineHeight: 1.4 }}>
+                <p key={j} style={{ fontSize: '10px', color: 'var(--fa-text-2)', lineHeight: 1.4 }}>
                   · {t}
                 </p>
               ))}
               {mod.topicos.length > 2 && (
-                <p style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)' }}>
+                <p style={{ fontSize: '9px', color: 'var(--fa-text-3)' }}>
                   +{mod.topicos.length - 2} tópicos
                 </p>
               )}
@@ -307,10 +307,10 @@ function AiPlanBanner({
       {/* Tutor message — feedback personalizado tem prioridade sobre dica_tutor genérica */}
       <div
         className="rounded-xl px-4 py-2.5 flex items-start gap-2"
-        style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+        style={{ background: 'var(--fa-card)', border: '1px solid var(--fa-border)' }}
       >
         <span>💬</span>
-        <p className="text-xs leading-snug" style={{ color: 'rgba(255,255,255,0.65)' }}>
+        <p className="text-xs leading-snug" style={{ color: 'var(--fa-text-2)' }}>
           <span className="font-semibold" style={{ color: EMERALD }}>FlashTutor: </span>
           {plan.feedback_tutor || plan.dica_tutor || `Bora moer esses cards hoje, ${firstName}?`}
         </p>
@@ -338,7 +338,7 @@ function PontosCriticos({ pontos, curso }: { pontos: string[]; curso: string | n
             <span
               key={i}
               className="text-xs px-2 py-0.5 rounded-full"
-              style={{ background: `${AMBER}15`, color: 'rgba(255,255,255,0.70)', border: `1px solid ${AMBER}30` }}
+              style={{ background: `${AMBER}15`, color: 'var(--fa-text-2)', border: `1px solid ${AMBER}30` }}
             >
               {p}
             </span>
@@ -415,9 +415,9 @@ function BlockCard({ block, onStart, doneToday }: { block: WeekBlock; onStart: (
 function EmptyDay() {
   return (
     <div className="rounded-xl p-2.5 text-center"
-      style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
-      <p className="text-xs" style={{ color: 'rgba(255,255,255,0.20)' }}>Dia livre</p>
-      <p style={{ fontSize: '9px', color: 'rgba(255,255,255,0.12)', marginTop: '2px' }}>descanso é parte do método</p>
+      style={{ background: 'var(--fa-card)', border: '1px solid var(--fa-border)' }}>
+      <p className="text-xs" style={{ color: 'var(--fa-text-3)' }}>Dia livre</p>
+      <p style={{ fontSize: '9px', color: 'var(--fa-text-3)', marginTop: '2px' }}>descanso é parte do método</p>
     </div>
   );
 }
@@ -442,7 +442,7 @@ function DaySelector({ value, onChange }: { value: number[]; onChange: (days: nu
               style={
                 active
                   ? { background: `${EMERALD}22`, border: `1px solid ${EMERALD}55`, color: 'white' }
-                  : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: DIM }
+                  : { background: 'var(--fa-card)', border: '1px solid var(--fa-border)', color: DIM }
               }
             >
               {day}
@@ -476,7 +476,7 @@ function AttackTimeSelector({ value, onChange }: { value: number; onChange: (h: 
             style={
               value === opt.value
                 ? { background: `${OCEAN}22`, border: `1px solid ${OCEAN}55`, color: 'white' }
-                : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: DIM }
+                : { background: 'var(--fa-card)', border: '1px solid var(--fa-border)', color: DIM }
             }
           >
             {opt.label}
@@ -492,13 +492,13 @@ function AttackTimeSelector({ value, onChange }: { value: number; onChange: (h: 
 function Skeleton() {
   return (
     <div className="animate-pulse">
-      <div className="h-8 w-64 rounded mb-6" style={{ background: 'rgba(255,255,255,0.07)' }} />
+      <div className="h-8 w-64 rounded mb-6" style={{ background: 'var(--fa-card)' }} />
       <div className="grid grid-cols-7 gap-2">
         {Array.from({ length: 7 }).map((_, i) => (
           <div key={i} className="flex flex-col gap-2">
-            <div className="h-4 rounded" style={{ background: 'rgba(255,255,255,0.05)' }} />
+            <div className="h-4 rounded" style={{ background: 'var(--fa-card)' }} />
             {Array.from({ length: 3 }).map((_, j) => (
-              <div key={j} className="h-20 rounded-xl" style={{ background: 'rgba(255,255,255,0.04)' }} />
+              <div key={j} className="h-20 rounded-xl" style={{ background: 'var(--fa-card)' }} />
             ))}
           </div>
         ))}
@@ -754,7 +754,7 @@ export default function WeeklySchedule() {
           </div>
           <Link href="/dashboard"
             className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition-all hover:brightness-125 shrink-0"
-            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', color: DIM }}>
+            style={{ background: 'var(--fa-card)', border: '1px solid var(--fa-border)', color: DIM }}>
             ← Dashboard
           </Link>
         </div>
@@ -802,9 +802,9 @@ export default function WeeklySchedule() {
 
             {/* ── Controls row ── */}
             <div className="flex flex-col gap-3 mb-5 rounded-2xl px-4 py-3"
-              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+              style={{ background: 'var(--fa-card)', border: '1px solid var(--fa-border)' }}>
               <DaySelector value={studyDays} onChange={handleStudyDaysChange} />
-              <div className="w-full h-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
+              <div className="w-full h-px" style={{ background: 'var(--fa-border)' }} />
               <AttackTimeSelector value={hours} onChange={setHours} />
               <div className="flex items-center gap-4 text-xs flex-wrap" style={{ color: DIM }}>
                 <span>
@@ -865,10 +865,10 @@ export default function WeeklySchedule() {
                 {DAYS_SHORT.map((day, i) => !studyDays.includes(i) ? null : (
                   <div key={day} className="rounded-xl px-2 py-1.5 text-center"
                     style={{
-                      background: i === todayIdx ? `${OCEAN}18` : 'rgba(255,255,255,0.04)',
-                      border:     `1px solid ${i === todayIdx ? OCEAN + '40' : 'rgba(255,255,255,0.07)'}`,
+                      background: i === todayIdx ? `${OCEAN}18` : 'var(--fa-card)',
+                      border:     `1px solid ${i === todayIdx ? OCEAN + '40' : 'var(--fa-border)'}`,
                     }}>
-                    <p className="text-xs font-bold" style={{ color: i === todayIdx ? OCEAN : 'rgba(255,255,255,0.55)' }}>
+                    <p className="text-xs font-bold" style={{ color: i === todayIdx ? OCEAN : 'var(--fa-text-2)' }}>
                       {day}
                     </p>
                     {i === todayIdx && (
@@ -898,7 +898,7 @@ export default function WeeklySchedule() {
             </div>
 
             {/* ── Footer ── */}
-            <p className="text-xs text-center mt-4" style={{ color: 'rgba(255,255,255,0.22)' }}>
+            <p className="text-xs text-center mt-4" style={{ color: 'var(--fa-text-3)' }}>
               <Link href="/dashboard/settings" className="underline hover:text-white transition-colors">
                 Atualizar Perfil de Estudos
               </Link>
