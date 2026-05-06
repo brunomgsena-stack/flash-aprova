@@ -346,6 +346,8 @@ function ChatView({
 }) {
   const VIOLET = '#7C3AED';
   const CYAN   = '#06b6d4';
+  const { theme } = useTheme();
+  const isLight   = theme === 'light';
 
   const opening = getOpeningMessage(tutor, deckTitle);
   const [messages, setMessages]           = useState<ChatMessage[]>([
@@ -436,22 +438,26 @@ function ChatView({
     { label: 'Resumo em 3 engrenagens. ⚙️', text: 'Me dê um resumo desse tema em exatamente 3 engrenagens (pontos-chave).' },
   ];
 
+  const barBg    = isLight ? 'var(--fa-bg)' : 'rgba(5,3,15,0.95)';
+  const bubbleBg = 'var(--fa-card)';
+
   return (
-    <div className="flex flex-col h-screen max-h-screen overflow-hidden -mx-4 sm:-mx-8 -my-12">
+    <div className="flex flex-col h-screen max-h-screen overflow-hidden -mx-4 sm:-mx-8 -my-12"
+      style={{ background: 'var(--fa-bg)' }}>
 
       {/* ── Header ── */}
       <div
         className="shrink-0 flex items-center gap-4 px-4 sm:px-8 py-4"
         style={{
-          background:   'rgba(5,3,15,0.95)',
-          borderBottom: '1px solid rgba(255,255,255,0.07)',
-          backdropFilter: 'blur(20px)',
+          background:   barBg,
+          borderBottom: '1px solid var(--fa-border)',
+          backdropFilter: isLight ? 'none' : 'blur(20px)',
         }}
       >
         {/* Back button */}
         <button
           onClick={onBack}
-          className="shrink-0 flex items-center justify-center w-8 h-8 rounded-xl text-slate-400 hover:text-white hover:bg-white/08 transition-colors group"
+          className="shrink-0 flex items-center justify-center w-8 h-8 rounded-xl text-[var(--fa-text-2)] hover:text-[var(--fa-text)] transition-colors group"
           aria-label="Voltar"
         >
           <svg width="18" height="18" viewBox="0 0 16 16" fill="none" className="group-hover:-translate-x-0.5 transition-transform">
@@ -459,7 +465,7 @@ function ChatView({
           </svg>
         </button>
 
-        <div className="w-px h-6 bg-white/10 shrink-0" />
+        <div className="w-px h-6 shrink-0" style={{ background: 'var(--fa-border)' }} />
 
         {/* Tutor info */}
         <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -482,13 +488,13 @@ function ChatView({
             </div>
             {/* Online dot */}
             <div
-              className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-[#05030f]"
-              style={{ background: '#22c55e', boxShadow: '0 0 6px #22c55e80' }}
+              className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2"
+              style={{ background: '#22c55e', boxShadow: '0 0 6px #22c55e80', borderColor: 'var(--fa-bg)' }}
             />
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <p className="text-white font-bold text-sm">{tutor.name}</p>
+              <p className="text-[var(--fa-text)] font-bold text-sm">{tutor.name}</p>
               <span
                 className="hidden sm:inline text-xs font-bold px-2 py-0.5 rounded-full"
                 style={{
@@ -511,13 +517,13 @@ function ChatView({
       {/* ── Deck context pill ── */}
       <div
         className="shrink-0 flex items-center gap-2 px-4 sm:px-8 py-2.5"
-        style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.04)' }}
+        style={{ background: 'var(--fa-card)', borderBottom: '1px solid var(--fa-border)' }}
       >
         <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
           <rect x="2" y="3" width="12" height="10" rx="2" stroke={color} strokeWidth="1.5"/>
           <path d="M5 7h6M5 10h4" stroke={color} strokeWidth="1.5" strokeLinecap="round"/>
         </svg>
-        <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
+        <p className="text-xs text-[var(--fa-text-3)]">
           Consultoria sobre: <span className="font-semibold" style={{ color: `${color}cc` }}>{deckTitle}</span>
         </p>
       </div>
@@ -542,9 +548,9 @@ function ChatView({
               style={
                 msg.role === 'tutor'
                   ? {
-                      background:   'rgba(255,255,255,0.05)',
-                      border:       '1px solid rgba(255,255,255,0.09)',
-                      color:        'rgba(255,255,255,0.90)',
+                      background:   bubbleBg,
+                      border:       '1px solid var(--fa-border)',
+                      color:        'var(--fa-text)',
                       borderRadius: '4px 18px 18px 18px',
                     }
                   : {
@@ -558,15 +564,13 @@ function ChatView({
               {msg.role === 'tutor' ? (
                 <ReactMarkdown
                   components={{
-                    // Block-level — must stay as block so \n\n creates visible gaps
-                    p:  ({ children }) => <p className="mb-3 last:mb-0 leading-relaxed">{children}</p>,
-                    h3: ({ children }) => <h3 className="font-black text-white text-sm mb-3 mt-1 first:mt-0">{children}</h3>,
-                    h2: ({ children }) => <h2 className="font-black text-white text-sm mb-3 mt-1 first:mt-0">{children}</h2>,
-                    ul: ({ children }) => <ul className="list-none space-y-2 mb-3">{children}</ul>,
-                    li: ({ children }) => <li className="leading-relaxed">{children}</li>,
-                    // Inline
-                    strong: ({ children }) => <strong className="font-bold text-white">{children}</strong>,
-                    em:     ({ children }) => <em className="italic text-slate-300">{children}</em>,
+                    p:      ({ children }) => <p className="mb-3 last:mb-0 leading-relaxed">{children}</p>,
+                    h3:     ({ children }) => <h3 className="font-black text-[var(--fa-text)] text-sm mb-3 mt-1 first:mt-0">{children}</h3>,
+                    h2:     ({ children }) => <h2 className="font-black text-[var(--fa-text)] text-sm mb-3 mt-1 first:mt-0">{children}</h2>,
+                    ul:     ({ children }) => <ul className="list-none space-y-2 mb-3">{children}</ul>,
+                    li:     ({ children }) => <li className="leading-relaxed">{children}</li>,
+                    strong: ({ children }) => <strong className="font-bold text-[var(--fa-text)]">{children}</strong>,
+                    em:     ({ children }) => <em className="italic text-[var(--fa-text-2)]">{children}</em>,
                   }}
                 >
                   {msg.text}
@@ -587,10 +591,10 @@ function ChatView({
                 className="w-full h-full object-cover" unoptimized />
             </div>
             <div
-              className="flex items-center gap-2 px-4 py-3 rounded-2xl"
+              className="flex items-center gap-2 px-4 py-3"
               style={{
-                background:   'rgba(255,255,255,0.05)',
-                border:       '1px solid rgba(255,255,255,0.09)',
+                background:   bubbleBg,
+                border:       '1px solid var(--fa-border)',
                 borderRadius: '4px 18px 18px 18px',
               }}
             >
@@ -619,35 +623,30 @@ function ChatView({
       <div
         className="shrink-0 px-4 sm:px-8 py-4"
         style={{
-          background:   'rgba(5,3,15,0.95)',
-          borderTop:    '1px solid rgba(255,255,255,0.07)',
-          backdropFilter: 'blur(20px)',
+          background:     barBg,
+          borderTop:      '1px solid var(--fa-border)',
+          backdropFilter: isLight ? 'none' : 'blur(20px)',
         }}
       >
         {/* Suggestion chips */}
-        <div className="flex gap-2 mb-3 overflow-x-auto pb-1 scrollbar-hide" style={{ scrollbarWidth: 'none' }}>
+        <div className="flex gap-2 mb-3 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
           {SUGGESTIONS.map(s => (
             <button
               key={s.label}
               onClick={() => handleSendText(s.text)}
               disabled={typing}
-              className="shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-150 hover:-translate-y-px disabled:opacity-30 whitespace-nowrap"
+              className="shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-150 hover:-translate-y-px disabled:opacity-30 whitespace-nowrap text-[var(--fa-text-2)]"
               style={{
-                background:           'rgba(255,255,255,0.06)',
-                border:               '1px solid rgba(255,255,255,0.12)',
-                backdropFilter:       'blur(12px)',
-                WebkitBackdropFilter: 'blur(12px)',
-                color:                'rgba(255,255,255,0.70)',
+                background: 'var(--fa-card)',
+                border:     '1px solid var(--fa-border)',
               }}
               onMouseEnter={e => {
                 (e.currentTarget as HTMLButtonElement).style.background = 'rgba(124,58,237,0.18)';
                 (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(124,58,237,0.45)';
-                (e.currentTarget as HTMLButtonElement).style.color = '#fff';
               }}
               onMouseLeave={e => {
-                (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.06)';
-                (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(255,255,255,0.12)';
-                (e.currentTarget as HTMLButtonElement).style.color = 'rgba(255,255,255,0.70)';
+                (e.currentTarget as HTMLButtonElement).style.background = 'var(--fa-card)';
+                (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--fa-border)';
               }}
             >
               {s.label}
@@ -658,8 +657,8 @@ function ChatView({
         <div
           className="flex items-end gap-3 rounded-2xl px-4 py-3"
           style={{
-            background: 'rgba(255,255,255,0.05)',
-            border:     '1px solid rgba(255,255,255,0.10)',
+            background: 'var(--fa-card)',
+            border:     '1px solid var(--fa-border)',
           }}
         >
           <textarea
@@ -669,7 +668,7 @@ function ChatView({
             onKeyDown={handleKey}
             placeholder={`Pergunte ao ${tutor.name}...`}
             rows={1}
-            className="flex-1 bg-transparent text-white text-sm resize-none outline-none placeholder:text-slate-600 leading-relaxed"
+            className="flex-1 bg-transparent text-[var(--fa-text)] text-sm resize-none outline-none placeholder:text-[var(--fa-text-3)] leading-relaxed"
             style={{ maxHeight: '120px' }}
             onInput={e => {
               const t = e.currentTarget;
@@ -685,7 +684,7 @@ function ChatView({
             style={{
               background: input.trim() && !typing
                 ? `linear-gradient(135deg, ${VIOLET}, ${CYAN})`
-                : 'rgba(255,255,255,0.08)',
+                : 'var(--fa-border)',
               boxShadow: input.trim() && !typing ? `0 0 16px ${VIOLET}60` : 'none',
             }}
           >
@@ -697,7 +696,7 @@ function ChatView({
         {apiError && (
           <p className="text-center text-xs text-red-400 mt-1">{apiError}</p>
         )}
-        <p className="text-center text-xs text-slate-700 mt-2">
+        <p className="text-center text-xs text-[var(--fa-text-3)] mt-2">
           {tutor.name} pode cometer erros. Verifique informações importantes.
         </p>
       </div>

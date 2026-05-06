@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { useTheme } from '@/components/ThemeProvider';
 import EvolucaoChart, { type ChartPoint } from '@/components/redacao/EvolucaoChart';
 import HistoricoList, { type EssayRecord } from '@/components/redacao/HistoricoList';
 
@@ -89,10 +90,11 @@ function competenciaBarColor(nota: number): string {
 // ─── Diagnóstico da Última Redação ───────────────────────────────────────────
 
 function CompetenciasDiagnostico({
-  lastResult, lastEssay,
+  lastResult, lastEssay, isLight,
 }: {
   lastResult: NormaResult | null;
   lastEssay:  EssayRecord | null;
+  isLight:    boolean;
 }) {
   const ML = 'var(--font-jetbrains), "JetBrains Mono", monospace';
 
@@ -104,11 +106,11 @@ function CompetenciasDiagnostico({
   return (
     <div
       className="relative rounded-2xl overflow-hidden mb-5"
-      style={{ background: 'rgba(3,6,18,0.95)', border: '1px solid rgba(6,182,212,0.16)', boxShadow: '0 0 40px rgba(6,182,212,0.05)' }}
+      style={{ background: isLight ? 'var(--fa-card)' : 'rgba(3,6,18,0.95)', border: `1px solid ${isLight ? 'var(--fa-border)' : 'rgba(6,182,212,0.16)'}`, boxShadow: isLight ? 'var(--fa-shadow)' : '0 0 40px rgba(6,182,212,0.05)' }}
     >
       {/* Scanlines */}
       <div className="absolute inset-0 pointer-events-none"
-        style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.14) 3px, rgba(0,0,0,0.14) 4px)' }} />
+        style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.14) 3px, rgba(0,0,0,0.14) 4px)', opacity: isLight ? 0 : 1 }} />
       {/* Top neon line */}
       <div className="absolute inset-x-0 top-0 h-px"
         style={{ background: `linear-gradient(90deg, transparent, ${CYAN}88, ${VIOLET}55, transparent)` }} />
@@ -116,18 +118,18 @@ function CompetenciasDiagnostico({
       <div className="relative p-5">
         {/* Header */}
         <div className="flex items-center gap-3 mb-4 flex-wrap">
-          <span style={{ fontFamily: ML, fontSize: '8px', color: 'rgba(255,255,255,0.28)', letterSpacing: '0.08em' }}>
+          <span style={{ fontFamily: ML, fontSize: '8px', color: 'var(--fa-text-3)', letterSpacing: '0.08em' }}>
             {new Date(lastEssay.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}
           </span>
           <div className="flex-1 h-px" style={{ background: 'linear-gradient(90deg, rgba(6,182,212,0.20), transparent)' }} />
-          <span className="font-black text-lg" style={{ color: totalColor, fontFamily: ML, textShadow: `0 0 12px ${totalColor}88` }}>
+          <span className="font-black text-lg" style={{ color: totalColor, fontFamily: ML, textShadow: isLight ? 'none' : `0 0 12px ${totalColor}88` }}>
             {nota}
-            <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.30)', fontWeight: 400 }}>/1000</span>
+            <span style={{ fontSize: '10px', color: 'var(--fa-text-3)', fontWeight: 400 }}>/1000</span>
           </span>
         </div>
 
-        <p style={{ fontFamily: ML, fontSize: '9px', color: 'rgba(255,255,255,0.30)', letterSpacing: '0.08em', marginBottom: '16px' }}>
-          TEMA: <span className="text-white">{lastEssay.tema}</span>
+        <p style={{ fontFamily: ML, fontSize: '9px', color: 'var(--fa-text-3)', letterSpacing: '0.08em', marginBottom: '16px' }}>
+          TEMA: <span style={{ color: 'var(--fa-text)' }}>{lastEssay.tema}</span>
         </p>
 
         {/* 5 Competency bars */}
@@ -144,16 +146,16 @@ function CompetenciasDiagnostico({
                       background: `${clr}18`, border: `1px solid ${clr}44`, color: clr }}>
                     {label}
                   </span>
-                  <span style={{ fontFamily: ML, fontSize: '9px', color: 'rgba(255,255,255,0.42)', flex: 1, letterSpacing: '0.02em' }}>
+                  <span style={{ fontFamily: ML, fontSize: '9px', color: 'var(--fa-text-2)', flex: 1, letterSpacing: '0.02em' }}>
                     {desc}
                   </span>
-                  <span style={{ fontFamily: ML, fontSize: '12px', fontWeight: 700, color: clr, textShadow: `0 0 8px ${clr}88`, minWidth: '28px', textAlign: 'right' }}>
+                  <span style={{ fontFamily: ML, fontSize: '12px', fontWeight: 700, color: clr, textShadow: isLight ? 'none' : `0 0 8px ${clr}88`, minWidth: '28px', textAlign: 'right' }}>
                     {comp.nota}
                   </span>
-                  <span style={{ fontFamily: ML, fontSize: '8px', color: 'rgba(255,255,255,0.20)' }}>/200</span>
+                  <span style={{ fontFamily: ML, fontSize: '8px', color: 'var(--fa-text-3)' }}>/200</span>
                 </div>
                 <div className="h-2 rounded-full overflow-hidden ml-8"
-                  style={{ background: 'rgba(255,255,255,0.05)' }}>
+                  style={{ background: isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.05)' }}>
                   <div className="h-full rounded-full"
                     style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${clr}55, ${clr})`,
                       boxShadow: `0 0 10px ${clr}99`, transition: 'width 0.9s ease' }} />
@@ -173,7 +175,7 @@ type ChatMsg = { role: 'user' | 'norma'; text: string };
 
 // ─── Norma Chat Modal ─────────────────────────────────────────────────────────
 
-function NormaChatModal({ onClose }: { onClose: () => void }) {
+function NormaChatModal({ onClose, isLight }: { onClose: () => void; isLight: boolean }) {
   const ML = 'var(--font-jetbrains), "JetBrains Mono", monospace';
 
   const [chatMsgs,    setChatMsgs]    = useState<ChatMsg[]>([]);
@@ -237,9 +239,9 @@ function NormaChatModal({ onClose }: { onClose: () => void }) {
       <div
         className="relative w-full h-full sm:h-auto sm:max-w-lg sm:rounded-3xl overflow-hidden flex flex-col"
         style={{
-          background: 'rgba(3,5,18,0.98)',
-          border:     `1px solid ${CYAN}28`,
-          boxShadow:  `0 0 60px ${CYAN}15, 0 -4px 40px rgba(0,0,0,0.60)`,
+          background: isLight ? '#ffffff' : 'rgba(3,5,18,0.98)',
+          border:     `1px solid ${isLight ? 'var(--fa-border)' : `${CYAN}28`}`,
+          boxShadow:  isLight ? '0 8px 32px rgba(0,0,0,0.12)' : `0 0 60px ${CYAN}15, 0 -4px 40px rgba(0,0,0,0.60)`,
           maxHeight:  '100dvh',
         }}
         onClick={e => e.stopPropagation()}
@@ -249,7 +251,7 @@ function NormaChatModal({ onClose }: { onClose: () => void }) {
 
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-5 pb-4 shrink-0"
-          style={{ borderBottom: '1px solid rgba(6,182,212,0.10)' }}>
+          style={{ borderBottom: `1px solid ${isLight ? 'var(--fa-border)' : 'rgba(6,182,212,0.10)'}` }}>
           <div className="flex items-center gap-3">
             <div className="relative shrink-0">
               <div className="w-12 h-12 rounded-xl overflow-hidden"
@@ -259,11 +261,11 @@ function NormaChatModal({ onClose }: { onClose: () => void }) {
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </div>
               <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2"
-                style={{ background: '#00ff80', borderColor: '#050814', boxShadow: '0 0 6px #00ff8088' }} />
+                style={{ background: '#00ff80', borderColor: isLight ? '#fff' : '#050814', boxShadow: '0 0 6px #00ff8088' }} />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="font-black text-white text-sm">Prof.ª Norma</h2>
+                <h2 className="font-black text-sm" style={{ color: 'var(--fa-text)' }}>Prof.ª Norma</h2>
                 <span className="font-bold rounded-full"
                   style={{ background: `linear-gradient(135deg, ${VIOLET}cc, ${CYAN}cc)`, color: '#fff',
                     fontSize: '7px', letterSpacing: '0.10em', padding: '2px 7px' }}>
@@ -277,8 +279,8 @@ function NormaChatModal({ onClose }: { onClose: () => void }) {
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-white transition-colors"
-            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)' }}
+            className="w-8 h-8 rounded-xl flex items-center justify-center transition-colors"
+            style={{ background: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)', border: `1px solid ${isLight ? 'var(--fa-border)' : 'rgba(255,255,255,0.10)'}`, color: 'var(--fa-text-2)' }}
           >
             ✕
           </button>
@@ -292,8 +294,8 @@ function NormaChatModal({ onClose }: { onClose: () => void }) {
         >
           {chatMsgs.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full py-8 text-center">
-              <p className="text-slate-500 text-xs">Olá! Sou a Prof.ª Norma.</p>
-              <p className="text-slate-600 text-xs mt-1">Pergunte sobre sua redação, competências do ENEM,<br />estratégias de argumentação e muito mais.</p>
+              <p className="text-xs" style={{ color: 'var(--fa-text-2)' }}>Olá! Sou a Prof.ª Norma.</p>
+              <p className="text-xs mt-1" style={{ color: 'var(--fa-text-3)' }}>Pergunte sobre sua redação, competências do ENEM,<br />estratégias de argumentação e muito mais.</p>
             </div>
           )}
           {chatMsgs.map((m, i) => (
@@ -309,12 +311,12 @@ function NormaChatModal({ onClose }: { onClose: () => void }) {
                 style={{
                   background: m.role === 'user'
                     ? `linear-gradient(135deg, ${VIOLET}44, ${CYAN}28)`
-                    : 'rgba(255,255,255,0.06)',
+                    : isLight ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.06)',
                   border: m.role === 'user'
                     ? `1px solid ${CYAN}40`
-                    : '1px solid rgba(255,255,255,0.08)',
+                    : `1px solid ${isLight ? 'var(--fa-border)' : 'rgba(255,255,255,0.08)'}`,
                 }}>
-                <p className="text-xs text-slate-200 leading-relaxed whitespace-pre-wrap">{m.text}</p>
+                <p className="text-xs leading-relaxed whitespace-pre-wrap" style={{ color: 'var(--fa-text-2)' }}>{m.text}</p>
               </div>
             </div>
           ))}
@@ -326,7 +328,7 @@ function NormaChatModal({ onClose }: { onClose: () => void }) {
                 <img src="/images/tutor-redacao.avif" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </div>
               <div className="rounded-2xl px-3.5 py-2.5"
-                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                style={{ background: isLight ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.05)', border: `1px solid ${isLight ? 'var(--fa-border)' : 'rgba(255,255,255,0.08)'}` }}>
                 <div className="flex gap-1 items-center h-4">
                   {[0, 1, 2].map(j => (
                     <div key={j} className="w-1.5 h-1.5 rounded-full"
@@ -340,7 +342,7 @@ function NormaChatModal({ onClose }: { onClose: () => void }) {
 
         {/* Input */}
         <div className="px-5 pb-5 pt-3 shrink-0"
-          style={{ borderTop: '1px solid rgba(6,182,212,0.08)' }}>
+          style={{ borderTop: `1px solid ${isLight ? 'var(--fa-border)' : 'rgba(6,182,212,0.08)'}` }}>
           <div className="flex gap-2">
             <input
               type="text"
@@ -348,8 +350,8 @@ function NormaChatModal({ onClose }: { onClose: () => void }) {
               onChange={e => setChatInput(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); } }}
               placeholder="Pergunte à Norma sobre sua redação..."
-              className="flex-1 rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-600 outline-none"
-              style={{ background: 'rgba(255,255,255,0.05)', border: `1px solid ${chatInput ? `${CYAN}40` : 'rgba(255,255,255,0.09)'}` }}
+              className="flex-1 rounded-xl px-4 py-3 text-sm outline-none"
+              style={{ background: isLight ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.05)', border: `1px solid ${chatInput ? `${CYAN}40` : isLight ? 'var(--fa-border)' : 'rgba(255,255,255,0.09)'}`, color: 'var(--fa-text)' }}
             />
             <button
               type="button"
@@ -370,11 +372,12 @@ function NormaChatModal({ onClose }: { onClose: () => void }) {
 // ─── Essay Modal ──────────────────────────────────────────────────────────────
 
 function EssayModal({
-  plan, onClose, onSubmit,
+  plan, onClose, onSubmit, isLight,
 }: {
   plan:     Plan;
   onClose:  () => void;
   onSubmit: (tema: string, texto: string) => void;
+  isLight:  boolean;
 }) {
   const [tema, setTema]   = useState('');
   const [texto, setTexto] = useState('');
@@ -386,12 +389,12 @@ function EssayModal({
   return (
     <div
       className="fixed inset-0 z-50 flex"
-      style={{ background: 'rgba(5,8,18,0.99)' }}
+      style={{ background: isLight ? 'rgba(255,255,255,0.99)' : 'rgba(5,8,18,0.99)' }}
     >
       <div
         className="relative w-full h-full overflow-hidden flex flex-col"
         style={{
-          background: 'rgba(5,8,18,0.99)',
+          background: isLight ? 'rgba(255,255,255,0.99)' : 'rgba(5,8,18,0.99)',
           border:     `1px solid ${CYAN}15`,
         }}
       >
@@ -401,14 +404,14 @@ function EssayModal({
 
         {/* Header */}
         <div className="flex items-center justify-between px-6 pt-5 pb-4 shrink-0"
-          style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          style={{ borderBottom: `1px solid ${isLight ? 'var(--fa-border)' : 'rgba(255,255,255,0.06)'}` }}>
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-xl flex items-center justify-center"
               style={{ background: `${CYAN}18`, border: `1px solid ${CYAN}35`, color: CYAN }}>
               <PenIcon size={16} />
             </div>
             <div>
-              <p className="text-white font-black text-sm">Banca Protocolo Neural</p>
+              <p className="font-black text-sm" style={{ color: 'var(--fa-text)' }}>Banca Protocolo Neural</p>
               <p className="text-xs" style={{ color: CYAN }}>Norma · Correção por IA</p>
             </div>
           </div>
@@ -452,10 +455,11 @@ function EssayModal({
               value={tema}
               onChange={e => setTema(e.target.value)}
               placeholder="Ex: O impacto das redes sociais na saúde mental dos jovens brasileiros"
-              className="w-full rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-600 outline-none transition-all"
+              className="w-full rounded-xl px-4 py-3 text-sm outline-none transition-all"
               style={{
-                background: 'rgba(255,255,255,0.04)',
-                border:     `1px solid ${tema.length > 3 ? `${CYAN}40` : 'rgba(255,255,255,0.10)'}`,
+                background: isLight ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.04)',
+                border:     `1px solid ${tema.length > 3 ? `${CYAN}40` : isLight ? 'var(--fa-border)' : 'rgba(255,255,255,0.10)'}`,
+                color: 'var(--fa-text)',
               }}
               disabled={!isPro}
             />
@@ -464,10 +468,10 @@ function EssayModal({
           {/* Texto */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--fa-text-3)' }}>
                 Corpo da Redação
               </label>
-              <span className="text-xs" style={{ color: wordCount >= 50 ? CYAN : 'rgba(255,255,255,0.25)' }}>
+              <span className="text-xs" style={{ color: wordCount >= 50 ? CYAN : 'var(--fa-text-3)' }}>
                 {wordCount} palavras {wordCount < 50 && '(mín. 50)'}
               </span>
             </div>
@@ -476,10 +480,11 @@ function EssayModal({
               onChange={e => setTexto(e.target.value)}
               placeholder="Escreva ou cole sua redação aqui. A Norma analisará cada parágrafo com base nas 5 competências do ENEM..."
               rows={20}
-              className="w-full rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-600 outline-none resize-none transition-all leading-relaxed"
+              className="w-full rounded-xl px-4 py-3 text-sm outline-none resize-none transition-all leading-relaxed"
               style={{
-                background: 'rgba(255,255,255,0.03)',
-                border:     `1px solid ${texto.length > 10 ? `${CYAN}30` : 'rgba(255,255,255,0.08)'}`,
+                background: isLight ? 'rgba(0,0,0,0.02)' : 'rgba(255,255,255,0.03)',
+                border:     `1px solid ${texto.length > 10 ? `${CYAN}30` : isLight ? 'var(--fa-border)' : 'rgba(255,255,255,0.08)'}`,
+                color: 'var(--fa-text)',
               }}
               disabled={!isPro}
             />
@@ -488,7 +493,7 @@ function EssayModal({
 
         {/* Footer */}
         <div className="shrink-0 px-6 py-4"
-          style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+          style={{ borderTop: `1px solid ${isLight ? 'var(--fa-border)' : 'rgba(255,255,255,0.06)'}` }}>
           <button
             onClick={() => canSubmit && onSubmit(tema, texto)}
             disabled={!canSubmit}
@@ -496,10 +501,10 @@ function EssayModal({
             style={{
               background: canSubmit
                 ? `linear-gradient(135deg, ${VIOLET}, ${CYAN})`
-                : 'rgba(255,255,255,0.05)',
+                : isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)',
               boxShadow:  canSubmit ? `0 0 24px ${VIOLET}50, 0 4px 16px rgba(0,0,0,0.40)` : 'none',
-              color:      canSubmit ? '#fff' : 'rgba(255,255,255,0.25)',
-              border:     canSubmit ? 'none' : '1px solid rgba(255,255,255,0.08)',
+              color:      canSubmit ? '#fff' : 'var(--fa-text-3)',
+              border:     canSubmit ? 'none' : `1px solid ${isLight ? 'var(--fa-border)' : 'rgba(255,255,255,0.08)'}`,
             }}
           >
             {isPro ? 'Iniciar Análise da Banca Protocolo Neural' : 'Disponível no Protocolo Neural'}
@@ -531,8 +536,8 @@ function LoadingCard() {
 
       <SpinnerIcon />
       <div className="text-center">
-        <p className="text-white font-bold text-sm">Norma está corrigindo sua redação…</p>
-        <p className="text-slate-500 text-xs mt-1">Analisando as 5 competências do ENEM</p>
+        <p className="font-bold text-sm" style={{ color: 'var(--fa-text)' }}>Norma está corrigindo sua redação…</p>
+        <p className="text-xs mt-1" style={{ color: 'var(--fa-text-3)' }}>Analisando as 5 competências do ENEM</p>
       </div>
 
       <div className="w-full space-y-2">
@@ -545,7 +550,7 @@ function LoadingCard() {
                 animation: `pulse 1.5s ease-in-out ${i * 0.4}s infinite`,
               }}
             />
-            <span className="text-xs text-slate-600">{s}</span>
+            <span className="text-xs" style={{ color: 'var(--fa-text-3)' }}>{s}</span>
           </div>
         ))}
       </div>
@@ -572,11 +577,12 @@ function totalGrade(nota: number) {
 }
 
 function GradeResults({
-  result, onReset, resetLabel = 'Nova Correção',
+  result, onReset, resetLabel = 'Nova Correção', isLight,
 }: {
   result:      NormaResult;
   onReset:     () => void;
   resetLabel?: string;
+  isLight:     boolean;
 }) {
   const nota  = result.nota_total;
   const grade = totalGrade(nota);
@@ -585,17 +591,17 @@ function GradeResults({
     <div
       className="relative rounded-2xl overflow-hidden mb-8"
       style={{
-        background: 'rgba(4,6,16,0.97)',
+        background: isLight ? 'var(--fa-card)' : 'rgba(4,6,16,0.97)',
         border:     `1px solid ${grade.color}28`,
-        boxShadow:  `0 0 60px ${grade.color}08`,
+        boxShadow:  isLight ? 'var(--fa-shadow)' : `0 0 60px ${grade.color}08`,
       }}
     >
       <div className="absolute inset-x-0 top-0 h-px"
         style={{ background: `linear-gradient(90deg, transparent, ${grade.color}70, transparent)` }} />
 
       {/* ── Nota total ── */}
-      <div className="px-6 pt-7 pb-6 text-center border-b border-white/5">
-        <p className="text-xs font-semibold tracking-widest uppercase text-slate-500 mb-3">
+      <div className="px-6 pt-7 pb-6 text-center border-b" style={{ borderColor: 'var(--fa-border-dim)' }}>
+        <p className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: 'var(--fa-text-3)' }}>
           Resultado da Banca Protocolo Neural
         </p>
         <div
@@ -618,22 +624,22 @@ function GradeResults({
       </div>
 
       {/* ── Veredito da Norma ── */}
-      <div className="px-6 py-5 border-b border-white/5"
-        style={{ background: `${CYAN}05` }}>
+      <div className="px-6 py-5 border-b"
+        style={{ background: `${CYAN}05`, borderColor: 'var(--fa-border-dim)' }}>
         <div className="flex items-center gap-2 mb-3">
           <PenIcon size={14} />
           <p className="text-xs font-black tracking-widest uppercase" style={{ color: CYAN }}>
             Veredito da Norma
           </p>
         </div>
-        <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">
+        <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: 'var(--fa-text-2)' }}>
           {result.veredito}
         </p>
       </div>
 
       {/* ── C1–C5 com feedback expandido ── */}
-      <div className="px-6 py-5 border-b border-white/5">
-        <p className="text-xs font-semibold tracking-widest uppercase text-slate-500 mb-5">
+      <div className="px-6 py-5 border-b" style={{ borderColor: 'var(--fa-border-dim)' }}>
+        <p className="text-xs font-semibold tracking-widest uppercase mb-5" style={{ color: 'var(--fa-text-3)' }}>
           Análise por Competência
         </p>
         <div className="space-y-5">
@@ -651,28 +657,28 @@ function GradeResults({
                   >
                     {label}
                   </span>
-                  <span className="text-xs text-white font-semibold flex-1">{desc}</span>
+                  <span className="text-xs font-semibold flex-1" style={{ color: 'var(--fa-text)' }}>{desc}</span>
                   <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-xs font-medium text-slate-500">{comp.nivel}</span>
+                    <span className="text-xs font-medium" style={{ color: 'var(--fa-text-3)' }}>{comp.nivel}</span>
                     <span className="text-sm font-black" style={{ color }}>{comp.nota}</span>
-                    <span className="text-xs text-slate-600">/200</span>
+                    <span className="text-xs" style={{ color: 'var(--fa-text-3)' }}>/200</span>
                   </div>
                 </div>
                 {/* Bar */}
                 <div className="h-1.5 rounded-full overflow-hidden ml-11"
-                  style={{ background: 'rgba(255,255,255,0.06)' }}>
+                  style={{ background: isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.06)' }}>
                   <div
                     className="h-full rounded-full"
                     style={{
                       width:      `${pct}%`,
                       background: `linear-gradient(90deg, ${color}80, ${color})`,
-                      boxShadow:  `0 0 8px ${color}50`,
+                      boxShadow:  isLight ? 'none' : `0 0 8px ${color}50`,
                       transition: 'width 0.8s ease',
                     }}
                   />
                 </div>
                 {/* Feedback */}
-                <p className="text-xs text-slate-400 leading-relaxed ml-11">
+                <p className="text-xs leading-relaxed ml-11" style={{ color: 'var(--fa-text-2)' }}>
                   {comp.feedback}
                 </p>
               </div>
@@ -682,10 +688,10 @@ function GradeResults({
       </div>
 
       {/* ── Pontos fortes & melhoria ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-0 border-b border-white/5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-0 border-b">
         {/* Pontos fortes */}
         {result.pontos_fortes?.length > 0 && (
-          <div className="px-6 py-5 border-b sm:border-b-0 sm:border-r border-white/5">
+          <div className="px-6 py-5 border-b sm:border-b-0 sm:border-r">
             <p className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: '#22c55e' }}>
               ✓ Pontos Fortes
             </p>
@@ -720,7 +726,7 @@ function GradeResults({
 
       {/* ── Sugestões de repertório ── */}
       {result.sugestao_repertorio?.length > 0 && (
-        <div className="px-6 py-5 border-b border-white/5">
+        <div className="px-6 py-5 border-b">
           <p className="text-xs font-semibold tracking-widest uppercase text-slate-500 mb-3">
             Sugestões de Repertório
           </p>
@@ -995,6 +1001,9 @@ export default function RedacaoClient({ plan }: { plan: Plan }) {
   const [historico,   setHistorico]   = useState<EssayRecord[]>([]);
   const [loadingHist, setLoadingHist] = useState(false);
 
+  const { theme } = useTheme();
+  const isLight   = theme === 'light';
+
   const isPro = plan === 'panteao_elite';
   const color = CYAN;
 
@@ -1095,12 +1104,12 @@ export default function RedacaoClient({ plan }: { plan: Plan }) {
 
   return (
     <div id="tour-redacao">
-      {modalOpen     && <EssayModal      plan={plan} onClose={() => setModalOpen(false)}     onSubmit={handleSubmit} />}
-      {chatModalOpen && <NormaChatModal               onClose={() => setChatModalOpen(false)} />}
+      {modalOpen     && <EssayModal      plan={plan} onClose={() => setModalOpen(false)}     onSubmit={handleSubmit} isLight={isLight} />}
+      {chatModalOpen && <NormaChatModal               onClose={() => setChatModalOpen(false)} isLight={isLight} />}
       {showUpgrade   && <UpgradeModal                 onClose={() => setShowUpgrade(false)} />}
 
       {/* ── Diagnóstico ───────────────────────────────────────────────────── */}
-      <CompetenciasDiagnostico lastResult={lastResult} lastEssay={lastEssay} />
+      <CompetenciasDiagnostico lastResult={lastResult} lastEssay={lastEssay} isLight={isLight} />
 
       {/* ── Dois blocos de ação ───────────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-7">
@@ -1316,7 +1325,7 @@ export default function RedacaoClient({ plan }: { plan: Plan }) {
                   style={{ background: `linear-gradient(90deg, transparent, ${CYAN}50, transparent)` }} />
 
                 {/* Tema */}
-                <div className="px-6 pt-6 pb-4 border-b border-white/5">
+                <div className="px-6 pt-6 pb-4 border-b">
                   <p className="text-xs font-semibold tracking-widest uppercase text-slate-500 mb-2">
                     Tema
                   </p>
@@ -1347,6 +1356,7 @@ export default function RedacaoClient({ plan }: { plan: Plan }) {
                   result={result}
                   onReset={exitReviewMode}
                   resetLabel="← Fechar Revisão"
+                  isLight={isLight}
                 />
               )}
             </div>
@@ -1376,6 +1386,7 @@ export default function RedacaoClient({ plan }: { plan: Plan }) {
                 <GradeResults
                   result={result}
                   onReset={() => setResult(null)}
+                  isLight={isLight}
                 />
               )}
 
