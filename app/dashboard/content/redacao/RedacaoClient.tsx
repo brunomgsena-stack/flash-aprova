@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
 import { useTheme } from '@/components/ThemeProvider';
 import EvolucaoChart, { type ChartPoint } from '@/components/redacao/EvolucaoChart';
@@ -37,6 +38,8 @@ type NormaResult = {
 const CYAN   = '#06b6d4';
 const VIOLET = '#7C3AED';
 const PINK   = '#ec4899';
+const MONO   = 'var(--font-jetbrains), "JetBrains Mono", monospace';
+const VIOLET_GLOW = '#818cf8'; // lighter indigo for corner glow only
 
 const COMPETENCIAS: { key: 'c1'|'c2'|'c3'|'c4'|'c5'; label: string; desc: string }[] = [
   { key: 'c1', label: 'C1', desc: 'Domínio da norma culta da língua portuguesa' },
@@ -417,7 +420,8 @@ function EssayModal({
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-xl flex items-center justify-center text-slate-500 hover:text-white hover:bg-white/8 transition-all"
+            className="w-8 h-8 rounded-xl flex items-center justify-center transition-all"
+            style={{ color: 'var(--fa-text-3)' }}
           >
             ✕
           </button>
@@ -437,7 +441,7 @@ function EssayModal({
                 <p className="text-sm font-bold" style={{ color: 'rgba(212,175,55,0.95)' }}>
                   Recurso exclusivo Protocolo Neural
                 </p>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <p className="text-xs mt-0.5" style={{ color: 'var(--fa-text-2)' }}>
                   A correção por IA está disponível apenas no plano Protocolo Neural.{' '}
                   <a href="/subscription" className="underline" style={{ color: CYAN }}>Fazer upgrade →</a>
                 </p>
@@ -447,7 +451,7 @@ function EssayModal({
 
           {/* Tema */}
           <div>
-            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-2">
+            <label className="text-xs font-semibold uppercase tracking-wider block mb-2" style={{ color: 'var(--fa-text-3)' }}>
               Tema da Redação
             </label>
             <input
@@ -510,7 +514,7 @@ function EssayModal({
             {isPro ? 'Iniciar Análise da Banca Protocolo Neural' : 'Disponível no Protocolo Neural'}
           </button>
           {canSubmit && (
-            <p className="text-center text-xs text-slate-700 mt-2">
+            <p className="text-center text-xs mt-2" style={{ color: 'var(--fa-text-3)' }}>
               A análise leva cerca de 15–30 segundos
             </p>
           )}
@@ -688,16 +692,16 @@ function GradeResults({
       </div>
 
       {/* ── Pontos fortes & melhoria ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-0 border-b">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-0 border-b" style={{ borderColor: 'var(--fa-border-dim)' }}>
         {/* Pontos fortes */}
         {result.pontos_fortes?.length > 0 && (
-          <div className="px-6 py-5 border-b sm:border-b-0 sm:border-r">
+          <div className="px-6 py-5 border-b sm:border-b-0 sm:border-r" style={{ borderColor: 'var(--fa-border-dim)' }}>
             <p className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: '#22c55e' }}>
               ✓ Pontos Fortes
             </p>
             <ul className="space-y-1.5">
               {result.pontos_fortes.map((p, i) => (
-                <li key={i} className="flex items-start gap-2 text-xs text-slate-400">
+                <li key={i} className="flex items-start gap-2 text-xs" style={{ color: 'var(--fa-text-2)' }}>
                   <span className="text-green-500 shrink-0 mt-0.5">●</span>
                   {p}
                 </li>
@@ -714,7 +718,7 @@ function GradeResults({
             </p>
             <ul className="space-y-1.5">
               {result.pontos_melhoria.map((p, i) => (
-                <li key={i} className="flex items-start gap-2 text-xs text-slate-400">
+                <li key={i} className="flex items-start gap-2 text-xs" style={{ color: 'var(--fa-text-2)' }}>
                   <span className="text-amber-500 shrink-0 mt-0.5">●</span>
                   {p}
                 </li>
@@ -726,15 +730,15 @@ function GradeResults({
 
       {/* ── Sugestões de repertório ── */}
       {result.sugestao_repertorio?.length > 0 && (
-        <div className="px-6 py-5 border-b">
-          <p className="text-xs font-semibold tracking-widest uppercase text-slate-500 mb-3">
+        <div className="px-6 py-5 border-b" style={{ borderColor: 'var(--fa-border-dim)' }}>
+          <p className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: 'var(--fa-text-3)' }}>
             Sugestões de Repertório
           </p>
           <div className="space-y-2">
             {result.sugestao_repertorio.map((s, i) => (
               <div key={i} className="flex items-start gap-2.5">
                 <span className="text-xs shrink-0 mt-0.5 font-bold" style={{ color: CYAN }}>→</span>
-                <p className="text-sm text-slate-300 leading-relaxed">{s}</p>
+                <p className="text-sm leading-relaxed" style={{ color: 'var(--fa-text-2)' }}>{s}</p>
               </div>
             ))}
           </div>
@@ -745,8 +749,8 @@ function GradeResults({
       <div className="px-6 py-4">
         <button
           onClick={onReset}
-          className="w-full py-2.5 rounded-xl text-sm font-semibold text-slate-400 transition-all hover:text-white"
-          style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}
+          className="w-full py-2.5 rounded-xl text-sm font-semibold transition-all"
+          style={{ background: isLight ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.03)', border: `1px solid ${isLight ? 'var(--fa-border)' : 'rgba(255,255,255,0.08)'}`, color: 'var(--fa-text-2)' }}
         >
           {resetLabel}
         </button>
@@ -766,13 +770,14 @@ type AccordionItem = {
 };
 
 function AccordionRow({
-  item, color, defaultOpen, locked, onLockedClick,
+  item, color, defaultOpen, locked, onLockedClick, isLight,
 }: {
   item:          AccordionItem;
   color:         string;
   defaultOpen:   boolean;
   locked:        boolean;
   onLockedClick: () => void;
+  isLight:       boolean;
 }) {
   const [open, setOpen] = useState(defaultOpen && !locked);
   const bodyRef         = useRef<HTMLDivElement>(null);
@@ -781,9 +786,11 @@ function AccordionRow({
     <div
       className="rounded-2xl overflow-hidden transition-all duration-200"
       style={{
-        background: open ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.03)',
-        border:     `1px solid ${open && !locked ? `${color}40` : 'rgba(255,255,255,0.08)'}`,
-        boxShadow:  open && !locked ? `0 0 20px ${color}10` : 'none',
+        background: open
+          ? isLight ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.05)'
+          : isLight ? 'var(--fa-card)' : 'rgba(255,255,255,0.03)',
+        border:     `1px solid ${open && !locked ? `${color}40` : isLight ? 'var(--fa-border)' : 'rgba(255,255,255,0.08)'}`,
+        boxShadow:  open && !locked ? (isLight ? 'var(--fa-shadow)' : `0 0 20px ${color}10`) : 'none',
       }}
     >
       <button
@@ -793,8 +800,8 @@ function AccordionRow({
         <div
           className="w-9 h-9 rounded-xl flex items-center justify-center text-lg shrink-0"
           style={{
-            background: open && !locked ? `${color}20` : 'rgba(255,255,255,0.06)',
-            border:     `1px solid ${open && !locked ? `${color}44` : 'rgba(255,255,255,0.10)'}`,
+            background: open && !locked ? `${color}20` : isLight ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.06)',
+            border:     `1px solid ${open && !locked ? `${color}44` : isLight ? 'var(--fa-border)' : 'rgba(255,255,255,0.10)'}`,
             opacity:    locked ? 0.5 : 1,
           }}
         >
@@ -804,7 +811,7 @@ function AccordionRow({
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <span
             className="font-semibold text-sm"
-            style={{ color: open && !locked ? '#fff' : 'rgba(255,255,255,0.55)' }}
+            style={{ color: open && !locked ? 'var(--fa-text)' : 'var(--fa-text-2)' }}
           >
             {item.title}
           </span>
@@ -819,7 +826,7 @@ function AccordionRow({
           {!locked && !item.hasContent && (
             <span
               className="text-xs px-2 py-0.5 rounded-full font-medium shrink-0"
-              style={{ color: 'rgba(255,255,255,0.35)', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)' }}
+              style={{ color: 'var(--fa-text-3)', background: isLight ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.06)', border: `1px solid ${isLight ? 'var(--fa-border)' : 'rgba(255,255,255,0.10)'}` }}
             >
               Em breve
             </span>
@@ -830,7 +837,7 @@ function AccordionRow({
           className="shrink-0 transition-transform duration-300"
           style={{
             transform: open && !locked ? 'rotate(180deg)' : 'rotate(0deg)',
-            color:     open && !locked ? color : 'rgba(255,255,255,0.20)',
+            color:     open && !locked ? color : isLight ? 'rgba(0,0,0,0.20)' : 'rgba(255,255,255,0.20)',
           }}
           width="16" height="16" viewBox="0 0 16 16" fill="none"
         >
@@ -847,7 +854,7 @@ function AccordionRow({
           <div className="mx-5 h-px" style={{ background: `${color}20` }} />
           <div className="px-5 py-5">
             {item.hasContent ? item.content : (
-              <p className="text-slate-500 text-sm">Conteúdo em preparação. Em breve por aqui!</p>
+              <p className="text-sm" style={{ color: 'var(--fa-text-3)' }}>Conteúdo em preparação. Em breve por aqui!</p>
             )}
           </div>
         </div>
@@ -915,8 +922,8 @@ function SummaryContent({ color }: { color: string }) {
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-slate-400 leading-relaxed">
-        A redação do ENEM é do tipo <strong className="text-white">dissertativo-argumentativa</strong>.
+      <p className="text-sm leading-relaxed" style={{ color: 'var(--fa-text-2)' }}>
+        A redação do ENEM é do tipo <strong style={{ color: 'var(--fa-text)' }}>dissertativo-argumentativa</strong>.
         Você defende um ponto de vista sobre um problema social, usando argumentos lógicos e encerrando com uma proposta de intervenção.
       </p>
       <div className="space-y-3">
@@ -929,8 +936,8 @@ function SummaryContent({ color }: { color: string }) {
               {num}
             </span>
             <div>
-              <p className="text-sm font-semibold text-white">{title}</p>
-              <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">{tip}</p>
+              <p className="text-sm font-semibold" style={{ color: 'var(--fa-text)' }}>{title}</p>
+              <p className="text-xs mt-0.5 leading-relaxed" style={{ color: 'var(--fa-text-2)' }}>{tip}</p>
             </div>
           </div>
         ))}
@@ -939,7 +946,7 @@ function SummaryContent({ color }: { color: string }) {
   );
 }
 
-function TableContent({ color }: { color: string }) {
+function TableContent({ color, isLight }: { color: string; isLight: boolean }) {
   const conectivos = [
     { funcao: 'Adição',         exemplos: 'além disso, ademais, outrossim, também, ainda' },
     { funcao: 'Oposição',       exemplos: 'entretanto, todavia, porém, contudo, no entanto' },
@@ -968,13 +975,13 @@ function TableContent({ color }: { color: string }) {
         </thead>
         <tbody>
           {conectivos.map(({ funcao, exemplos }, ri) => (
-            <tr key={funcao} style={{ background: ri % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent' }}>
-              <td className="py-2.5 px-3 text-slate-300 font-semibold text-sm align-top whitespace-nowrap"
-                style={{ border: '1px solid rgba(255,255,255,0.05)' }}>
+            <tr key={funcao} style={{ background: ri % 2 === 0 ? (isLight ? 'rgba(0,0,0,0.02)' : 'rgba(255,255,255,0.02)') : 'transparent' }}>
+              <td className="py-2.5 px-3 font-semibold text-sm align-top whitespace-nowrap"
+                style={{ border: `1px solid ${isLight ? 'var(--fa-border-dim)' : 'rgba(255,255,255,0.05)'}`, color: 'var(--fa-text)' }}>
                 {funcao}
               </td>
-              <td className="py-2.5 px-3 text-slate-400 text-sm align-top"
-                style={{ border: '1px solid rgba(255,255,255,0.05)' }}>
+              <td className="py-2.5 px-3 text-sm align-top"
+                style={{ border: `1px solid ${isLight ? 'var(--fa-border-dim)' : 'rgba(255,255,255,0.05)'}`, color: 'var(--fa-text-2)' }}>
                 {exemplos}
               </td>
             </tr>
@@ -1091,7 +1098,7 @@ export default function RedacaoClient({ plan }: { plan: Plan }) {
       icon:       '📊',
       title:      'Arsenal de Conectivos e Coesão',
       hasContent: true,
-      content:    <TableContent color={color} />,
+      content:    <TableContent color={color} isLight={isLight} />,
     },
     {
       id:         'audio',
@@ -1103,7 +1110,128 @@ export default function RedacaoClient({ plan }: { plan: Plan }) {
   ];
 
   return (
-    <div id="tour-redacao">
+    <main
+      className="min-h-screen px-4 py-10 sm:px-8 relative overflow-hidden"
+      style={{ background: isLight ? 'var(--fa-bg)' : '#050814' }}
+    >
+      {/* Grid background — dark mode only */}
+      {!isLight && (
+        <div
+          className="pointer-events-none fixed inset-0 z-0"
+          style={{
+            backgroundImage: `
+              linear-gradient(rgba(6,182,212,0.04) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(6,182,212,0.04) 1px, transparent 1px)
+            `,
+            backgroundSize: '40px 40px',
+          }}
+        />
+      )}
+
+      {/* Scanlines overlay — dark mode only */}
+      {!isLight && (
+        <div
+          className="pointer-events-none fixed inset-0 z-0"
+          style={{
+            backgroundImage:
+              'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.18) 3px, rgba(0,0,0,0.18) 4px)',
+            opacity: 0.6,
+          }}
+        />
+      )}
+
+      {/* Corner glow accents — dark mode only */}
+      {!isLight && (
+        <>
+          <div
+            className="pointer-events-none fixed top-0 left-0 w-96 h-96 z-0"
+            style={{ background: `radial-gradient(ellipse at top left, ${CYAN}0d 0%, transparent 70%)` }}
+          />
+          <div
+            className="pointer-events-none fixed bottom-0 right-0 w-96 h-96 z-0"
+            style={{ background: `radial-gradient(ellipse at bottom right, ${VIOLET_GLOW}0d 0%, transparent 70%)` }}
+          />
+        </>
+      )}
+
+      <div className="relative z-10 max-w-4xl mx-auto">
+
+        {/* Breadcrumbs */}
+        <nav
+          className="flex items-center gap-1.5 mb-8 flex-wrap"
+          style={{
+            fontFamily: MONO,
+            fontSize: '10px',
+            color: isLight ? 'var(--fa-text-3)' : 'rgba(255,255,255,0.28)',
+            letterSpacing: '0.06em',
+          }}
+        >
+          <Link href="/dashboard" className="hover:opacity-70 transition-opacity">
+            DASHBOARD
+          </Link>
+          <span className="opacity-40">›</span>
+          <span style={{ color: CYAN }}>REDAÇÃO</span>
+          <span className="opacity-40">›</span>
+          <span style={{ color: 'var(--fa-text)' }}>NORMA.AI</span>
+        </nav>
+
+        {/* Header */}
+        <div className="flex items-center gap-5 mb-3">
+          <div
+            className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0"
+            style={{
+              background: `linear-gradient(135deg, ${CYAN}22, ${VIOLET_GLOW}18)`,
+              border: `1px solid ${isLight ? `${CYAN}30` : `${CYAN}44`}`,
+              boxShadow: isLight ? 'var(--fa-shadow)' : `0 0 20px ${CYAN}22`,
+            }}
+          >
+            ✒️
+          </div>
+          <div>
+            <p
+              style={{
+                fontFamily: MONO,
+                fontSize: '9px',
+                letterSpacing: '0.18em',
+                color: 'var(--fa-text-3)',
+                marginBottom: '4px',
+              }}
+            >
+              [ SISTEMA DE DIAGNÓSTICO ]
+            </p>
+            <h1
+              className="font-black leading-tight"
+              style={{
+                fontSize: '22px',
+                background: `linear-gradient(135deg, ${CYAN} 0%, ${VIOLET_GLOW} 60%, #c084fc 100%)`,
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+              }}
+            >
+              Redação | Norma.AI
+            </h1>
+            <p
+              style={{
+                fontFamily: MONO,
+                fontSize: '9px',
+                color: 'var(--fa-text-3)',
+                letterSpacing: '0.08em',
+                marginTop: '4px',
+              }}
+            >
+              CORRETORA_IA · ANÁLISE_ENEM · BASE_CONHECIMENTO
+            </p>
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div
+          className="h-px w-full mt-5 mb-8"
+          style={{ background: `linear-gradient(90deg, ${CYAN}55, ${VIOLET_GLOW}33, transparent)` }}
+        />
+
+        <div id="tour-redacao">
       {modalOpen     && <EssayModal      plan={plan} onClose={() => setModalOpen(false)}     onSubmit={handleSubmit} isLight={isLight} />}
       {chatModalOpen && <NormaChatModal               onClose={() => setChatModalOpen(false)} isLight={isLight} />}
       {showUpgrade   && <UpgradeModal                 onClose={() => setShowUpgrade(false)} />}
@@ -1117,10 +1245,10 @@ export default function RedacaoClient({ plan }: { plan: Plan }) {
         {/* Bloco 1: Chat com a Tutora IA */}
         <div
           className="relative rounded-2xl overflow-hidden flex flex-col"
-          style={{ background: 'rgba(3,5,18,0.97)', border: `1px solid ${CYAN}22`, boxShadow: `0 0 30px ${CYAN}06` }}
+          style={{ background: isLight ? 'var(--fa-card)' : 'rgba(3,5,18,0.97)', border: `1px solid ${CYAN}22`, boxShadow: isLight ? 'var(--fa-shadow)' : `0 0 30px ${CYAN}06` }}
         >
           <div className="absolute inset-x-0 top-0 h-px"
-            style={{ background: `linear-gradient(90deg, transparent, ${CYAN}50, transparent)` }} />
+            style={{ background: `linear-gradient(90deg, transparent, ${CYAN}50, transparent)`, opacity: isLight ? 0.5 : 1 }} />
           <div className="p-5 flex flex-col flex-1">
             <div className="flex items-center gap-3 mb-4">
               <div className="relative shrink-0">
@@ -1131,21 +1259,21 @@ export default function RedacaoClient({ plan }: { plan: Plan }) {
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </div>
                 <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2"
-                  style={{ background: '#00ff80', borderColor: '#050814', boxShadow: '0 0 6px #00ff8088' }} />
+                  style={{ background: '#00ff80', borderColor: isLight ? '#fff' : '#050814', boxShadow: '0 0 6px #00ff8088' }} />
               </div>
               <div>
                 <div className="flex items-center gap-1.5 flex-wrap">
-                  <h3 className="font-black text-white text-sm">Prof.ª Norma</h3>
+                  <h3 className="font-black text-sm" style={{ color: 'var(--fa-text)' }}>Prof.ª Norma</h3>
                   <span className="font-bold rounded-full"
                     style={{ background: `linear-gradient(135deg, ${VIOLET}cc, ${CYAN}cc)`, color: '#fff',
                       fontSize: '7px', letterSpacing: '0.10em', padding: '2px 7px' }}>
                     NORMA.AI
                   </span>
                 </div>
-                <p className="text-slate-500 text-xs mt-0.5">Corretora ENEM · Especialista em redação</p>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--fa-text-3)' }}>Corretora ENEM · Especialista em redação</p>
               </div>
             </div>
-            <p className="text-xs text-slate-400 leading-relaxed mb-4">
+            <p className="text-xs leading-relaxed mb-4" style={{ color: 'var(--fa-text-2)' }}>
               Tire dúvidas sobre competências do ENEM, peça dicas de argumentação, estrutura de texto e repertório sociocultural.
             </p>
 
@@ -1164,20 +1292,20 @@ export default function RedacaoClient({ plan }: { plan: Plan }) {
                   </p>
                   <div className="flex items-start gap-2">
                     <span style={{ color: '#f97316', fontSize: '10px', marginTop: '1px', flexShrink: 0 }}>▼</span>
-                    <p className="text-xs text-slate-300 leading-snug">
+                    <p className="text-xs leading-snug" style={{ color: 'var(--fa-text-2)' }}>
                       Competência mais fraca: <span className="font-bold" style={{ color: '#f97316' }}>{weakest.label} — {weakest.desc.split(' ').slice(0, 3).join(' ')}</span> ({weakest.nota}/200)
                     </p>
                   </div>
                   {tip && (
                     <div className="flex items-start gap-2">
                       <span style={{ color: CYAN, fontSize: '10px', marginTop: '1px', flexShrink: 0 }}>→</span>
-                      <p className="text-xs text-slate-400 leading-snug">{tip}</p>
+                      <p className="text-xs leading-snug" style={{ color: 'var(--fa-text-2)' }}>{tip}</p>
                     </div>
                   )}
                   {lastResult.veredito && (
                     <div className="flex items-start gap-2">
                       <span style={{ color: '#a78bfa', fontSize: '10px', marginTop: '1px', flexShrink: 0 }}>✦</span>
-                      <p className="text-xs text-slate-400 leading-snug line-clamp-2">{lastResult.veredito}</p>
+                      <p className="text-xs leading-snug line-clamp-2" style={{ color: 'var(--fa-text-2)' }}>{lastResult.veredito}</p>
                     </div>
                   )}
                 </div>
@@ -1191,8 +1319,8 @@ export default function RedacaoClient({ plan }: { plan: Plan }) {
               style={{
                 background: isPro
                   ? `linear-gradient(135deg, ${VIOLET}, ${CYAN})`
-                  : 'rgba(255,255,255,0.06)',
-                border: isPro ? 'none' : '1px solid rgba(255,255,255,0.12)',
+                  : isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.06)',
+                border: isPro ? 'none' : `1px solid ${isLight ? 'var(--fa-border)' : 'rgba(255,255,255,0.12)'}`,
                 boxShadow: isPro ? `0 0 20px ${VIOLET}33` : 'none',
               }}
             >
@@ -1204,10 +1332,10 @@ export default function RedacaoClient({ plan }: { plan: Plan }) {
         {/* Bloco 2: Enviar Redação */}
         <div
           className="relative rounded-2xl overflow-hidden flex flex-col"
-          style={{ background: 'rgba(3,5,18,0.97)', border: `1px solid ${VIOLET}22`, boxShadow: `0 0 30px ${VIOLET}06` }}
+          style={{ background: isLight ? 'var(--fa-card)' : 'rgba(3,5,18,0.97)', border: `1px solid ${VIOLET}22`, boxShadow: isLight ? 'var(--fa-shadow)' : `0 0 30px ${VIOLET}06` }}
         >
           <div className="absolute inset-x-0 top-0 h-px"
-            style={{ background: `linear-gradient(90deg, transparent, ${VIOLET}50, transparent)` }} />
+            style={{ background: `linear-gradient(90deg, transparent, ${VIOLET}50, transparent)`, opacity: isLight ? 0.5 : 1 }} />
           <div className="p-5 flex flex-col flex-1">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0"
@@ -1216,11 +1344,11 @@ export default function RedacaoClient({ plan }: { plan: Plan }) {
                 ✒️
               </div>
               <div>
-                <h3 className="font-black text-white text-sm">Banca Protocolo Neural</h3>
-                <p className="text-slate-500 text-xs mt-0.5">Correção por IA · Análise ENEM C1–C5</p>
+                <h3 className="font-black text-sm" style={{ color: 'var(--fa-text)' }}>Banca Protocolo Neural</h3>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--fa-text-3)' }}>Correção por IA · Análise ENEM C1–C5</p>
               </div>
             </div>
-            <p className="text-xs text-slate-400 leading-relaxed mb-4 flex-1">
+            <p className="text-xs leading-relaxed mb-4 flex-1" style={{ color: 'var(--fa-text-2)' }}>
               Envie sua redação e receba correção detalhada por competência, nota estimada, pontos fortes e sugestões de melhoria.
             </p>
             <button
@@ -1230,8 +1358,8 @@ export default function RedacaoClient({ plan }: { plan: Plan }) {
               style={{
                 background: isPro
                   ? `linear-gradient(135deg, ${VIOLET}, ${PINK})`
-                  : 'rgba(255,255,255,0.06)',
-                border: isPro ? 'none' : '1px solid rgba(255,255,255,0.12)',
+                  : isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.06)',
+                border: isPro ? 'none' : `1px solid ${isLight ? 'var(--fa-border)' : 'rgba(255,255,255,0.12)'}`,
                 boxShadow: isPro ? `0 0 20px ${VIOLET}33` : 'none',
               }}
             >
@@ -1245,7 +1373,7 @@ export default function RedacaoClient({ plan }: { plan: Plan }) {
       {/* ── Tab bar ───────────────────────────────────────────────────────── */}
       <div
         className="flex gap-1 p-1 rounded-2xl mb-7"
-        style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
+        style={{ background: isLight ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.04)', border: `1px solid ${isLight ? 'var(--fa-border)' : 'rgba(255,255,255,0.07)'}` }}
       >
         {([
           { id: 'correcao', label: 'Correção',  icon: '✒️' },
@@ -1262,9 +1390,9 @@ export default function RedacaoClient({ plan }: { plan: Plan }) {
                 background: isActive
                   ? `linear-gradient(135deg, ${VIOLET}40, ${CYAN}25)`
                   : 'transparent',
-                color: isActive ? '#fff' : 'rgba(255,255,255,0.40)',
+                color: isActive ? 'var(--fa-text)' : 'var(--fa-text-2)',
                 border: isActive ? `1px solid ${CYAN}30` : '1px solid transparent',
-                boxShadow: isActive ? `0 0 16px ${CYAN}15` : 'none',
+                boxShadow: isActive ? (isLight ? 'var(--fa-shadow)' : `0 0 16px ${CYAN}15`) : 'none',
               }}
             >
               <span>{tab.icon}</span>
@@ -1317,22 +1445,23 @@ export default function RedacaoClient({ plan }: { plan: Plan }) {
               <div
                 className="relative rounded-2xl overflow-hidden mb-6"
                 style={{
-                  background: 'rgba(6,182,212,0.04)',
+                  background: isLight ? 'var(--fa-card)' : 'rgba(6,182,212,0.04)',
                   border:     `1px solid ${CYAN}22`,
+                  boxShadow:  isLight ? 'var(--fa-shadow)' : 'none',
                 }}
               >
                 <div className="absolute inset-x-0 top-0 h-px"
-                  style={{ background: `linear-gradient(90deg, transparent, ${CYAN}50, transparent)` }} />
+                  style={{ background: `linear-gradient(90deg, transparent, ${CYAN}50, transparent)`, opacity: isLight ? 0.5 : 1 }} />
 
                 {/* Tema */}
-                <div className="px-6 pt-6 pb-4 border-b">
-                  <p className="text-xs font-semibold tracking-widest uppercase text-slate-500 mb-2">
+                <div className="px-6 pt-6 pb-4 border-b" style={{ borderColor: 'var(--fa-border-dim)' }}>
+                  <p className="text-xs font-semibold tracking-widest uppercase mb-2" style={{ color: 'var(--fa-text-3)' }}>
                     Tema
                   </p>
-                  <p className="text-xl font-bold text-white leading-snug">
+                  <p className="text-xl font-bold leading-snug" style={{ color: 'var(--fa-text)' }}>
                     {viewingSubmission.tema}
                   </p>
-                  <p className="text-xs text-slate-600 mt-2">
+                  <p className="text-xs mt-2" style={{ color: 'var(--fa-text-3)' }}>
                     {new Date(viewingSubmission.created_at).toLocaleDateString('pt-BR', {
                       day: '2-digit', month: 'long', year: 'numeric',
                     })}
@@ -1341,10 +1470,10 @@ export default function RedacaoClient({ plan }: { plan: Plan }) {
 
                 {/* Texto original */}
                 <div className="px-6 py-5">
-                  <p className="text-xs font-semibold tracking-widest uppercase text-slate-500 mb-3">
+                  <p className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: 'var(--fa-text-3)' }}>
                     Texto Enviado
                   </p>
-                  <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">
+                  <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: 'var(--fa-text-2)' }}>
                     {viewingSubmission.texto}
                   </p>
                 </div>
@@ -1376,7 +1505,7 @@ export default function RedacaoClient({ plan }: { plan: Plan }) {
                   <span className="text-red-400 text-lg shrink-0">⚠</span>
                   <div>
                     <p className="text-sm font-semibold text-red-400">Erro na análise</p>
-                    <p className="text-xs text-slate-500 mt-0.5">{error}</p>
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--fa-text-3)' }}>{error}</p>
                   </div>
                 </div>
               )}
@@ -1393,7 +1522,7 @@ export default function RedacaoClient({ plan }: { plan: Plan }) {
               {/* Knowledge base — oculta durante revisão e loading */}
               {!loading && (
                 <>
-                  <p className="text-xs font-semibold tracking-widest uppercase text-slate-500 mb-4">
+                  <p className="text-xs font-semibold tracking-widest uppercase mb-4" style={{ color: 'var(--fa-text-3)' }}>
                     Base de Conhecimento
                   </p>
                   <div className="flex flex-col gap-3">
@@ -1405,6 +1534,7 @@ export default function RedacaoClient({ plan }: { plan: Plan }) {
                         defaultOpen={idx === 0 && isPro}
                         locked={!isPro}
                         onLockedClick={() => setShowUpgrade(true)}
+                        isLight={isLight}
                       />
                     ))}
                   </div>
@@ -1425,19 +1555,20 @@ export default function RedacaoClient({ plan }: { plan: Plan }) {
           <div
             className="relative rounded-2xl p-6 overflow-hidden"
             style={{
-              background: 'rgba(255,255,255,0.02)',
-              border:     '1px solid rgba(255,255,255,0.07)',
+              background: isLight ? 'var(--fa-card)' : 'rgba(255,255,255,0.02)',
+              border:     `1px solid ${isLight ? 'var(--fa-border)' : 'rgba(255,255,255,0.07)'}`,
+              boxShadow:  isLight ? 'var(--fa-shadow)' : 'none',
             }}
           >
             <div className="absolute inset-x-0 top-0 h-px"
-              style={{ background: `linear-gradient(90deg, transparent, ${CYAN}40, transparent)` }} />
+              style={{ background: `linear-gradient(90deg, transparent, ${CYAN}40, transparent)`, opacity: isLight ? 0.5 : 1 }} />
 
-            <p className="text-xs font-semibold tracking-widest uppercase text-slate-500 mb-5">
+            <p className="text-xs font-semibold tracking-widest uppercase mb-5" style={{ color: 'var(--fa-text-3)' }}>
               Curva de Evolução
             </p>
 
             {loadingHist ? (
-              <div className="flex items-center justify-center py-16 gap-3 text-slate-600 text-sm">
+              <div className="flex items-center justify-center py-16 gap-3 text-sm" style={{ color: 'var(--fa-text-3)' }}>
                 <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
                   <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" opacity=".25"/>
                   <path fill="currentColor" opacity=".75" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
@@ -1453,25 +1584,26 @@ export default function RedacaoClient({ plan }: { plan: Plan }) {
           <div
             className="relative rounded-2xl overflow-hidden"
             style={{
-              background: 'rgba(255,255,255,0.02)',
-              border:     '1px solid rgba(255,255,255,0.07)',
+              background: isLight ? 'var(--fa-card)' : 'rgba(255,255,255,0.02)',
+              border:     `1px solid ${isLight ? 'var(--fa-border)' : 'rgba(255,255,255,0.07)'}`,
+              boxShadow:  isLight ? 'var(--fa-shadow)' : 'none',
             }}
           >
             <div className="absolute inset-x-0 top-0 h-px"
-              style={{ background: `linear-gradient(90deg, transparent, ${VIOLET}40, transparent)` }} />
+              style={{ background: `linear-gradient(90deg, transparent, ${VIOLET}40, transparent)`, opacity: isLight ? 0.5 : 1 }} />
 
             <div className="px-5 pt-5 pb-2">
-              <p className="text-xs font-semibold tracking-widest uppercase text-slate-500">
+              <p className="text-xs font-semibold tracking-widest uppercase" style={{ color: 'var(--fa-text-3)' }}>
                 Histórico de Redações
               </p>
-              <p className="text-xs text-slate-600 mt-0.5">
+              <p className="text-xs mt-0.5" style={{ color: 'var(--fa-text-3)' }}>
                 Clique em qualquer redação para revisar a correção completa
               </p>
             </div>
 
             <div className="px-4 pb-4 pt-2">
               {loadingHist ? (
-                <div className="flex items-center justify-center py-10 gap-3 text-slate-600 text-sm">
+                <div className="flex items-center justify-center py-10 gap-3 text-sm" style={{ color: 'var(--fa-text-3)' }}>
                   <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
                     <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" opacity=".25"/>
                     <path fill="currentColor" opacity=".75" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
@@ -1489,6 +1621,8 @@ export default function RedacaoClient({ plan }: { plan: Plan }) {
           </div>
         </div>
       )}
-    </div>
+    </div>{/* end tour-redacao */}
+      </div>{/* end max-w-4xl */}
+    </main>
   );
 }
