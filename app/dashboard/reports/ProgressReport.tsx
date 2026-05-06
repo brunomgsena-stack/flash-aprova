@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
+import { useTheme } from '@/components/ThemeProvider';
 import { buildDomainMap } from '@/lib/domain';
 import { getCategoryShort } from '@/lib/categories';
 import { getSubjectIcon } from '@/lib/iconMap';
@@ -65,7 +66,7 @@ function memoryColor(pct: number): string {
   if (pct >= 80) return MINT;
   if (pct >= 55) return OCEAN;
   if (pct >= 30) return AMBER;
-  return 'rgba(255,255,255,0.25)';
+  return 'var(--fa-text-3)';
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -132,6 +133,8 @@ function SectionLabel({ color = MINT, children }: { color?: string; children: Re
 // ── 1. Career Match ────────────────────────────────────────────────────────────
 
 function CareerMatchCard({ data }: { data: ReportData }) {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
   const { firstName, targetCourse, targetUniversity, affinityScore, courseWeights, areaScores } = data;
   const course = targetCourse ?? 'Seu Curso Alvo';
   const uni    = targetUniversity ?? 'Sua Universidade';
@@ -141,12 +144,12 @@ function CareerMatchCard({ data }: { data: ReportData }) {
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="flex-1 min-w-0">
           <SectionLabel color={MINT}>Match de Carreira · SISU</SectionLabel>
-          <h2 className="text-xl font-black text-white mb-0.5">
+          <h2 className="text-xl font-black mb-0.5" style={{ color: 'var(--fa-text)' }}>
             {firstName}, você está <span style={{ color: MINT }}>{affinityScore}%</span> alinhado
           </h2>
           <p className="text-sm" style={{ color: DIM }}>
-            com o perfil de aprovação em <strong className="text-white">{course}</strong>
-            {targetUniversity ? <> na <strong className="text-white">{uni}</strong></> : ''}
+            com o perfil de aprovação em <strong style={{ color: 'var(--fa-text)' }}>{course}</strong>
+            {targetUniversity ? <> na <strong style={{ color: 'var(--fa-text)' }}>{uni}</strong></> : ''}
           </p>
         </div>
 
@@ -154,7 +157,7 @@ function CareerMatchCard({ data }: { data: ReportData }) {
         <div className="shrink-0 flex flex-col items-center gap-1">
           <div className="relative w-20 h-20">
             <svg viewBox="0 0 80 80" className="w-full h-full -rotate-90">
-              <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="8" />
+              <circle cx="40" cy="40" r="34" fill="none" stroke={isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.07)'} strokeWidth="8" />
               <circle cx="40" cy="40" r="34" fill="none"
                 stroke={affinityScore >= 70 ? MINT : affinityScore >= 40 ? OCEAN : AMBER}
                 strokeWidth="8" strokeLinecap="round"
@@ -163,7 +166,7 @@ function CareerMatchCard({ data }: { data: ReportData }) {
                 style={{ transition: 'stroke-dashoffset 1s ease' }}
               />
             </svg>
-            <span className="absolute inset-0 flex items-center justify-center text-lg font-black text-white">
+            <span className="absolute inset-0 flex items-center justify-center text-lg font-black" style={{ color: 'var(--fa-text)' }}>
               {affinityScore}%
             </span>
           </div>
@@ -181,16 +184,16 @@ function CareerMatchCard({ data }: { data: ReportData }) {
           const color    = score >= 60 ? MINT : score >= 30 ? OCEAN : AMBER;
           return (
             <div key={area} className="rounded-xl p-2.5"
-              style={{ background: 'rgba(255,255,255,0.04)', border: `1px solid ${color}22` }}>
+              style={{ background: isLight ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.04)', border: `1px solid ${color}22` }}>
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-xs font-semibold text-white">{area}</span>
+                <span className="text-xs font-semibold" style={{ color: 'var(--fa-text)' }}>{area}</span>
                 <span className="text-xs font-bold" style={{ color }}>{score}%</span>
               </div>
-              <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
+              <div className="h-1.5 rounded-full overflow-hidden" style={{ background: isLight ? 'rgba(0,0,0,0.07)' : 'rgba(255,255,255,0.08)' }}>
                 <div className="h-full rounded-full transition-all duration-700"
                   style={{ width: `${fillPct}%`, background: color }} />
               </div>
-              <p className="text-xs mt-1.5" style={{ color: 'rgba(255,255,255,0.28)' }}>
+              <p className="text-xs mt-1.5" style={{ color: 'var(--fa-text-3)' }}>
                 Peso SISU: {Math.round(weight * 100)}%
               </p>
             </div>
@@ -203,7 +206,7 @@ function CareerMatchCard({ data }: { data: ReportData }) {
         <div className="mt-3 rounded-xl px-3 py-2.5 flex items-start gap-2"
           style={{ background: `${AMBER}0C`, border: `1px solid ${AMBER}25` }}>
           <span>💡</span>
-          <p className="text-xs" style={{ color: 'rgba(255,255,255,0.70)' }}>
+          <p className="text-xs" style={{ color: 'var(--fa-text-2)' }}>
             <span className="font-semibold" style={{ color: AMBER }}>Oportunidade de Ganho de Pontos: </span>
             Você marcou {data.difficultyAreas.join(', ')} como área(s) de desafio.
             Cada revisão nessa(s) área(s) tem impacto direto na sua nota final.
@@ -217,6 +220,8 @@ function CareerMatchCard({ data }: { data: ReportData }) {
 // ── 2. Retention Pyramid ───────────────────────────────────────────────────────
 
 function RetentionPyramid({ data }: { data: ReportData }) {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
   const { totalCards, matureCount, buildingCount, riskCount, unstudied } = data;
   if (totalCards === 0) return null;
 
@@ -268,24 +273,24 @@ function RetentionPyramid({ data }: { data: ReportData }) {
               <div className="flex items-center justify-between mb-1">
                 <div className="flex items-center gap-2">
                   <span style={{ fontSize: '14px' }}>{tier.icon}</span>
-                  <span className="text-xs font-semibold text-white">{tier.label}</span>
+                  <span className="text-xs font-semibold" style={{ color: 'var(--fa-text)' }}>{tier.label}</span>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <span className="text-xs font-bold" style={{ color: tier.color }}>{pct}%</span>
                   <span className="text-xs" style={{ color: DIM }}>({tier.count.toLocaleString('pt-BR')})</span>
                 </div>
               </div>
-              <div className="h-6 rounded-lg overflow-hidden relative" style={{ background: 'rgba(255,255,255,0.05)', maxWidth: `${maxW}%` }}>
+              <div className="h-6 rounded-lg overflow-hidden relative" style={{ background: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)', maxWidth: `${maxW}%` }}>
                 <div
                   className="h-full rounded-lg transition-all duration-700 flex items-center pl-2"
                   style={{
                     width:      `${pct}%`,
-                    background: tier.color === 'rgba(255,255,255,0.18)' ? 'rgba(255,255,255,0.08)' : `linear-gradient(90deg, ${tier.color}88, ${tier.color})`,
+                    background: tier.color === 'var(--fa-text-3)' ? (isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)') : `linear-gradient(90deg, ${tier.color}88, ${tier.color})`,
                     minWidth:   pct > 0 ? '8px' : '0',
                   }}
                 />
               </div>
-              <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.25)', fontSize: '10px' }}>{tier.desc}</p>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--fa-text-3)', fontSize: '10px' }}>{tier.desc}</p>
             </div>
           );
         })}
@@ -297,6 +302,8 @@ function RetentionPyramid({ data }: { data: ReportData }) {
 // ── 3. Today Goal Widget ───────────────────────────────────────────────────────
 
 function TodayGoalWidget({ data }: { data: ReportData }) {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
   const { todayCount, yesterdayCount, dailyGoal, totalReviews } = data;
   const pct     = Math.min(100, Math.round((todayCount / dailyGoal) * 100));
   const delta   = todayCount - yesterdayCount;
@@ -310,7 +317,7 @@ function TodayGoalWidget({ data }: { data: ReportData }) {
       <div className="flex items-center gap-4">
         <div className="relative w-16 h-16 shrink-0">
           <svg viewBox="0 0 64 64" className="w-full h-full -rotate-90">
-            <circle cx="32" cy="32" r="26" fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="7" />
+            <circle cx="32" cy="32" r="26" fill="none" stroke={isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.07)'} strokeWidth="7" />
             <circle cx="32" cy="32" r="26" fill="none"
               stroke={color} strokeWidth="7" strokeLinecap="round"
               strokeDasharray={`${2 * Math.PI * 26}`}
@@ -318,14 +325,14 @@ function TodayGoalWidget({ data }: { data: ReportData }) {
               style={{ transition: 'stroke-dashoffset 0.8s ease' }}
             />
           </svg>
-          <span className="absolute inset-0 flex items-center justify-center text-sm font-black text-white">
+          <span className="absolute inset-0 flex items-center justify-center text-sm font-black" style={{ color: 'var(--fa-text)' }}>
             {pct}%
           </span>
         </div>
 
         <div className="flex-1">
-          <p className="text-lg font-black text-white leading-tight">
-            {todayCount}<span className="text-sm font-semibold text-slate-400"> / {dailyGoal}</span>
+          <p className="text-lg font-black leading-tight" style={{ color: 'var(--fa-text)' }}>
+            {todayCount}<span className="text-sm font-semibold" style={{ color: 'var(--fa-text-3)' }}> / {dailyGoal}</span>
           </p>
           <p className="text-xs" style={{ color: DIM }}>cards revisados hoje</p>
           <div className="flex items-center gap-1 mt-1">
@@ -339,7 +346,7 @@ function TodayGoalWidget({ data }: { data: ReportData }) {
 
       {/* Total */}
       <div className="rounded-xl px-3 py-2 flex items-center justify-between"
-        style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+        style={{ background: isLight ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.04)', border: `1px solid ${isLight ? 'var(--fa-border)' : 'rgba(255,255,255,0.06)'}` }}>
         <span className="text-xs" style={{ color: DIM }}>Total histórico</span>
         <span className="text-sm font-black" style={{ color: MINT }}>
           {totalReviews.toLocaleString('pt-BR')} revisões
@@ -359,24 +366,26 @@ function TodayGoalWidget({ data }: { data: ReportData }) {
 // ── 4. Deep Dive Pedagógico ────────────────────────────────────────────────────
 
 function DeepDiveRow({ subject }: { subject: SubjectRow }) {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
   const [open, setOpen] = useState(false);
   const color = memoryColor(subject.mastery);
 
   return (
-    <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.07)' }}>
+    <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${isLight ? 'var(--fa-border)' : 'rgba(255,255,255,0.07)'}` }}>
       <button
         onClick={() => setOpen(o => !o)}
-        className="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-white/5"
-        style={{ background: 'rgba(255,255,255,0.03)' }}
+        className="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors"
+        style={{ background: isLight ? 'rgba(0,0,0,0.02)' : 'rgba(255,255,255,0.03)' }}
       >
         <span className="text-base shrink-0">{subject.icon}</span>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-white truncate">{subject.title}</p>
+          <p className="text-sm font-semibold truncate" style={{ color: 'var(--fa-text)' }}>{subject.title}</p>
           <p className="text-xs" style={{ color: DIM }}>{subject.area}</p>
         </div>
         {/* Memory bar */}
         <div className="shrink-0 flex items-center gap-2" style={{ minWidth: '100px' }}>
-          <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
+          <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: isLight ? 'rgba(0,0,0,0.07)' : 'rgba(255,255,255,0.08)' }}>
             <div className="h-full rounded-full" style={{ width: `${subject.mastery}%`, background: color }} />
           </div>
           <span className="text-xs font-bold w-8 text-right" style={{ color }}>{subject.mastery}%</span>
@@ -386,8 +395,8 @@ function DeepDiveRow({ subject }: { subject: SubjectRow }) {
 
       {open && (
         <div className="px-4 pb-3 pt-1 flex flex-col gap-1.5"
-          style={{ background: 'rgba(0,0,0,0.25)', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-          <p className="text-xs font-semibold mb-2" style={{ color: 'rgba(255,255,255,0.35)', letterSpacing: '0.06em' }}>
+          style={{ background: isLight ? 'rgba(0,0,0,0.02)' : 'rgba(0,0,0,0.25)', borderTop: `1px solid ${isLight ? 'var(--fa-border)' : 'rgba(255,255,255,0.05)'}` }}>
+          <p className="text-xs font-semibold mb-2" style={{ color: 'var(--fa-text-3)', letterSpacing: '0.06em' }}>
             TÓPICOS & FORÇA DA MEMÓRIA
           </p>
           {subject.decks.length === 0 ? (
@@ -397,20 +406,20 @@ function DeepDiveRow({ subject }: { subject: SubjectRow }) {
             const dl = memoryLabel(deck.memory);
             return (
               <div key={deck.id} className="flex items-center gap-3 rounded-lg px-3 py-2"
-                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                style={{ background: isLight ? 'rgba(0,0,0,0.02)' : 'rgba(255,255,255,0.03)', border: `1px solid ${isLight ? 'var(--fa-border)' : 'rgba(255,255,255,0.05)'}` }}>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-white truncate">{deck.title}</p>
-                  <p className="text-xs" style={{ color: 'rgba(255,255,255,0.28)' }}>
+                  <p className="text-xs font-semibold truncate" style={{ color: 'var(--fa-text)' }}>{deck.title}</p>
+                  <p className="text-xs" style={{ color: 'var(--fa-text-3)' }}>
                     {deck.cards} cards · {deck.lapses > 0 ? `${deck.lapses} revisões extras` : 'sem revisões extras'}
                   </p>
                 </div>
                 <div className="shrink-0 flex items-center gap-2">
-                  <div className="w-16 h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
+                  <div className="w-16 h-1 rounded-full overflow-hidden" style={{ background: isLight ? 'rgba(0,0,0,0.07)' : 'rgba(255,255,255,0.08)' }}>
                     <div className="h-full rounded-full" style={{ width: `${deck.memory}%`, background: dc }} />
                   </div>
                   <div className="text-right" style={{ minWidth: '80px' }}>
                     <p className="text-xs font-bold leading-tight" style={{ color: dc }}>{deck.memory}%</p>
-                    <p style={{ fontSize: '9px', color: 'rgba(255,255,255,0.28)' }}>{dl}</p>
+                    <p style={{ fontSize: '9px', color: 'var(--fa-text-3)' }}>{dl}</p>
                   </div>
                 </div>
               </div>
@@ -449,8 +458,8 @@ function PerfTooltip({ active, payload }: { active?: boolean; payload?: { value:
   const d = payload[0].payload;
   return (
     <div className="px-3 py-2 rounded-xl text-xs"
-      style={{ background: 'rgba(5,11,20,0.95)', border: `1px solid ${OCEAN}30` }}>
-      <p className="font-bold text-white">{d.label}</p>
+      style={{ background: 'var(--fa-card)', border: `1px solid ${OCEAN}30`, boxShadow: 'var(--fa-shadow)' }}>
+      <p className="font-bold" style={{ color: 'var(--fa-text)' }}>{d.label}</p>
       <p style={{ color: OCEAN }}>{d.accuracy}% de acerto · {d.total} revisões</p>
     </div>
   );
@@ -494,8 +503,8 @@ function PerformanceAnalysisCard({ data }: { data: ReportData }) {
             style={{ background: `${OCEAN}0C`, border: `1px solid ${OCEAN}25` }}>
             <span>💡</span>
             <div>
-              <p className="text-xs font-bold text-white mb-0.5">Insight do Mentor</p>
-              <p className="text-xs" style={{ color: 'rgba(255,255,255,0.65)' }}>
+              <p className="text-xs font-bold mb-0.5" style={{ color: 'var(--fa-text)' }}>Insight do Mentor</p>
+              <p className="text-xs" style={{ color: 'var(--fa-text-2)' }}>
                 Você rende mais no período da{' '}
                 <strong style={{ color: OCEAN }}>{bestPeriod}</strong>.
                 {bestArea && (
@@ -529,6 +538,8 @@ function Skeleton() {
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function ProgressReport() {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
   const [data,    setData]    = useState<ReportData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -729,7 +740,7 @@ export default function ProgressReport() {
               <p className="text-xs font-bold tracking-widest uppercase mb-1" style={{ color: MINT }}>
                 Acompanhamento Pedagógico
               </p>
-              <h1 className="text-2xl font-black text-white">Auditoria de Aprovação</h1>
+              <h1 className="text-2xl font-black" style={{ color: 'var(--fa-text)' }}>Auditoria de Aprovação</h1>
               <p className="text-sm mt-0.5" style={{ color: DIM }}>
                 Seu retrato completo de conhecimento — baseado em ciência da memória
               </p>
@@ -738,14 +749,14 @@ export default function ProgressReport() {
               <button
                 onClick={() => window.print()}
                 className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition-all hover:brightness-125"
-                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', color: 'rgba(255,255,255,0.60)' }}
+                style={{ background: 'var(--fa-card)', border: '1px solid var(--fa-border)', color: 'var(--fa-text-2)' }}
               >
                 🖨️ Imprimir
               </button>
               <Link
                 href="/dashboard"
                 className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition-all hover:brightness-125"
-                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', color: 'rgba(255,255,255,0.60)' }}
+                style={{ background: 'var(--fa-card)', border: '1px solid var(--fa-border)', color: 'var(--fa-text-2)' }}
               >
                 ← Dashboard
               </Link>
@@ -782,9 +793,9 @@ export default function ProgressReport() {
               </div>
 
               {/* Link to settings */}
-              <p className="text-xs text-center no-print" style={{ color: 'rgba(255,255,255,0.25)' }}>
+              <p className="text-xs text-center no-print" style={{ color: 'var(--fa-text-3)' }}>
                 Atualize seu curso-alvo ou meta diária em{' '}
-                <Link href="/dashboard/settings" className="underline hover:text-white transition-colors">
+                <Link href="/dashboard/settings" className="underline hover:opacity-70 transition-opacity">
                   Perfil de Estudos
                 </Link>
               </p>
