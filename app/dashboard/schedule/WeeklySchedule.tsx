@@ -254,7 +254,7 @@ function AiPlanBanner({
             className="px-2.5 py-1 rounded-lg text-xs font-bold transition-all duration-150"
             style={
               selectedWeek === i
-                ? { background: `${VIOLET}30`, border: `1px solid ${VIOLET}70`, color: '#fff' }
+                ? { background: `${VIOLET}30`, border: `1px solid ${VIOLET}70`, color: 'var(--fa-text)' }
                 : { background: 'var(--fa-card)', border: '1px solid var(--fa-border)', color: DIM }
             }
           >
@@ -264,7 +264,7 @@ function AiPlanBanner({
       </div>
 
       {/* Week title */}
-      <p className="font-black text-white text-base mb-3 leading-tight">{week.tema}</p>
+      <p className="font-black text-base mb-3 leading-tight" style={{ color: 'var(--fa-text)' }}>{week.tema}</p>
 
       {/* Modules for this week */}
       <div className="flex flex-wrap gap-2 mb-4">
@@ -391,10 +391,10 @@ function BlockCard({ block, onStart, doneToday }: { block: WeekBlock; onStart: (
           </span>
         )}
       </div>
-      <p className="text-xs font-semibold text-white leading-tight truncate mb-0.5">
+      <p className="text-xs font-semibold leading-tight truncate mb-0.5" style={{ color: 'var(--fa-text)' }}>
         {block.subject}
       </p>
-      <p className="leading-tight text-white/50 truncate" style={{ fontSize: '10px' }}>
+      <p className="leading-tight truncate" style={{ fontSize: '10px', color: 'var(--fa-text-2)' }}>
         {block.deckTitle}
       </p>
       <div className="flex items-center gap-1.5 mt-1.5">
@@ -441,7 +441,7 @@ function DaySelector({ value, onChange }: { value: number[]; onChange: (days: nu
               className="rounded-lg px-2.5 py-1 text-xs font-bold transition-all duration-150"
               style={
                 active
-                  ? { background: `${EMERALD}22`, border: `1px solid ${EMERALD}55`, color: 'white' }
+                  ? { background: `${EMERALD}22`, border: `1px solid ${EMERALD}55`, color: 'var(--fa-text)' }
                   : { background: 'var(--fa-card)', border: '1px solid var(--fa-border)', color: DIM }
               }
             >
@@ -475,7 +475,7 @@ function AttackTimeSelector({ value, onChange }: { value: number; onChange: (h: 
             className="rounded-lg px-2.5 py-1 text-xs font-bold transition-all duration-150"
             style={
               value === opt.value
-                ? { background: `${OCEAN}22`, border: `1px solid ${OCEAN}55`, color: 'white' }
+                ? { background: `${OCEAN}22`, border: `1px solid ${OCEAN}55`, color: 'var(--fa-text)' }
                 : { background: 'var(--fa-card)', border: '1px solid var(--fa-border)', color: DIM }
             }
           >
@@ -741,7 +741,7 @@ export default function WeeklySchedule() {
             <p className="text-xs font-bold tracking-widest uppercase mb-1" style={{ color: OCEAN }}>
               FlashTutor IA
             </p>
-            <h1 className="text-2xl font-black text-white">
+            <h1 className="text-2xl font-black" style={{ color: 'var(--fa-text)' }}>
               Cronograma da Semana
             </h1>
             <p className="text-sm mt-0.5" style={{ color: DIM }}>
@@ -765,7 +765,7 @@ export default function WeeklySchedule() {
           <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
             <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl"
               style={{ background: `${OCEAN}14`, border: `1px solid ${OCEAN}30` }}>📚</div>
-            <p className="text-white font-black text-lg">Adicione decks para montar o cronograma</p>
+            <p className="font-black text-lg" style={{ color: 'var(--fa-text)' }}>Adicione decks para montar o cronograma</p>
             <Link href="/dashboard" className="text-xs underline hover:text-white transition-colors" style={{ color: DIM }}>← Ir para o Dashboard</Link>
           </div>
         ) : (
@@ -808,10 +808,10 @@ export default function WeeklySchedule() {
               <AttackTimeSelector value={hours} onChange={setHours} />
               <div className="flex items-center gap-4 text-xs flex-wrap" style={{ color: DIM }}>
                 <span>
-                  <strong className="text-white">{totalWeekCards.toLocaleString('pt-BR')}</strong> cards
+                  <strong style={{ color: 'var(--fa-text)' }}>{totalWeekCards.toLocaleString('pt-BR')}</strong> cards
                 </span>
                 <span>
-                  <strong className="text-white">{Math.round(totalWeekMins / 60)}h</strong> na semana
+                  <strong style={{ color: 'var(--fa-text)' }}>{Math.round(totalWeekMins / 60)}h</strong> na semana
                 </span>
                 {schedData.todayReviewCount > 0 && (
                   <span className="font-semibold" style={{ color: EMERALD }}>
