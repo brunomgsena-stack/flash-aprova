@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter, useSearchParams }        from 'next/navigation';
 import DashboardBootUp                       from '@/components/DashboardBootUp';
+import PWAInstallAnimation                   from '@/components/PWAInstallAnimation';
 
 // ─── Tokens ─────────────────────────────────────────────────────────────────
 const EMERALD = '#10B981';
@@ -331,32 +332,10 @@ export default function DashboardTour() {
 
   // ── PWA overlay (step isOverlay) ──────────────────────────────────────────
   if (s.isOverlay) {
-    const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
-    const isIOS     = /iphone|ipad|ipod/i.test(ua);
-    const isAndroid = /android/i.test(ua);
-
-    const pwaSteps = isIOS
-      ? [
-          { icon: '1.', text: 'Abra este site no Safari (não Chrome)' },
-          { icon: '2.', text: 'Toque no botão Compartilhar ⬆️ na barra inferior' },
-          { icon: '3.', text: 'Role para baixo e toque em "Adicionar à Tela de Início"' },
-          { icon: '4.', text: 'Toque em "Adicionar" no canto superior direito' },
-        ]
-      : isAndroid
-      ? [
-          { icon: '1.', text: 'Toque no menu ⋮ no canto superior direito do Chrome' },
-          { icon: '2.', text: 'Toque em "Adicionar à tela inicial"' },
-          { icon: '3.', text: 'Confirme tocando em "Adicionar"' },
-        ]
-      : [
-          { icon: '1.', text: 'No Chrome, clique no ícone ⊕ na barra de endereço' },
-          { icon: '2.', text: 'Ou clique em ⋮ → "Instalar FlashAprova"' },
-        ];
-
     return (
       <div
-        className="fixed inset-0 z-50 flex flex-col items-center justify-center px-6"
-        style={{ background: 'rgba(5,11,20,0.96)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
+        className="fixed inset-0 z-50 flex flex-col items-center justify-center px-4"
+        style={{ background: 'rgba(5,11,20,0.96)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', overflowY: 'auto' }}
       >
         {/* Dots + skip */}
         <div className="absolute top-6 inset-x-0 flex items-center justify-between px-6">
@@ -383,37 +362,19 @@ export default function DashboardTour() {
         </div>
 
         {/* Content */}
-        <div className="flex flex-col items-center gap-5 text-center max-w-sm w-full">
-          <span style={{ fontSize: 52, lineHeight: 1 }}>📱</span>
+        <div className="flex flex-col items-center gap-4 text-center max-w-sm w-full py-20">
+          {/* Header */}
           <div>
-            <h2 className="text-2xl font-black text-white mb-2 leading-tight">
-              Instale o App na Tela Inicial
+            <h2 className="text-xl font-black text-white mb-1 leading-tight">
+              📱 Instale o App na Tela Inicial
             </h2>
-            <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.50)' }}>
-              Acesse mais rápido, sem abrir o navegador. Funciona offline também.
+            <p className="text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.50)' }}>
+              Acesse mais rápido, sem abrir o navegador.
             </p>
           </div>
 
-          {/* Step-by-step instructions */}
-          <div className="w-full flex flex-col gap-2.5 text-left">
-            {pwaSteps.map((item, i) => (
-              <div
-                key={i}
-                className="flex items-start gap-3 rounded-xl px-4 py-3"
-                style={{ background: `${EMERALD}0A`, border: `1px solid ${EMERALD}22` }}
-              >
-                <span
-                  className="shrink-0 font-black text-xs mt-0.5"
-                  style={{ color: EMERALD, fontFamily: MONO, minWidth: 16 }}
-                >
-                  {item.icon}
-                </span>
-                <span className="text-sm leading-snug" style={{ color: 'rgba(255,255,255,0.75)' }}>
-                  {item.text}
-                </span>
-              </div>
-            ))}
-          </div>
+          {/* Animated demo */}
+          <PWAInstallAnimation />
 
           <button
             onClick={handleNext}
