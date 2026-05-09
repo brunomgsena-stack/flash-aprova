@@ -1,24 +1,68 @@
+# Task 2: DemoStudentDashboard — Plano de Implementação para Sonnet
+
+> **Modelo:** Sonnet 4.6. Este plano contém TODO o código necessário — basta copiar, adaptar e commitar.
+
+**Objetivo:** Criar `components/DemoStudentDashboard.tsx` — réplica visual standalone do dashboard do aluno, parameterizada por branding da escola (logo, cor, nome do tutor).
+
+**Regra absoluta:** ZERO imports de `StudentDashboard.tsx`, `DashboardContext`, `UserMenu`, `StreakBadge`, ou qualquer outro componente B2C do `/dashboard`. Este componente é 100% isolado.
+
+---
+
+## Contexto Visual
+
+O StudentDashboard real (788 linhas) tem estas seções visuais na ordem:
+
+1. **Header** — Logo ⚡FlashAprova + StreakBadge + UserMenu
+2. **Greeting** — "Sinta-se em casa, [nome]."
+3. **Status line** — dot colorido + "Meta de hoje batida!" etc
+4. **Copilot Card** (card principal com glass morphism):
+   - Label "💡 Seu Copiloto" + badge "[SISTEMA OPERANDO]"
+   - DailyProgressBar (barra de progresso META DIÁRIA)
+   - Avatar do tutor + bubble com mensagem empática
+   - StatPills (% EDITAL DOMINADO, DIAS EM SEQUÊNCIA)
+   - 4 AreaFocusCards (Humanas, Natureza, Linguagens, Matemática)
+   - 2 botões: "📊 Relatório de Progresso" + "🗓️ Cronograma IA"
+5. **Charts Row** — Radar ENEM + Retenção (area chart)
+6. **Subject Cards** — matérias agrupadas por área
+
+---
+
+## Props do Componente
+
+```typescript
+type DemoStudentDashboardProps = {
+  schoolName: string;        // ex: "Colégio Elite"
+  schoolLogo?: string;       // URL da logo
+  primaryColor: string;      // hex ex: "#1E40AF"
+  tutorName: string;         // ex: "Elite AI"
+};
+```
+
+**Regra de cores:** O componente recebe `primaryColor` e deriva todas as outras cores a partir dele:
+- `PRIMARY` = props.primaryColor (substitui EMERALD em todos os lugares)
+- `FOCUS` = '#0EA5E9' (mantém fixo — é informacional)
+- `AMBER` = '#F59E0B' (mantém fixo — atenção suave)
+
+---
+
+## Arquivo: `components/DemoStudentDashboard.tsx`
+
+### Estrutura geral
+
+```
 'use client';
 
-import {
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  Radar,
-  ResponsiveContainer,
-} from 'recharts';
+imports: useState, Image, recharts (RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, Tooltip)
 
-// ─── Props ────────────────────────────────────────────────────────────────────
+// Props type
+// Mock data constants
+// Sub-components: DemoLogo, DemoProgressBar, DemoStatPill, DemoAreaCard, DemoRadarChart, DemoSubjectCard
+// Main component: export default function DemoStudentDashboard(props)
+```
 
-type DemoStudentDashboardProps = {
-  schoolName: string;
-  schoolLogo?: string;
-  primaryColor: string;
-  tutorName: string;
-};
+### Mock Data (hardcoded no arquivo)
 
-// ─── Mock Data ────────────────────────────────────────────────────────────────
-
+```typescript
 const MOCK_STUDENT_NAME = 'Maria Clara';
 const MOCK_STREAK = 12;
 const MOCK_DAILY_GOAL = 50;
@@ -40,16 +84,16 @@ const MOCK_RADAR_DATA = [
 ];
 
 const MOCK_SUBJECTS = [
-  { id: '1',  title: 'Biologia',   icon: '🧬', progress: 72 },
-  { id: '2',  title: 'Química',    icon: '🧪', progress: 58 },
-  { id: '3',  title: 'Física',     icon: '⚡', progress: 65 },
-  { id: '4',  title: 'História',   icon: '🏛️', progress: 48 },
-  { id: '5',  title: 'Geografia',  icon: '🌍', progress: 55 },
-  { id: '6',  title: 'Português',  icon: '📚', progress: 78 },
-  { id: '7',  title: 'Literatura', icon: '📖', progress: 70 },
-  { id: '8',  title: 'Inglês',     icon: '🌐', progress: 62 },
-  { id: '9',  title: 'Matemática', icon: '📐', progress: 45 },
-  { id: '10', title: 'Redação',    icon: '✒️', progress: 60 },
+  { id: '1', title: 'Biologia',    icon: '🧬', category: 'Natureza',   progress: 72 },
+  { id: '2', title: 'Química',     icon: '🧪', category: 'Natureza',   progress: 58 },
+  { id: '3', title: 'Física',      icon: '⚡', category: 'Natureza',   progress: 65 },
+  { id: '4', title: 'História',    icon: '🏛️', category: 'Humanas',    progress: 48 },
+  { id: '5', title: 'Geografia',   icon: '🌍', category: 'Humanas',    progress: 55 },
+  { id: '6', title: 'Português',   icon: '📚', category: 'Linguagens', progress: 78 },
+  { id: '7', title: 'Literatura',  icon: '📖', category: 'Linguagens', progress: 70 },
+  { id: '8', title: 'Inglês',      icon: '🌐', category: 'Linguagens', progress: 62 },
+  { id: '9', title: 'Matemática',  icon: '📐', category: 'Matemática', progress: 45 },
+  { id: '10', title: 'Redação',    icon: '✒️', category: 'Redação',    progress: 60 },
 ];
 
 const AREA_CONFIG = [
@@ -57,25 +101,23 @@ const AREA_CONFIG = [
   { key: 'Natureza',   icon: '🔬', label: 'Ciências da Natureza' },
   { key: 'Linguagens', icon: '📚', label: 'Linguagens' },
   { key: 'Matemática', icon: '📐', label: 'Matemática' },
-] as const;
+];
+```
 
-const MONO = 'var(--font-jetbrains), "JetBrains Mono", monospace';
-const FOCUS = '#0EA5E9';
-const AMBER = '#F59E0B';
+---
 
-// ─── Sub-component 1: DemoLogo ────────────────────────────────────────────────
+### Sub-componente 1: DemoLogo
 
+Substitui `FlashAprovaLogo`. Quando `schoolLogo` existe, mostra a imagem; senão, mostra o nome da escola estilizado.
+
+```tsx
 function DemoLogo({ schoolName, schoolLogo, primaryColor }: { schoolName: string; schoolLogo?: string; primaryColor: string }) {
+  const MONO = 'var(--font-jetbrains), "JetBrains Mono", monospace';
   if (schoolLogo) {
     return (
       <div className="flex items-center gap-2">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={schoolLogo}
-          alt={schoolName}
-          className="h-6 w-6 object-contain rounded"
-          onError={e => (e.currentTarget.style.display = 'none')}
-        />
+        <img src={schoolLogo} alt={schoolName} className="h-6 w-6 object-contain rounded" onError={e => (e.currentTarget.style.display = 'none')} />
         <span style={{ fontFamily: MONO, fontSize: '11px', fontWeight: 900, letterSpacing: '0.06em', color: primaryColor }}>
           {schoolName}
         </span>
@@ -90,11 +132,19 @@ function DemoLogo({ schoolName, schoolLogo, primaryColor }: { schoolName: string
     </div>
   );
 }
+```
 
-// ─── Sub-component 2: DemoProgressBar ────────────────────────────────────────
+---
 
+### Sub-componente 2: DemoProgressBar
+
+Cópia exata da `DailyProgressBar` do original, mas usa `primaryColor` ao invés de EMERALD/FOCUS.
+
+```tsx
 function DemoProgressBar({ done, goal, primaryColor }: { done: number; goal: number; primaryColor: string }) {
-  const pct   = goal > 0 ? Math.min(100, Math.round((done / goal) * 100)) : 0;
+  const MONO = 'var(--font-jetbrains), "JetBrains Mono", monospace';
+  const FOCUS = '#0EA5E9';
+  const pct = goal > 0 ? Math.min(100, Math.round((done / goal) * 100)) : 0;
   const done_ = Math.min(done, goal);
 
   return (
@@ -128,10 +178,17 @@ function DemoProgressBar({ done, goal, primaryColor }: { done: number; goal: num
     </div>
   );
 }
+```
 
-// ─── Sub-component 3: DemoStatPill ───────────────────────────────────────────
+---
 
+### Sub-componente 3: DemoStatPill
+
+Idêntico ao `StatPill` original.
+
+```tsx
 function DemoStatPill({ value, label, color }: { value: string; label: string; color: string }) {
+  const MONO = 'var(--font-jetbrains), "JetBrains Mono", monospace';
   return (
     <div
       className="flex flex-col items-center justify-center rounded-xl px-3 py-2 gap-0.5"
@@ -147,13 +204,22 @@ function DemoStatPill({ value, label, color }: { value: string; label: string; c
     </div>
   );
 }
+```
 
-// ─── Sub-component 4: DemoAreaCard ───────────────────────────────────────────
+---
 
+### Sub-componente 4: DemoAreaCard
+
+Versão simplificada do `AreaFocusCard`. Sem onClick, sem router, sem isPro — puramente visual.
+
+```tsx
 function DemoAreaCard({ icon, label, cardsDue, score, isStrength, isNext, primaryColor }: {
   icon: string; label: string; cardsDue: number; score: number;
   isStrength: boolean; isNext: boolean; primaryColor: string;
 }) {
+  const FOCUS = '#0EA5E9';
+  const AMBER = '#F59E0B';
+  const MONO = 'var(--font-jetbrains), "JetBrains Mono", monospace';
   const color = isStrength ? primaryColor : isNext ? AMBER : FOCUS;
   const badge = isStrength ? '⭐ Ponto Forte' : isNext ? '💡 Destaque de Aprendizado' : null;
 
@@ -195,9 +261,15 @@ function DemoAreaCard({ icon, label, cardsDue, score, isStrength, isNext, primar
     </div>
   );
 }
+```
 
-// ─── Sub-component 5: DemoRadarChart ─────────────────────────────────────────
+---
 
+### Sub-componente 5: DemoRadarChart
+
+Radar ENEM simplificado usando recharts (já no projeto). Usa a mesma paleta de cores por área do MasteryRadarChart.
+
+```tsx
 function DemoRadarChart({ data, primaryColor }: { data: { area: string; mastery: number; fullMark: number }[]; primaryColor: string }) {
   return (
     <div
@@ -226,9 +298,15 @@ function DemoRadarChart({ data, primaryColor }: { data: { area: string; mastery:
     </div>
   );
 }
+```
 
-// ─── Sub-component 6: DemoSubjectCard ────────────────────────────────────────
+---
 
+### Sub-componente 6: DemoSubjectCard
+
+Card simples de matéria com progress bar.
+
+```tsx
 function DemoSubjectCard({ title, icon, progress, primaryColor }: { title: string; icon: string; progress: number; primaryColor: string }) {
   return (
     <div
@@ -249,35 +327,41 @@ function DemoSubjectCard({ title, icon, progress, primaryColor }: { title: strin
     </div>
   );
 }
+```
 
-// ─── Main Component ───────────────────────────────────────────────────────────
+---
 
+### Componente Principal: DemoStudentDashboard
+
+Monta tudo na mesma ordem visual do StudentDashboard real. Seções:
+
+```tsx
 export default function DemoStudentDashboard({ schoolName, schoolLogo, primaryColor, tutorName }: DemoStudentDashboardProps) {
-  const topArea  = 'Linguagens'; // score 73 (mais alto)
-  const nextArea = 'Matemática'; // score 45 (mais baixo)
+  const FOCUS = '#0EA5E9';
+  const AMBER = '#F59E0B';
+  const MONO = 'var(--font-jetbrains), "JetBrains Mono", monospace';
+
+  // Determinar top/next area
+  const topArea = 'Linguagens';    // score 73 (mais alto)
+  const nextArea = 'Matemática';   // score 45 (mais baixo)
 
   return (
     <main className="min-h-screen px-4 py-12 sm:px-8 flex flex-col items-center">
       <div className="w-full max-w-5xl">
 
-        {/* ═══ 1. Header ═══════════════════════════════════════════════════════ */}
+        {/* ═══ 1. Header ═══ */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
             <DemoLogo schoolName={schoolName} schoolLogo={schoolLogo} primaryColor={primaryColor} />
             <div className="flex items-center gap-3">
               {/* Mock StreakBadge */}
-              <div
-                className="flex items-center gap-1 rounded-full px-2.5 py-1"
-                style={{ background: `${AMBER}15`, border: `1px solid ${AMBER}30` }}
-              >
+              <div className="flex items-center gap-1 rounded-full px-2.5 py-1"
+                style={{ background: `${AMBER}15`, border: `1px solid ${AMBER}30` }}>
                 <span className="text-xs">🔥</span>
                 <span className="text-xs font-bold" style={{ color: AMBER }}>{MOCK_STREAK}</span>
               </div>
-              {/* Mock user avatar */}
-              <div
-                className="w-8 h-8 rounded-full"
-                style={{ background: `${primaryColor}30`, border: `1px solid ${primaryColor}40` }}
-              />
+              {/* Mock avatar */}
+              <div className="w-8 h-8 rounded-full" style={{ background: `${primaryColor}30`, border: `1px solid ${primaryColor}40` }} />
             </div>
           </div>
 
@@ -288,72 +372,59 @@ export default function DemoStudentDashboard({ schoolName, schoolLogo, primaryCo
 
           {/* ═══ 3. Status line ═══ */}
           <p className="mt-2 text-sm font-medium" style={{ color: 'var(--fa-text-2)' }}>
-            <span
-              className="inline-block w-1.5 h-1.5 rounded-full mr-2 align-middle"
-              style={{ background: primaryColor, boxShadow: `0 0 5px ${primaryColor}` }}
-            />
+            <span className="inline-block w-1.5 h-1.5 rounded-full mr-2 align-middle"
+              style={{ background: primaryColor, boxShadow: `0 0 5px ${primaryColor}` }} />
             {MOCK_STREAK} dias em sequência · Você está construindo um hábito real
           </p>
         </div>
 
-        {/* ═══ 4. Copilot Card ══════════════════════════════════════════════════ */}
+        {/* ═══ 4. Copilot Card ═══ */}
         <div className="mb-10">
           <div
             className="relative rounded-2xl p-6 overflow-hidden"
             style={{
-              background:           'var(--fa-card)',
-              backdropFilter:       'blur(24px)',
+              background: 'var(--fa-card)',
+              backdropFilter: 'blur(24px)',
               WebkitBackdropFilter: 'blur(24px)',
-              border:               '1px solid var(--fa-border)',
-              boxShadow:            'var(--fa-shadow)',
+              border: '1px solid var(--fa-border)',
+              boxShadow: 'var(--fa-shadow)',
             }}
           >
             {/* Top shimmer */}
             <div className="absolute inset-x-0 top-0 h-px pointer-events-none" style={{ background: 'var(--fa-shimmer)' }} />
             {/* Radial ambient */}
-            <div
-              className="absolute inset-0 pointer-events-none"
-              style={{ background: `radial-gradient(ellipse at top left, ${primaryColor}0A, transparent 55%)` }}
-            />
+            <div className="absolute inset-0 pointer-events-none"
+              style={{ background: `radial-gradient(ellipse at top left, ${primaryColor}0A, transparent 55%)` }} />
 
             {/* Label row */}
             <div className="flex items-center justify-between mb-4 relative z-10">
               <p className="text-xs font-semibold tracking-widest uppercase" style={{ color: primaryColor }}>
                 💡 Seu Copiloto
               </p>
-              <div
-                className="flex items-center gap-1.5 rounded-full px-2.5 py-0.5"
-                style={{ background: `${primaryColor}18`, border: `1px solid ${primaryColor}44` }}
-              >
-                <span
-                  className="w-1.5 h-1.5 rounded-full"
-                  style={{ background: primaryColor, boxShadow: `0 0 6px ${primaryColor}` }}
-                />
+              <div className="flex items-center gap-1.5 rounded-full px-2.5 py-0.5"
+                style={{ background: `${primaryColor}18`, border: `1px solid ${primaryColor}44` }}>
+                <span className="w-1.5 h-1.5 rounded-full"
+                  style={{ background: primaryColor, boxShadow: `0 0 6px ${primaryColor}` }} />
                 <span className="text-xs font-semibold" style={{ color: primaryColor }}>[SISTEMA OPERANDO]</span>
               </div>
             </div>
 
-            {/* Daily Progress Bar */}
+            {/* Daily Progress */}
             <div className="relative z-10">
               <DemoProgressBar done={MOCK_CARDS_DONE} goal={MOCK_DAILY_GOAL} primaryColor={primaryColor} />
             </div>
 
-            {/* Avatar + bubble + stat pills */}
+            {/* Avatar + bubble */}
             <div className="relative z-10 flex items-start gap-4 mb-5">
-
-              {/* Avatar */}
               <div className="shrink-0 flex flex-col items-center gap-1 pt-0.5">
-                <div
-                  className="rounded-full flex items-center justify-center"
+                <div className="rounded-full flex items-center justify-center"
                   style={{
-                    width:     44,
-                    height:    44,
-                    border:    `2px solid ${primaryColor}60`,
+                    width: 44, height: 44,
+                    border: `2px solid ${primaryColor}60`,
                     boxShadow: `0 0 14px ${primaryColor}28`,
                     background: `${primaryColor}20`,
-                    fontSize:  20,
-                  }}
-                >
+                    fontSize: 20,
+                  }}>
                   🤖
                 </div>
                 <span style={{ color: primaryColor, fontSize: '7px', fontWeight: 700, letterSpacing: '0.06em', opacity: 0.70 }}>
@@ -361,32 +432,17 @@ export default function DemoStudentDashboard({ schoolName, schoolLogo, primaryCo
                 </span>
               </div>
 
-              {/* Bubble */}
               <div className="relative flex-1 min-w-0">
                 {/* Tail */}
-                <div
-                  aria-hidden
-                  style={{
-                    position:     'absolute',
-                    left:         '-7px',
-                    top:          '16px',
-                    width:        0,
-                    height:       0,
-                    borderTop:    '7px solid transparent',
-                    borderBottom: '7px solid transparent',
-                    borderRight:  '7px solid rgba(255,255,255,0.04)',
-                    filter:       `drop-shadow(-1px 0 0 ${primaryColor}20)`,
-                  }}
-                />
-                <div
-                  className="rounded-2xl px-4 py-3.5"
-                  style={{
-                    background:     'var(--fa-card)',
-                    border:         '1px solid var(--fa-border)',
-                    backdropFilter: 'blur(8px)',
-                    boxShadow:      'var(--fa-shadow)',
-                  }}
-                >
+                <div aria-hidden style={{
+                  position: 'absolute', left: '-7px', top: '16px',
+                  width: 0, height: 0,
+                  borderTop: '7px solid transparent', borderBottom: '7px solid transparent',
+                  borderRight: '7px solid rgba(255,255,255,0.04)',
+                  filter: `drop-shadow(-1px 0 0 ${primaryColor}20)`,
+                }} />
+                <div className="rounded-2xl px-4 py-3.5"
+                  style={{ background: 'var(--fa-card)', border: '1px solid var(--fa-border)', backdropFilter: 'blur(8px)', boxShadow: 'var(--fa-shadow)' }}>
                   <div className="flex items-center gap-2 flex-wrap mb-2">
                     <span className="text-sm font-bold" style={{ color: primaryColor }}>{tutorName}</span>
                     <span className="text-xs" style={{ color: 'rgba(255,255,255,0.25)' }}>Assistente IA</span>
@@ -396,13 +452,12 @@ export default function DemoStudentDashboard({ schoolName, schoolLogo, primaryCo
                   </p>
                   <div className="flex items-center gap-2 flex-wrap mt-3">
                     <div
-                      className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-bold cursor-default"
+                      className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-bold"
                       style={{
                         background: `linear-gradient(135deg, ${primaryColor}, ${primaryColor}CC)`,
-                        border:     `1px solid ${primaryColor}88`,
-                        color:      'white',
-                      }}
-                    >
+                        border: `1px solid ${primaryColor}88`,
+                        color: 'white',
+                      }}>
                       ⚡ Iniciar Sessão
                       <span style={{ opacity: 0.80, fontFamily: MONO, fontSize: '10px', letterSpacing: '0.04em' }}>
                         · Matemática
@@ -412,10 +467,10 @@ export default function DemoStudentDashboard({ schoolName, schoolLogo, primaryCo
                 </div>
               </div>
 
-              {/* Stat Pills */}
+              {/* Stat pills */}
               <div className="shrink-0 hidden sm:flex flex-col gap-2">
                 <DemoStatPill value={`${MOCK_MATURE_PCT}%`} label={`EDITAL\nDOMINADO`} color={primaryColor} />
-                <DemoStatPill value={`${MOCK_STREAK}🔥`}   label={`DIAS EM\nSEQUÊNCIA`} color={AMBER} />
+                <DemoStatPill value={`${MOCK_STREAK}🔥`} label={`DIAS EM\nSEQUÊNCIA`} color={AMBER} />
               </div>
             </div>
 
@@ -426,14 +481,14 @@ export default function DemoStudentDashboard({ schoolName, schoolLogo, primaryCo
               </p>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                 {AREA_CONFIG.map(area => {
-                  const areaData = MOCK_AREA_SCORES[area.key];
+                  const data = MOCK_AREA_SCORES[area.key];
                   return (
                     <DemoAreaCard
                       key={area.key}
                       icon={area.icon}
                       label={area.label}
-                      cardsDue={areaData?.cardsDue ?? 0}
-                      score={areaData?.score ?? 0}
+                      cardsDue={data?.cardsDue ?? 0}
+                      score={data?.score ?? 0}
                       isStrength={area.key === topArea}
                       isNext={area.key === nextArea}
                       primaryColor={primaryColor}
@@ -445,36 +500,29 @@ export default function DemoStudentDashboard({ schoolName, schoolLogo, primaryCo
 
             {/* Action buttons */}
             <div className="relative z-10 flex gap-3 mt-5">
-              <div
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold cursor-default"
-                style={{ background: 'transparent', border: `1px solid ${FOCUS}40`, color: FOCUS }}
-              >
+              <div className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold"
+                style={{ background: 'transparent', border: `1px solid ${FOCUS}40`, color: FOCUS }}>
                 📊 Relatório de Progresso
               </div>
-              <div
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold cursor-default"
+              <div className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold"
                 style={{
                   background: `linear-gradient(135deg, ${FOCUS}22, ${primaryColor}14)`,
-                  border:     `1px solid ${FOCUS}40`,
-                  color:      'black',
-                  boxShadow:  `0 0 12px ${FOCUS}14`,
-                }}
-              >
+                  border: `1px solid ${FOCUS}40`,
+                  color: 'white',
+                  boxShadow: `0 0 12px ${FOCUS}14`,
+                }}>
                 🗓️ Cronograma IA
               </div>
             </div>
           </div>
         </div>
 
-        {/* ═══ 5. Charts Row ═══════════════════════════════════════════════════ */}
+        {/* ═══ 5. Charts Row ═══ */}
         <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-5">
           <DemoRadarChart data={MOCK_RADAR_DATA} primaryColor={primaryColor} />
-
-          {/* Retention bar chart — visual simples */}
-          <div
-            className="rounded-2xl p-5"
-            style={{ background: 'var(--fa-card)', border: '1px solid var(--fa-border)', boxShadow: 'var(--fa-shadow)' }}
-          >
+          {/* Retention chart placeholder — visual simples */}
+          <div className="rounded-2xl p-5"
+            style={{ background: 'var(--fa-card)', border: '1px solid var(--fa-border)', boxShadow: 'var(--fa-shadow)' }}>
             <p className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: 'rgba(255,255,255,0.30)' }}>
               CURVA DE RETENÇÃO
             </p>
@@ -483,11 +531,7 @@ export default function DemoStudentDashboard({ schoolName, schoolLogo, primaryCo
                 <div key={i} className="flex-1 flex flex-col items-center justify-end h-full gap-1">
                   <div
                     className="w-full rounded-t"
-                    style={{
-                      height:     `${v}%`,
-                      background: `linear-gradient(to top, ${primaryColor}40, ${primaryColor})`,
-                      minHeight:  4,
-                    }}
+                    style={{ height: `${v}%`, background: `linear-gradient(to top, ${primaryColor}40, ${primaryColor})`, minHeight: 4 }}
                   />
                   <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.3)' }}>
                     {['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'][i]}
@@ -498,7 +542,7 @@ export default function DemoStudentDashboard({ schoolName, schoolLogo, primaryCo
           </div>
         </div>
 
-        {/* ═══ 6. Subject Cards ════════════════════════════════════════════════ */}
+        {/* ═══ 6. Subject Cards ═══ */}
         <div>
           <p className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: 'rgba(255,255,255,0.30)' }}>
             MATÉRIAS
@@ -514,3 +558,43 @@ export default function DemoStudentDashboard({ schoolName, schoolLogo, primaryCo
     </main>
   );
 }
+```
+
+---
+
+## Imports necessários no topo do arquivo
+
+```typescript
+'use client';
+
+import {
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  Radar,
+  ResponsiveContainer,
+} from 'recharts';
+```
+
+Não importar NADA de `@/lib/DashboardContext`, `@/lib/tutor-config`, `@/app/dashboard/*`, `@/components/StudentDashboard`, `@/components/ThemeProvider`, etc.
+
+---
+
+## Checklist de verificação pós-implementação
+
+1. `npx tsc --noEmit 2>&1 | grep DemoStudent` → sem erros
+2. O componente NÃO importa nada do B2C
+3. Todas as cores hardcoded (EMERALD `#10B981`) foram substituídas por `primaryColor`
+4. O `tutorName` aparece na bubble do copiloto
+5. A `schoolLogo` aparece no header se fornecida
+6. Os botões (Iniciar Sessão, Relatório, Cronograma) são `<div>` ou `<button>` sem onClick — visuais
+7. O componente renderiza sem erros quando montado isoladamente
+
+---
+
+## Commit
+
+```bash
+git add components/DemoStudentDashboard.tsx
+git commit -m "feat: add DemoStudentDashboard — standalone visual replica for B2B demos"
+```

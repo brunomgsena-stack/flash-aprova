@@ -759,7 +759,7 @@ export default function StudentDashboard({ children }: { children?: ReactNode })
                 style={{
                   background:     `linear-gradient(135deg, ${FOCUS}22, ${EMERALD}14)`,
                   border:         `1px solid ${FOCUS}40`,
-                  color:          'white',
+                  color:          'black',
                   boxShadow:      `0 0 12px ${FOCUS}14`,
                   textDecoration: 'none',
                 }}

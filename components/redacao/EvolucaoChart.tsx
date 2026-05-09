@@ -10,6 +10,7 @@ import {
   ResponsiveContainer,
   ReferenceLine,
 } from 'recharts';
+import { useTheme } from '@/components/ThemeProvider';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -38,7 +39,7 @@ function CustomTooltip({ active, payload }: {
     <div
       className="rounded-xl px-4 py-3 text-xs"
       style={{
-        background:   'rgba(5,8,20,0.97)',
+        background:   'var(--fa-card)',
         border:       `1px solid ${color}40`,
         boxShadow:    `0 0 24px ${color}20`,
         backdropFilter: 'blur(12px)',
@@ -46,8 +47,8 @@ function CustomTooltip({ active, payload }: {
       }}
     >
       <p className="font-black text-2xl mb-0.5" style={{ color }}>{nota}</p>
-      <p className="text-slate-400 text-xs mb-1">{point.data}</p>
-      <p className="text-slate-500 leading-relaxed line-clamp-2">{point.tema}</p>
+      <p className="text-xs mb-1" style={{ color: 'var(--fa-text-2)' }}>{point.data}</p>
+      <p className="leading-relaxed line-clamp-2" style={{ color: 'var(--fa-text-3)' }}>{point.tema}</p>
     </div>
   );
 }
@@ -59,8 +60,9 @@ function CustomDot(props: {
   payload?: ChartPoint;
   index?: number;
   dataLength?: number;
+  isLight?: boolean;
 }) {
-  const { cx = 0, cy = 0, payload } = props;
+  const { cx = 0, cy = 0, payload, isLight } = props;
   const nota  = payload?.nota ?? 0;
   const color =
     nota >= 800 ? '#22c55e' :
@@ -75,7 +77,7 @@ function CustomDot(props: {
       <circle
         cx={cx} cy={cy} r={4}
         fill={color}
-        stroke="rgba(5,8,20,0.9)"
+        stroke={isLight ? 'rgba(255,255,255,0.95)' : 'rgba(5,8,20,0.9)'}
         strokeWidth={2}
         style={{ filter: `drop-shadow(0 0 6px ${color})` }}
       />
@@ -86,6 +88,9 @@ function CustomDot(props: {
 // ─── EvolucaoChart ────────────────────────────────────────────────────────────
 
 export default function EvolucaoChart({ data }: { data: ChartPoint[] }) {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
+
   const CYAN   = '#06b6d4';
   const VIOLET = '#7C3AED';
 
@@ -93,7 +98,7 @@ export default function EvolucaoChart({ data }: { data: ChartPoint[] }) {
     return (
       <div className="flex flex-col items-center justify-center py-16 gap-3">
         <span className="text-3xl">📈</span>
-        <p className="text-slate-500 text-sm">
+        <p className="text-sm" style={{ color: 'var(--fa-text-3)' }}>
           Nenhuma correção ainda. Envie sua primeira redação para começar a evolução.
         </p>
       </div>
@@ -103,20 +108,25 @@ export default function EvolucaoChart({ data }: { data: ChartPoint[] }) {
   // Linha de referência: média das notas
   const avg = Math.round(data.reduce((s, d) => s + d.nota, 0) / data.length);
 
+  const tickFill = isLight ? 'rgba(0,0,0,0.40)' : 'rgba(255,255,255,0.30)';
+  const gridStroke = isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.04)';
+  const cursorStroke = isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)';
+  const activeDotStroke = isLight ? 'rgba(255,255,255,0.95)' : 'rgba(5,8,20,0.9)';
+
   return (
     <div>
       {/* Header stats */}
       <div className="flex items-center gap-6 mb-5 flex-wrap">
         <div>
-          <p className="text-xs text-slate-500 uppercase tracking-wider">Redações</p>
-          <p className="text-xl font-black text-white">{data.length}</p>
+          <p className="text-xs uppercase tracking-wider" style={{ color: 'var(--fa-text-3)' }}>Redações</p>
+          <p className="text-xl font-black" style={{ color: 'var(--fa-text)' }}>{data.length}</p>
         </div>
         <div>
-          <p className="text-xs text-slate-500 uppercase tracking-wider">Média</p>
+          <p className="text-xs uppercase tracking-wider" style={{ color: 'var(--fa-text-3)' }}>Média</p>
           <p className="text-xl font-black" style={{ color: CYAN }}>{avg}</p>
         </div>
         <div>
-          <p className="text-xs text-slate-500 uppercase tracking-wider">Melhor</p>
+          <p className="text-xs uppercase tracking-wider" style={{ color: 'var(--fa-text-3)' }}>Melhor</p>
           <p className="text-xl font-black" style={{ color: '#22c55e' }}>
             {Math.max(...data.map(d => d.nota))}
           </p>
@@ -125,7 +135,7 @@ export default function EvolucaoChart({ data }: { data: ChartPoint[] }) {
           const delta = data[data.length - 1].nota - data[data.length - 2].nota;
           return (
             <div>
-              <p className="text-xs text-slate-500 uppercase tracking-wider">Última evolução</p>
+              <p className="text-xs uppercase tracking-wider" style={{ color: 'var(--fa-text-3)' }}>Última evolução</p>
               <p
                 className="text-xl font-black"
                 style={{ color: delta >= 0 ? '#22c55e' : '#f87171' }}
@@ -159,13 +169,13 @@ export default function EvolucaoChart({ data }: { data: ChartPoint[] }) {
 
           <CartesianGrid
             strokeDasharray="3 6"
-            stroke="rgba(255,255,255,0.04)"
+            stroke={gridStroke}
             vertical={false}
           />
 
           <XAxis
             dataKey="data"
-            tick={{ fill: 'rgba(255,255,255,0.30)', fontSize: 11 }}
+            tick={{ fill: tickFill, fontSize: 11 }}
             axisLine={false}
             tickLine={false}
           />
@@ -173,7 +183,7 @@ export default function EvolucaoChart({ data }: { data: ChartPoint[] }) {
           <YAxis
             domain={[0, 1000]}
             ticks={[0, 200, 400, 600, 800, 1000]}
-            tick={{ fill: 'rgba(255,255,255,0.30)', fontSize: 11 }}
+            tick={{ fill: tickFill, fontSize: 11 }}
             axisLine={false}
             tickLine={false}
           />
@@ -186,7 +196,7 @@ export default function EvolucaoChart({ data }: { data: ChartPoint[] }) {
             label={{ value: `Média ${avg}`, fill: `${VIOLET}99`, fontSize: 10, position: 'insideTopRight' }}
           />
 
-          <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.08)', strokeWidth: 1 }} />
+          <Tooltip content={<CustomTooltip />} cursor={{ stroke: cursorStroke, strokeWidth: 1 }} />
 
           <Area
             type="monotone"
@@ -194,8 +204,8 @@ export default function EvolucaoChart({ data }: { data: ChartPoint[] }) {
             stroke={CYAN}
             strokeWidth={2.5}
             fill="url(#cyanFill)"
-            dot={<CustomDot />}
-            activeDot={{ r: 6, fill: CYAN, stroke: 'rgba(5,8,20,0.9)', strokeWidth: 2, filter: `drop-shadow(0 0 8px ${CYAN})` }}
+            dot={<CustomDot isLight={isLight} />}
+            activeDot={{ r: 6, fill: CYAN, stroke: activeDotStroke, strokeWidth: 2, filter: `drop-shadow(0 0 8px ${CYAN})` }}
             style={{ filter: 'url(#lineGlow)' }}
           />
         </AreaChart>

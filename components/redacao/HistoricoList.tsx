@@ -1,5 +1,7 @@
 'use client';
 
+import { useTheme } from '@/components/ThemeProvider';
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type EssayRecord = {
@@ -46,6 +48,9 @@ export default function HistoricoList({
   activeId?: string;
   onSelect: (record: EssayRecord) => void;
 }) {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
+
   const CYAN   = '#06b6d4';
   const VIOLET = '#7C3AED';
 
@@ -53,7 +58,7 @@ export default function HistoricoList({
     return (
       <div className="flex flex-col items-center justify-center py-12 gap-2">
         <span className="text-3xl">📝</span>
-        <p className="text-slate-500 text-sm">Nenhuma redação corrigida ainda.</p>
+        <p className="text-sm" style={{ color: 'var(--fa-text-3)' }}>Nenhuma redação corrigida ainda.</p>
       </div>
     );
   }
@@ -78,10 +83,10 @@ export default function HistoricoList({
             style={{
               background: isActive
                 ? `linear-gradient(135deg, ${VIOLET}18, ${CYAN}10)`
-                : 'rgba(255,255,255,0.03)',
+                : isLight ? 'rgba(0,0,0,0.02)' : 'rgba(255,255,255,0.03)',
               border: isActive
                 ? `1px solid ${CYAN}40`
-                : '1px solid rgba(255,255,255,0.07)',
+                : '1px solid var(--fa-border)',
               boxShadow: isActive ? `0 0 20px ${CYAN}10` : 'none',
             }}
           >
@@ -127,12 +132,12 @@ export default function HistoricoList({
 
                 <p
                   className="text-sm font-semibold leading-snug mb-1 line-clamp-2"
-                  style={{ color: isActive ? '#fff' : 'rgba(255,255,255,0.75)' }}
+                  style={{ color: isActive ? 'var(--fa-text)' : 'var(--fa-text-2)' }}
                 >
                   {record.tema}
                 </p>
 
-                <p className="text-xs text-slate-600">
+                <p className="text-xs" style={{ color: 'var(--fa-text-3)' }}>
                   {formatDate(record.created_at)}
                 </p>
               </div>
@@ -140,7 +145,7 @@ export default function HistoricoList({
               {/* Chevron */}
               <svg
                 className="shrink-0 mt-4 transition-all duration-200 group-hover:translate-x-0.5"
-                style={{ color: isActive ? CYAN : 'rgba(255,255,255,0.15)' }}
+                style={{ color: isActive ? CYAN : isLight ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.15)' }}
                 width="14" height="14" viewBox="0 0 16 16" fill="none"
               >
                 <path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5"
