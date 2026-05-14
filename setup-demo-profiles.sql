@@ -72,7 +72,7 @@ INSERT INTO public.profiles (
   50, '[]'::jsonb, true, 4, true),
 
 -- Pedro: Engenharia da Computação — USP
-(:PEDRO_ID, 'Pedro Henrique Santos', 'aceleracao', 'student', 'Engenharia da Computação', 'USP',
+(:PEDRO_ID, 'Pedro Henrique Santos', 'Protocolo Neural', 'student', 'Engenharia da Computação', 'USP',
   40, '[]'::jsonb, true, 4, true),
 
 -- Amanda: Direito — UFMG
@@ -91,7 +91,7 @@ INSERT INTO public.user_stats (
 (:MALU_ID, 23, 23, CURRENT_DATE - INTERVAL '0 days', 'aceleracao', NOW() - INTERVAL '30 days'),
 
 -- Pedro: 15 dias de streak — recuperado
-(:PEDRO_ID, 15, 15, CURRENT_DATE - INTERVAL '0 days', 'aceleracao', NOW() - INTERVAL '45 days'),
+(:PEDRO_ID, 15, 15, CURRENT_DATE - INTERVAL '0 days', 'protocolo neural', NOW() - INTERVAL '45 days'),
 
 -- Amanda: 18 dias de streak
 (:AMANDA_ID, 18, 21, CURRENT_DATE - INTERVAL '0 days', 'aceleracao', NOW() - INTERVAL '25 days')
