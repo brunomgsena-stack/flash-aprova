@@ -126,7 +126,15 @@ export async function POST(req: NextRequest) {
     });
 
   } catch (e: unknown) {
-    console.error('[/api/chat/tutor] error:', e);
-    return NextResponse.json({ error: 'Erro interno ao processar. Tente novamente.' }, { status: 500 });
+    const err = e as { message?: string; status?: number; code?: string; error?: { message?: string; type?: string; code?: string } };
+    console.error('[/api/chat/tutor] error details:', {
+      message: err?.message,
+      status:  err?.status,
+      code:    err?.code,
+      type:    err?.error?.type,
+      inner:   err?.error?.message,
+    });
+    const detail = err?.error?.message ?? err?.message ?? 'desconhecido';
+    return NextResponse.json({ error: `Erro interno: ${detail}` }, { status: 500 });
   }
 }
