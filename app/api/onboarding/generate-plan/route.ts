@@ -6,7 +6,8 @@
  * onboarding_completed = true no user metadata (JWT).
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
+import { trackOnboardingCompleted, deterministicEventId } from '@/lib/meta-capi';
 import OpenAI                        from 'openai';
 import { createClient }              from '@/lib/supabase/server';
 import { createClient as adminSupa } from '@supabase/supabase-js';
@@ -297,6 +298,14 @@ async function handlePost(req: NextRequest): Promise<Response> {
       console.error('[generate-plan] PASSO 3 erro:', p3Err instanceof Error ? p3Err.message : String(p3Err));
     }
   }
+
+  after(async () => {
+    await trackOnboardingCompleted({
+      email: user.email ?? undefined,
+      externalId: user.id,
+      eventId: deterministicEventId('OnboardingCompleted', user.id),
+    });
+  });
 
   return NextResponse.json({ ok: true, plan });
 }
