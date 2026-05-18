@@ -7,7 +7,7 @@
  *
  * Uso: npx tsx scripts/test-meta-capi.ts
  */
-import { trackPurchase, trackCompleteRegistration } from '../lib/meta-capi.ts';
+import { trackPurchase, trackCompleteRegistration } from '../lib/meta-capi';
 
 async function main() {
   if (!process.env.META_TEST_EVENT_CODE) {
