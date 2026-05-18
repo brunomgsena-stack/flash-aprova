@@ -20,7 +20,8 @@
  *   NEXT_PUBLIC_URL
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
+import { trackPurchase, trackCompleteRegistration } from '@/lib/meta-capi';
 import { createClient }              from '@supabase/supabase-js';
 import { timingSafeEqual, randomBytes } from 'crypto';
 import { sendAccessGrantedEmail }    from '@/lib/mail';
@@ -225,6 +226,11 @@ export async function POST(req: NextRequest) {
   const paymentLinkId = (payment.paymentLink   as string | undefined) ?? null;
   const description   = (payment.description   as string | undefined) ?? null;
   const customerEmail = (payment.customerEmail as string | undefined) ?? null;
+  const rawValue      = payment.value;
+  const paymentValue  =
+    typeof rawValue === 'number' ? rawValue
+    : typeof rawValue === 'string' && rawValue.trim() !== '' && isFinite(Number(rawValue)) ? Number(rawValue)
+    : null;
 
   console.log(
     `[webhook/asaas] Dados extraídos: paymentId=${paymentId} customerId=${customerId}` +
@@ -323,6 +329,18 @@ export async function POST(req: NextRequest) {
         console.error('[ EMAIL ERRO ] Falha ao enviar email (usuário existente):', err instanceof Error ? err.message : String(err));
       }
 
+      after(async () => {
+        if (paymentValue !== null) {
+          await trackPurchase({
+            email, externalId: existingId,
+            value: paymentValue, currency: 'BRL',
+            planName: plan.name, eventId: `asaas_${paymentId ?? existingId}`,
+          });
+        } else {
+          console.warn(`[meta-capi] Purchase ignorado — payment.value ausente. paymentId=${paymentId}`);
+        }
+      });
+
       return NextResponse.json({ received: true, action: 'plan_updated', plan: plan.slug, userId: existingId });
     }
 
@@ -374,6 +392,25 @@ export async function POST(req: NextRequest) {
     } catch (err) {
       console.error('[ EMAIL ERRO ] Falha ao enviar email (novo usuário):', err instanceof Error ? err.message : String(err));
     }
+
+    after(async () => {
+      if (paymentValue !== null) {
+        await trackPurchase({
+          email, externalId: newUserId,
+          value: paymentValue, currency: 'BRL',
+          planName: plan.name, eventId: `asaas_${paymentId ?? newUserId}`,
+        });
+      } else {
+        console.warn(`[meta-capi] Purchase ignorado — payment.value ausente. paymentId=${paymentId}`);
+      }
+      if (!isRaceConditionFallback) {
+        await trackCompleteRegistration({
+          email, externalId: newUserId,
+          eventId: `reg_${newUserId}`,
+          actionSource: 'system_generated',
+        });
+      }
+    });
 
     const action = isRaceConditionFallback ? 'plan_updated_fallback' : 'user_created';
     return NextResponse.json({ received: true, action, plan: plan.slug, userId: newUserId });
