@@ -135,6 +135,12 @@ function LoginContent() {
     } else {
       const { error: err } = await supabase.auth.signUp({ email, password });
       if (err) { setError(mapError(err.message)); setLoading(false); return; }
+      // Tracking best-effort — nunca bloqueia nem quebra o fluxo de cadastro.
+      fetch('/api/meta/complete-registration', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      }).catch(() => {});
       setSuccess('Cadastro realizado! Verifique seu e-mail para confirmar a conta.');
       setLoading(false);
     }
