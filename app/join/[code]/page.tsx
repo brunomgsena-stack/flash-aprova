@@ -15,62 +15,24 @@ export default function JoinPage() {
 
   useEffect(() => {
     async function join() {
-      // 1. Check auth
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         sessionStorage.setItem('pendingJoinCode', code);
         router.replace(`/login?next=/join/${code}`);
         return;
       }
-
       setStatus('joining');
-
-      // 2. Validate invite code
-      const { data: invite, error: inviteErr } = await supabase
-        .from('invite_codes')
-        .select('id, school_id, class_id, expires_at, max_uses, uses')
-        .eq('code', code.toUpperCase())
-        .maybeSingle();
-
-      if (inviteErr || !invite) {
+      const res = await fetch('/api/join', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code }),
+      });
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
         setStatus('error');
-        setMessage('Código inválido ou expirado.');
+        setMessage(j.error ?? 'Convite inválido ou expirado.');
         return;
       }
-
-      if (new Date(invite.expires_at) < new Date()) {
-        setStatus('error');
-        setMessage('Este convite expirou.');
-        return;
-      }
-
-      if (invite.uses >= invite.max_uses) {
-        setStatus('error');
-        setMessage('Este convite atingiu o limite de usos.');
-        return;
-      }
-
-      // 3. Update student's profile
-      const { error: updateErr } = await supabase
-        .from('profiles')
-        .update({
-          school_id: invite.school_id,
-          class_id:  invite.class_id,
-        })
-        .eq('id', user.id);
-
-      if (updateErr) {
-        setStatus('error');
-        setMessage('Erro ao vincular à turma. Tente novamente.');
-        return;
-      }
-
-      // 4. Increment uses counter (best-effort)
-      await supabase
-        .from('invite_codes')
-        .update({ uses: invite.uses + 1 })
-        .eq('id', invite.id);
-
       setStatus('success');
       setTimeout(() => router.replace('/dashboard'), 2500);
     }
