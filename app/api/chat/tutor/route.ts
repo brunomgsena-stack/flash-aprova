@@ -134,7 +134,6 @@ export async function POST(req: NextRequest) {
       type:    err?.error?.type,
       inner:   err?.error?.message,
     });
-    const detail = err?.error?.message ?? err?.message ?? 'desconhecido';
-    return NextResponse.json({ error: `Erro interno: ${detail}` }, { status: 500 });
+    return NextResponse.json({ error: 'Erro interno. Tente novamente.' }, { status: 500 });
   }
 }

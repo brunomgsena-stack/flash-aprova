@@ -211,7 +211,14 @@ export async function POST(req: NextRequest) {
   }
 
   const event = ((payload.event as string | undefined) ?? '').toUpperCase();
-  console.log(`[webhook/asaas] Evento recebido: ${event}`, JSON.stringify(payload));
+  const pmt = (payload.payment as Record<string, unknown> | undefined) ?? {};
+  console.log(`[webhook/asaas] Evento recebido: ${event}`, JSON.stringify({
+    event,
+    paymentId: pmt.id ?? null,
+    paymentLink: pmt.paymentLink ?? null,
+    value: pmt.value ?? null,
+  }));
+  const maskEmail = (e: string) => e.replace(/^(.).*(@.*)$/, '$1***$2');
 
   // 3. Ignora eventos que não são pagamento confirmado ───────────────────────────
   if (!PAID_EVENTS.has(event)) {
@@ -256,14 +263,14 @@ export async function POST(req: NextRequest) {
   if (externalRef?.includes('@')) {
     email = externalRef.trim().toLowerCase();
     name  = email.split('@')[0];
-    console.log(`[webhook/asaas] E-mail obtido via payment.externalReference: ${email}`);
+    console.log(`[webhook/asaas] E-mail obtido via payment.externalReference: ${maskEmail(email)}`);
   }
 
   // Prioridade 1: campo customerEmail direto no payload
   if (!email && customerEmail?.includes('@')) {
     email = customerEmail.trim().toLowerCase();
     name  = email.split('@')[0];
-    console.log(`[webhook/asaas] E-mail obtido via payment.customerEmail: ${email}`);
+    console.log(`[webhook/asaas] E-mail obtido via payment.customerEmail: ${maskEmail(email)}`);
   }
 
   // Prioridade 2: busca o objeto customer na API Asaas pelo customerId
@@ -273,7 +280,7 @@ export async function POST(req: NextRequest) {
     if (customer) {
       email = customer.email;
       name  = customer.name;
-      console.log(`[webhook/asaas] E-mail obtido via Asaas API: ${email}`);
+      console.log(`[webhook/asaas] E-mail obtido via Asaas API: ${maskEmail(email)}`);
     }
   }
 
@@ -282,7 +289,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'E-mail do comprador não encontrado.' }, { status: 400 });
   }
 
-  console.log(`[webhook/asaas] Processando plano="${plan.slug}" para email="${email}"`);
+  console.log(`[webhook/asaas] Processando plano="${plan.slug}" para email="${maskEmail(email)}"`);
 
   // 7. Admin client ──────────────────────────────────────────────────────────────
   let adminClient: ReturnType<typeof makeAdminClient>;
