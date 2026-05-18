@@ -3,10 +3,10 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { getAiLimiter, getGeneralLimiter, getClientIp, isAdminId } from '@/lib/ratelimit';
 
 // ─── Rotas com limite estrito (5 req/min) ─────────────────────────────────────
-const AI_ROUTES = ['/api/chat/tutor', '/api/chat/redacao', '/api/ai/grade-essay', '/api/insights/briefing'];
+const AI_ROUTES = ['/api/chat/tutor', '/api/chat/redacao', '/api/ai/grade-essay', '/api/ai/generate-schedule', '/api/insights/briefing', '/api/onboarding/generate-plan'];
 
 // ─── Rotas excluídas do rate limit (callbacks de terceiros) ───────────────────
-const EXCLUDED_API = ['/api/webhooks/', '/api/onboarding/'];
+const EXCLUDED_API = ['/api/webhook/'];
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
