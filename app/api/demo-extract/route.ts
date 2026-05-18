@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
+import { isUrlAllowed } from '@/lib/ssrf';
 
 export async function POST(request: NextRequest) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({}, { status: 401 });
+
   const body = await request.json().catch(() => null);
   const rawUrl: string = body?.url ?? '';
 
@@ -8,14 +14,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({});
   }
 
-  // Normaliza URL: garante que tem protocolo
-  let url: string;
-  try {
-    url = rawUrl.startsWith('http') ? rawUrl : `https://${rawUrl}`;
-    new URL(url); // valida
-  } catch {
-    return NextResponse.json({});
-  }
+  // Normaliza URL: garante que tem protocolo, depois valida via SSRF guard
+  const candidate = rawUrl.startsWith('http') ? rawUrl : `https://${rawUrl}`;
+  const verdict = await isUrlAllowed(candidate);
+  if (!verdict.ok) return NextResponse.json({});
+  const url = verdict.url;
 
   // Fetch com timeout de 5s
   const controller = new AbortController();
@@ -25,6 +28,7 @@ export async function POST(request: NextRequest) {
   try {
     const res = await fetch(url, {
       signal: controller.signal,
+      redirect: 'error',
       headers: {
         'User-Agent':
           'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
