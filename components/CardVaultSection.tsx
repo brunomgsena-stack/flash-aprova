@@ -28,19 +28,19 @@ interface Subject {
 const SUBJECTS: Subject[] = [
   {
     icon: '🧬', name: 'Biologia',          area: 'Ciências da Natureza',
-    count: 1354, color: '#22c55e',
+    count: 3329, color: '#22c55e',
     topics:   ['Citologia', 'Genética & Evolução', 'Ecologia'],
     sysTag:   'BIONEXUS ATIVO',
   },
   {
     icon: '⚛️', name: 'Física',             area: 'Ciências da Natureza',
-    count: 1128, color: '#f97316',
+    count: 1833, color: '#f97316',
     topics:   ['Mecânica Clássica', 'Eletromagnetismo', 'Termodinâmica'],
     sysTag:   'CINEMÁTICA SINCRONIZADA',
   },
   {
     icon: '⚗️', name: 'Química',            area: 'Ciências da Natureza',
-    count:  892, color: '#06b6d4',
+    count: 2497, color: '#06b6d4',
     topics:   ['Estequiometria', 'Termoquímica', 'Química Orgânica'],
     sysTag:   'REAÇÃO ESTÁVEL',
   },
@@ -70,31 +70,31 @@ const SUBJECTS: Subject[] = [
   },
   {
     icon: '🌍', name: 'História Geral',     area: 'Ciências Humanas',
-    count:  412, color: '#eab308',
+    count: 1163, color: '#eab308',
     topics:   ['Revolução Francesa', 'Guerra Fria', 'Imperialismo'],
     sysTag:   'LINHA TEMPORAL GLOBAL',
   },
   {
     icon: '🇧🇷', name: 'História do Brasil', area: 'Ciências Humanas',
-    count:  344, color: '#f97316',
+    count:  950, color: '#f97316',
     topics:   ['Brasil Colonial', 'Era Vargas', 'Ditadura Militar'],
     sysTag:   'CRONOLOGIA NACIONAL OK',
   },
   {
     icon: '🌐', name: 'Geografia',          area: 'Ciências Humanas',
-    count:  634, color: '#10b981',
+    count: 2237, color: '#10b981',
     topics:   ['Geopolítica', 'Climatologia', 'Urbanização'],
     sysTag:   'GEOPROCESSAMENTO OK',
   },
   {
     icon: '🏛️', name: 'Filosofia',          area: 'Ciências Humanas',
-    count:  421, color: '#e879f9',
+    count: 1898, color: '#e879f9',
     topics:   ['Platão & Aristóteles', 'Iluminismo', 'Contemporânea'],
     sysTag:   'DIALÉTICA ATIVA',
   },
   {
     icon: '👥', name: 'Sociologia',         area: 'Ciências Humanas',
-    count:  298, color: '#f59e0b',
+    count:  961, color: '#f59e0b',
     topics:   ['Marx & Durkheim', 'Estratificação Social', 'Movimentos Sociais'],
     sysTag:   'ESTRUTURA SOCIAL MAPEADA',
   },
@@ -342,7 +342,7 @@ export default function CardVaultSection() {
               WebkitTextFillColor:    'transparent',
             }}
           >
-            5.700
+            18.232
           </span>
           {' '}Flashcards Táticos
         </h2>

@@ -4,10 +4,24 @@ import { createClient } from '@/lib/supabase/server';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+type CompetenciaResult = {
+  nota:     number;
+  nivel:    string;
+  feedback: string;
+};
+
 type GradeResult = {
   nota_total:          number;
-  c1: number; c2: number; c3: number; c4: number; c5: number;
-  feedback:            string;
+  competencias: {
+    c1: CompetenciaResult;
+    c2: CompetenciaResult;
+    c3: CompetenciaResult;
+    c4: CompetenciaResult;
+    c5: CompetenciaResult;
+  };
+  veredito:            string;
+  pontos_fortes:       string[];
+  pontos_melhoria:     string[];
   sugestao_repertorio: string[];
 };
 
@@ -28,16 +42,21 @@ REGRAS CRÍTICAS:
 - Proposta de intervenção com menos de 4 elementos = máx 80 em C5
 - Textos curtos (menos de 100 palavras) recebem penalização severa em todas as competências
 - Seja honesto e rigoroso. Não infle notas.
+- O campo "nivel" de cada competência deve ser: "Insuficiente" (0-40), "Precário" (40-80), "Mediano" (80-120), "Bom" (120-160) ou "Excelente" (160-200).
 
 Você deve responder EXCLUSIVAMENTE com um JSON válido, sem nenhum texto antes ou depois, sem markdown, sem blocos de código. Apenas o JSON puro neste formato:
 {
   "nota_total": <soma de c1+c2+c3+c4+c5>,
-  "c1": <0-200>,
-  "c2": <0-200>,
-  "c3": <0-200>,
-  "c4": <0-200>,
-  "c5": <0-200>,
-  "feedback": "<análise detalhada em português, mínimo 3 parágrafos, apontando pontos fortes e o que precisa melhorar em cada competência>",
+  "competencias": {
+    "c1": { "nota": <0-200>, "nivel": "<Insuficiente|Precário|Mediano|Bom|Excelente>", "feedback": "<análise específica desta competência>" },
+    "c2": { "nota": <0-200>, "nivel": "<Insuficiente|Precário|Mediano|Bom|Excelente>", "feedback": "<análise específica desta competência>" },
+    "c3": { "nota": <0-200>, "nivel": "<Insuficiente|Precário|Mediano|Bom|Excelente>", "feedback": "<análise específica desta competência>" },
+    "c4": { "nota": <0-200>, "nivel": "<Insuficiente|Precário|Mediano|Bom|Excelente>", "feedback": "<análise específica desta competência>" },
+    "c5": { "nota": <0-200>, "nivel": "<Insuficiente|Precário|Mediano|Bom|Excelente>", "feedback": "<análise específica desta competência>" }
+  },
+  "veredito": "<parágrafo geral com avaliação da redação, tom motivador mas honesto>",
+  "pontos_fortes": ["<ponto forte 1>", "<ponto forte 2>"],
+  "pontos_melhoria": ["<sugestão de melhoria 1>", "<sugestão de melhoria 2>"],
   "sugestao_repertorio": ["<alusão histórica, filosófica ou científica relevante para o tema>", "<segunda alusão diferente da primeira>"]
 }`;
 
@@ -145,9 +164,10 @@ export async function POST(req: NextRequest) {
     gradeResult = JSON.parse(cleaned) as GradeResult;
 
     // Ensure nota_total is correct sum
+    const c = gradeResult.competencias;
     gradeResult.nota_total =
-      (gradeResult.c1 ?? 0) + (gradeResult.c2 ?? 0) + (gradeResult.c3 ?? 0) +
-      (gradeResult.c4 ?? 0) + (gradeResult.c5 ?? 0);
+      (c?.c1?.nota ?? 0) + (c?.c2?.nota ?? 0) + (c?.c3?.nota ?? 0) +
+      (c?.c4?.nota ?? 0) + (c?.c5?.nota ?? 0);
 
   } catch (e) {
     console.error('[grade-essay] parse/fetch error:', e);
