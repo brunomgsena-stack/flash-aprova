@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from '@/components/ThemeProvider';
+import { Suspense } from 'react';
+import MetaPixel from '@/components/MetaPixel';
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
@@ -38,6 +40,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="pt-BR" className={jetbrainsMono.variable} suppressHydrationWarning>
       <body>
+        <Suspense fallback={null}>
+          <MetaPixel />
+        </Suspense>
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
