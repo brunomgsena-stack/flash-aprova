@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+export { deterministicEventId } from './meta-event-id';
 
 export function normalizeAndHash(value: string): string {
   const v = (value ?? '').trim().toLowerCase();
@@ -39,10 +40,6 @@ export function buildUserData(input: UserDataInput): MetaUserData {
   if (input.clientIpAddress) ud.client_ip_address = input.clientIpAddress;
   if (input.clientUserAgent) ud.client_user_agent = input.clientUserAgent;
   return ud;
-}
-
-export function deterministicEventId(eventName: string, key: string): string {
-  return `${eventName}.${key}`;
 }
 
 const GRAPH_VERSION = process.env.META_GRAPH_VERSION || 'v21.0';
