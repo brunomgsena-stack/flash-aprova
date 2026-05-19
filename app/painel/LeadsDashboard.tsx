@@ -57,7 +57,7 @@ export default function LeadsDashboard({ data }: { data: PanelData }) {
     const head = ['name', 'email', 'whatsapp', 'created_at'];
     const rows = filtered.map((l) =>
       [l.name, l.email, l.whatsapp, l.created_at]
-        .map((v) => `"${String(v).replace(/"/g, '""')}"`)
+        .map((v) => `"${String(v).replace(/[\r\n]+/g, ' ').replace(/"/g, '""')}"`)
         .join(','));
     const csv = [head.join(','), ...rows].join('\n');
     const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });

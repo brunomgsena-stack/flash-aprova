@@ -8,7 +8,7 @@ export const metadata = { title: 'Painel de Leads — FlashAprova' };
 
 function buildPanelData(leads: Lead[], totalContas: number, assinaturasPagas: number): PanelData {
   const now = new Date();
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const startOfToday = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
   const d7 = now.getTime() - 7 * 864e5;
   const d30 = now.getTime() - 30 * 864e5;
 
@@ -59,16 +59,11 @@ export default async function PainelPage() {
     .select('id', { count: 'exact', head: true });
 
   // best-effort: coluna plan pode não existir / divergir do schema
-  let assinaturasPagas = 0;
-  try {
-    const { count } = await supabase
-      .from('profiles')
-      .select('id', { count: 'exact', head: true })
-      .not('plan', 'in', '("flash","aceleracao")');
-    assinaturasPagas = count ?? 0;
-  } catch {
-    assinaturasPagas = 0;
-  }
+  const { count: pagasCount, error: pagasError } = await supabase
+    .from('profiles')
+    .select('id', { count: 'exact', head: true })
+    .not('plan', 'in', '("flash","aceleracao")');
+  const assinaturasPagas = pagasError ? 0 : (pagasCount ?? 0);
 
   const data = buildPanelData(
     (leadsRaw ?? []) as Lead[],

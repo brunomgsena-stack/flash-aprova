@@ -1,21 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { timingSafeEqual } from 'node:crypto';
-import { getGeneralLimiter, getClientIp } from '@/lib/ratelimit';
+import { createHash, timingSafeEqual } from 'node:crypto';
+import { getAiLimiter, getClientIp } from '@/lib/ratelimit';
 import { derivePanelToken, PANEL_COOKIE } from '@/lib/admin-panel-auth';
 
 const DENIED = { error: 'Acesso negado' };
 
 function safeEqual(a: string, b: string): boolean {
-  const ab = Buffer.from(a);
-  const bb = Buffer.from(b);
-  if (ab.length !== bb.length) return false;
-  return timingSafeEqual(ab, bb);
+  const ah = createHash('sha256').update(a).digest();
+  const bh = createHash('sha256').update(b).digest();
+  return timingSafeEqual(ah, bh);
 }
 
 export async function POST(req: NextRequest) {
   // Rate-limit por IP (mesmo padrão do middleware.ts)
   const ip = getClientIp(req);
-  const { success } = await getGeneralLimiter().limit(`painel-login:${ip}`);
+  const { success } = await getAiLimiter().limit(`painel-login:${ip}`);
   if (!success) return NextResponse.json(DENIED, { status: 429 });
 
   const expected = process.env.ADMIN_PANEL_PASSWORD;
