@@ -4,6 +4,7 @@ import { useState, Suspense } from 'react';
 import { useRouter }          from 'next/navigation';
 import { useSearchParams }    from 'next/navigation';
 import { supabase }           from '@/lib/supabaseClient';
+import { deterministicEventId } from '@/lib/meta-event-id';
 
 // ─── Error mapping ────────────────────────────────────────────────────────────
 
@@ -136,6 +137,10 @@ function LoginContent() {
       const { error: err } = await supabase.auth.signUp({ email, password });
       if (err) { setError(mapError(err.message)); setLoading(false); return; }
       // Tracking best-effort — nunca bloqueia nem quebra o fluxo de cadastro.
+      const eventId = deterministicEventId('CompleteRegistration', email);
+      if (typeof window !== 'undefined' && typeof window.fbq === 'function') {
+        window.fbq('track', 'CompleteRegistration', {}, { eventID: eventId });
+      }
       fetch('/api/meta/complete-registration', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
