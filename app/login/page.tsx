@@ -137,7 +137,7 @@ function LoginContent() {
       const { error: err } = await supabase.auth.signUp({ email, password });
       if (err) { setError(mapError(err.message)); setLoading(false); return; }
       // Tracking best-effort — nunca bloqueia nem quebra o fluxo de cadastro.
-      const eventId = deterministicEventId('CompleteRegistration', email);
+      const eventId = deterministicEventId('CompleteRegistration', email.trim());
       if (typeof window !== 'undefined' && typeof window.fbq === 'function') {
         window.fbq('track', 'CompleteRegistration', {}, { eventID: eventId });
       }

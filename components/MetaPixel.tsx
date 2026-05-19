@@ -7,7 +7,7 @@ import { useEffect, useRef } from 'react';
 const PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID;
 
 /** Prefixos de área autenticada onde o Pixel NÃO deve carregar nem rastrear. */
-const EXCLUDED_PREFIXES = ['/dashboard', '/director', '/admin', '/demo-admin'];
+const EXCLUDED_PREFIXES = ['/dashboard', '/director', '/admin', '/demo-admin', '/painel'];
 
 function isExcluded(pathname: string | null): boolean {
   if (!pathname) return true;
