@@ -103,7 +103,12 @@ export async function sendMetaEvent(event: MetaEvent): Promise<{ ok: boolean; st
 
   const url = `https://graph.facebook.com/${GRAPH_VERSION}/${cfg.pixelId}/events?access_token=${encodeURIComponent(cfg.accessToken)}`;
   const body: Record<string, unknown> = { data: [event] };
-  if (cfg.testEventCode) body.test_event_code = cfg.testEventCode;
+  // Defense: never leak test_event_code to Meta in production — events with a
+  // test code only show in "Test Events" and never count for the main dashboard
+  // or ad optimization.
+  if (cfg.testEventCode && process.env.NODE_ENV !== 'production') {
+    body.test_event_code = cfg.testEventCode;
+  }
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 3000);
@@ -148,7 +153,7 @@ export function trackPurchase(p: BaseMatch & {
   return sendMetaEvent(buildEvent({
     eventName: 'Purchase',
     eventId: p.eventId,
-    actionSource: p.actionSource ?? 'system_generated',
+    actionSource: p.actionSource ?? 'website',
     userData: {
       email: p.email, externalId: p.externalId,
       clientIpAddress: p.clientIpAddress, clientUserAgent: p.clientUserAgent,
