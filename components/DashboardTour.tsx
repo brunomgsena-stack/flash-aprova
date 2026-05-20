@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter, useSearchParams }        from 'next/navigation';
 import DashboardBootUp                       from '@/components/DashboardBootUp';
 import PWAInstallAnimation                   from '@/components/PWAInstallAnimation';
@@ -177,6 +177,7 @@ export default function DashboardTour() {
   const [showBootUp,  setShowBootUp]  = useState(false);
   const [step,        setStep]        = useState(0);
   const [firstDeckId, setFirstDeckId] = useState<string | null>(null);
+  const skippingRef = useRef(false);
 
   // Resolve first deck id on mount (for tutor step)
   useEffect(() => {
@@ -264,11 +265,23 @@ export default function DashboardTour() {
     }
   }, [step, router, firstDeckId, cleanUp]);
 
-  const handleSkip = useCallback(() => {
+  const handleSkip = useCallback(async () => {
+    if (skippingRef.current) return;
+    skippingRef.current = true;
+    try {
+      const { supabase } = await import('@/lib/supabaseClient');
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase
+          .from('profiles')
+          .update({ first_session_completed: true })
+          .eq('id', user.id);
+      }
+    } catch { /* segue em caso de falha */ }
     setShowIntro(false);
     cleanUp();
-    router.replace('/dashboard', { scroll: false });
-  }, [router, cleanUp]);
+    window.location.replace('/dashboard');
+  }, [cleanUp]);
 
   const handleStartTour = useCallback(() => {
     setShowIntro(false);

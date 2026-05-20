@@ -103,6 +103,7 @@ export default function WelcomePage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [skipping, setSkipping] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -274,11 +275,19 @@ export default function WelcomePage() {
           </button>
 
           <button
-            onClick={() => router.push('/dashboard')}
-            className="w-full py-3 rounded-2xl text-sm transition-all duration-200"
+            disabled={skipping}
+            onClick={async () => {
+              setSkipping(true);
+              const { data: { user } } = await supabase.auth.getUser();
+              if (user) {
+                await supabase.from('profiles').update({ first_session_completed: true }).eq('id', user.id);
+              }
+              window.location.href = '/dashboard';
+            }}
+            className="w-full py-3 rounded-2xl text-sm transition-all duration-200 disabled:opacity-40"
             style={{ color: 'rgba(255,255,255,0.30)', background: 'transparent' }}
           >
-            Pular por agora → ir ao dashboard
+            {skipping ? 'Pulando...' : 'Pular por agora → ir ao dashboard'}
           </button>
         </div>
       </div>
