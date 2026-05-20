@@ -25,6 +25,13 @@ function fmtPhone(d: string) {
   return d;
 }
 
+function waLink(phone: string, name: string) {
+  const n = (phone || '').replace(/\D/g, '');
+  const num = n.startsWith('55') ? n : `55${n}`;
+  const msg = encodeURIComponent(`Fala, ${name}! Vai fazer ENEM?`);
+  return `https://wa.me/${num}?text=${msg}`;
+}
+
 function Card({ label, value }: { label: string; value: number | string }) {
   return (
     <div style={{ background: 'rgba(6,3,18,0.7)', border: `1px solid ${VIOLET}35`, borderRadius: 16, padding: 20 }}>
@@ -134,20 +141,28 @@ export default function LeadsDashboard({ data }: { data: PanelData }) {
         <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: MONO, fontSize: 13 }}>
           <thead>
             <tr style={{ background: 'rgba(124,58,237,0.12)' }}>
-              {['Nome', 'E-mail', 'WhatsApp', 'Data'].map((h) => (
+              {['Nome', 'E-mail', 'WhatsApp', 'Data', ''].map((h) => (
                 <th key={h} style={{ textAlign: 'left', padding: '12px 16px', color: `${CYAN}cc`, fontSize: 11, letterSpacing: '0.12em' }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
-              <tr><td colSpan={4} style={{ padding: 24, textAlign: 'center', color: '#666' }}>Nenhum lead encontrado.</td></tr>
+              <tr><td colSpan={5} style={{ padding: 24, textAlign: 'center', color: '#666' }}>Nenhum lead encontrado.</td></tr>
             ) : filtered.map((l) => (
               <tr key={l.id} style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
                 <td style={{ padding: '12px 16px' }}>{l.name}</td>
                 <td style={{ padding: '12px 16px', color: CYAN }}>{l.email}</td>
                 <td style={{ padding: '12px 16px' }}>{fmtPhone(l.whatsapp)}</td>
                 <td style={{ padding: '12px 16px', color: '#aaa' }}>{fmtDate(l.created_at)}</td>
+                <td style={{ padding: '10px 16px' }}>
+                  <a href={waLink(l.whatsapp, l.name)} target="_blank" rel="noopener noreferrer"
+                    style={{ display: 'inline-block', fontFamily: MONO, fontSize: 11, fontWeight: 700,
+                      color: '#fff', background: '#25D366', border: 'none', borderRadius: 8,
+                      padding: '6px 12px', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                    WA
+                  </a>
+                </td>
               </tr>
             ))}
           </tbody>

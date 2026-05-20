@@ -17,7 +17,7 @@ const ITEMS = [
     icon: '⚡',
     name: 'Flashcards Táticos',
     desc: 'Cada card calibrado para a TRI — sem enrolação, só o que cai.',
-    stat: '5.807',
+    stat: '18.232',
     statLabel: 'CARDS',
     color: NEON,
   },
@@ -227,7 +227,7 @@ export default function ArsenalElite() {
 
           <div className="hidden sm:flex items-center gap-5">
             {[
-              { label: 'Cards',    val: '5.807', color: NEON    },
+              { label: 'Cards',    val: '18.232', color: NEON    },
               { label: 'Matérias', val: '6',     color: VIOLET  },
               { label: 'TRI',      val: '100%',  color: ORANGE  },
             ].map(stat => (
