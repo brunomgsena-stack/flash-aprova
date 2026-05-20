@@ -269,15 +269,13 @@ export default function DashboardTour() {
     if (skippingRef.current) return;
     skippingRef.current = true;
     try {
-      const { supabase } = await import('@/lib/supabaseClient');
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        await supabase
-          .from('profiles')
-          .update({ first_session_completed: true })
-          .eq('id', user.id);
+      const res = await fetch('/api/onboarding/complete-first-session', { method: 'POST' });
+      if (!res.ok) {
+        console.error('[DashboardTour] complete-first-session falhou:', res.status);
       }
-    } catch { /* segue em caso de falha */ }
+    } catch (e) {
+      console.error('[DashboardTour] complete-first-session erro:', e);
+    }
     setShowIntro(false);
     cleanUp();
     window.location.replace('/dashboard');

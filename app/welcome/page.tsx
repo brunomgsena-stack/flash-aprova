@@ -278,14 +278,22 @@ export default function WelcomePage() {
             disabled={skipping}
             onClick={async () => {
               setSkipping(true);
-              const { data: { user } } = await supabase.auth.getUser();
-              if (user) {
-                await supabase.from('profiles').update({ first_session_completed: true }).eq('id', user.id);
+              try {
+                const res = await fetch('/api/onboarding/complete-first-session', { method: 'POST' });
+                if (!res.ok) {
+                  console.error('[Welcome] complete-first-session falhou:', res.status);
+                }
+              } catch (e) {
+                console.error('[Welcome] complete-first-session erro:', e);
               }
               window.location.href = '/dashboard';
             }}
-            className="w-full py-3 rounded-2xl text-sm transition-all duration-200 disabled:opacity-40"
-            style={{ color: 'rgba(255,255,255,0.30)', background: 'transparent' }}
+            className="w-full py-3 rounded-2xl text-sm font-semibold transition-all duration-200 hover:brightness-125 active:scale-[0.98] disabled:opacity-50"
+            style={{
+              color:      'rgba(255,255,255,0.70)',
+              background: 'rgba(255,255,255,0.04)',
+              border:     '1px solid rgba(255,255,255,0.12)',
+            }}
           >
             {skipping ? 'Pulando...' : 'Pular por agora → ir ao dashboard'}
           </button>

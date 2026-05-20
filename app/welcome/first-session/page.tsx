@@ -249,8 +249,9 @@ export default function FirstSessionPage() {
 
   useEffect(() => {
     if (!done || !userId) return;
-    supabase.from('profiles').update({ first_session_completed: true }).eq('id', userId)
-      .then(({ error }) => { if (error) console.error('[FirstSession]', error.message); });
+    fetch('/api/onboarding/complete-first-session', { method: 'POST' })
+      .then(res => { if (!res.ok) console.error('[FirstSession] complete-first-session falhou:', res.status); })
+      .catch(e => console.error('[FirstSession] complete-first-session erro:', e));
     updateStreak(userId);
   }, [done, userId]);
 
