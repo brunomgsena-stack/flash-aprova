@@ -1489,13 +1489,10 @@ export default function HeroSection() {
       {/* ── Main content ── */}
       <div className="relative" style={{ zIndex: 2 }}>
 
-        {/* Headline block */}
-        <motion.div
+        {/* Headline block — renderiza visível no SSR (LCP) */}
+        <div
           className="text-center px-4 sm:px-6 pt-0 sm:pt-14 pb-5 sm:pb-4 mx-auto"
           style={{ maxWidth: 820 }}
-          initial={{ opacity: 0, y: 32 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
         >
           {/* Badge */}
           <div
@@ -1581,7 +1578,7 @@ export default function HeroSection() {
             </motion.span>
             .
           </h1>
-        </motion.div>
+        </div>
 
         {/* ── Central scene ── */}
         <div className="relative mx-auto px-4 pb-2" style={{ maxWidth: 1160 }}>
