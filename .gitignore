@@ -12,6 +12,7 @@ node_modules/
 
 # ── Build output ──────────────────────────────────────────────────────────────
 .next/
+.next_bak_*/
 out/
 dist/
 build/
