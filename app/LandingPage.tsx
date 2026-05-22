@@ -589,7 +589,7 @@ function FAQAccordion() {
 // ─── Main component ───────────────────────────────────────────────────────────
 export default function LandingPage() {
   return (
-    <div
+    <main
       className="relative overflow-x-hidden"
       style={{ background: '#121212' }}
     >
@@ -923,7 +923,7 @@ export default function LandingPage() {
 
       </div>
 
-    </div>
+    </main>
 
   );
 }
