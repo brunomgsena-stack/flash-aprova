@@ -194,12 +194,26 @@ html.light .fa-progress-bar {
   50%       { box-shadow: 0 0 22px rgba(251,146,60,0.5); }
 }
 
-/* ── Landing page CTA pulse (verde neon #00FF73) ─────────────────────────── */
-@keyframes cta-pulse {
-  0%, 100% { box-shadow: 0 0 20px rgba(0,255,115,0.45), 0 0 60px rgba(0,255,115,0.15), 0 4px 24px rgba(0,0,0,0.50); }
-  50%       { box-shadow: 0 0 44px rgba(0,255,115,0.80), 0 0 90px rgba(0,255,115,0.30), 0 4px 24px rgba(0,0,0,0.50); }
+/* ── Landing page CTA pulse (verde neon #00FF73) — animação composta ─────── */
+@keyframes cta-pulse-opacity {
+  0%, 100% { opacity: 0.5; }
+  50%       { opacity: 1; }
 }
-.cta-pulse { animation: cta-pulse 2.4s ease-in-out infinite; }
+.cta-pulse {
+  position: relative;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.50);
+}
+.cta-pulse::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  z-index: -1;
+  pointer-events: none;
+  box-shadow: 0 0 44px rgba(0,255,115,0.80), 0 0 90px rgba(0,255,115,0.30);
+  animation: cta-pulse-opacity 2.4s ease-in-out infinite;
+  will-change: opacity;
+}
 
 /* ── Typing cursor blink ─────────────────────────────────────────────────── */
 @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
