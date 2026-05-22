@@ -42,11 +42,12 @@ export default function MetaPixel() {
   const loadedRef = useRef(false);
   const firstRun = useRef(true);
 
-  // Carrega o pixel sob demanda (interação ou idle)
+  // Carrega o pixel apenas na primeira interação real do usuário.
+  // (Sem fallback de idle: bots/Lighthouse não interagem, então não baixam fbevents.
+  //  O CAPI server-side cobre PageView inicial.)
   useEffect(() => {
     if (!PIXEL_ID || excluded || loadedRef.current) return;
 
-    let idleId: number | undefined;
     const events = ['scroll', 'pointerdown', 'touchstart', 'keydown'] as const;
 
     const trigger = () => {
@@ -58,22 +59,9 @@ export default function MetaPixel() {
 
     const cleanup = () => {
       events.forEach((ev) => window.removeEventListener(ev, trigger));
-      if (idleId !== undefined) {
-        const ric = (window as unknown as { cancelIdleCallback?: (id: number) => void }).cancelIdleCallback;
-        ric?.(idleId);
-      }
     };
 
     events.forEach((ev) => window.addEventListener(ev, trigger, { once: true, passive: true }));
-
-    const ric = (window as unknown as {
-      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
-    }).requestIdleCallback;
-    if (ric) {
-      idleId = ric(trigger, { timeout: 4000 });
-    } else {
-      idleId = window.setTimeout(trigger, 4000) as unknown as number;
-    }
 
     return cleanup;
   }, [excluded]);
