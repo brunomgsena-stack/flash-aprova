@@ -1385,6 +1385,20 @@ function MacBookMockup({ termLines, visibleConcepts }: { termLines: string[]; vi
   );
 }
 
+// ── Desktop-only gate: filhos só montam em telas ≥ lg (1024px). ───────────────
+// No mobile renderiza null (sem hidratar), evitando trabalho de JS desnecessário.
+function DesktopOnly({ children }: { children: React.ReactNode }) {
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1024px)');
+    setShow(mq.matches);
+    const onChange = (e: MediaQueryListEvent) => setShow(e.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+  return show ? <>{children}</> : null;
+}
+
 // ── Main HeroSection ──────────────────────────────────────────────────────────
 export default function HeroSection() {
   const router = useRouter();
@@ -1583,10 +1597,12 @@ export default function HeroSection() {
         {/* ── Central scene ── */}
         <div className="relative mx-auto px-4 pb-2" style={{ maxWidth: 1160 }}>
 
-          {/* SVG lines behind everything */}
-          <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 0 }}>
-            <ConnectionLines />
-          </div>
+          {/* SVG lines behind everything — desktop apenas */}
+          <DesktopOnly>
+            <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 0 }}>
+              <ConnectionLines />
+            </div>
+          </DesktopOnly>
 
           <div
             className="relative flex items-center justify-center"
@@ -1594,6 +1610,7 @@ export default function HeroSection() {
           >
 
             {/* TL — Arsenal de Revisão */}
+            <DesktopOnly>
             <motion.div
               className="absolute hidden lg:block"
               style={{ left: 0, top: 30, x: tlX, y: tlY }}
@@ -1640,8 +1657,10 @@ export default function HeroSection() {
                 </GlassCard>
               </FloatWrapper>
             </motion.div>
+            </DesktopOnly>
 
             {/* BL — AI Memory Engine (replaces Métricas de Retenção) */}
+            <DesktopOnly>
             <motion.div
               className="absolute hidden lg:block"
               style={{ left: 0, bottom: 30, x: blX, y: blY }}
@@ -1653,6 +1672,7 @@ export default function HeroSection() {
                 <TerminalWidget lines={termLines} />
               </FloatWrapper>
             </motion.div>
+            </DesktopOnly>
 
             {/* MacBook center — visível no SSR (é o elemento LCP no mobile) */}
             <motion.div
@@ -1663,6 +1683,7 @@ export default function HeroSection() {
             </motion.div>
 
             {/* TR — Agenda IA */}
+            <DesktopOnly>
             <motion.div
               className="absolute hidden lg:block"
               style={{ right: 0, top: 30, x: trX, y: trY }}
@@ -1698,8 +1719,10 @@ export default function HeroSection() {
                 </GlassCard>
               </FloatWrapper>
             </motion.div>
+            </DesktopOnly>
 
             {/* BR — Conceitos Blindados */}
+            <DesktopOnly>
             <motion.div
               className="absolute hidden lg:block"
               style={{ right: 0, bottom: 30, x: brX, y: brY }}
@@ -1716,6 +1739,7 @@ export default function HeroSection() {
                 </GlassCard>
               </FloatWrapper>
             </motion.div>
+            </DesktopOnly>
           </div>
 
         </div>
