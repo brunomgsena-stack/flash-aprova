@@ -1654,13 +1654,10 @@ export default function HeroSection() {
               </FloatWrapper>
             </motion.div>
 
-            {/* MacBook center */}
+            {/* MacBook center — visível no SSR (é o elemento LCP no mobile) */}
             <motion.div
               className="relative"
               style={{ zIndex: 10, x: nbX, y: nbY, width: '100%', maxWidth: 560 }}
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ duration: 1.1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
             >
               <MacBookMockup termLines={termLines} visibleConcepts={visibleConcepts} />
             </motion.div>
