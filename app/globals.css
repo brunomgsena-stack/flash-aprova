@@ -290,6 +290,6 @@ body {
     linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
   background-size: 40px 40px;
   min-height: 100vh;
-  font-family: var(--font-jetbrains), system-ui, monospace;
+  font-family: 'Inter', system-ui, sans-serif;
   color: #e2e8f0;
 }
