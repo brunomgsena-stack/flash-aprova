@@ -139,7 +139,7 @@ function SendingOverlay() {
     'Verificando identidade...',
     'Criptografando pacote de dados...',
     'Enviando ao núcleo de análise...',
-    'Sincronizando protocolo AetherX...',
+    'Protegendo seus dados · LGPD...',
     'Acesso liberado.',
   ];
 
@@ -326,7 +326,7 @@ export default function LeadGate({ health, subjectName, onSubmit }: LeadGateProp
     setSending(true);
     setTimeout(async () => {
       await onSubmit(name.trim(), email.trim().toLowerCase(), phone.replace(/\D/g,''));
-    }, 2800);
+    }, 700);
   }
 
   return (
@@ -386,12 +386,12 @@ export default function LeadGate({ health, subjectName, onSubmit }: LeadGateProp
             <div className="flex items-center gap-2 mb-5">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold tracking-widest"
                 style={{
-                  background: `${RED}15`, border:`1px solid ${RED}50`,
-                  color: RED, fontFamily: MONO,
+                  background: `${NEON}15`, border:`1px solid ${NEON}50`,
+                  color: NEON, fontFamily: MONO,
                 }}>
                 <span className="inline-block w-1.5 h-1.5 rounded-full shrink-0"
-                  style={{ background:RED, animation:'lg-blink 1s step-end infinite' }}/>
-                ACESSO RESTRITO
+                  style={{ background:NEON, animation:'lg-blink 1s step-end infinite' }}/>
+                RAIO-X CONCLUÍDO
               </div>
             </div>
 
@@ -399,8 +399,8 @@ export default function LeadGate({ health, subjectName, onSubmit }: LeadGateProp
             <h1 className="text-white font-black text-2xl sm:text-3xl leading-tight mb-3 tracking-tight"
               style={{ fontFamily: MONO }}>
               <span style={{ color: VIOLET }}>[</span>
-              {' '}<span style={{ color: NEON, textShadow:`0 0 20px ${NEON}80, 0 0 40px ${NEON}40` }}>VEREDITO PRONTO</span>{' '}
-              PARA EMISSÃO
+              {' '}SEU{' '}<span style={{ color: NEON, textShadow:`0 0 20px ${NEON}80, 0 0 40px ${NEON}40` }}>RAIO-X DE MEMÓRIA</span>{' '}
+              ESTÁ PRONTO
               {' '}<span style={{ color: VIOLET }}>]</span>
             </h1>
 
@@ -526,8 +526,8 @@ export default function LeadGate({ health, subjectName, onSubmit }: LeadGateProp
               {/* ── Micro-copy ── */}
               <p className="text-center text-xs mt-1 leading-relaxed"
                 style={{ fontFamily:MONO, color:'rgba(255,255,255,0.20)' }}>
-                Seus dados estão protegidos sob o protocolo de<br/>
-                segurança <span style={{ color:`${VIOLET}80` }}>AetherX</span>.
+                Seus dados estão protegidos · conexão segura e<br/>
+                em conformidade com a <span style={{ color:`${VIOLET}80` }}>LGPD</span>.
                 Não enviamos spam, apenas o seu veredito.
               </p>
             </form>

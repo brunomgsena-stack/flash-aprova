@@ -558,12 +558,6 @@ export default function CheckoutPage() {
       }
       .elite-card { animation: emerald-pulse 2.8s ease-in-out infinite; }
 
-      @keyframes anomaly-pulse {
-        0%, 100% { background: rgba(127,29,29,0.28); box-shadow: 0 0 0 1px #7f1d1d, 0 0 18px rgba(239,68,68,0.35); }
-        50%       { background: rgba(185,28,28,0.42); box-shadow: 0 0 0 1px #dc2626, 0 0 36px rgba(239,68,68,0.65); }
-      }
-      .status-anomaly { animation: anomaly-pulse 1.6s ease-in-out infinite; }
-
       @keyframes glitch {
         0%, 90%, 100% { opacity: 1; transform: translate(0); clip-path: none; }
         91%  { opacity: 0.8; transform: translate(-2px, 1px); clip-path: inset(15% 0 40% 0); color: #fca5a5; }
@@ -612,29 +606,29 @@ export default function CheckoutPage() {
 
           <div className="relative flex flex-col sm:flex-row items-center gap-6">
             <div className="text-center sm:text-left flex-1">
-              {/* Pulsing anomaly banner */}
-              <div className="status-anomaly rounded-lg px-3 py-2 mb-4 text-center text-xs font-black tracking-widest uppercase"
-                style={{ color: '#fca5a5', border: '1px solid #7f1d1d' }}>
-                [ STATUS: ANOMALIA ESTRUTURAL DETECTADA ]
+              {/* Diagnosis-complete banner */}
+              <div className="rounded-lg px-3 py-2 mb-4 text-center text-xs font-black tracking-widest uppercase"
+                style={{ color: '#6ee7b7', border: '1px solid #065f46', background: 'rgba(6,95,70,0.18)' }}>
+                [ DIAGNÓSTICO CONCLUÍDO · IA ]
               </div>
               <p className="text-slate-500 text-xs font-semibold tracking-widest uppercase mb-2">
                 Relatório de Diagnóstico · IA
               </p>
               <h1 className="text-3xl sm:text-4xl font-black text-white leading-tight mb-1">
                 {data?.name && <span>{data.name.split(' ')[0]}, </span>}
-                <span style={{ color: RED, textShadow: `0 0 24px ${RED}90` }}>
-                  Erosão de Dados
-                </span>{' '}Detectada
+                <span style={{ color: EMERALD, textShadow: `0 0 24px ${EMERALD}90` }}>
+                  seu diagnóstico
+                </span>{' '}está pronto.
               </h1>
               <p className="text-slate-400 text-sm leading-relaxed mt-2">
-                O Stress Test confirmou: sua base de conhecimento em{' '}
+                Identificamos exatamente onde sua memória está vazando em{' '}
                 <span style={{ color: subjectMeta.color, textShadow: `0 0 10px ${subjectMeta.color}60` }}
                   className="font-bold">
                   {subjectMeta.name}
                 </span>{' '}
-                está vazando. Sem intervenção,{' '}
+                — e montamos o plano que fecha essas lacunas antes do ENEM. Sem reforço espaçado, boa parte do que você estudou hoje se perde em poucos dias;{' '}
                 <span className="text-white font-bold">
-                  70% do que você estudou hoje será deletado em 24h.
+                  com o protocolo certo, vira retenção.
                 </span>
               </p>
             </div>
@@ -754,7 +748,7 @@ export default function CheckoutPage() {
               disabled={!!buying}
               className="block w-full py-3 rounded-xl text-center text-sm font-black tracking-wider transition-all hover:opacity-80 disabled:opacity-50 disabled:cursor-wait"
               style={{ background:'rgba(124,58,237,0.14)', border:'1px solid rgba(124,58,237,0.30)', color:'#a78bfa' }}>
-              {buying === 'aceleracao' ? '[ AGUARDE... ]' : '[ COMEÇAR COM FLASHCARDS ]'}
+              {buying === 'aceleracao' ? '[ AGUARDE... ]' : '[ QUERO SÓ OS FLASHCARDS ]'}
             </button>
           </div>
 
@@ -812,12 +806,11 @@ export default function CheckoutPage() {
             {/* Price */}
             <div className="mb-3 relative">
               <p className="text-slate-600 text-xs line-through mb-0.5">era R$ 997,00</p>
-              <span className="text-4xl font-black text-white">12x de R$&nbsp;66,41</span>
-              <p className="text-xs font-semibold mt-0.5" style={{ color: EMERALD }}>no cartão de crédito</p>
+              <span className="text-4xl font-black text-white">R$&nbsp;1,09<span className="text-lg font-semibold text-slate-400">/dia</span></span>
+              <p className="text-xs font-semibold mt-0.5" style={{ color: EMERALD }}>12x de R$ 66,41 no cartão · ou R$ 797 à vista</p>
             </div>
-            <p className="text-slate-600 text-sm mb-1 relative">ou R$ 797,00 à vista</p>
             <p className="text-sm font-semibold italic mb-6 relative" style={{ color: EMERALD }}>
-              Menos de R$ 1,09 por dia
+              Menos de 4% de um ano de cursinho
             </p>
 
             <div className="h-px mb-4 relative"
@@ -865,7 +858,7 @@ export default function CheckoutPage() {
                 <span className="absolute inset-0"
                   style={{ background:'linear-gradient(105deg,transparent 30%,rgba(255,255,255,0.12) 50%,transparent 70%)' }} />
               </span>
-              {buying === 'panteao_elite' ? '[ AGUARDE... ]' : '[ ATIVAR PROTOCOLO NEURAL ]'}
+              {buying === 'panteao_elite' ? '[ AGUARDE... ]' : '[ GARANTIR MINHA VAGA ]'}
             </button>
 
             {/* Micro trust */}

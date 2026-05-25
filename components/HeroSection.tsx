@@ -1849,7 +1849,7 @@ export default function HeroSection() {
                 lineHeight: 1.5,
               }}
             >
-              Raio-X de Memória IA | Descubra pontos cegos em 3 min
+              Diagnóstico 100% grátis | Raio-X de Memória IA em 3 min
             </p>
           </div>
         </motion.div>

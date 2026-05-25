@@ -306,7 +306,7 @@ export default function OnboardingFlow() {
       setFinalData({ results: newResults, health: newHealth });
       setAnalyzing(true);
       setStep(3);
-      setTimeout(() => setAnalyzing(false), 3000);
+      setTimeout(() => setAnalyzing(false), 1500);
     }
   }
 

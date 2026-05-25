@@ -581,6 +581,7 @@ function FAQAccordion() {
 
       <div className="text-center mt-10">
         <CTAButton size="sm" label="[ DETECTAR VAZAMENTO DE NOTA ]" />
+        <p className="text-center text-xs mt-3" style={{ color: 'rgba(255,255,255,0.35)' }}>Diagnóstico grátis · 3 min</p>
       </div>
     </section>
   );
@@ -689,7 +690,10 @@ export default function LandingPage() {
         </LazySection>
 
         <div className="flex justify-center pb-16 px-4 -mt-8">
-          <CTAButton size="sm" label="[ DETECTAR VAZAMENTO DE NOTA ]" />
+          <div className="flex flex-col items-center">
+            <CTAButton size="sm" label="[ DETECTAR VAZAMENTO DE NOTA ]" />
+            <p className="text-center text-xs mt-3" style={{ color: 'rgba(255,255,255,0.35)' }}>Diagnóstico grátis · 3 min</p>
+          </div>
         </div>
 
         {/* ══════════════════════════ ARSENAL DE ELITE ══ */}
@@ -714,7 +718,10 @@ export default function LandingPage() {
 
         {/* ═══════════════════ CTA mid-page ══ */}
         <div className="flex justify-center pb-16 -mt-10 px-5 sm:px-0">
-          <CTAButton size="sm" label="[ DETECTAR VAZAMENTO DE NOTA ]" />
+          <div className="flex flex-col items-center">
+            <CTAButton size="sm" label="[ DETECTAR VAZAMENTO DE NOTA ]" />
+            <p className="text-center text-xs mt-3" style={{ color: 'rgba(255,255,255,0.35)' }}>Diagnóstico grátis · 3 min</p>
+          </div>
         </div>
 
         {/* ════════════════════ AUDITORIA DE MERCADO ══ */}
@@ -896,7 +903,10 @@ export default function LandingPage() {
 
             {/* CTA */}
             <div className="flex justify-center">
-              <CTAButton size="sm" label="[ DETECTAR VAZAMENTO DE NOTA ]" />
+              <div className="flex flex-col items-center">
+                <CTAButton size="sm" label="[ DETECTAR VAZAMENTO DE NOTA ]" />
+                <p className="text-center text-xs mt-3" style={{ color: 'rgba(255,255,255,0.35)' }}>Diagnóstico grátis · 3 min</p>
+              </div>
             </div>
           </div>
         </section>
