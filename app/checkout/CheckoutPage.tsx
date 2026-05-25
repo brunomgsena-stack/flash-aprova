@@ -461,11 +461,12 @@ interface OnboardingData {
   name?:  string;
 }
 
-type PlanId = 'aceleracao' | 'panteao_elite';
+type PlanId = 'aceleracao' | 'panteao_elite' | 'black';
 
 const ASAAS_LINKS: Record<PlanId, string> = {
   aceleracao:    'https://www.asaas.com/c/5eavmb23sffhvvni',
   panteao_elite: 'https://www.asaas.com/c/cahneqkzx0cn05yh',
+  black:         'https://www.asaas.com/c/REPLACE_ME_BLACK', // TODO: substituir pelo link real do Asaas do Protocolo Black
 };
 
 const cardStyle = {
@@ -474,28 +475,13 @@ const cardStyle = {
   WebkitBackdropFilter: 'blur(24px)',
 } as React.CSSProperties;
 
-const CURSO_WORDS = ['DIREITO','PSICO','ODONTO','ENG','MED VET','SAÚDE','EXATAS','COMPUTAÇÃO','ARQ & URB','ECONOMIA','ADM'];
-
 export default function CheckoutPage() {
   const [data, setData] = useState<OnboardingData | null>(null);
-  const [cursoIdx, setCursoIdx] = useState(0);
-  const [cursoVisible, setCursoVisible] = useState(true);
   const [buying, setBuying] = useState<PlanId | null>(null);
   const [emailInput, setEmailInput] = useState('');
   const [emailError, setEmailError] = useState('');
   // planId pré-selecionado via URL (?plan=aceleracao ou ?plan=panteao_elite)
   const [urlPlan, setUrlPlan] = useState<PlanId | null>(null);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCursoVisible(false);
-      setTimeout(() => {
-        setCursoIdx(i => (i + 1) % CURSO_WORDS.length);
-        setCursoVisible(true);
-      }, 220);
-    }, 1800);
-    return () => clearInterval(interval);
-  }, []);
 
   useEffect(() => {
     try {
@@ -506,23 +492,18 @@ export default function CheckoutPage() {
     // Lê o plano da URL: /checkout?plan=aceleracao
     const params = new URLSearchParams(window.location.search);
     const plan = params.get('plan') as PlanId | null;
-    if (plan === 'aceleracao' || plan === 'panteao_elite') setUrlPlan(plan);
+    if (plan === 'aceleracao' || plan === 'panteao_elite' || plan === 'black') setUrlPlan(plan);
   }, []);
 
   const handleBuy = useCallback((planId: PlanId) => {
     if (buying) return;
 
-    const email = data?.email || emailInput.trim().toLowerCase();
-
-    if (!email || !email.includes('@')) {
-      setEmailError('Digite seu e-mail para continuar.');
-      return;
-    }
-
-    setEmailError('');
     setBuying(planId);
 
-    const url = `${ASAAS_LINKS[planId]}?email=${encodeURIComponent(email)}`;
+    const email = data?.email || emailInput.trim().toLowerCase();
+    const url = email && email.includes('@')
+      ? `${ASAAS_LINKS[planId]}?email=${encodeURIComponent(email)}`
+      : ASAAS_LINKS[planId];
     window.location.href = url;
   }, [buying, data, emailInput]);
 
@@ -649,10 +630,7 @@ export default function CheckoutPage() {
         {!data?.email && (
           <div className="mb-6 rounded-2xl p-5"
             style={{ ...cardStyle, border: '1px solid rgba(124,58,237,0.22)' }}>
-            <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: VIOLET }}>
-              // IDENTIFICAÇÃO DO OPERADOR
-            </p>
-            <label className="block text-slate-400 text-xs mb-1.5">E-mail para receber o acesso</label>
+            <label className="block text-slate-400 text-xs mb-1.5">E-mail (opcional) — agiliza seu acesso após o pagamento</label>
             <input
               type="email"
               value={emailInput}
@@ -672,7 +650,7 @@ export default function CheckoutPage() {
         )}
 
         {/* ── Plan cards ── */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-8 items-start lg:w-[min(64rem,92vw)] lg:relative lg:left-1/2 lg:-translate-x-1/2">
 
           {/* ── PROTOCOLO MANUAL ── */}
           <div className="relative rounded-2xl p-7 overflow-hidden"
@@ -772,22 +750,13 @@ export default function CheckoutPage() {
             {/* Top badge — inline, no overlap */}
             <div className="flex justify-center mb-4">
               <span className="text-xs font-black px-3 py-1.5 rounded-full text-white inline-flex items-center gap-1"
-                style={{ background:`linear-gradient(135deg,${EMERALD},${CYAN})`, boxShadow:`0 0 20px ${EMERALD}55`, minWidth:'22ch', justifyContent:'center' }}>
-                🏅 ESCOLHA DOS TOP 1%&nbsp;
-                <span style={{
-                  display:'inline-block',
-                  opacity: cursoVisible ? 1 : 0,
-                  transform: cursoVisible ? 'translateY(0px)' : 'translateY(-5px)',
-                  transition:'opacity 200ms ease, transform 200ms ease',
-                  letterSpacing:'0.04em',
-                }}>
-                  {CURSO_WORDS[cursoIdx]}
-                </span>
+                style={{ background:`linear-gradient(135deg,${EMERALD},${CYAN})`, boxShadow:`0 0 20px ${EMERALD}55`, justifyContent:'center' }}>
+                🏅 ESCOLHA DOS TOP 1%
               </span>
             </div>
 
             {/* Plan name */}
-            <p className="text-base font-black mb-4 leading-tight relative"
+            <p className="text-xs font-black mb-4 leading-tight relative whitespace-nowrap tracking-tight"
               style={{ background:`linear-gradient(90deg,${EMERALD},${CYAN})`,
                 WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>
               [ PROTOCOLO NEURAL: INTELIGÊNC.IA ]
@@ -865,6 +834,71 @@ export default function CheckoutPage() {
             <p className="text-center text-sm font-black mt-4 relative" style={{ color: EMERALD, textShadow: `0 0 12px ${EMERALD}60` }}>
               🛡️ Garantia Incondicional de 7 Dias • Risco Zero
             </p>
+          </div>
+
+          {/* ── PROTOCOLO BLACK (Decoy/Âncora — design flat e silencioso) ── */}
+          <div className="relative rounded-2xl p-7 overflow-hidden"
+            style={{ background:'rgba(18,18,20,0.96)', border:'1px solid rgba(255,255,255,0.09)' }}>
+
+            {/* Tag superior discreta */}
+            <p className="text-[10px] font-semibold tracking-widest uppercase mb-4" style={{ color:'#78716c' }}>
+              ⚠️ Vagas Limitadas (Requer Aplicação)
+            </p>
+
+            {/* Plan name */}
+            <p className="text-base font-black mb-4 leading-tight" style={{ color:'#e7e5e4' }}>
+              [ PROTOCOLO BLACK:{' '}
+              <span style={{ color:'#a8a29e' }}>INTERVENÇÃO DIRETA ]</span>
+            </p>
+
+            {/* Price */}
+            <div className="mb-3">
+              <p className="text-slate-600 text-xs line-through mb-0.5">era R$ 2.500,00</p>
+              <span className="text-4xl font-black" style={{ color:'#e7e5e4' }}>12x de R$&nbsp;199,70</span>
+              <p className="text-xs font-semibold mt-0.5" style={{ color:'#a8a29e' }}>no cartão de crédito</p>
+            </div>
+            <p className="text-slate-600 text-sm mb-1">ou R$ 1.997 à vista</p>
+            <p className="text-sm italic mb-6" style={{ color:'#a8a29e' }}>
+              O plano de contingência para quem não pode errar.
+            </p>
+
+            <div className="h-px mb-4" style={{ background:'rgba(255,255,255,0.06)' }} />
+
+            {/* Label */}
+            <p className="text-[9px] font-black tracking-widest uppercase mb-3" style={{ color:'#78716c' }}>
+              [ INTERVENÇÃO HUMANA + IA ]
+            </p>
+
+            {/* Checklist */}
+            <div className="flex flex-col gap-2.5 mb-6 text-sm">
+              {[
+                'Tudo do Protocolo Neural (IA + 2 Anos)',
+                'Onboarding Estratégico 1 a 1: Call de 1h para mapear seus pontos cegos.',
+                'Análise de Desempenho Mensal: Um especialista humano ajustando sua rota.',
+                'Linha Direta (WhatsApp): Suporte prioritário com a equipe de engenharia pedagógica.',
+              ].map(f => (
+                <div key={f} className="flex items-start gap-2">
+                  <span className="shrink-0 mt-0.5" style={{ color:'#a8a29e' }}>✔️</span>
+                  <span className="text-slate-300 leading-snug">{f}</span>
+                </div>
+              ))}
+              <div className="flex items-start gap-2">
+                <span className="shrink-0 mt-0.5">🔒</span>
+                <span className="text-slate-300 leading-snug">
+                  <strong style={{ color:'#e7e5e4' }}>Garantia de Aprovação:</strong> Se não passar, devolvemos 100% do valor + R$ 500 pelo seu tempo.
+                </span>
+              </div>
+            </div>
+
+            {/* CTA — outline neutro, sem gradiente/glow */}
+            <button
+              onClick={() => handleBuy('black')}
+              aria-label="Aplicar para o Protocolo Black"
+              disabled={!!buying}
+              className="block w-full py-3 rounded-xl text-center text-sm font-black tracking-wider transition-all hover:bg-white/5 disabled:opacity-50 disabled:cursor-wait"
+              style={{ background:'transparent', border:'1px solid rgba(255,255,255,0.25)', color:'#d6d3d1' }}>
+              {buying === 'black' ? '[ AGUARDE... ]' : '[ APLICAR PARA O BLACK ]'}
+            </button>
           </div>
         </div>
 
