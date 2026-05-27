@@ -442,15 +442,25 @@ function ConnectionLines() {
 }
 
 // ── Tutores IA screen — chat with real tutor avatars ─────────────────────────
-function TutoresScreen() {
+function TutoresScreen({ fill = false }: { fill?: boolean }) {
   type FeedItem = { id: number; tutorIdx: number; msgIdx: number };
 
-  const [feed, setFeed] = useState<FeedItem[]>([
-    { id: 0, tutorIdx: 0, msgIdx: 0 },
-    { id: 1, tutorIdx: 1, msgIdx: 0 },
-    { id: 2, tutorIdx: 2, msgIdx: 0 },
-  ]);
-  const nextRef = useRef({ counter: 3, tIdx: 0, mIdx: 1 });
+  const [feed, setFeed] = useState<FeedItem[]>(
+    fill
+      ? [
+          { id: 0, tutorIdx: 0, msgIdx: 0 },
+          { id: 1, tutorIdx: 1, msgIdx: 0 },
+          { id: 2, tutorIdx: 2, msgIdx: 0 },
+          { id: 3, tutorIdx: 0, msgIdx: 1 },
+          { id: 4, tutorIdx: 1, msgIdx: 1 },
+        ]
+      : [
+          { id: 0, tutorIdx: 0, msgIdx: 0 },
+          { id: 1, tutorIdx: 1, msgIdx: 0 },
+          { id: 2, tutorIdx: 2, msgIdx: 0 },
+        ]
+  );
+  const nextRef = useRef({ counter: fill ? 5 : 3, tIdx: fill ? 1 : 0, mIdx: 1 });
 
   const [typingIdx, setTypingIdx] = useState(0);
   const [showTyping, setShowTyping] = useState(true);
@@ -463,7 +473,7 @@ function TutoresScreen() {
       const msgs = CHAT_TUTORS[nextT].msgs;
       const nextM = (mIdx + 1) % msgs.length;
       nextRef.current = { counter: counter + 1, tIdx: nextT, mIdx: nextM };
-      setFeed((prev) => [...prev.slice(-2), { id: counter, tutorIdx: nextT, msgIdx: nextM }]);
+      setFeed((prev) => [...prev.slice(fill ? -4 : -2), { id: counter, tutorIdx: nextT, msgIdx: nextM }]);
       setShowTyping(false);
       setTimeout(() => {
         setTypingIdx(nextT);
@@ -544,7 +554,7 @@ function TutoresScreen() {
       <div style={{ height: '0.5px', background: 'rgba(255,255,255,0.08)', flexShrink: 0 }} />
 
       {/* Chat feed */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', gap: 5, overflow: 'hidden' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: fill ? 'flex-start' : 'flex-end', gap: fill ? 8 : 5, overflow: 'hidden' }}>
         <AnimatePresence initial={false}>
           {feed.map((item) => {
             const t = CHAT_TUTORS[item.tutorIdx];
@@ -560,11 +570,11 @@ function TutoresScreen() {
                 <img src={t.avatar} alt={t.name} width={20} height={20}
                   style={{ borderRadius: '50%', flexShrink: 0, marginTop: 1, objectFit: 'cover', background: '#0d0a1e', border: `1px solid ${t.color}55` }} />
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 6, fontWeight: 700, color: t.color, marginBottom: 2 }}>
+                  <div style={{ fontSize: fill ? 8 : 6, fontWeight: 700, color: t.color, marginBottom: 2 }}>
                     {t.name} · {t.subject}
                   </div>
                   <div style={{
-                    fontSize: 7.5, color: 'rgba(255,255,255,0.82)', lineHeight: 1.45,
+                    fontSize: fill ? 10 : 7.5, color: 'rgba(255,255,255,0.82)', lineHeight: 1.45,
                     background: `${t.color}0e`, border: `1px solid ${t.color}28`,
                     borderRadius: '2px 8px 8px 8px', padding: '4px 8px',
                   }}>
@@ -1319,6 +1329,493 @@ function CommandCenterScreen({ termLines, visibleConcepts }: { termLines: string
   );
 }
 
+// ── Redação full-screen (mobile iPhone) — espelha a auditoria TRI da pág. de vendas ──
+function PhoneRedacaoScreen() {
+  const MONO = "'JetBrains Mono','Courier New',ui-monospace,monospace";
+  const TOTAL = 960;
+  const COMPS = [
+    { id: 'C1', label: 'Norma Culta',   score: 200, color: '#10b981' },
+    { id: 'C2', label: 'Tema / Argum.', score: 160, color: '#00FF73' },
+    { id: 'C3', label: 'Organização',   score: 200, color: '#f59e0b' },
+    { id: 'C4', label: 'Coesão',        score: 200, color: '#f97316' },
+    { id: 'C5', label: 'Intervenção',   score: 200, color: '#00FF73' },
+  ];
+  const FEED = [
+    { t: '> C1 — Norma Culta...',     c: 'dim' },
+    { t: '  ✓ 200/200 NOMINAL',       c: '#10b981' },
+    { t: '> C2 — Argumentação...',    c: 'dim' },
+    { t: '  ! 160/200 WARN REP-007',  c: '#f97316' },
+    { t: '> C3 — Organização...',     c: 'dim' },
+    { t: '  ✓ 200/200 NOMINAL',       c: '#f59e0b' },
+    { t: '> C4 — Coesão...',          c: 'dim' },
+    { t: '  ✓ 200/200 NOMINAL',       c: '#f97316' },
+    { t: '> C5 — Intervenção...',     c: 'dim' },
+    { t: '  ✓ 200/200 NOMINAL',       c: '#00FF73' },
+    { t: '> score TRI calculado',     c: '#a855f7' },
+  ];
+
+  const [shown, setShown] = useState(0);
+  const [score, setScore] = useState(0);
+
+  useEffect(() => {
+    if (shown < FEED.length) {
+      const t = setTimeout(() => setShown((s) => s + 1), 320);
+      return () => clearTimeout(t);
+    }
+    const t = setTimeout(() => { setShown(0); setScore(0); }, 4200);
+    return () => clearTimeout(t);
+  }, [shown]);
+
+  useEffect(() => {
+    if (shown < FEED.length) return;
+    let cur = 0;
+    const iv = setInterval(() => {
+      cur = Math.min(cur + 60, TOTAL);
+      setScore(cur);
+      if (cur >= TOTAL) clearInterval(iv);
+    }, 45);
+    return () => clearInterval(iv);
+  }, [shown]);
+
+  return (
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', padding: '10px 12px', gap: 8,
+      background: 'linear-gradient(160deg,#0d0d1a 0%,#080c18 100%)', fontFamily: MONO, overflow: 'hidden' }}>
+      {/* header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+        <span style={{ fontSize: 9, fontWeight: 800, color: '#fff' }}>✍️ Redação · Norma IA</span>
+        <span style={{ fontSize: 6, color: '#a855f7', letterSpacing: '0.18em', fontWeight: 700 }}>AUDITORIA TRI</span>
+      </div>
+
+      {/* terminal feed — fills */}
+      <div style={{ flex: 1, minHeight: 0, background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(124,58,237,0.18)',
+        borderRadius: 8, padding: '8px 9px', overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: 2 }}>
+        {FEED.slice(0, shown).map((l, i) => (
+          <motion.div key={i} initial={{ opacity: 0, x: -5 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.25 }}
+            style={{ fontSize: 8, lineHeight: 1.5, whiteSpace: 'nowrap',
+              color: l.c === 'dim' ? 'rgba(255,255,255,0.4)' : l.c }}>
+            {l.t}
+          </motion.div>
+        ))}
+        {shown < FEED.length && (
+          <motion.span style={{ fontSize: 8, color: '#a855f7' }} animate={{ opacity: [1, 0, 1] }}
+            transition={{ duration: 0.8, repeat: Infinity }}>▮</motion.span>
+        )}
+      </div>
+
+      {/* competency bars */}
+      <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
+        {COMPS.map((c, i) => {
+          const revealed = shown >= i * 2 + 2;
+          return (
+            <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ fontSize: 7, fontWeight: 700, color: c.color, width: 16 }}>{c.id}</span>
+              <span style={{ fontSize: 7, color: 'rgba(255,255,255,0.6)', width: 56 }}>{c.label}</span>
+              <div style={{ flex: 1, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.07)', overflow: 'hidden' }}>
+                <motion.div style={{ height: '100%', borderRadius: 2, background: c.color }}
+                  initial={{ width: 0 }} animate={{ width: revealed ? `${(c.score / 200) * 100}%` : 0 }}
+                  transition={{ duration: 0.6, ease: 'easeOut' }} />
+              </div>
+              <span style={{ fontSize: 7, fontWeight: 700, color: c.color, width: 24, textAlign: 'right' }}>{c.score}</span>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* final TRI score */}
+      <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 6 }}>
+        <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.5)' }}>SCORE TRI</span>
+        <span style={{ fontSize: 18, fontWeight: 900, color: score >= TOTAL ? '#00FF73' : '#a855f7', lineHeight: 1 }}>
+          {score}<span style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)' }}>/1000</span>
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// ── App screen renderizado dentro do iPhone (mobile) ─────────────────────────
+function PhoneAppScreen() {
+  const [activeTab, setActiveTab] = useState<'Estudar' | 'TutoresIA' | 'Redacao'>('Estudar');
+  const [cardIdx, setCardIdx] = useState(0);
+  const [flipped, setFlipped] = useState(false);
+
+  // Ciclo: Estudar 4s → Tutores 4.5s → Redação 5s → repeat
+  useEffect(() => {
+    const DUR: Record<typeof activeTab, number> = { Estudar: 4000, TutoresIA: 4500, Redacao: 5000 };
+    const NEXT: Record<typeof activeTab, typeof activeTab> = {
+      Estudar: 'TutoresIA', TutoresIA: 'Redacao', Redacao: 'Estudar',
+    };
+    const t = setTimeout(() => setActiveTab((x) => NEXT[x]), DUR[activeTab]);
+    return () => clearTimeout(t);
+  }, [activeTab]);
+
+  // Flip do card quando em Estudar
+  useEffect(() => {
+    if (activeTab !== 'Estudar') return;
+    const t1 = setTimeout(() => setFlipped(true), 2000);
+    const t2 = setTimeout(() => { setCardIdx((i) => (i + 1) % FLASHCARDS.length); setFlipped(false); }, 3800);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, [cardIdx, activeTab]);
+
+  const card = FLASHCARDS[cardIdx];
+
+  const NAV = [
+    { id: 'Estudar',   icon: '📚', label: 'Estudar', ac: PURPLE_L },
+    { id: 'TutoresIA', icon: '🤖', label: 'Tutores', ac: '#a855f7' },
+    { id: 'Redacao',   icon: '✍️', label: 'Redação', ac: EMERALD  },
+  ] as const;
+
+  return (
+    <div style={{
+      fontFamily: 'system-ui, -apple-system, sans-serif',
+      height: '100%', display: 'flex', flexDirection: 'column',
+      background: 'linear-gradient(160deg, #0d0d1a 0%, #080c18 100%)', overflow: 'hidden',
+    }}>
+      {/* Status bar */}
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '8px 14px 6px', flexShrink: 0, fontSize: 9, color: 'rgba(255,255,255,0.55)',
+      }}>
+        <span style={{ fontWeight: 800, color: '#fff' }}>
+          <span style={{ color: PURPLE_L }}>●</span> FlashAprova
+        </span>
+        <span style={{ fontWeight: 600 }}>9:41</span>
+      </div>
+
+      {/* Conteúdo */}
+      <div style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
+        {activeTab === 'TutoresIA' && <TutoresScreen fill />}
+        {activeTab === 'Redacao' && <PhoneRedacaoScreen />}
+        {activeTab === 'Estudar' && (
+          <div style={{ height: '100%', display: 'flex', flexDirection: 'column', padding: '8px 12px 6px', gap: 8 }}>
+            {/* stat chips */}
+            <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+              {[
+                { label: 'Hoje', value: '32', color: EMERALD },
+                { label: 'Retenção', value: '94%', color: PURPLE_L },
+                { label: 'Streak', value: '12d', color: '#fb923c' },
+              ].map((s) => (
+                <div key={s.label} style={{
+                  flex: 1, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)',
+                  borderRadius: 8, padding: '5px 7px',
+                }}>
+                  <div style={{ fontSize: 7, color: 'rgba(255,255,255,0.35)' }}>{s.label}</div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: s.color, lineHeight: 1 }}>{s.value}</div>
+                </div>
+              ))}
+            </div>
+            {/* flip card */}
+            <div style={{ flex: 1, perspective: 800, minHeight: 0 }}>
+              <motion.div
+                style={{ width: '100%', height: '100%', position: 'relative', transformStyle: 'preserve-3d' }}
+                animate={{ rotateY: flipped ? 180 : 0 }}
+                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              >
+                {/* Front */}
+                <div style={{
+                  position: 'absolute', inset: 0, backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden',
+                  background: 'linear-gradient(135deg, rgba(0,229,255,0.06) 0%, rgba(124,58,237,0.08) 100%)',
+                  border: '1px solid rgba(0,229,255,0.2)', borderRadius: 14, padding: '12px 14px',
+                  display: 'flex', flexDirection: 'column',
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
+                    <span style={{
+                      fontSize: 8, fontWeight: 700, letterSpacing: '0.12em', color: CYAN,
+                      background: `${CYAN}15`, border: `1px solid ${CYAN}30`, padding: '2px 6px', borderRadius: 4,
+                    }}>PERGUNTA</span>
+                    <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.25)' }}>{card.subject}</span>
+                  </div>
+                  <div style={{ fontSize: 13, color: '#fff', lineHeight: 1.5, fontWeight: 600, flex: 1 }}>{card.q}</div>
+                  <div style={{ fontSize: 8, color: 'rgba(255,255,255,0.25)', marginTop: 8 }}>▶ Toque para revelar</div>
+                </div>
+                {/* Back */}
+                <div style={{
+                  position: 'absolute', inset: 0, backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden',
+                  transform: 'rotateY(180deg)',
+                  background: 'linear-gradient(135deg, rgba(0,255,128,0.06) 0%, rgba(16,185,129,0.08) 100%)',
+                  border: '1px solid rgba(0,255,128,0.2)', borderRadius: 14, padding: '12px 14px',
+                  display: 'flex', flexDirection: 'column',
+                }}>
+                  <span style={{
+                    fontSize: 8, fontWeight: 700, letterSpacing: '0.12em', color: NEON_G, alignSelf: 'flex-start',
+                    background: `${NEON_G}15`, border: `1px solid ${NEON_G}30`, padding: '2px 6px', borderRadius: 4, marginBottom: 10,
+                  }}>RESPOSTA</span>
+                  <div style={{ fontSize: 12, color: '#fff', lineHeight: 1.5, flex: 1 }}>{card.a}</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 3, marginTop: 8 }}>
+                    {[
+                      { label: 'Errei', color: '#ef4444' }, { label: 'Hard', color: '#f97316' },
+                      { label: 'Bom', color: '#3b82f6' }, { label: 'Fácil', color: NEON_G },
+                    ].map((b) => (
+                      <div key={b.label} style={{
+                        fontSize: 8, color: b.color, fontWeight: 700, textAlign: 'center',
+                        background: `${b.color}14`, border: `1px solid ${b.color}35`, borderRadius: 5, padding: '3px 2px',
+                      }}>{b.label}</div>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+            {/* dots */}
+            <div style={{ display: 'flex', gap: 4, justifyContent: 'center', flexShrink: 0 }}>
+              {FLASHCARDS.map((fc, i) => (
+                <motion.div key={i}
+                  animate={{ width: i === cardIdx ? 18 : 5, opacity: i === cardIdx ? 1 : 0.3 }}
+                  transition={{ duration: 0.3 }}
+                  style={{ height: 3, borderRadius: 2, background: i === cardIdx ? fc.color : 'rgba(255,255,255,0.3)' }}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Bottom nav */}
+      <div style={{
+        flexShrink: 0, display: 'flex', justifyContent: 'space-around', alignItems: 'center',
+        padding: '6px 0 8px', borderTop: '1px solid rgba(255,255,255,0.08)', background: 'rgba(18,18,18,0.92)',
+      }}>
+        {NAV.map((n) => {
+          const on = n.id === activeTab;
+          return (
+            <div key={n.id} onClick={() => setActiveTab(n.id)} style={{
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+              cursor: 'pointer', opacity: on ? 1 : 0.4, transition: 'opacity 0.3s',
+            }}>
+              <span style={{ fontSize: 16 }}>{n.icon}</span>
+              <span style={{ fontSize: 7, fontWeight: 700, color: on ? n.ac : 'rgba(255,255,255,0.4)' }}>{n.label}</span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── iPhone frame (mobile) ─────────────────────────────────────────────────────
+function IPhoneMockup() {
+  return (
+    <div style={{
+      width: 212, height: 430, borderRadius: 40, position: 'relative',
+      background: 'linear-gradient(160deg, #2c2c2e 0%, #1c1c1e 100%)',
+      padding: 7, border: '1px solid rgba(255,255,255,0.09)',
+      boxShadow: `0 0 70px ${PURPLE}33, inset 0 1px 0 rgba(255,255,255,0.08), 0 30px 70px rgba(0,0,0,0.75)`,
+    }}>
+      {/* Notch */}
+      <div style={{
+        position: 'absolute', top: 12, left: '50%', transform: 'translateX(-50%)',
+        width: 64, height: 14, borderRadius: 10, background: '#000', zIndex: 6,
+      }} />
+      {/* Screen */}
+      <div style={{
+        width: '100%', height: '100%', borderRadius: 33, overflow: 'hidden',
+        background: '#050b14', border: '1px solid rgba(0,0,0,0.5)',
+        boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.04)',
+      }}>
+        <PhoneAppScreen />
+      </div>
+    </div>
+  );
+}
+
+// ── 4 satélites em overlap ao redor do iPhone (mobile) ───────────────────────
+function MobileSatellites({ termLines, visibleConcepts }: { termLines: string[]; visibleConcepts: number[] }) {
+  const [active, setActive] = useState(0);
+  useEffect(() => {
+    const iv = setInterval(() => setActive((a) => (a + 1) % 4), 2100);
+    return () => clearInterval(iv);
+  }, []);
+
+  const ARSENAL = (
+    <GlassCard className="!p-3" style={{ width: 142 }}>
+      <div className="flex items-center justify-between mb-2">
+        <div className="text-[10px] font-bold" style={{ color: PURPLE_L }}>📚 Arsenal</div>
+        <motion.span className="text-[7px] font-bold px-1.5 py-0.5 rounded-full"
+          style={{ color: '#fb923c', background: 'rgba(251,146,60,0.12)', border: '1px solid rgba(251,146,60,0.3)' }}
+          animate={{ opacity: [0.5, 1, 0.5] }} transition={{ duration: 1.6, repeat: Infinity }}>
+          revisando
+        </motion.span>
+      </div>
+      {[{ name: 'Biologia', pct: 78, color: '#34d399' }, { name: 'Física', pct: 91, color: PURPLE_L }].map((s, idx) => (
+        <div key={s.name} className="mb-2">
+          <div className="flex justify-between items-center">
+            <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.72)' }}>{s.name}</span>
+            <motion.span className="text-[8px] font-bold" style={{ color: s.color }}
+              animate={{ opacity: [0.55, 1, 0.55] }} transition={{ duration: 2, repeat: Infinity, delay: idx * 0.4 }}>
+              {s.pct}%
+            </motion.span>
+          </div>
+          <div className="relative h-1 rounded-full overflow-hidden mt-1" style={{ background: 'rgba(255,255,255,0.07)' }}>
+            <motion.div className="h-full rounded-full" style={{ background: s.color }}
+              animate={{ width: [`${s.pct - 6}%`, `${s.pct}%`, `${s.pct - 6}%`] }}
+              transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut', delay: idx * 0.5 }} />
+            <motion.div className="absolute inset-y-0" style={{ width: '34%', background: `linear-gradient(90deg, transparent, ${s.color}cc, transparent)` }}
+              animate={{ x: ['-120%', '320%'] }}
+              transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut', delay: idx * 0.6 }} />
+          </div>
+        </div>
+      ))}
+    </GlassCard>
+  );
+
+  const MEMORY = <TerminalWidget className="!w-[142px] !p-3" lines={termLines} />;
+
+  const AGENDA = (
+    <GlassCard className="!p-3" style={{ width: 142 }}>
+      <div className="flex items-center justify-between mb-2">
+        <div className="text-[10px] font-bold" style={{ color: PURPLE_L }}>🤖 Agenda IA</div>
+        <motion.span style={{ width: 5, height: 5, borderRadius: '50%', background: NEON_G, boxShadow: `0 0 6px ${NEON_G}` }}
+          animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1.25, 0.8] }} transition={{ duration: 1.4, repeat: Infinity }} />
+      </div>
+      {[{ time: '14:00', subject: 'Termo', icon: '⚛️' }, { time: '16:30', subject: 'Genética', icon: '🧬' }].map((s, idx) => (
+        <motion.div key={s.time} className="flex items-center gap-2 mb-1.5 p-1.5 rounded-lg"
+          style={{ background: `${PURPLE}12`, border: '1px solid rgba(124,58,237,0.18)' }}
+          animate={idx === 0
+            ? { borderColor: ['rgba(124,58,237,0.18)', 'rgba(124,58,237,0.6)', 'rgba(124,58,237,0.18)'], boxShadow: ['0 0 0px rgba(124,58,237,0)', `0 0 10px ${PURPLE}55`, '0 0 0px rgba(124,58,237,0)'] }
+            : {}}
+          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}>
+          <motion.span className="text-sm" animate={{ rotate: [0, -8, 8, 0] }} transition={{ duration: 2.5, repeat: Infinity, delay: idx * 0.5 }}>{s.icon}</motion.span>
+          <div className="flex-1">
+            <div className="text-[9px] font-semibold" style={{ color: '#fff' }}>{s.subject}</div>
+            <div className="text-[8px]" style={{ color: PURPLE_L }}>{s.time}</div>
+          </div>
+          {idx === 0 && (
+            <motion.span className="text-[6px] font-bold" style={{ color: NEON_G }}
+              animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1.2, repeat: Infinity }}>agora</motion.span>
+          )}
+        </motion.div>
+      ))}
+      <div className="h-0.5 rounded-full overflow-hidden mt-1" style={{ background: 'rgba(255,255,255,0.07)' }}>
+        <motion.div className="h-full rounded-full" style={{ background: PURPLE_L }}
+          animate={{ width: ['10%', '100%'] }} transition={{ duration: 4, repeat: Infinity, ease: 'linear' }} />
+      </div>
+    </GlassCard>
+  );
+
+  const CONCEITOS = (
+    <GlassCard className="!p-3" style={{ width: 142 }}>
+      <div className="text-[10px] font-bold mb-2" style={{ color: PURPLE_L }}>🔒 Conceitos</div>
+      <ConceptsWidget visible={visibleConcepts} />
+    </GlassCard>
+  );
+
+  // 2 linhas simétricas: topo (top:58) e baixo (top:300); esquerda/direita espelhados.
+  const SATS = [
+    { node: ARSENAL,   side: 'left'  as const, top: 58,  floatDelay: 0   },
+    { node: MEMORY,    side: 'right' as const, top: 58,  floatDelay: 0.6 },
+    { node: AGENDA,    side: 'left'  as const, top: 300, floatDelay: 1.2 },
+    { node: CONCEITOS, side: 'right' as const, top: 300, floatDelay: 1.8 },
+  ];
+
+  return (
+    <>
+      {SATS.map((s, i) => {
+        const isActive = i === active;
+        const out = s.side === 'left' ? -30 : 30;
+        const sidePos = s.side === 'left' ? { left: 0 } : { right: 0 };
+        return (
+          <motion.div
+            key={i}
+            className="absolute"
+            style={{ ...sidePos, top: s.top, width: 142, zIndex: isActive ? 20 : 2 }}
+            initial={{ opacity: 0 }}
+            animate={{
+              opacity: isActive ? 1 : 0.3,
+              scale: isActive ? 1 : 0.88,
+              x: isActive ? out : 0,
+            }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <FloatWrapper delay={s.floatDelay} intensity={5}>
+              {/* key força remount → re-dispara o glitch toda vez que vira ativo */}
+              <div key={isActive ? `on-${active}` : 'off'} className={isActive ? 'sat-glitch-in' : ''}>
+                {s.node}
+              </div>
+            </FloatWrapper>
+          </motion.div>
+        );
+      })}
+    </>
+  );
+}
+
+// ── Linhas de conexão satélite→iPhone (mobile) ───────────────────────────────
+// viewBox 360×500; centro do iPhone ≈ (180,250). Origens nas bordas dos satélites.
+const MCONN_LINES = [
+  { d: 'M 52,100 C 110,150 160,210 180,242',  color: PURPLE_L,  delay: 0,   gradId: 'mcg0', cx: 52,  cy: 100 },  // Arsenal (topo-esq)
+  { d: 'M 308,100 C 250,150 200,210 180,242', color: '#34d399', delay: 0.5, gradId: 'mcg1', cx: 308, cy: 100 },  // AI Memory (topo-dir)
+  { d: 'M 52,330 C 110,310 160,275 180,258',  color: '#fb923c', delay: 1.0, gradId: 'mcg2', cx: 52,  cy: 330 },  // Agenda (baixo-esq)
+  { d: 'M 308,330 C 250,310 200,275 180,258', color: CYAN,      delay: 1.5, gradId: 'mcg3', cx: 308, cy: 330 },  // Conceitos (baixo-dir)
+];
+
+function MobileConnectionLines() {
+  return (
+    <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 0 }}
+      viewBox="0 0 360 500" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        {MCONN_LINES.map((l) => (
+          <linearGradient key={l.gradId} id={l.gradId} x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor={l.color} stopOpacity="0.05" />
+            <stop offset="45%" stopColor={l.color} stopOpacity="0.9" />
+            <stop offset="100%" stopColor={l.color} stopOpacity="0" />
+          </linearGradient>
+        ))}
+        {MCONN_LINES.map((l) => (
+          <filter key={`f-${l.gradId}`} id={`mglow-${l.gradId}`} x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="2" result="blur" />
+            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
+        ))}
+        <filter id="mdot-glow" x="-150%" y="-150%" width="400%" height="400%">
+          <feGaussianBlur stdDeviation="2.5" result="blur" />
+          <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+        </filter>
+        <filter id="mcenter-glow" x="-100%" y="-100%" width="300%" height="300%">
+          <feGaussianBlur stdDeviation="4" result="blur" />
+          <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+        </filter>
+      </defs>
+
+      {MCONN_LINES.map((l, i) => (
+        <g key={i}>
+          <path id={`mpath-${i}`} d={l.d} fill="none" stroke="none" />
+          <path d={l.d} fill="none" stroke={l.color} strokeWidth="0.7" strokeOpacity="0.18" strokeDasharray="3 9" />
+          {PACKETS.map((p) => {
+            const pktDelay = l.delay + p * (PACKET_DUR / PACKETS.length);
+            return (
+              <motion.path key={`pkt-${p}`} d={l.d} fill="none" stroke={`url(#${l.gradId})`} strokeWidth="2"
+                filter={`url(#mglow-${l.gradId})`}
+                initial={{ pathLength: 0, opacity: 0, pathOffset: 0 }}
+                animate={{ pathLength: [0, 0.32, 0], pathOffset: [0, 0.68, 1], opacity: [0, 1, 0] }}
+                transition={{ duration: PACKET_DUR, repeat: Infinity, ease: 'easeInOut', delay: pktDelay }} />
+            );
+          })}
+          {PACKETS.map((p) => {
+            const pktDelay = l.delay + p * (PACKET_DUR / PACKETS.length);
+            return (
+              <circle key={`dot-${p}`} r="2" fill={l.color} filter="url(#mdot-glow)">
+                <animateMotion dur={`${PACKET_DUR}s`} repeatCount="indefinite" begin={`${pktDelay}s`}
+                  calcMode="spline" keySplines="0.4 0 0.6 1" keyTimes="0;1">
+                  <mpath href={`#mpath-${i}`} />
+                </animateMotion>
+                <animate attributeName="opacity" values="0;1;0" dur={`${PACKET_DUR}s`} begin={`${pktDelay}s`}
+                  repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1; 0.4 0 0.6 1" keyTimes="0;0.5;1" />
+              </circle>
+            );
+          })}
+          <motion.circle cx={l.cx} cy={l.cy} r="3.5" fill={l.color} filter="url(#mdot-glow)"
+            animate={{ opacity: [0.25, 0.85, 0.25], r: [2.5, 4.5, 2.5] }}
+            transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut', delay: l.delay }} />
+        </g>
+      ))}
+
+      {/* Glow de chegada no centro do iPhone */}
+      <motion.circle cx="180" cy="250" r="6" fill={PURPLE_L} filter="url(#mcenter-glow)"
+        animate={{ opacity: [0.2, 0.7, 0.2], r: [4, 9, 4] }}
+        transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }} />
+    </svg>
+  );
+}
+
 // ── MacBook frame ─────────────────────────────────────────────────────────────
 function MacBookMockup({ termLines, visibleConcepts }: { termLines: string[]; visibleConcepts: number[] }) {
   return (
@@ -1391,6 +1888,20 @@ function DesktopOnly({ children }: { children: React.ReactNode }) {
   const [show, setShow] = useState(false);
   useEffect(() => {
     const mq = window.matchMedia('(min-width: 1024px)');
+    setShow(mq.matches);
+    const onChange = (e: MediaQueryListEvent) => setShow(e.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+  return show ? <>{children}</> : null;
+}
+
+// ── Mobile-only gate: filhos só montam em telas < lg (1024px). ────────────────
+// No desktop renderiza null (sem hidratar), evitando trabalho de JS desnecessário.
+function MobileOnly({ children }: { children: React.ReactNode }) {
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 1023px)');
     setShow(mq.matches);
     const onChange = (e: MediaQueryListEvent) => setShow(e.matches);
     mq.addEventListener('change', onChange);
@@ -1480,6 +1991,15 @@ export default function HeroSection() {
         @media (max-width: 640px) {
           .macbook-screen { height: 220px !important; }
         }
+        @keyframes satGlitch {
+          0%   { clip-path: inset(0 0 0 0);     opacity: 0.5; transform: translateX(0); }
+          15%  { clip-path: inset(20% 0 50% 0); opacity: 0.9; transform: translateX(1.5px); }
+          30%  { clip-path: inset(55% 0 10% 0); opacity: 0.7; transform: translateX(-1.5px); }
+          45%  { clip-path: inset(10% 0 40% 0); opacity: 1;   transform: translateX(0.5px); }
+          60%  { clip-path: inset(0 0 0 0);     opacity: 0.85; transform: translateX(1px); }
+          100% { clip-path: inset(0 0 0 0);     opacity: 1;   transform: translateX(0); }
+        }
+        .sat-glitch-in { animation: satGlitch 0.5s steps(3, end) 1; }
       `}</style>
 
       {/* ── Particles ── */}
@@ -1505,7 +2025,7 @@ export default function HeroSection() {
 
         {/* Headline block — renderiza visível no SSR (LCP) */}
         <div
-          className="text-center px-4 sm:px-6 pt-0 sm:pt-14 pb-5 sm:pb-4 mx-auto"
+          className="text-center px-4 sm:px-6 pt-0 sm:pt-14 pb-2 sm:pb-4 mx-auto"
           style={{ maxWidth: 820 }}
         >
           {/* Badge */}
@@ -1674,13 +2194,37 @@ export default function HeroSection() {
             </motion.div>
             </DesktopOnly>
 
-            {/* MacBook center — visível no SSR (é o elemento LCP no mobile) */}
+            {/* MacBook center — desktop apenas */}
             <motion.div
-              className="relative"
+              className="relative hidden lg:block"
               style={{ zIndex: 10, x: nbX, y: nbY, width: '100%', maxWidth: 560 }}
             >
               <MacBookMockup termLines={termLines} visibleConcepts={visibleConcepts} />
             </motion.div>
+
+            {/* iPhone + satélites — mobile apenas. Container relativo p/ overlap. */}
+            <div
+              className="relative lg:hidden mx-auto -mt-6 -mb-6"
+              style={{ width: '100%', maxWidth: 360, height: 500 }}
+            >
+              {/* linhas atrás de tudo */}
+              <MobileOnly>
+                <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 0 }}>
+                  <MobileConnectionLines />
+                </div>
+              </MobileOnly>
+              {/* iPhone centro — visível no SSR (LCP no mobile) */}
+              <div
+                className="absolute left-1/2 top-1/2"
+                style={{ transform: 'translate(-50%,-50%)', zIndex: 5 }}
+              >
+                <IPhoneMockup />
+              </div>
+              {/* satélites em overlap */}
+              <MobileOnly>
+                <MobileSatellites termLines={termLines} visibleConcepts={visibleConcepts} />
+              </MobileOnly>
+            </div>
 
             {/* TR — Agenda IA */}
             <DesktopOnly>
@@ -1746,7 +2290,7 @@ export default function HeroSection() {
 
         {/* Subheadline + CTA */}
         <motion.div
-          className="text-center px-4 sm:px-6 pt-6 sm:pt-2 pb-8 sm:pb-12 mx-auto"
+          className="text-center px-4 sm:px-6 pt-3 sm:pt-2 pb-8 sm:pb-12 mx-auto"
           style={{ maxWidth: 720 }}
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
