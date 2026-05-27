@@ -534,8 +534,8 @@ export default function CheckoutPage() {
     <>
     <style>{`
       @keyframes emerald-pulse {
-        0%, 100% { box-shadow: 0 0 0 1px ${EMERALD}88, 0 0 28px ${EMERALD}30, 0 0 60px ${EMERALD}14; }
-        50%       { box-shadow: 0 0 0 1px ${EMERALD}, 0 0 48px ${EMERALD}55, 0 0 100px ${EMERALD}22; }
+        0%, 100% { box-shadow: 0 0 0 1px ${GREEN}88, 0 0 28px ${GREEN}30, 0 0 60px ${GREEN}14; }
+        50%       { box-shadow: 0 0 0 1px ${GREEN}, 0 0 48px ${GREEN}55, 0 0 100px ${GREEN}22; }
       }
       .elite-card { animation: emerald-pulse 2.8s ease-in-out infinite; }
 
@@ -740,109 +740,98 @@ export default function CheckoutPage() {
             </button>
           </div>
 
-          {/* ── PLANO PANTEÃO ELITE (AiPro+) ── */}
-          <div className="elite-card relative rounded-2xl p-8 overflow-hidden"
-            style={{ background:'rgba(4,10,8,0.97)' }}>
-            {/* Emerald gradient border overlay */}
+          {/* ── PROTOCOLO NEURAL (principal) ── */}
+          <div className="elite-card relative rounded-2xl p-8 overflow-hidden order-first lg:order-2"
+            style={{ background: 'rgba(4,10,8,0.97)' }}>
+            {/* Gradient border */}
             <div className="absolute inset-0 rounded-2xl pointer-events-none"
               style={{
-                padding:'1.5px',
-                background:`linear-gradient(135deg,${EMERALD},#06b6d4,#a78bfa,${EMERALD})`,
-                WebkitMask:'linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0)',
-                WebkitMaskComposite:'xor', maskComposite:'exclude',
+                padding: '1.5px',
+                background: `linear-gradient(135deg, ${GREEN}, ${CYAN}, #a78bfa, ${GREEN})`,
+                WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                WebkitMaskComposite: 'xor', maskComposite: 'exclude',
               }} />
             {/* Ambient glow */}
             <div className="absolute inset-0 pointer-events-none"
-              style={{ background:`radial-gradient(ellipse at top right,${EMERALD}18 0%,transparent 55%)` }} />
+              style={{ background: `radial-gradient(ellipse at top right, ${GREEN}18 0%, transparent 55%)` }} />
             <div className="absolute inset-x-0 top-0 h-px"
-              style={{ background:`linear-gradient(90deg,${EMERALD},${CYAN},#a78bfa)` }} />
+              style={{ background: `linear-gradient(90deg, ${GREEN}, ${CYAN}, #a78bfa)` }} />
 
-            {/* Top badge — inline, no overlap */}
-            <div className="flex justify-center mb-4">
+            {/* Badges */}
+            <div className="flex flex-wrap justify-center gap-2 mb-4">
               <span className="text-xs font-black px-3 py-1.5 rounded-full text-white inline-flex items-center gap-1"
-                style={{ background:`linear-gradient(135deg,${EMERALD},${CYAN})`, boxShadow:`0 0 20px ${EMERALD}55`, justifyContent:'center' }}>
-                🏅 ESCOLHA DOS TOP 1%
+                style={{ background: `linear-gradient(135deg, ${GREEN}, ${CYAN})`, boxShadow: `0 0 20px ${GREEN}55` }}>
+                🏅 MAIS ESCOLHIDO
+              </span>
+              <span className="text-[10px] font-black px-2.5 py-1 rounded-full tracking-widest uppercase"
+                style={{ background: `${GREEN}15`, border: `1px solid ${GREEN}40`, color: GREEN }}>
+                MELHOR CUSTO-BENEFÍCIO
               </span>
             </div>
 
             {/* Plan name */}
-            <p className="text-xs font-black mb-4 leading-tight relative whitespace-nowrap tracking-tight"
-              style={{ background:`linear-gradient(90deg,${EMERALD},${CYAN})`,
-                WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>
-              [ PROTOCOLO NEURAL: INTELIGÊNC.IA ]
+            <p className="text-xs font-black mb-2 leading-tight tracking-tight"
+              style={{ background: `linear-gradient(90deg, ${GREEN}, ${CYAN})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              [ PROTOCOLO NEURAL ]
             </p>
 
-            {/* Validity */}
-            <div className="px-4 py-3 rounded-xl mb-4 text-center relative"
-              style={{ background:`${EMERALD}15`, border:`1px solid ${EMERALD}45` }}>
-              <p className="text-xs font-black tracking-widest uppercase" style={{ color: EMERALD }}>
-                SEGURO APROVAÇÃO
-              </p>
-              <p className="text-lg font-black text-white mt-0.5">ENEM 2026 + 2027</p>
-              <p className="text-xs font-bold mt-0.5" style={{ color: EMERALD }}>COMBO 2 ANOS</p>
-            </div>
+            {/* Headline */}
+            <p className="text-white text-sm font-semibold leading-snug mb-4">
+              O sistema completo para não esquecer o que estudou até o ENEM.
+            </p>
 
             {/* Price */}
-            <div className="mb-3 relative">
-              <p className="text-slate-600 text-xs line-through mb-0.5">era R$ 997,00</p>
-              <span className="text-4xl font-black text-white">R$&nbsp;1,09<span className="text-lg font-semibold text-slate-400">/dia</span></span>
-              <p className="text-xs font-semibold mt-0.5" style={{ color: EMERALD }}>12x de R$ 66,41 no cartão · ou R$ 797 à vista</p>
+            <div className="mb-2 relative">
+              <span className="text-4xl font-black text-white">R$&nbsp;397<span className="text-lg font-semibold text-slate-400">/ano</span></span>
             </div>
-            <p className="text-sm font-semibold italic mb-6 relative" style={{ color: EMERALD }}>
-              Menos de 4% de um ano de cursinho
+            <p className="text-xs font-semibold mb-1" style={{ color: GREEN }}>ou 12x de R$ 33,08</p>
+            <p className="text-sm font-semibold italic mb-2" style={{ color: GREEN }}>menos de R$ 1,09 por dia</p>
+            <p className="text-xs mb-6 font-medium" style={{ color: '#a78bfa' }}>
+              Por só R$ 100 a mais que o Essencial, você desbloqueia o sistema completo.
             </p>
 
             <div className="h-px mb-4 relative"
-              style={{ background:`linear-gradient(90deg,${EMERALD}55,${CYAN}55)` }} />
-
-            {/* Infra label */}
-            <p className="text-[9px] font-black tracking-widest uppercase mb-3 relative"
-              style={{ color: EMERALD }}>
-              [ INFRAESTRUTURA DE GUERRA COMPLETA ]
-            </p>
+              style={{ background: `linear-gradient(90deg, ${GREEN}55, ${CYAN}55)` }} />
 
             <div className="flex flex-col gap-2.5 mb-6 text-sm relative">
               {([
-                { t: 'Tudo do Protocolo Manual incluído',                         c: EMERALD },
-                { t: 'Neural Core: o cérebro que gerencia sua retenção.',          c: EMERALD },
-                { t: 'Mestres do ENEM: 15 Agentes IA em prontidão 24/7.',         c: EMERALD },
-                { t: '__NORMA__',                                                  c: EMERALD },
-                { t: 'Storytelling Engine: Resumos e tabelas gerados por IA.',    c: CYAN    },
+                { t: 'Tudo do Essencial incluído',               c: GREEN },
+                { t: 'Dashboard + heatmap',                      c: GREEN },
+                { t: 'Radar de Lacunas',                         c: GREEN },
+                { t: 'Algoritmo SRS de retenção espaçada',       c: GREEN },
+                { t: 'Resumos Storytelling',                     c: CYAN  },
+                { t: 'Tabelas comparativas',                     c: CYAN  },
+                { t: '15 Especialistas IA',                      c: GREEN },
+                { t: 'Tutor IA 24/7',                            c: GREEN },
+                { t: 'Correção de Redação com IA',               c: GREEN },
+                { t: 'Treinos e simulados direcionados',         c: GREEN },
+                { t: 'Acesso por 12 meses',                      c: GREEN },
               ] as { t: string; c: string }[]).map(({ t, c }) => (
                 <div key={t} className="flex items-start gap-2">
-                  <span className="shrink-0 mt-0.5" style={{ color:c }}>✓</span>
-                  <span className="text-slate-200 leading-snug">
-                    {t === '__NORMA__'
-                      ? <>
-                          <strong style={{ color: EMERALD }}>Prof.ª Norma IA:</strong>{' '}
-                          Auditoria e Veredito de Redação em{' '}
-                          <span className="text-white font-bold">30s</span>.
-                        </>
-                      : t}
-                  </span>
+                  <span className="shrink-0 mt-0.5" style={{ color: c }}>✓</span>
+                  <span className="text-slate-200 leading-snug">{t}</span>
                 </div>
               ))}
             </div>
 
             <button
               onClick={() => handleBuy('panteao_elite')}
-              aria-label="Assinar Protocolo Neural — Panteão Elite"
+              aria-label="Assinar Protocolo Neural"
               disabled={!!buying}
               className="relative block w-full py-4 rounded-xl text-center font-black text-white text-sm tracking-wider transition-all duration-200 hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-wait"
               style={{
-                background:`linear-gradient(135deg,${EMERALD} 0%,${CYAN} 60%,#a78bfa 100%)`,
-                boxShadow:`0 0 40px ${EMERALD}55, 0 4px 20px rgba(0,0,0,0.50)`,
+                background: `linear-gradient(135deg, ${GREEN} 0%, ${CYAN} 60%, #a78bfa 100%)`,
+                boxShadow: `0 0 40px ${GREEN}55, 0 4px 20px rgba(0,0,0,0.50)`,
               }}>
               <span className="absolute inset-0 rounded-xl overflow-hidden pointer-events-none">
                 <span className="absolute inset-0"
-                  style={{ background:'linear-gradient(105deg,transparent 30%,rgba(255,255,255,0.12) 50%,transparent 70%)' }} />
+                  style={{ background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.12) 50%, transparent 70%)' }} />
               </span>
               {buying === 'panteao_elite' ? '[ AGUARDE... ]' : '[ GARANTIR MINHA VAGA ]'}
             </button>
 
-            {/* Micro trust */}
-            <p className="text-center text-sm font-black mt-4 relative" style={{ color: EMERALD, textShadow: `0 0 12px ${EMERALD}60` }}>
-              🛡️ Garantia Incondicional de 7 Dias • Risco Zero
+            <p className="text-center text-sm font-black mt-4 relative" style={{ color: GREEN, textShadow: `0 0 12px ${GREEN}60` }}>
+              🛡️ Garantia incondicional de 7 dias. Risco zero.
             </p>
           </div>
 
