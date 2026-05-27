@@ -649,6 +649,19 @@ export default function CheckoutPage() {
           </div>
         )}
 
+        {/* ── Intro copy ── */}
+        <div className="text-center mb-8">
+          <h2 className="text-2xl sm:text-3xl font-black text-white mb-3">
+            Escolha seu protocolo de aprovação
+          </h2>
+          <p className="text-slate-400 text-sm sm:text-base max-w-xl mx-auto mb-3">
+            Todos os planos são anuais. Você entra uma vez e usa o sistema durante toda a sua preparação.
+          </p>
+          <p className="text-sm max-w-lg mx-auto font-semibold" style={{ color: GREEN }}>
+            A maioria dos alunos escolhe o Protocolo Neural porque ele libera o sistema completo de retenção, IA e redação por menos de R$ 1,09 por dia.
+          </p>
+        </div>
+
         {/* ── Plan cards ── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-8 items-start lg:w-[min(64rem,92vw)] lg:relative lg:left-1/2 lg:-translate-x-1/2">
 
