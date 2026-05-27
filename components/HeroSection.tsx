@@ -1503,6 +1503,85 @@ function IPhoneMockup() {
   );
 }
 
+// ── 4 satélites em overlap ao redor do iPhone (mobile) ───────────────────────
+function MobileSatellites({ termLines, visibleConcepts }: { termLines: string[]; visibleConcepts: number[] }) {
+  const wrap = 'absolute z-[6]';
+  return (
+    <>
+      {/* Arsenal — topo-esquerda */}
+      <motion.div className={wrap} style={{ left: 0, top: 60, width: 150 }}
+        initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.7, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}>
+        <FloatWrapper delay={0} intensity={7}>
+          <GlassCard className="!p-3" style={{ width: 150 }}>
+            <div className="text-[10px] font-bold mb-2" style={{ color: PURPLE_L }}>📚 Arsenal</div>
+            {[
+              { name: 'Biologia', pct: 78, color: '#34d399' },
+              { name: 'Física', pct: 91, color: PURPLE_L },
+            ].map((s) => (
+              <div key={s.name} className="mb-2">
+                <div className="flex justify-between mb-1">
+                  <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.72)' }}>{s.name}</span>
+                </div>
+                <div className="h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
+                  <motion.div className="h-full rounded-full" style={{ background: s.color }}
+                    initial={{ width: 0 }} animate={{ width: `${s.pct}%` }}
+                    transition={{ duration: 1.6, delay: 0.8, ease: 'easeOut' }} />
+                </div>
+              </div>
+            ))}
+          </GlassCard>
+        </FloatWrapper>
+      </motion.div>
+
+      {/* AI Memory — borda direita, meio */}
+      <motion.div className={wrap} style={{ right: -6, top: 168, width: 150 }}
+        initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.7, delay: 0.55, ease: [0.16, 1, 0.3, 1] }}>
+        <FloatWrapper delay={1.4} intensity={6}>
+          <TerminalWidget className="!w-[150px] !p-3" lines={termLines} />
+        </FloatWrapper>
+      </motion.div>
+
+      {/* Agenda IA — borda esquerda, baixo */}
+      <motion.div className={wrap} style={{ left: -6, top: 300, width: 148 }}
+        initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.7, delay: 0.7, ease: [0.16, 1, 0.3, 1] }}>
+        <FloatWrapper delay={0.8} intensity={7}>
+          <GlassCard className="!p-3" style={{ width: 148 }}>
+            <div className="text-[10px] font-bold mb-2" style={{ color: PURPLE_L }}>🤖 Agenda IA</div>
+            {[
+              { time: '14:00', subject: 'Termo', icon: '⚛️' },
+              { time: '16:30', subject: 'Genética', icon: '🧬' },
+            ].map((s) => (
+              <div key={s.time} className="flex items-center gap-2 mb-1.5 p-1.5 rounded-lg"
+                style={{ background: `${PURPLE}12`, border: '1px solid rgba(124,58,237,0.18)' }}>
+                <span className="text-sm">{s.icon}</span>
+                <div>
+                  <div className="text-[9px] font-semibold" style={{ color: '#fff' }}>{s.subject}</div>
+                  <div className="text-[8px]" style={{ color: PURPLE_L }}>{s.time}</div>
+                </div>
+              </div>
+            ))}
+          </GlassCard>
+        </FloatWrapper>
+      </motion.div>
+
+      {/* Conceitos — baixo-direita */}
+      <motion.div className={wrap} style={{ right: 0, top: 348, width: 150 }}
+        initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.7, delay: 0.85, ease: [0.16, 1, 0.3, 1] }}>
+        <FloatWrapper delay={2} intensity={8}>
+          <GlassCard className="!p-3" style={{ width: 150 }}>
+            <div className="text-[10px] font-bold mb-2" style={{ color: PURPLE_L }}>🔒 Conceitos</div>
+            <ConceptsWidget visible={visibleConcepts} />
+          </GlassCard>
+        </FloatWrapper>
+      </motion.div>
+    </>
+  );
+}
+
 // ── MacBook frame ─────────────────────────────────────────────────────────────
 function MacBookMockup({ termLines, visibleConcepts }: { termLines: string[]; visibleConcepts: number[] }) {
   return (
@@ -1892,6 +1971,10 @@ export default function HeroSection() {
               >
                 <IPhoneMockup />
               </div>
+              {/* satélites em overlap */}
+              <MobileOnly>
+                <MobileSatellites termLines={termLines} visibleConcepts={visibleConcepts} />
+              </MobileOnly>
             </div>
 
             {/* TR — Agenda IA */}
