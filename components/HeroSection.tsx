@@ -1835,6 +1835,15 @@ export default function HeroSection() {
         @media (max-width: 640px) {
           .macbook-screen { height: 220px !important; }
         }
+        @keyframes satGlitch {
+          0%   { clip-path: inset(0 0 0 0);     opacity: 0.5; transform: translateX(0); }
+          15%  { clip-path: inset(20% 0 50% 0); opacity: 0.9; transform: translateX(1.5px); }
+          30%  { clip-path: inset(55% 0 10% 0); opacity: 0.7; transform: translateX(-1.5px); }
+          45%  { clip-path: inset(10% 0 40% 0); opacity: 1;   transform: translateX(0.5px); }
+          60%  { clip-path: inset(0 0 0 0);     opacity: 0.85; transform: translateX(1px); }
+          100% { clip-path: inset(0 0 0 0);     opacity: 1;   transform: translateX(0); }
+        }
+        .sat-glitch-in { animation: satGlitch 0.5s steps(3, end) 1; }
       `}</style>
 
       {/* ── Particles ── */}
