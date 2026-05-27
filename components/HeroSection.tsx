@@ -1329,6 +1329,110 @@ function CommandCenterScreen({ termLines, visibleConcepts }: { termLines: string
   );
 }
 
+// ── Redação full-screen (mobile iPhone) — espelha a auditoria TRI da pág. de vendas ──
+function PhoneRedacaoScreen() {
+  const MONO = "'JetBrains Mono','Courier New',ui-monospace,monospace";
+  const TOTAL = 960;
+  const COMPS = [
+    { id: 'C1', label: 'Norma Culta',   score: 200, color: '#10b981' },
+    { id: 'C2', label: 'Tema / Argum.', score: 160, color: '#00FF73' },
+    { id: 'C3', label: 'Organização',   score: 200, color: '#f59e0b' },
+    { id: 'C4', label: 'Coesão',        score: 200, color: '#f97316' },
+    { id: 'C5', label: 'Intervenção',   score: 200, color: '#00FF73' },
+  ];
+  const FEED = [
+    { t: '> C1 — Norma Culta...',     c: 'dim' },
+    { t: '  ✓ 200/200 NOMINAL',       c: '#10b981' },
+    { t: '> C2 — Argumentação...',    c: 'dim' },
+    { t: '  ! 160/200 WARN REP-007',  c: '#f97316' },
+    { t: '> C3 — Organização...',     c: 'dim' },
+    { t: '  ✓ 200/200 NOMINAL',       c: '#f59e0b' },
+    { t: '> C4 — Coesão...',          c: 'dim' },
+    { t: '  ✓ 200/200 NOMINAL',       c: '#f97316' },
+    { t: '> C5 — Intervenção...',     c: 'dim' },
+    { t: '  ✓ 200/200 NOMINAL',       c: '#00FF73' },
+    { t: '> score TRI calculado',     c: '#a855f7' },
+  ];
+
+  const [shown, setShown] = useState(0);
+  const [score, setScore] = useState(0);
+
+  useEffect(() => {
+    if (shown < FEED.length) {
+      const t = setTimeout(() => setShown((s) => s + 1), 320);
+      return () => clearTimeout(t);
+    }
+    const t = setTimeout(() => { setShown(0); setScore(0); }, 4200);
+    return () => clearTimeout(t);
+  }, [shown]);
+
+  useEffect(() => {
+    if (shown < FEED.length) return;
+    let cur = 0;
+    const iv = setInterval(() => {
+      cur = Math.min(cur + 60, TOTAL);
+      setScore(cur);
+      if (cur >= TOTAL) clearInterval(iv);
+    }, 45);
+    return () => clearInterval(iv);
+  }, [shown]);
+
+  return (
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', padding: '10px 12px', gap: 8,
+      background: 'linear-gradient(160deg,#0d0d1a 0%,#080c18 100%)', fontFamily: MONO, overflow: 'hidden' }}>
+      {/* header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+        <span style={{ fontSize: 9, fontWeight: 800, color: '#fff' }}>✍️ Redação · Norma IA</span>
+        <span style={{ fontSize: 6, color: '#a855f7', letterSpacing: '0.18em', fontWeight: 700 }}>AUDITORIA TRI</span>
+      </div>
+
+      {/* terminal feed — fills */}
+      <div style={{ flex: 1, minHeight: 0, background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(124,58,237,0.18)',
+        borderRadius: 8, padding: '8px 9px', overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: 2 }}>
+        {FEED.slice(0, shown).map((l, i) => (
+          <motion.div key={i} initial={{ opacity: 0, x: -5 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.25 }}
+            style={{ fontSize: 8, lineHeight: 1.5, whiteSpace: 'nowrap',
+              color: l.c === 'dim' ? 'rgba(255,255,255,0.4)' : l.c }}>
+            {l.t}
+          </motion.div>
+        ))}
+        {shown < FEED.length && (
+          <motion.span style={{ fontSize: 8, color: '#a855f7' }} animate={{ opacity: [1, 0, 1] }}
+            transition={{ duration: 0.8, repeat: Infinity }}>▮</motion.span>
+        )}
+      </div>
+
+      {/* competency bars */}
+      <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
+        {COMPS.map((c, i) => {
+          const revealed = shown >= i * 2 + 2;
+          return (
+            <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ fontSize: 7, fontWeight: 700, color: c.color, width: 16 }}>{c.id}</span>
+              <span style={{ fontSize: 7, color: 'rgba(255,255,255,0.6)', width: 56 }}>{c.label}</span>
+              <div style={{ flex: 1, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.07)', overflow: 'hidden' }}>
+                <motion.div style={{ height: '100%', borderRadius: 2, background: c.color }}
+                  initial={{ width: 0 }} animate={{ width: revealed ? `${(c.score / 200) * 100}%` : 0 }}
+                  transition={{ duration: 0.6, ease: 'easeOut' }} />
+              </div>
+              <span style={{ fontSize: 7, fontWeight: 700, color: c.color, width: 24, textAlign: 'right' }}>{c.score}</span>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* final TRI score */}
+      <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 6 }}>
+        <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.5)' }}>SCORE TRI</span>
+        <span style={{ fontSize: 18, fontWeight: 900, color: score >= TOTAL ? '#00FF73' : '#a855f7', lineHeight: 1 }}>
+          {score}<span style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)' }}>/1000</span>
+        </span>
+      </div>
+    </div>
+  );
+}
+
 // ── App screen renderizado dentro do iPhone (mobile) ─────────────────────────
 function PhoneAppScreen() {
   const [activeTab, setActiveTab] = useState<'Estudar' | 'TutoresIA' | 'Redacao'>('Estudar');
@@ -1381,7 +1485,7 @@ function PhoneAppScreen() {
       {/* Conteúdo */}
       <div style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
         {activeTab === 'TutoresIA' && <TutoresScreen fill />}
-        {activeTab === 'Redacao' && <RedacaoScreen />}
+        {activeTab === 'Redacao' && <PhoneRedacaoScreen />}
         {activeTab === 'Estudar' && (
           <div style={{ height: '100%', display: 'flex', flexDirection: 'column', padding: '8px 12px 6px', gap: 8 }}>
             {/* stat chips */}
@@ -1921,7 +2025,7 @@ export default function HeroSection() {
 
         {/* Headline block — renderiza visível no SSR (LCP) */}
         <div
-          className="text-center px-4 sm:px-6 pt-0 sm:pt-14 pb-5 sm:pb-4 mx-auto"
+          className="text-center px-4 sm:px-6 pt-0 sm:pt-14 pb-2 sm:pb-4 mx-auto"
           style={{ maxWidth: 820 }}
         >
           {/* Badge */}
@@ -2100,7 +2204,7 @@ export default function HeroSection() {
 
             {/* iPhone + satélites — mobile apenas. Container relativo p/ overlap. */}
             <div
-              className="relative lg:hidden mx-auto"
+              className="relative lg:hidden mx-auto -mt-6 -mb-6"
               style={{ width: '100%', maxWidth: 360, height: 500 }}
             >
               {/* linhas atrás de tudo */}
@@ -2186,7 +2290,7 @@ export default function HeroSection() {
 
         {/* Subheadline + CTA */}
         <motion.div
-          className="text-center px-4 sm:px-6 pt-6 sm:pt-2 pb-8 sm:pb-12 mx-auto"
+          className="text-center px-4 sm:px-6 pt-3 sm:pt-2 pb-8 sm:pb-12 mx-auto"
           style={{ maxWidth: 720 }}
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
