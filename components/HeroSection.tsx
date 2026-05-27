@@ -2300,19 +2300,15 @@ export default function HeroSection() {
             className="text-base sm:text-lg leading-relaxed mx-auto mb-6 sm:mb-10"
             style={{ color: 'rgba(255,255,255,0.5)', maxWidth: 640 }}
           >
-            Substitua{' '}
+            Substitua horas de revisão cansativa por{' '}
             <span style={{ color: '#ffffff', fontWeight: 600 }}>
-              horas de estudo passivo
-            </span>{' '}
-            por um{' '}
+              15 min por dia de prática ativa com IA
+            </span>
+            . Trave o seu esquecimento, memorize o que realmente cai e{' '}
             <span style={{ color: '#ffffff', fontWeight: 600 }}>
-              Protocolo de 25 minutos
-            </span>{' '}
-            de Engenharia de Retenção. Estanque o vazamento de nota e assuma a{' '}
-            <span style={{ color: '#ffffff', fontWeight: 600 }}>
-              propriedade definitiva
-            </span>{' '}
-            da sua vaga.
+              garanta a sua aprovação
+            </span>
+            .
           </p>
 
           <div className="flex flex-col items-center gap-3">

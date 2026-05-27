@@ -671,9 +671,9 @@ export default function CheckoutPage() {
 
             {/* Price */}
             <div className="mb-1">
-              <span className="text-xs text-slate-500 font-semibold">12x de </span><span className="text-3xl font-black text-white">R$&nbsp;29,16</span>
+              <span className="text-xs text-slate-500 font-semibold">12x de </span><span className="text-3xl font-black text-white">R$&nbsp;21,41</span>
             </div>
-            <p className="text-slate-500 text-xs mb-1">ou R$ 297 à vista</p>
+            <p className="text-slate-500 text-xs mb-1">ou R$ 257 à vista</p>
             <p className="text-slate-500 text-xs italic mb-6">Para quem quer apenas revisar com flashcards.</p>
 
             <div className="h-px mb-4" style={{ background: 'rgba(255,255,255,0.05)' }} />
@@ -683,7 +683,7 @@ export default function CheckoutPage() {
                 'Flashcards SRS ilimitados',
                 'Revisão por matéria',
                 'Dashboard básico',
-                'Acesso por 12 meses',
+                'Acesso ENEM 2026',
                 'Progresso salvo automaticamente',
               ].map(f => (
                 <div key={f} className="flex items-start gap-2">
@@ -767,10 +767,10 @@ export default function CheckoutPage() {
 
             {/* Price */}
             <div className="mb-1 relative">
-              <span className="text-xs text-slate-400 font-semibold">12x de </span><span className="text-4xl font-black text-white">R$&nbsp;33,08</span>
+              <span className="text-xs text-slate-400 font-semibold">12x de </span><span className="text-4xl font-black text-white">R$&nbsp;27,25</span>
             </div>
-            <p className="text-slate-500 text-xs mb-1">ou R$ 397 à vista</p>
-            <p className="text-sm font-semibold italic mb-2" style={{ color: GREEN }}>menos de R$ 1,09 por dia</p>
+            <p className="text-slate-500 text-xs mb-1">ou R$ 327 à vista</p>
+            <p className="text-sm font-semibold italic mb-2" style={{ color: GREEN }}>menos de R$ 0,90 por dia</p>
 
             <div className="h-px mb-4 relative"
               style={{ background: `linear-gradient(90deg, ${GREEN}55, ${CYAN}55)` }} />
@@ -787,7 +787,7 @@ export default function CheckoutPage() {
                 { t: 'Tutor IA 24/7',                            c: GREEN },
                 { t: 'Correção de Redação com IA',               c: GREEN },
                 { t: 'Treinos e simulados direcionados',         c: GREEN },
-                { t: 'Acesso por 12 meses',                      c: GREEN },
+                { t: 'COMBO 2 ANOS de acesso',                    c: GREEN },
               ] as { t: string; c: string }[]).map(({ t, c }) => (
                 <div key={t} className="flex items-start gap-2">
                   <span className="shrink-0 mt-0.5" style={{ color: c }}>✓</span>
