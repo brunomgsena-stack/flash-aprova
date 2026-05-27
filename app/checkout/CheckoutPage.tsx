@@ -686,7 +686,7 @@ export default function CheckoutPage() {
 
             {/* Price */}
             <div className="mb-1">
-              <span className="text-3xl font-black text-white">12x de R$&nbsp;29,16</span>
+              <span className="text-xs text-slate-500 font-semibold">12x de </span><span className="text-3xl font-black text-white">R$&nbsp;29,16</span>
             </div>
             <p className="text-slate-500 text-xs mb-1">ou R$ 297 à vista</p>
             <p className="text-slate-500 text-xs italic mb-6">Para quem quer apenas revisar com flashcards.</p>
@@ -782,7 +782,7 @@ export default function CheckoutPage() {
 
             {/* Price */}
             <div className="mb-1 relative">
-              <span className="text-4xl font-black text-white">12x de R$&nbsp;33,08</span>
+              <span className="text-xs text-slate-400 font-semibold">12x de </span><span className="text-4xl font-black text-white">R$&nbsp;33,08</span>
             </div>
             <p className="text-slate-500 text-xs mb-1">ou R$ 397 à vista</p>
             <p className="text-sm font-semibold italic mb-2" style={{ color: GREEN }}>menos de R$ 1,09 por dia</p>
@@ -856,7 +856,7 @@ export default function CheckoutPage() {
 
             {/* Price */}
             <div className="mb-1">
-              <span className="text-3xl font-black" style={{ color: '#fef3c7' }}>12x de R$&nbsp;99,70</span>
+              <span className="text-xs font-semibold" style={{ color: '#78716c' }}>12x de </span><span className="text-3xl font-black" style={{ color: '#fef3c7' }}>R$&nbsp;99,70</span>
             </div>
             <p className="text-slate-500 text-xs mb-1">ou R$ 997 à vista</p>
             <p className="text-slate-500 text-xs italic mb-6">Para quem quer acompanhamento estratégico máximo.</p>
