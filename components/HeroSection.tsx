@@ -1477,6 +1477,32 @@ function PhoneAppScreen() {
   );
 }
 
+// ── iPhone frame (mobile) ─────────────────────────────────────────────────────
+function IPhoneMockup() {
+  return (
+    <div style={{
+      width: 212, height: 430, borderRadius: 40, position: 'relative',
+      background: 'linear-gradient(160deg, #2c2c2e 0%, #1c1c1e 100%)',
+      padding: 7, border: '1px solid rgba(255,255,255,0.09)',
+      boxShadow: `0 0 70px ${PURPLE}33, inset 0 1px 0 rgba(255,255,255,0.08), 0 30px 70px rgba(0,0,0,0.75)`,
+    }}>
+      {/* Notch */}
+      <div style={{
+        position: 'absolute', top: 12, left: '50%', transform: 'translateX(-50%)',
+        width: 64, height: 14, borderRadius: 10, background: '#000', zIndex: 6,
+      }} />
+      {/* Screen */}
+      <div style={{
+        width: '100%', height: '100%', borderRadius: 33, overflow: 'hidden',
+        background: '#050b14', border: '1px solid rgba(0,0,0,0.5)',
+        boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.04)',
+      }}>
+        <PhoneAppScreen />
+      </div>
+    </div>
+  );
+}
+
 // ── MacBook frame ─────────────────────────────────────────────────────────────
 function MacBookMockup({ termLines, visibleConcepts }: { termLines: string[]; visibleConcepts: number[] }) {
   return (
