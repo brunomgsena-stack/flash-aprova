@@ -1319,6 +1319,164 @@ function CommandCenterScreen({ termLines, visibleConcepts }: { termLines: string
   );
 }
 
+// ── App screen renderizado dentro do iPhone (mobile) ─────────────────────────
+function PhoneAppScreen() {
+  const [activeTab, setActiveTab] = useState<'Estudar' | 'TutoresIA' | 'Redacao'>('Estudar');
+  const [cardIdx, setCardIdx] = useState(0);
+  const [flipped, setFlipped] = useState(false);
+
+  // Ciclo: Estudar 4s → Tutores 4.5s → Redação 5s → repeat
+  useEffect(() => {
+    const DUR: Record<typeof activeTab, number> = { Estudar: 4000, TutoresIA: 4500, Redacao: 5000 };
+    const NEXT: Record<typeof activeTab, typeof activeTab> = {
+      Estudar: 'TutoresIA', TutoresIA: 'Redacao', Redacao: 'Estudar',
+    };
+    const t = setTimeout(() => setActiveTab((x) => NEXT[x]), DUR[activeTab]);
+    return () => clearTimeout(t);
+  }, [activeTab]);
+
+  // Flip do card quando em Estudar
+  useEffect(() => {
+    if (activeTab !== 'Estudar') return;
+    const t1 = setTimeout(() => setFlipped(true), 2000);
+    const t2 = setTimeout(() => { setCardIdx((i) => (i + 1) % FLASHCARDS.length); setFlipped(false); }, 3800);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, [cardIdx, activeTab]);
+
+  const card = FLASHCARDS[cardIdx];
+
+  const NAV = [
+    { id: 'Estudar',   icon: '📚', label: 'Estudar', ac: PURPLE_L },
+    { id: 'TutoresIA', icon: '🤖', label: 'Tutores', ac: '#a855f7' },
+    { id: 'Redacao',   icon: '✍️', label: 'Redação', ac: EMERALD  },
+  ] as const;
+
+  return (
+    <div style={{
+      fontFamily: 'system-ui, -apple-system, sans-serif',
+      height: '100%', display: 'flex', flexDirection: 'column',
+      background: 'linear-gradient(160deg, #0d0d1a 0%, #080c18 100%)', overflow: 'hidden',
+    }}>
+      {/* Status bar */}
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '8px 14px 6px', flexShrink: 0, fontSize: 9, color: 'rgba(255,255,255,0.55)',
+      }}>
+        <span style={{ fontWeight: 800, color: '#fff' }}>
+          <span style={{ color: PURPLE_L }}>●</span> FlashAprova
+        </span>
+        <span style={{ fontWeight: 600 }}>9:41</span>
+      </div>
+
+      {/* Conteúdo */}
+      <div style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
+        {activeTab === 'TutoresIA' && <TutoresScreen />}
+        {activeTab === 'Redacao' && <RedacaoScreen />}
+        {activeTab === 'Estudar' && (
+          <div style={{ height: '100%', display: 'flex', flexDirection: 'column', padding: '8px 12px 6px', gap: 8 }}>
+            {/* stat chips */}
+            <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+              {[
+                { label: 'Hoje', value: '32', color: EMERALD },
+                { label: 'Retenção', value: '94%', color: PURPLE_L },
+                { label: 'Streak', value: '12d', color: '#fb923c' },
+              ].map((s) => (
+                <div key={s.label} style={{
+                  flex: 1, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)',
+                  borderRadius: 8, padding: '5px 7px',
+                }}>
+                  <div style={{ fontSize: 7, color: 'rgba(255,255,255,0.35)' }}>{s.label}</div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: s.color, lineHeight: 1 }}>{s.value}</div>
+                </div>
+              ))}
+            </div>
+            {/* flip card */}
+            <div style={{ flex: 1, perspective: 800, minHeight: 0 }}>
+              <motion.div
+                style={{ width: '100%', height: '100%', position: 'relative', transformStyle: 'preserve-3d' }}
+                animate={{ rotateY: flipped ? 180 : 0 }}
+                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              >
+                {/* Front */}
+                <div style={{
+                  position: 'absolute', inset: 0, backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden',
+                  background: 'linear-gradient(135deg, rgba(0,229,255,0.06) 0%, rgba(124,58,237,0.08) 100%)',
+                  border: '1px solid rgba(0,229,255,0.2)', borderRadius: 14, padding: '12px 14px',
+                  display: 'flex', flexDirection: 'column',
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
+                    <span style={{
+                      fontSize: 8, fontWeight: 700, letterSpacing: '0.12em', color: CYAN,
+                      background: `${CYAN}15`, border: `1px solid ${CYAN}30`, padding: '2px 6px', borderRadius: 4,
+                    }}>PERGUNTA</span>
+                    <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.25)' }}>{card.subject}</span>
+                  </div>
+                  <div style={{ fontSize: 13, color: '#fff', lineHeight: 1.5, fontWeight: 600, flex: 1 }}>{card.q}</div>
+                  <div style={{ fontSize: 8, color: 'rgba(255,255,255,0.25)', marginTop: 8 }}>▶ Toque para revelar</div>
+                </div>
+                {/* Back */}
+                <div style={{
+                  position: 'absolute', inset: 0, backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden',
+                  transform: 'rotateY(180deg)',
+                  background: 'linear-gradient(135deg, rgba(0,255,128,0.06) 0%, rgba(16,185,129,0.08) 100%)',
+                  border: '1px solid rgba(0,255,128,0.2)', borderRadius: 14, padding: '12px 14px',
+                  display: 'flex', flexDirection: 'column',
+                }}>
+                  <span style={{
+                    fontSize: 8, fontWeight: 700, letterSpacing: '0.12em', color: NEON_G, alignSelf: 'flex-start',
+                    background: `${NEON_G}15`, border: `1px solid ${NEON_G}30`, padding: '2px 6px', borderRadius: 4, marginBottom: 10,
+                  }}>RESPOSTA</span>
+                  <div style={{ fontSize: 12, color: '#fff', lineHeight: 1.5, flex: 1 }}>{card.a}</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 3, marginTop: 8 }}>
+                    {[
+                      { label: 'Errei', color: '#ef4444' }, { label: 'Hard', color: '#f97316' },
+                      { label: 'Bom', color: '#3b82f6' }, { label: 'Fácil', color: NEON_G },
+                    ].map((b) => (
+                      <div key={b.label} style={{
+                        fontSize: 8, color: b.color, fontWeight: 700, textAlign: 'center',
+                        background: `${b.color}14`, border: `1px solid ${b.color}35`, borderRadius: 5, padding: '3px 2px',
+                      }}>{b.label}</div>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+            {/* dots */}
+            <div style={{ display: 'flex', gap: 4, justifyContent: 'center', flexShrink: 0 }}>
+              {FLASHCARDS.map((fc, i) => (
+                <motion.div key={i}
+                  animate={{ width: i === cardIdx ? 18 : 5, opacity: i === cardIdx ? 1 : 0.3 }}
+                  transition={{ duration: 0.3 }}
+                  style={{ height: 3, borderRadius: 2, background: i === cardIdx ? fc.color : 'rgba(255,255,255,0.3)' }}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Bottom nav */}
+      <div style={{
+        flexShrink: 0, display: 'flex', justifyContent: 'space-around', alignItems: 'center',
+        padding: '6px 0 8px', borderTop: '1px solid rgba(255,255,255,0.08)', background: 'rgba(18,18,18,0.92)',
+      }}>
+        {NAV.map((n) => {
+          const on = n.id === activeTab;
+          return (
+            <div key={n.id} onClick={() => setActiveTab(n.id)} style={{
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+              cursor: 'pointer', opacity: on ? 1 : 0.4, transition: 'opacity 0.3s',
+            }}>
+              <span style={{ fontSize: 16 }}>{n.icon}</span>
+              <span style={{ fontSize: 7, fontWeight: 700, color: on ? n.ac : 'rgba(255,255,255,0.4)' }}>{n.label}</span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // ── MacBook frame ─────────────────────────────────────────────────────────────
 function MacBookMockup({ termLines, visibleConcepts }: { termLines: string[]; visibleConcepts: number[] }) {
   return (
