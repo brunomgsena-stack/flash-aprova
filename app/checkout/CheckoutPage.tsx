@@ -905,22 +905,22 @@ export default function CheckoutPage() {
         {/* ── Guarantee ── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
           <div className="rounded-2xl p-5 flex items-start gap-4"
-            style={{ background:'rgba(10,5,20,0.70)', border:`1px solid ${EMERALD}20` }}>
+            style={{ background: 'rgba(10,5,20,0.70)', border: `1px solid ${GREEN}20` }}>
             <div className="text-3xl shrink-0">🛡️</div>
             <div>
-              <p className="text-white font-bold text-sm">Garantia Incondicional de 7 Dias. Risco Zero.</p>
+              <p className="text-white font-bold text-sm">Garantia incondicional de 7 dias</p>
               <p className="text-slate-500 text-xs mt-1 leading-relaxed">
-                Se não sentir melhora na sua retenção em 7 dias, devolvemos 100% do valor. Sem perguntas, sem burocracia.
+                Entre, teste o FlashAprova e veja se o sistema faz sentido para sua rotina. Se não sentir clareza no plano de estudo, devolvemos 100% do valor. Sem pergunta, sem burocracia.
               </p>
             </div>
           </div>
           <div className="rounded-2xl p-5 flex items-start gap-4"
-            style={{ background:'rgba(10,5,20,0.70)', border:'1px solid rgba(124,58,237,0.18)' }}>
+            style={{ background: 'rgba(10,5,20,0.70)', border: '1px solid rgba(124,58,237,0.18)' }}>
             <div className="text-3xl shrink-0">⚡</div>
             <div>
-              <p className="text-white font-bold text-sm">Acesso em menos de 2 minutos</p>
+              <p className="text-white font-bold text-sm">Acesso liberado em menos de 2 minutos</p>
               <p className="text-slate-500 text-xs mt-1 leading-relaxed">
-                Após a confirmação, seus flashcards e o Exército de Especialistas IA já estarão disponíveis. Sem espera.
+                Após a confirmação, seus flashcards, diagnóstico, radar de lacunas e tutores IA ficam disponíveis imediatamente.
               </p>
             </div>
           </div>
