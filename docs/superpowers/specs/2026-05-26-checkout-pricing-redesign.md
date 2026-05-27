@@ -8,7 +8,7 @@
 
 ## Contexto
 
-FlashAprova vende apenas plano anual. O plano do meio (Protocolo Neural, R$397/ano) é o produto principal. Os outros dois servem como âncoras: Essencial (decoy barato/incompleto) e Black (âncora premium). Os links ASAAS permanecem inalterados — apenas a apresentação muda.
+FlashAprova vende apenas plano anual. O plano do meio (Protocolo Neural, R$397/ano) é o produto principal. Os outros dois servem como âncoras: Essencial (decoy barato/incompleto) e Black (âncora premium). Os links ASAAS permanecem inalterados — apenas a apresentação muda. Preços à vista removidos de todos os cards.
 
 Mapeamento de IDs:
 - `aceleracao` → Essencial (R$297/ano)
@@ -34,7 +34,7 @@ Inserir acima da grid de planos:
 | Nome | FlashAprova Essencial |
 | Badge | BÁSICO |
 | Preço principal | R$ 297/ano |
-| Parcelamento | ou 12x de R$ 29,70 |
+| Parcelamento | ou 12x de R$ 29,16 |
 | Subtítulo | Para quem quer apenas revisar com flashcards. |
 | CTA | QUERO SÓ OS FLASHCARDS |
 | Microcopy | Ideal para quem já tem estratégia própria. |
@@ -53,7 +53,7 @@ Inserir acima da grid de planos:
 | Badge principal | MAIS ESCOLHIDO |
 | Badge secundária | MELHOR CUSTO-BENEFÍCIO |
 | Preço principal | R$ 397/ano |
-| Parcelamento | ou 12x de R$ 39,70 |
+| Parcelamento | ou 12x de R$ 33,08 |
 | Reforço | menos de R$ 1,09 por dia |
 | Headline | O sistema completo para não esquecer o que estudou até o ENEM. |
 | CTA | GARANTIR MINHA VAGA |
