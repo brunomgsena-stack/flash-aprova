@@ -1582,6 +1582,84 @@ function MobileSatellites({ termLines, visibleConcepts }: { termLines: string[];
   );
 }
 
+// ── Linhas de conexão satélite→iPhone (mobile) ───────────────────────────────
+// viewBox 360×500; centro do iPhone ≈ (180,250). Origens nas bordas dos satélites.
+const MCONN_LINES = [
+  { d: 'M 70,95 C 110,150 150,200 180,238',  color: PURPLE_L,  delay: 0,    gradId: 'mcg0', cx: 70,  cy: 95  },
+  { d: 'M 300,210 C 260,225 220,235 200,245', color: '#34d399', delay: 0.6,  gradId: 'mcg1', cx: 300, cy: 210 },
+  { d: 'M 60,330 C 110,310 150,285 180,262',  color: '#fb923c', delay: 1.2,  gradId: 'mcg2', cx: 60,  cy: 330 },
+  { d: 'M 300,380 C 260,340 220,300 200,268', color: CYAN,      delay: 1.8,  gradId: 'mcg3', cx: 300, cy: 380 },
+];
+
+function MobileConnectionLines() {
+  return (
+    <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 0 }}
+      viewBox="0 0 360 500" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        {MCONN_LINES.map((l) => (
+          <linearGradient key={l.gradId} id={l.gradId} x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor={l.color} stopOpacity="0.05" />
+            <stop offset="45%" stopColor={l.color} stopOpacity="0.9" />
+            <stop offset="100%" stopColor={l.color} stopOpacity="0" />
+          </linearGradient>
+        ))}
+        {MCONN_LINES.map((l) => (
+          <filter key={`f-${l.gradId}`} id={`mglow-${l.gradId}`} x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="2" result="blur" />
+            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
+        ))}
+        <filter id="mdot-glow" x="-150%" y="-150%" width="400%" height="400%">
+          <feGaussianBlur stdDeviation="2.5" result="blur" />
+          <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+        </filter>
+        <filter id="mcenter-glow" x="-100%" y="-100%" width="300%" height="300%">
+          <feGaussianBlur stdDeviation="4" result="blur" />
+          <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+        </filter>
+      </defs>
+
+      {MCONN_LINES.map((l, i) => (
+        <g key={i}>
+          <path id={`mpath-${i}`} d={l.d} fill="none" stroke="none" />
+          <path d={l.d} fill="none" stroke={l.color} strokeWidth="0.7" strokeOpacity="0.18" strokeDasharray="3 9" />
+          {PACKETS.map((p) => {
+            const pktDelay = l.delay + p * (PACKET_DUR / PACKETS.length);
+            return (
+              <motion.path key={`pkt-${p}`} d={l.d} fill="none" stroke={`url(#${l.gradId})`} strokeWidth="2"
+                filter={`url(#mglow-${l.gradId})`}
+                initial={{ pathLength: 0, opacity: 0, pathOffset: 0 }}
+                animate={{ pathLength: [0, 0.32, 0], pathOffset: [0, 0.68, 1], opacity: [0, 1, 0] }}
+                transition={{ duration: PACKET_DUR, repeat: Infinity, ease: 'easeInOut', delay: pktDelay }} />
+            );
+          })}
+          {PACKETS.map((p) => {
+            const pktDelay = l.delay + p * (PACKET_DUR / PACKETS.length);
+            return (
+              <circle key={`dot-${p}`} r="2" fill={l.color} filter="url(#mdot-glow)">
+                <animateMotion dur={`${PACKET_DUR}s`} repeatCount="indefinite" begin={`${pktDelay}s`}
+                  calcMode="spline" keySplines="0.4 0 0.6 1" keyTimes="0;1">
+                  <mpath href={`#mpath-${i}`} />
+                </animateMotion>
+                <animate attributeName="opacity" values="0;1;0" dur={`${PACKET_DUR}s`} begin={`${pktDelay}s`}
+                  repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1; 0.4 0 0.6 1" keyTimes="0;0.5;1" />
+              </circle>
+            );
+          })}
+          <motion.circle cx={l.cx} cy={l.cy} r="3.5" fill={l.color} filter="url(#mdot-glow)"
+            animate={{ opacity: [0.25, 0.85, 0.25], r: [2.5, 4.5, 2.5] }}
+            transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut', delay: l.delay }} />
+        </g>
+      ))}
+
+      {/* Glow de chegada no centro do iPhone */}
+      <motion.circle cx="180" cy="250" r="6" fill={PURPLE_L} filter="url(#mcenter-glow)"
+        animate={{ opacity: [0.2, 0.7, 0.2], r: [4, 9, 4] }}
+        transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }} />
+    </svg>
+  );
+}
+
 // ── MacBook frame ─────────────────────────────────────────────────────────────
 function MacBookMockup({ termLines, visibleConcepts }: { termLines: string[]; visibleConcepts: number[] }) {
   return (
@@ -1964,6 +2042,12 @@ export default function HeroSection() {
               className="relative lg:hidden mx-auto"
               style={{ width: '100%', maxWidth: 360, height: 500 }}
             >
+              {/* linhas atrás de tudo */}
+              <MobileOnly>
+                <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 0 }}>
+                  <MobileConnectionLines />
+                </div>
+              </MobileOnly>
               {/* iPhone centro — visível no SSR (LCP no mobile) */}
               <div
                 className="absolute left-1/2 top-1/2"
