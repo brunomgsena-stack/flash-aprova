@@ -665,80 +665,77 @@ export default function CheckoutPage() {
         {/* ── Plan cards ── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-8 items-start lg:w-[min(64rem,92vw)] lg:relative lg:left-1/2 lg:-translate-x-1/2">
 
-          {/* ── PROTOCOLO MANUAL ── */}
-          <div className="relative rounded-2xl p-7 overflow-hidden"
-            style={{ ...cardStyle, border:'1px solid rgba(124,58,237,0.18)' }}>
+          {/* ── ESSENCIAL ── */}
+          <div className="relative rounded-2xl p-7 overflow-hidden order-2 lg:order-1"
+            style={{ ...cardStyle, border: '1px solid rgba(124,58,237,0.18)' }}>
             <div className="absolute inset-x-0 top-0 h-px"
-              style={{ background:`linear-gradient(90deg,transparent,rgba(124,58,237,0.40),transparent)` }} />
+              style={{ background: `linear-gradient(90deg, transparent, rgba(124,58,237,0.30), transparent)` }} />
+
+            {/* Badge */}
+            <div className="mb-4">
+              <span className="text-[10px] font-black px-2.5 py-1 rounded-full tracking-widest uppercase"
+                style={{ background: 'rgba(124,58,237,0.10)', border: '1px solid rgba(124,58,237,0.25)', color: '#8b5cf6' }}>
+                BÁSICO
+              </span>
+            </div>
 
             {/* Plan name */}
             <p className="text-base font-black text-white mb-4 leading-tight">
-              [ PROTOCOLO BÁSICO:{' '}
-              <span style={{ color:'#8b5cf6' }}>FLASHCARDS ]</span>
+              FlashAprova <span style={{ color: '#8b5cf6' }}>Essencial</span>
             </p>
-
-            {/* Validity */}
-            <div className="px-4 py-2.5 rounded-xl mb-4 text-center"
-              style={{ background:'rgba(124,58,237,0.10)', border:'1px solid rgba(124,58,237,0.30)' }}>
-              <p className="text-xs font-bold tracking-widest uppercase" style={{ color:'#8b5cf6' }}>VÁLIDO ATÉ</p>
-              <p className="text-lg font-black text-white mt-0.5">ENEM 2026</p>
-            </div>
 
             {/* Price */}
-            <div className="mb-3">
-              <p className="text-slate-600 text-xs line-through mb-0.5">era R$ 890,00</p>
-              <span className="text-4xl font-black text-white">12x de R$&nbsp;59,16</span>
-              <p className="text-xs font-semibold mt-0.5" style={{ color:'#8b5cf6' }}>no cartão de crédito</p>
+            <div className="mb-2">
+              <span className="text-3xl font-black text-white">R$&nbsp;297<span className="text-lg font-semibold text-slate-400">/ano</span></span>
             </div>
-            <p className="text-slate-600 text-sm mb-6">ou R$ 710,00 à vista</p>
+            <p className="text-xs font-semibold mb-1" style={{ color: '#8b5cf6' }}>ou 12x de R$ 29,16</p>
+            <p className="text-slate-500 text-xs italic mb-6">Para quem quer apenas revisar com flashcards.</p>
 
-            <div className="h-px mb-4" style={{ background:'rgba(255,255,255,0.05)' }} />
-
-            {/* Access label */}
-            <p className="text-[9px] font-black tracking-widest uppercase mb-3" style={{ color:'rgba(124,58,237,0.55)' }}>
-              [ ACESSO ESTÁTICO ]
-            </p>
+            <div className="h-px mb-4" style={{ background: 'rgba(255,255,255,0.05)' }} />
 
             <div className="flex flex-col gap-2.5 mb-4 text-sm">
-              {/* Included */}
               {[
-                '5.700+ Flashcards (Munição Pura)',
-                'Algoritmo SRS de Repetição Espaçada',
+                'Flashcards SRS ilimitados',
+                'Revisão por matéria',
+                'Dashboard básico',
+                'Acesso por 12 meses',
+                'Progresso salvo automaticamente',
               ].map(f => (
                 <div key={f} className="flex items-start gap-2">
-                  <span className="shrink-0 mt-0.5" style={{ color:'#8b5cf6' }}>✓</span>
+                  <span className="shrink-0 mt-0.5" style={{ color: '#8b5cf6' }}>✓</span>
                   <span className="text-slate-300">{f}</span>
                 </div>
               ))}
 
-              {/* Locked */}
               {[
-                'Exército de 10 Especialistas IA',
-                'Auditoria Forense de Redação',
+                'Tutor IA 24/7',
+                'Radar de Lacunas avançado',
+                'Correção de Redação IA',
+                'Simulados TRI',
+                'Especialistas IA',
               ].map(f => (
                 <div key={f} className="flex items-start gap-2 opacity-35">
                   <span className="shrink-0 mt-0.5 text-xs">🔒</span>
                   <span className="line-through text-slate-500 leading-snug">
                     {f}
                     <span className="no-underline not-italic text-[9px] font-black tracking-wider ml-1.5 align-middle"
-                      style={{ color:'rgba(239,68,68,0.6)' }}>[ BLOQUEADO ]</span>
+                      style={{ color: 'rgba(239,68,68,0.6)' }}>[ BLOQUEADO ]</span>
                   </span>
                 </div>
               ))}
             </div>
 
-            {/* Micro-copy */}
             <p className="text-xs text-slate-600 italic mb-5 leading-relaxed border-l-2 pl-3"
-              style={{ borderColor:'rgba(124,58,237,0.25)' }}>
-              Ideal para quem já domina a tática e busca apenas a ferramenta de repetição manual.
+              style={{ borderColor: 'rgba(124,58,237,0.25)' }}>
+              Ideal para quem já tem estratégia própria.
             </p>
 
             <button
               onClick={() => handleBuy('aceleracao')}
-              aria-label="Assinar Protocolo Básico — Flashcards"
+              aria-label="Assinar FlashAprova Essencial"
               disabled={!!buying}
               className="block w-full py-3 rounded-xl text-center text-sm font-black tracking-wider transition-all hover:opacity-80 disabled:opacity-50 disabled:cursor-wait"
-              style={{ background:'rgba(124,58,237,0.14)', border:'1px solid rgba(124,58,237,0.30)', color:'#a78bfa' }}>
+              style={{ background: 'rgba(124,58,237,0.14)', border: '1px solid rgba(124,58,237,0.30)', color: '#a78bfa' }}>
               {buying === 'aceleracao' ? '[ AGUARDE... ]' : '[ QUERO SÓ OS FLASHCARDS ]'}
             </button>
           </div>
