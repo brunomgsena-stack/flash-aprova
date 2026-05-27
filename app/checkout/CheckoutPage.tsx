@@ -866,15 +866,9 @@ export default function CheckoutPage() {
             <div className="flex flex-col gap-2.5 mb-6 text-sm">
               {[
                 'Tudo do Protocolo Neural',
-                'Análise avançada de desempenho',
-                'Plano estratégico semanal',
-                'Correções extras de redação',
-                'Prioridade na IA',
-                'Rotas personalizadas por curso',
-                'Modo intensivo reta final',
+                'Mentoria de estudos mensal 1x1 com especialista',
+                'Plano intensivo reta final',
                 'Suporte prioritário',
-                'Diagnóstico avançado por área',
-                'Recomendações de estudo de alto impacto',
               ].map(f => (
                 <div key={f} className="flex items-start gap-2">
                   <span className="shrink-0 mt-0.5" style={{ color: '#d97706' }}>✓</span>
