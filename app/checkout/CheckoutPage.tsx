@@ -928,31 +928,44 @@ export default function CheckoutPage() {
 
         {/* ── Feature comparison ── */}
         <div className="rounded-2xl overflow-hidden mb-8"
-          style={{ border:'1px solid rgba(255,255,255,0.06)', background:'rgba(10,5,20,0.60)' }}>
-          <div className="grid grid-cols-3 px-3 sm:px-5 py-3 border-b border-white/5">
+          style={{ border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(10,5,20,0.60)' }}>
+          <div className="text-center py-4 border-b border-white/5">
+            <h3 className="text-white font-black text-base">Compare os protocolos</h3>
+          </div>
+          <div className="grid grid-cols-4 px-3 sm:px-5 py-3 border-b border-white/5">
             <span className="text-[10px] sm:text-xs font-semibold text-slate-600 uppercase tracking-wider">Recurso</span>
-            <span className="text-[10px] sm:text-xs font-semibold text-center uppercase tracking-wider" style={{ color:'#8b5cf6' }}>
-              ⚡ Módulo I
+            <span className="text-[10px] sm:text-xs font-semibold text-center uppercase tracking-wider" style={{ color: '#8b5cf6' }}>
+              Essencial
             </span>
-            <span className="text-[10px] sm:text-xs font-semibold text-center uppercase tracking-widest"
-              style={{ background:`linear-gradient(90deg,${EMERALD},${CYAN})`, WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>
-              🏆 Módulo II
+            <span className="text-[10px] sm:text-xs font-bold text-center uppercase tracking-widest"
+              style={{ background: `linear-gradient(90deg, ${GREEN}, ${CYAN})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              🏆 P. Neural
+            </span>
+            <span className="text-[10px] sm:text-xs font-semibold text-center uppercase tracking-wider" style={{ color: '#d97706' }}>
+              Black
             </span>
           </div>
-          {[
-            ['Flashcards SRS ilimitados',               true,  true ],
-            ['Dashboard & heatmap',                     true,  true ],
-            ['Resumos Storytelling',                    false, true ],
-            ['Tabelas Comparativas',                    false, true ],
-            ['15 Especialistas IA',                     false, true ],
-            ['Prof.ª Norma — Redação',                  false, true ],
-            ['Acesso 2 anos (2026+2027)',                false, true ],
-          ].map(([feat, flash, pro], i) => (
-            <div key={feat as string} className="grid grid-cols-3 px-3 sm:px-5 py-3 text-xs sm:text-sm"
-              style={{ borderTop:'1px solid rgba(255,255,255,0.04)', background:i%2===0?'rgba(255,255,255,0.012)':'transparent' }}>
-              <span className="text-slate-400 leading-snug">{feat as string}</span>
-              <span className="text-center font-semibold" style={{ color:flash?'#8b5cf6':'#1e1b4b' }}>{flash?'✓':'—'}</span>
-              <span className="text-center font-semibold" style={{ color:pro?EMERALD:'#334155' }}>{pro?'✓':'—'}</span>
+          {([
+            ['Flashcards SRS ilimitados',       true,  true,  true ],
+            ['Dashboard básico',                true,  true,  true ],
+            ['Dashboard + heatmap',             false, true,  true ],
+            ['Radar de Lacunas',                false, true,  true ],
+            ['Resumos Storytelling',            false, true,  true ],
+            ['Tabelas comparativas',            false, true,  true ],
+            ['15 Especialistas IA',             false, true,  true ],
+            ['Tutor IA 24/7',                   false, true,  true ],
+            ['Correção de Redação IA',          false, true,  true ],
+            ['Simulados/Treinos direcionados',  false, true,  true ],
+            ['Plano estratégico semanal',       false, false, true ],
+            ['Prioridade na IA',                false, false, true ],
+            ['Suporte prioritário',             false, false, true ],
+          ] as [string, boolean, boolean, boolean][]).map(([feat, ess, pro, blk], i) => (
+            <div key={feat} className="grid grid-cols-4 px-3 sm:px-5 py-3 text-xs sm:text-sm"
+              style={{ borderTop: '1px solid rgba(255,255,255,0.04)', background: i % 2 === 0 ? 'rgba(255,255,255,0.012)' : 'transparent' }}>
+              <span className="text-slate-400 leading-snug text-[10px] sm:text-xs">{feat}</span>
+              <span className="text-center font-semibold" style={{ color: ess ? '#8b5cf6' : '#1e1b4b' }}>{ess ? '✓' : '—'}</span>
+              <span className="text-center font-bold" style={{ color: pro ? GREEN : '#334155', textShadow: pro ? `0 0 8px ${GREEN}60` : 'none' }}>{pro ? '✓' : '—'}</span>
+              <span className="text-center font-semibold" style={{ color: blk ? '#d97706' : '#292524' }}>{blk ? '✓' : '—'}</span>
             </div>
           ))}
         </div>
