@@ -685,10 +685,10 @@ export default function CheckoutPage() {
             </p>
 
             {/* Price */}
-            <div className="mb-2">
-              <span className="text-3xl font-black text-white">R$&nbsp;297<span className="text-lg font-semibold text-slate-400">/ano</span></span>
+            <div className="mb-1">
+              <span className="text-3xl font-black text-white">12x de R$&nbsp;29,16</span>
             </div>
-            <p className="text-xs font-semibold mb-1" style={{ color: '#8b5cf6' }}>ou 12x de R$ 29,16</p>
+            <p className="text-slate-500 text-xs mb-1">ou R$ 297 à vista</p>
             <p className="text-slate-500 text-xs italic mb-6">Para quem quer apenas revisar com flashcards.</p>
 
             <div className="h-px mb-4" style={{ background: 'rgba(255,255,255,0.05)' }} />
@@ -781,10 +781,10 @@ export default function CheckoutPage() {
             </p>
 
             {/* Price */}
-            <div className="mb-2 relative">
-              <span className="text-4xl font-black text-white">R$&nbsp;397<span className="text-lg font-semibold text-slate-400">/ano</span></span>
+            <div className="mb-1 relative">
+              <span className="text-4xl font-black text-white">12x de R$&nbsp;33,08</span>
             </div>
-            <p className="text-xs font-semibold mb-1" style={{ color: GREEN }}>ou 12x de R$ 33,08</p>
+            <p className="text-slate-500 text-xs mb-1">ou R$ 397 à vista</p>
             <p className="text-sm font-semibold italic mb-2" style={{ color: GREEN }}>menos de R$ 1,09 por dia</p>
             <p className="text-xs mb-6 font-medium" style={{ color: '#a78bfa' }}>
               Por só R$ 100 a mais que o Essencial, você desbloqueia o sistema completo.
@@ -855,10 +855,10 @@ export default function CheckoutPage() {
             </p>
 
             {/* Price */}
-            <div className="mb-2">
-              <span className="text-3xl font-black" style={{ color: '#fef3c7' }}>R$&nbsp;997<span className="text-lg font-semibold" style={{ color: '#92400e' }}>/ano</span></span>
+            <div className="mb-1">
+              <span className="text-3xl font-black" style={{ color: '#fef3c7' }}>12x de R$&nbsp;99,70</span>
             </div>
-            <p className="text-xs font-semibold mb-1" style={{ color: '#d97706' }}>ou 12x de R$ 99,70</p>
+            <p className="text-slate-500 text-xs mb-1">ou R$ 997 à vista</p>
             <p className="text-slate-500 text-xs italic mb-6">Para quem quer acompanhamento estratégico máximo.</p>
 
             <div className="h-px mb-4" style={{ background: 'rgba(217,119,6,0.15)' }} />
