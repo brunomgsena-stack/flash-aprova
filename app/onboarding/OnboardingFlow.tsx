@@ -20,38 +20,20 @@ const RED    = '#ef4444';
 const ORANGE = '#f97316';
 
 // ─── Step indicator ─────────────────────────────────────────────────────────
-const STEP_LABELS = ['Matéria', 'Diagnóstico', 'Resultado'];
+const TOTAL_STEPS = 3;
 
 function StepIndicator({ current }: { current: number }) {
   return (
-    <div className="flex items-center justify-center gap-0 mb-10">
-      {STEP_LABELS.map((label, i) => {
+    <div className="flex gap-1.5 mb-8">
+      {Array.from({ length: TOTAL_STEPS }, (_, i) => {
         const n = i + 1;
         return (
-          <div key={n} className="flex items-center">
-            <div className="flex flex-col items-center gap-1">
-              <div
-                className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-black transition-all duration-300"
-                style={{
-                  background: n <= current
-                    ? `linear-gradient(135deg, ${VIOLET}, ${CYAN})`
-                    : 'rgba(255,255,255,0.07)',
-                  color: n <= current ? '#fff' : 'rgba(255,255,255,0.25)',
-                  boxShadow: n === current ? `0 0 16px ${VIOLET}80` : 'none',
-                }}
-              >
-                {n < current ? '✓' : n}
-              </div>
-              <span className="text-xs hidden sm:block"
-                style={{ color: n === current ? '#a78bfa' : 'rgba(255,255,255,0.20)' }}>
-                {label}
-              </span>
-            </div>
-            {i < STEP_LABELS.length - 1 && (
-              <div className="w-14 sm:w-24 h-px mx-1 mb-4 sm:mb-0 transition-all duration-500"
-                style={{ background: n < current ? `linear-gradient(90deg,${VIOLET},${CYAN})` : 'rgba(255,255,255,0.08)' }} />
-            )}
-          </div>
+          <div key={n} className="flex-1 h-0.5 rounded-full transition-all duration-500"
+            style={{
+              background: n <= current
+                ? `linear-gradient(90deg, ${VIOLET}, ${CYAN})`
+                : 'rgba(255,255,255,0.10)',
+            }} />
         );
       })}
     </div>
@@ -453,16 +435,6 @@ export default function OnboardingFlow() {
       <LacunaAlert msg={alertMsg} />
 
       <div className="relative max-w-2xl mx-auto" style={{ zIndex: 1 }}>
-
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <a href="/" className="font-black text-white text-xl">
-            Flash<span style={{
-              background: `linear-gradient(90deg, ${GREEN}, ${CYAN})`,
-              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-            }}>Aprova</span>
-          </a>
-        </div>
 
         <StepIndicator current={step} />
 

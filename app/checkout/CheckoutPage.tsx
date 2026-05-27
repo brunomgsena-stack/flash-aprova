@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { motion, useMotionValue, useAnimationFrame } from 'framer-motion';
-import Link from 'next/link';
 import { type SubjectId, SUBJECT_META } from '../onboarding/flashcardData';
 import WhatsAppFloat from '@/components/WhatsAppFloat';
 import { REELS } from '@/lib/reels-data';
@@ -568,14 +567,6 @@ export default function CheckoutPage() {
       </div>
 
       <div className="relative max-w-3xl mx-auto" style={{ zIndex: 1 }}>
-
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <Link href="/" className="font-black text-white text-xl">
-            Flash<span style={{ background:`linear-gradient(90deg,${GREEN},${CYAN})`,
-              WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>Aprova</span>
-          </Link>
-        </div>
 
         {/* ── Status header ── */}
         <div className="relative rounded-3xl p-6 sm:p-8 mb-6 overflow-hidden"
