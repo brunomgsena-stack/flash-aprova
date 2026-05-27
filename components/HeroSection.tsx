@@ -1594,10 +1594,10 @@ function MobileSatellites({ termLines, visibleConcepts }: { termLines: string[];
 // ── Linhas de conexão satélite→iPhone (mobile) ───────────────────────────────
 // viewBox 360×500; centro do iPhone ≈ (180,250). Origens nas bordas dos satélites.
 const MCONN_LINES = [
-  { d: 'M 70,95 C 110,150 150,200 180,238',  color: PURPLE_L,  delay: 0,    gradId: 'mcg0', cx: 70,  cy: 95  },
-  { d: 'M 300,210 C 260,225 220,235 200,245', color: '#34d399', delay: 0.6,  gradId: 'mcg1', cx: 300, cy: 210 },
-  { d: 'M 60,330 C 110,310 150,285 180,262',  color: '#fb923c', delay: 1.2,  gradId: 'mcg2', cx: 60,  cy: 330 },
-  { d: 'M 300,380 C 260,340 220,300 200,268', color: CYAN,      delay: 1.8,  gradId: 'mcg3', cx: 300, cy: 380 },
+  { d: 'M 52,100 C 110,150 160,210 180,242',  color: PURPLE_L,  delay: 0,   gradId: 'mcg0', cx: 52,  cy: 100 },  // Arsenal (topo-esq)
+  { d: 'M 308,100 C 250,150 200,210 180,242', color: '#34d399', delay: 0.5, gradId: 'mcg1', cx: 308, cy: 100 },  // AI Memory (topo-dir)
+  { d: 'M 52,330 C 110,310 160,275 180,258',  color: '#fb923c', delay: 1.0, gradId: 'mcg2', cx: 52,  cy: 330 },  // Agenda (baixo-esq)
+  { d: 'M 308,330 C 250,310 200,275 180,258', color: CYAN,      delay: 1.5, gradId: 'mcg3', cx: 308, cy: 330 },  // Conceitos (baixo-dir)
 ];
 
 function MobileConnectionLines() {
