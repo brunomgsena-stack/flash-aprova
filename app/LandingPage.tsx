@@ -353,7 +353,8 @@ function CTAButton({ size = 'lg', label }: { size?: 'sm' | 'lg'; label?: string 
       <svg width={big ? 22 : 18} height={big ? 22 : 18} viewBox="0 0 24 24" fill="none"
         stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
         className="relative">
-        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+        <path d="M5 12h14"/>
+        <path d="m12 5 7 7-7 7"/>
       </svg>
       <span className="relative">{text}</span>
     </Link>
@@ -580,7 +581,7 @@ function FAQAccordion() {
       </div>
 
       <div className="text-center mt-10">
-        <CTAButton size="sm" label="[ DETECTAR VAZAMENTO DE NOTA ]" />
+        <CTAButton size="sm" label="COMECE AGORA" />
         <p className="text-center text-xs mt-3" style={{ color: 'rgba(255,255,255,0.35)' }}>Diagnóstico grátis · 3 min</p>
       </div>
     </section>
@@ -691,7 +692,7 @@ export default function LandingPage() {
 
         <div className="flex justify-center pb-16 px-4 -mt-8">
           <div className="flex flex-col items-center">
-            <CTAButton size="sm" label="[ DETECTAR VAZAMENTO DE NOTA ]" />
+            <CTAButton size="sm" label="COMEÇAR AGORA" />
             <p className="text-center text-xs mt-3" style={{ color: 'rgba(255,255,255,0.35)' }}>Diagnóstico grátis · 3 min</p>
           </div>
         </div>
@@ -719,7 +720,7 @@ export default function LandingPage() {
         {/* ═══════════════════ CTA mid-page ══ */}
         <div className="flex justify-center pb-16 -mt-10 px-5 sm:px-0">
           <div className="flex flex-col items-center">
-            <CTAButton size="sm" label="[ DETECTAR VAZAMENTO DE NOTA ]" />
+            <CTAButton size="sm" label="COMECE AGORA" />
             <p className="text-center text-xs mt-3" style={{ color: 'rgba(255,255,255,0.35)' }}>Diagnóstico grátis · 3 min</p>
           </div>
         </div>
@@ -904,7 +905,7 @@ export default function LandingPage() {
             {/* CTA */}
             <div className="flex justify-center">
               <div className="flex flex-col items-center">
-                <CTAButton size="sm" label="[ DETECTAR VAZAMENTO DE NOTA ]" />
+                <CTAButton size="sm" label="QUERO COMEÇAR AGORA" />
                 <p className="text-center text-xs mt-3" style={{ color: 'rgba(255,255,255,0.35)' }}>Diagnóstico grátis · 3 min</p>
               </div>
             </div>

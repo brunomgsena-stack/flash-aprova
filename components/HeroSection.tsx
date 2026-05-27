@@ -1834,9 +1834,9 @@ export default function HeroSection() {
                 stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
                 style={{ color: '#000000', flexShrink: 0 }}
               >
-                <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
               </svg>
-              {ctaState === 'loading' ? '[ ACESSANDO NÚCLEO... ]' : '[ DETECTAR VAZAMENTO DE NOTA ]'}
+              {ctaState === 'loading' ? '[ ACESSANDO NÚCLEO... ]' : 'QUERO COMEÇAR AGORA'}
             </button>
 
             {/* micro-copy terminal */}
