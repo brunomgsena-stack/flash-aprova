@@ -460,7 +460,7 @@ function TutoresScreen({ fill = false }: { fill?: boolean }) {
           { id: 2, tutorIdx: 2, msgIdx: 0 },
         ]
   );
-  const nextRef = useRef({ counter: fill ? 5 : 3, tIdx: 1, mIdx: 1 });
+  const nextRef = useRef({ counter: fill ? 5 : 3, tIdx: fill ? 1 : 0, mIdx: 1 });
 
   const [typingIdx, setTypingIdx] = useState(0);
   const [showTyping, setShowTyping] = useState(true);
@@ -1523,13 +1523,30 @@ function MobileSatellites({ termLines, visibleConcepts }: { termLines: string[];
 
   const ARSENAL = (
     <GlassCard className="!p-3" style={{ width: 142 }}>
-      <div className="text-[10px] font-bold mb-2" style={{ color: PURPLE_L }}>📚 Arsenal</div>
-      {[{ name: 'Biologia', pct: 78, color: '#34d399' }, { name: 'Física', pct: 91, color: PURPLE_L }].map((s) => (
+      <div className="flex items-center justify-between mb-2">
+        <div className="text-[10px] font-bold" style={{ color: PURPLE_L }}>📚 Arsenal</div>
+        <motion.span className="text-[7px] font-bold px-1.5 py-0.5 rounded-full"
+          style={{ color: '#fb923c', background: 'rgba(251,146,60,0.12)', border: '1px solid rgba(251,146,60,0.3)' }}
+          animate={{ opacity: [0.5, 1, 0.5] }} transition={{ duration: 1.6, repeat: Infinity }}>
+          revisando
+        </motion.span>
+      </div>
+      {[{ name: 'Biologia', pct: 78, color: '#34d399' }, { name: 'Física', pct: 91, color: PURPLE_L }].map((s, idx) => (
         <div key={s.name} className="mb-2">
-          <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.72)' }}>{s.name}</span>
-          <div className="h-1 rounded-full overflow-hidden mt-1" style={{ background: 'rgba(255,255,255,0.07)' }}>
+          <div className="flex justify-between items-center">
+            <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.72)' }}>{s.name}</span>
+            <motion.span className="text-[8px] font-bold" style={{ color: s.color }}
+              animate={{ opacity: [0.55, 1, 0.55] }} transition={{ duration: 2, repeat: Infinity, delay: idx * 0.4 }}>
+              {s.pct}%
+            </motion.span>
+          </div>
+          <div className="relative h-1 rounded-full overflow-hidden mt-1" style={{ background: 'rgba(255,255,255,0.07)' }}>
             <motion.div className="h-full rounded-full" style={{ background: s.color }}
-              initial={{ width: 0 }} animate={{ width: `${s.pct}%` }} transition={{ duration: 1.6, delay: 0.8, ease: 'easeOut' }} />
+              animate={{ width: [`${s.pct - 6}%`, `${s.pct}%`, `${s.pct - 6}%`] }}
+              transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut', delay: idx * 0.5 }} />
+            <motion.div className="absolute inset-y-0" style={{ width: '34%', background: `linear-gradient(90deg, transparent, ${s.color}cc, transparent)` }}
+              animate={{ x: ['-120%', '320%'] }}
+              transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut', delay: idx * 0.6 }} />
           </div>
         </div>
       ))}
@@ -1540,17 +1557,33 @@ function MobileSatellites({ termLines, visibleConcepts }: { termLines: string[];
 
   const AGENDA = (
     <GlassCard className="!p-3" style={{ width: 142 }}>
-      <div className="text-[10px] font-bold mb-2" style={{ color: PURPLE_L }}>🤖 Agenda IA</div>
-      {[{ time: '14:00', subject: 'Termo', icon: '⚛️' }, { time: '16:30', subject: 'Genética', icon: '🧬' }].map((s) => (
-        <div key={s.time} className="flex items-center gap-2 mb-1.5 p-1.5 rounded-lg"
-          style={{ background: `${PURPLE}12`, border: '1px solid rgba(124,58,237,0.18)' }}>
-          <span className="text-sm">{s.icon}</span>
-          <div>
+      <div className="flex items-center justify-between mb-2">
+        <div className="text-[10px] font-bold" style={{ color: PURPLE_L }}>🤖 Agenda IA</div>
+        <motion.span style={{ width: 5, height: 5, borderRadius: '50%', background: NEON_G, boxShadow: `0 0 6px ${NEON_G}` }}
+          animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1.25, 0.8] }} transition={{ duration: 1.4, repeat: Infinity }} />
+      </div>
+      {[{ time: '14:00', subject: 'Termo', icon: '⚛️' }, { time: '16:30', subject: 'Genética', icon: '🧬' }].map((s, idx) => (
+        <motion.div key={s.time} className="flex items-center gap-2 mb-1.5 p-1.5 rounded-lg"
+          style={{ background: `${PURPLE}12`, border: '1px solid rgba(124,58,237,0.18)' }}
+          animate={idx === 0
+            ? { borderColor: ['rgba(124,58,237,0.18)', 'rgba(124,58,237,0.6)', 'rgba(124,58,237,0.18)'], boxShadow: ['0 0 0px rgba(124,58,237,0)', `0 0 10px ${PURPLE}55`, '0 0 0px rgba(124,58,237,0)'] }
+            : {}}
+          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}>
+          <motion.span className="text-sm" animate={{ rotate: [0, -8, 8, 0] }} transition={{ duration: 2.5, repeat: Infinity, delay: idx * 0.5 }}>{s.icon}</motion.span>
+          <div className="flex-1">
             <div className="text-[9px] font-semibold" style={{ color: '#fff' }}>{s.subject}</div>
             <div className="text-[8px]" style={{ color: PURPLE_L }}>{s.time}</div>
           </div>
-        </div>
+          {idx === 0 && (
+            <motion.span className="text-[6px] font-bold" style={{ color: NEON_G }}
+              animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1.2, repeat: Infinity }}>agora</motion.span>
+          )}
+        </motion.div>
       ))}
+      <div className="h-0.5 rounded-full overflow-hidden mt-1" style={{ background: 'rgba(255,255,255,0.07)' }}>
+        <motion.div className="h-full rounded-full" style={{ background: PURPLE_L }}
+          animate={{ width: ['10%', '100%'] }} transition={{ duration: 4, repeat: Infinity, ease: 'linear' }} />
+      </div>
     </GlassCard>
   );
 
