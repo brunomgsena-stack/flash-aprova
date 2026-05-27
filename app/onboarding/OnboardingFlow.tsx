@@ -244,14 +244,36 @@ function calcRadar(results: CardResult[]): Record<string, number> {
 // ─── Insight interstitial ─────────────────────────────────────────────────────
 function ForgettingCurve() {
   return (
-    <svg width="100%" viewBox="0 0 260 90" className="mt-4" aria-hidden="true">
-      <line x1="10" y1="78" x2="250" y2="78" stroke="rgba(255,255,255,0.12)" strokeWidth="1" />
-      <line x1="10" y1="8"  x2="10"  y2="78" stroke="rgba(255,255,255,0.12)" strokeWidth="1" />
-      <path d="M10,14 C60,55 110,70 250,76" fill="none" stroke={RED} strokeWidth="2.5"
-        strokeLinecap="round" style={{ filter: `drop-shadow(0 0 6px ${RED}80)` }} />
-      <text x="16" y="12" fill="rgba(255,255,255,0.5)" fontSize="9" fontFamily="monospace">100%</text>
-      <text x="200" y="74" fill={RED} fontSize="9" fontFamily="monospace">~30% em 7 dias</text>
-    </svg>
+    <div className="mt-5 rounded-xl p-4"
+      style={{ background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.06)' }}>
+      <svg
+        viewBox="0 0 300 140"
+        preserveAspectRatio="xMidYMid meet"
+        style={{ width: '100%', height: 'auto', display: 'block' }}
+        role="img"
+        aria-label="Curva do esquecimento: a retenção cai de 100% para cerca de 30% em 7 dias"
+      >
+        {/* eixos */}
+        <line x1="36" y1="14" x2="36"  y2="104" stroke="rgba(255,255,255,0.16)" strokeWidth="1" />
+        <line x1="36" y1="104" x2="286" y2="104" stroke="rgba(255,255,255,0.16)" strokeWidth="1" />
+        {/* gridline 50% */}
+        <line x1="36" y1="59" x2="286" y2="59" stroke="rgba(255,255,255,0.06)" strokeWidth="1" strokeDasharray="3 4" />
+        {/* curva */}
+        <path d="M36,18 C92,72 150,94 286,99" fill="none" stroke={RED} strokeWidth="3"
+          strokeLinecap="round" style={{ filter: `drop-shadow(0 0 6px ${RED}80)` }} />
+        {/* pontos inicio/fim */}
+        <circle cx="36"  cy="18" r="3.5" fill={GREEN} />
+        <circle cx="286" cy="99" r="3.5" fill={RED} />
+        {/* rotulos eixo Y */}
+        <text x="30" y="21"  textAnchor="end" fill="rgba(255,255,255,0.5)" fontSize="9" fontFamily="monospace">100%</text>
+        <text x="30" y="107" textAnchor="end" fill="rgba(255,255,255,0.5)" fontSize="9" fontFamily="monospace">0%</text>
+        {/* rotulos eixo X */}
+        <text x="36"  y="120" textAnchor="start" fill="rgba(255,255,255,0.4)" fontSize="9" fontFamily="monospace">hoje</text>
+        <text x="286" y="120" textAnchor="end"   fill="rgba(255,255,255,0.4)" fontSize="9" fontFamily="monospace">7 dias</text>
+        {/* destaque ~30% */}
+        <text x="280" y="92" textAnchor="end" fill={RED} fontSize="12" fontFamily="monospace" fontWeight="bold">~30%</text>
+      </svg>
+    </div>
   );
 }
 
