@@ -375,14 +375,14 @@ export default function OnboardingFlow() {
             <div>
               <div className="text-center mb-10">
                 <p className="text-xs font-bold tracking-widest uppercase mb-4" style={{ color: VIOLET }}>
-                  Diagnóstico Personalizado por IA
+                  Teste rápido · 10 cards · ~2 min
                 </p>
                 <h1 className="text-white font-black text-3xl sm:text-4xl leading-tight mb-3">
-                  Vamos começar por onde dói mais no{' '}
+                  Bora ver como tá sua memória pro{' '}
                   <span style={{ color: GREEN, textShadow: `0 0 20px ${GREEN}80` }}>ENEM?</span>
                 </h1>
                 <p className="text-slate-400 text-base max-w-md mx-auto">
-                  Escolha a matéria que mais te preocupa e vamos testar sua retenção agora.
+                  Responde 10 cards comigo, sem pressão. No fim, te mostro uma coisa sobre como você aprende.
                 </p>
               </div>
 
@@ -411,7 +411,7 @@ export default function OnboardingFlow() {
                     <div className="flex items-center gap-1.5">
                       <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: VIOLET }} />
                       <span className="text-xs font-semibold" style={{ color: '#a78bfa' }}>
-                        Testar agora →
+                        Começar por aqui →
                       </span>
                     </div>
                   </button>
@@ -419,7 +419,7 @@ export default function OnboardingFlow() {
               </div>
 
               <p className="text-center text-slate-700 text-xs mt-6">
-                5 questões · ~1 minuto · Resultado imediato
+                10 cards · ~2 min · grátis
               </p>
             </div>
           )}
