@@ -192,6 +192,32 @@ interface CardResult { cardId: string; subject: SubjectId; rating: Rating; secon
 
 const SCORE_MAP: Record<Rating, number> = { facil: 100, medio: 50, dificil: 10 };
 
+interface Insight { tag: string; title: string; body: string; curve?: boolean; }
+
+const INSIGHTS: Record<number, Insight> = {
+  0: {
+    tag: 'MÉTODO',
+    title: 'Isso que você acabou de fazer tem nome',
+    body: 'Tentar lembrar antes de ver a resposta é recall ativo — o esforço de puxar da memória é o que realmente fixa. Reler não faz isso.',
+  },
+  2: {
+    tag: 'MEMÓRIA',
+    title: 'Por que você esquece',
+    body: 'Sem revisar, você esquece ~70% disso em 7 dias. Não é burrice — é a curva do esquecimento. Todo cérebro funciona assim.',
+    curve: true,
+  },
+  4: {
+    tag: 'FLASHAPROVA',
+    title: 'Onde o app entra',
+    body: 'O FlashAprova calcula a hora exata de te mostrar cada card de novo — bem antes de você esquecer. Cada aluno tem o próprio ritmo.',
+  },
+  7: {
+    tag: 'POR QUE FUNCIONA',
+    title: 'Caderno x flashcard',
+    body: 'Caderno e resumo dão a ilusão de que você aprendeu. O card te obriga a provar. Por isso 10 min de flashcard valem mais que 1h relendo.',
+  },
+};
+
 function buildAlertMsg(health: number, rating: Rating, subject: SubjectId, secs: number): string | null {
   if (rating === 'dificil') return `❌ Lacuna detectada em ${SUBJECT_META[subject].name} — IA registrando falha`;
   if (secs > 12)            return `⚠ Instabilidade Sináptica em ENEM — tempo de processamento crítico`;
@@ -212,6 +238,44 @@ function calcRadar(results: CardResult[]): Record<string, number> {
       area,
       Math.round(scores.reduce((a, b) => a + b, 0) / scores.length),
     ]),
+  );
+}
+
+// ─── Insight interstitial ─────────────────────────────────────────────────────
+function ForgettingCurve() {
+  return (
+    <svg width="100%" viewBox="0 0 260 90" className="mt-4" aria-hidden="true">
+      <line x1="10" y1="78" x2="250" y2="78" stroke="rgba(255,255,255,0.12)" strokeWidth="1" />
+      <line x1="10" y1="8"  x2="10"  y2="78" stroke="rgba(255,255,255,0.12)" strokeWidth="1" />
+      <path d="M10,14 C60,55 110,70 250,76" fill="none" stroke={RED} strokeWidth="2.5"
+        strokeLinecap="round" style={{ filter: `drop-shadow(0 0 6px ${RED}80)` }} />
+      <text x="16" y="12" fill="rgba(255,255,255,0.5)" fontSize="9" fontFamily="monospace">100%</text>
+      <text x="200" y="74" fill={RED} fontSize="9" fontFamily="monospace">~30% em 7 dias</text>
+    </svg>
+  );
+}
+
+function InsightPanel({ insight, onContinue }: { insight: Insight; onContinue: () => void }) {
+  return (
+    <div className="relative rounded-3xl p-7 sm:p-9 mb-5 fade-up" style={cardStyle}>
+      {topShimmer}
+      <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: CYAN }}>
+        💡 {insight.tag}
+      </p>
+      <h3 className="text-white font-black text-xl leading-snug mb-3">{insight.title}</h3>
+      <p className="text-slate-300 text-base leading-relaxed">{insight.body}</p>
+      {insight.curve && <ForgettingCurve />}
+      <button onClick={onContinue}
+        className="mt-6 w-full py-4 rounded-xl font-bold text-sm transition-all duration-200 hover:-translate-y-0.5 active:scale-95"
+        style={{
+          background: 'rgba(124,58,237,0.15)',
+          border: `1px solid rgba(124,58,237,0.40)`,
+          color: '#c4b5fd',
+          boxShadow: '0 0 20px rgba(124,58,237,0.10)',
+        }}>
+        Continuar →
+      </button>
+    </div>
   );
 }
 
@@ -240,6 +304,7 @@ export default function OnboardingFlow() {
 
   // Navigation
   const [step, setStep] = useState(1);
+  const [insightIdx, setInsightIdx] = useState<number | null>(null);
 
   useEffect(() => () => {
     if (timerRef.current)   clearInterval(timerRef.current);
@@ -298,9 +363,13 @@ export default function OnboardingFlow() {
 
     const next = cardIndex + 1;
     if (next < testDeck.length) {
-      setCardIndex(next);
-      setShowAnswer(false);
-      setElapsed(0);
+      if (INSIGHTS[cardIndex]) {
+        setInsightIdx(cardIndex);   // mostra interstitial; avanço acontece no "continuar"
+      } else {
+        setCardIndex(next);
+        setShowAnswer(false);
+        setElapsed(0);
+      }
     } else {
       // Quiz done → show loading animation then lead form
       setFinalData({ results: newResults, health: newHealth });
@@ -308,6 +377,14 @@ export default function OnboardingFlow() {
       setStep(3);
       setTimeout(() => setAnalyzing(false), 1500);
     }
+  }
+
+  function dismissInsight() {
+    if (insightIdx === null) return;
+    setInsightIdx(null);
+    setCardIndex(insightIdx + 1);
+    setShowAnswer(false);
+    setElapsed(0);
   }
 
   // ── Step 3: submit lead → checkout ──
@@ -455,6 +532,10 @@ export default function OnboardingFlow() {
 
               <HealthBar health={health} />
 
+              {insightIdx !== null ? (
+                <InsightPanel insight={INSIGHTS[insightIdx]} onContinue={dismissInsight} />
+              ) : (
+              <>
               {/* Subject badge */}
               <div className="flex items-center gap-2 mb-4">
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold"
@@ -530,6 +611,8 @@ export default function OnboardingFlow() {
                     ))}
                   </div>
                 </div>
+              )}
+              </>
               )}
             </div>
           )}
