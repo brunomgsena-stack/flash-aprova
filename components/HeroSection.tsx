@@ -1399,6 +1399,20 @@ function DesktopOnly({ children }: { children: React.ReactNode }) {
   return show ? <>{children}</> : null;
 }
 
+// ── Mobile-only gate: filhos só montam em telas < lg (1024px). ────────────────
+// No desktop renderiza null (sem hidratar), evitando trabalho de JS desnecessário.
+function MobileOnly({ children }: { children: React.ReactNode }) {
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 1023px)');
+    setShow(mq.matches);
+    const onChange = (e: MediaQueryListEvent) => setShow(e.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+  return show ? <>{children}</> : null;
+}
+
 // ── Main HeroSection ──────────────────────────────────────────────────────────
 export default function HeroSection() {
   const router = useRouter();
