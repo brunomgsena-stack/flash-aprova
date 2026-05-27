@@ -442,15 +442,25 @@ function ConnectionLines() {
 }
 
 // ── Tutores IA screen — chat with real tutor avatars ─────────────────────────
-function TutoresScreen() {
+function TutoresScreen({ fill = false }: { fill?: boolean }) {
   type FeedItem = { id: number; tutorIdx: number; msgIdx: number };
 
-  const [feed, setFeed] = useState<FeedItem[]>([
-    { id: 0, tutorIdx: 0, msgIdx: 0 },
-    { id: 1, tutorIdx: 1, msgIdx: 0 },
-    { id: 2, tutorIdx: 2, msgIdx: 0 },
-  ]);
-  const nextRef = useRef({ counter: 3, tIdx: 0, mIdx: 1 });
+  const [feed, setFeed] = useState<FeedItem[]>(
+    fill
+      ? [
+          { id: 0, tutorIdx: 0, msgIdx: 0 },
+          { id: 1, tutorIdx: 1, msgIdx: 0 },
+          { id: 2, tutorIdx: 2, msgIdx: 0 },
+          { id: 3, tutorIdx: 0, msgIdx: 1 },
+          { id: 4, tutorIdx: 1, msgIdx: 1 },
+        ]
+      : [
+          { id: 0, tutorIdx: 0, msgIdx: 0 },
+          { id: 1, tutorIdx: 1, msgIdx: 0 },
+          { id: 2, tutorIdx: 2, msgIdx: 0 },
+        ]
+  );
+  const nextRef = useRef({ counter: fill ? 5 : 3, tIdx: 1, mIdx: 1 });
 
   const [typingIdx, setTypingIdx] = useState(0);
   const [showTyping, setShowTyping] = useState(true);
@@ -463,7 +473,7 @@ function TutoresScreen() {
       const msgs = CHAT_TUTORS[nextT].msgs;
       const nextM = (mIdx + 1) % msgs.length;
       nextRef.current = { counter: counter + 1, tIdx: nextT, mIdx: nextM };
-      setFeed((prev) => [...prev.slice(-2), { id: counter, tutorIdx: nextT, msgIdx: nextM }]);
+      setFeed((prev) => [...prev.slice(fill ? -4 : -2), { id: counter, tutorIdx: nextT, msgIdx: nextM }]);
       setShowTyping(false);
       setTimeout(() => {
         setTypingIdx(nextT);
@@ -544,7 +554,7 @@ function TutoresScreen() {
       <div style={{ height: '0.5px', background: 'rgba(255,255,255,0.08)', flexShrink: 0 }} />
 
       {/* Chat feed */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', gap: 5, overflow: 'hidden' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: fill ? 'flex-start' : 'flex-end', gap: fill ? 8 : 5, overflow: 'hidden' }}>
         <AnimatePresence initial={false}>
           {feed.map((item) => {
             const t = CHAT_TUTORS[item.tutorIdx];
@@ -560,11 +570,11 @@ function TutoresScreen() {
                 <img src={t.avatar} alt={t.name} width={20} height={20}
                   style={{ borderRadius: '50%', flexShrink: 0, marginTop: 1, objectFit: 'cover', background: '#0d0a1e', border: `1px solid ${t.color}55` }} />
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 6, fontWeight: 700, color: t.color, marginBottom: 2 }}>
+                  <div style={{ fontSize: fill ? 8 : 6, fontWeight: 700, color: t.color, marginBottom: 2 }}>
                     {t.name} · {t.subject}
                   </div>
                   <div style={{
-                    fontSize: 7.5, color: 'rgba(255,255,255,0.82)', lineHeight: 1.45,
+                    fontSize: fill ? 10 : 7.5, color: 'rgba(255,255,255,0.82)', lineHeight: 1.45,
                     background: `${t.color}0e`, border: `1px solid ${t.color}28`,
                     borderRadius: '2px 8px 8px 8px', padding: '4px 8px',
                   }}>
@@ -1370,7 +1380,7 @@ function PhoneAppScreen() {
 
       {/* Conteúdo */}
       <div style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
-        {activeTab === 'TutoresIA' && <TutoresScreen />}
+        {activeTab === 'TutoresIA' && <TutoresScreen fill />}
         {activeTab === 'Redacao' && <RedacaoScreen />}
         {activeTab === 'Estudar' && (
           <div style={{ height: '100%', display: 'flex', flexDirection: 'column', padding: '8px 12px 6px', gap: 8 }}>
