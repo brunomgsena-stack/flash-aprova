@@ -835,67 +835,65 @@ export default function CheckoutPage() {
             </p>
           </div>
 
-          {/* ── PROTOCOLO BLACK (Decoy/Âncora — design flat e silencioso) ── */}
-          <div className="relative rounded-2xl p-7 overflow-hidden"
-            style={{ background:'rgba(18,18,20,0.96)', border:'1px solid rgba(255,255,255,0.09)' }}>
+          {/* ── PROTOCOLO BLACK (âncora premium) ── */}
+          <div className="relative rounded-2xl p-7 overflow-hidden order-3 lg:order-3"
+            style={{ background: 'rgba(18,14,6,0.96)', border: '1px solid rgba(217,119,6,0.22)' }}>
+            <div className="absolute inset-x-0 top-0 h-px"
+              style={{ background: 'linear-gradient(90deg, transparent, rgba(217,119,6,0.50), transparent)' }} />
 
-            {/* Tag superior discreta */}
-            <p className="text-[10px] font-semibold tracking-widest uppercase mb-4" style={{ color:'#78716c' }}>
-              ⚠️ Vagas Limitadas (Requer Aplicação)
-            </p>
+            {/* Badge */}
+            <div className="mb-4">
+              <span className="text-[10px] font-black px-2.5 py-1 rounded-full tracking-widest uppercase"
+                style={{ background: 'rgba(217,119,6,0.10)', border: '1px solid rgba(217,119,6,0.30)', color: '#d97706' }}>
+                PREMIUM
+              </span>
+            </div>
 
             {/* Plan name */}
-            <p className="text-base font-black mb-4 leading-tight" style={{ color:'#e7e5e4' }}>
-              [ PROTOCOLO BLACK:{' '}
-              <span style={{ color:'#a8a29e' }}>INTERVENÇÃO DIRETA ]</span>
+            <p className="text-base font-black mb-4 leading-tight" style={{ color: '#fbbf24' }}>
+              Protocolo <span style={{ color: '#d97706' }}>Black</span>
             </p>
 
             {/* Price */}
-            <div className="mb-3">
-              <p className="text-slate-600 text-xs line-through mb-0.5">era R$ 2.500,00</p>
-              <span className="text-4xl font-black" style={{ color:'#e7e5e4' }}>12x de R$&nbsp;199,70</span>
-              <p className="text-xs font-semibold mt-0.5" style={{ color:'#a8a29e' }}>no cartão de crédito</p>
+            <div className="mb-2">
+              <span className="text-3xl font-black" style={{ color: '#fef3c7' }}>R$&nbsp;997<span className="text-lg font-semibold" style={{ color: '#92400e' }}>/ano</span></span>
             </div>
-            <p className="text-slate-600 text-sm mb-1">ou R$ 1.997 à vista</p>
-            <p className="text-sm italic mb-6" style={{ color:'#a8a29e' }}>
-              O plano de contingência para quem não pode errar.
-            </p>
+            <p className="text-xs font-semibold mb-1" style={{ color: '#d97706' }}>ou 12x de R$ 99,70</p>
+            <p className="text-slate-500 text-xs italic mb-6">Para quem quer acompanhamento estratégico máximo.</p>
 
-            <div className="h-px mb-4" style={{ background:'rgba(255,255,255,0.06)' }} />
+            <div className="h-px mb-4" style={{ background: 'rgba(217,119,6,0.15)' }} />
 
-            {/* Label */}
-            <p className="text-[9px] font-black tracking-widest uppercase mb-3" style={{ color:'#78716c' }}>
-              [ INTERVENÇÃO HUMANA + IA ]
-            </p>
-
-            {/* Checklist */}
             <div className="flex flex-col gap-2.5 mb-6 text-sm">
               {[
-                'Tudo do Protocolo Neural (IA + 2 Anos)',
-                'Onboarding Estratégico 1 a 1: Call de 1h para mapear seus pontos cegos.',
-                'Análise de Desempenho Mensal: Um especialista humano ajustando sua rota.',
-                'Linha Direta (WhatsApp): Suporte prioritário com a equipe de engenharia pedagógica.',
+                'Tudo do Protocolo Neural',
+                'Análise avançada de desempenho',
+                'Plano estratégico semanal',
+                'Correções extras de redação',
+                'Prioridade na IA',
+                'Rotas personalizadas por curso',
+                'Modo intensivo reta final',
+                'Suporte prioritário',
+                'Diagnóstico avançado por área',
+                'Recomendações de estudo de alto impacto',
               ].map(f => (
                 <div key={f} className="flex items-start gap-2">
-                  <span className="shrink-0 mt-0.5" style={{ color:'#a8a29e' }}>✔️</span>
+                  <span className="shrink-0 mt-0.5" style={{ color: '#d97706' }}>✓</span>
                   <span className="text-slate-300 leading-snug">{f}</span>
                 </div>
               ))}
-              <div className="flex items-start gap-2">
-                <span className="shrink-0 mt-0.5">🔒</span>
-                <span className="text-slate-300 leading-snug">
-                  <strong style={{ color:'#e7e5e4' }}>Garantia de Aprovação:</strong> Se não passar, devolvemos 100% do valor + R$ 500 pelo seu tempo.
-                </span>
-              </div>
             </div>
 
-            {/* CTA — outline neutro, sem gradiente/glow */}
+            <p className="text-xs text-slate-600 italic mb-5 leading-relaxed border-l-2 pl-3"
+              style={{ borderColor: 'rgba(217,119,6,0.25)' }}>
+              Indicado para quem quer máxima personalização.
+            </p>
+
             <button
               onClick={() => handleBuy('black')}
               aria-label="Aplicar para o Protocolo Black"
               disabled={!!buying}
-              className="block w-full py-3 rounded-xl text-center text-sm font-black tracking-wider transition-all hover:bg-white/5 disabled:opacity-50 disabled:cursor-wait"
-              style={{ background:'transparent', border:'1px solid rgba(255,255,255,0.25)', color:'#d6d3d1' }}>
+              className="block w-full py-3 rounded-xl text-center text-sm font-black tracking-wider transition-all hover:bg-amber-900/10 disabled:opacity-50 disabled:cursor-wait"
+              style={{ background: 'transparent', border: '1px solid rgba(217,119,6,0.40)', color: '#d97706' }}>
               {buying === 'black' ? '[ AGUARDE... ]' : '[ APLICAR PARA O BLACK ]'}
             </button>
           </div>
