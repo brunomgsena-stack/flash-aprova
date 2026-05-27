@@ -1872,13 +1872,27 @@ export default function HeroSection() {
             </motion.div>
             </DesktopOnly>
 
-            {/* MacBook center — visível no SSR (é o elemento LCP no mobile) */}
+            {/* MacBook center — desktop apenas */}
             <motion.div
-              className="relative"
+              className="relative hidden lg:block"
               style={{ zIndex: 10, x: nbX, y: nbY, width: '100%', maxWidth: 560 }}
             >
               <MacBookMockup termLines={termLines} visibleConcepts={visibleConcepts} />
             </motion.div>
+
+            {/* iPhone + satélites — mobile apenas. Container relativo p/ overlap. */}
+            <div
+              className="relative lg:hidden mx-auto"
+              style={{ width: '100%', maxWidth: 360, height: 500 }}
+            >
+              {/* iPhone centro — visível no SSR (LCP no mobile) */}
+              <div
+                className="absolute left-1/2 top-1/2"
+                style={{ transform: 'translate(-50%,-50%)', zIndex: 5 }}
+              >
+                <IPhoneMockup />
+              </div>
+            </div>
 
             {/* TR — Agenda IA */}
             <DesktopOnly>
