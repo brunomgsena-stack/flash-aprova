@@ -469,6 +469,12 @@ const ASAAS_LINKS: Record<PlanId, string> = {
   black:         'https://www.asaas.com/c/REPLACE_ME_BLACK', // TODO: substituir pelo link real do Asaas do Protocolo Black
 };
 
+const PLAN_META: Record<PlanId, { value: number; name: string }> = {
+  aceleracao:    { value: 257, name: 'Protocolo Aceleração' },
+  panteao_elite: { value: 327, name: 'Protocolo Pantéon Elite' },
+  black:         { value: 997, name: 'Protocolo Black' },
+};
+
 const cardStyle = {
   background: 'rgba(10,5,20,0.88)',
   backdropFilter: 'blur(24px)',
@@ -526,10 +532,52 @@ export default function CheckoutPage() {
 
     setBuying(planId);
 
-    const email = data?.email || emailInput.trim().toLowerCase();
-    const url = email && email.includes('@')
+    const email = (data?.email || emailInput.trim().toLowerCase()).trim();
+    const hasEmail = !!email && email.includes('@');
+    const url = hasEmail
       ? `${ASAAS_LINKS[planId]}?email=${encodeURIComponent(email)}`
       : ASAAS_LINKS[planId];
+
+    // Tracking InitiateCheckout — best-effort, antes do redirect.
+    try {
+      const meta = PLAN_META[planId];
+      const eventId = deterministicEventId(
+        'InitiateCheckout',
+        `${planId}.${hasEmail ? email : 'anon'}`,
+      );
+
+      if (typeof window !== 'undefined' && typeof window.fbq === 'function') {
+        window.fbq('track', 'InitiateCheckout', {
+          currency: 'BRL',
+          value: meta.value,
+          content_name: meta.name,
+          content_ids: [planId],
+          content_type: 'product',
+          num_items: 1,
+        }, { eventID: eventId });
+      }
+
+      const payload = JSON.stringify({
+        eventId,
+        email: hasEmail ? email : undefined,
+        planId,
+      });
+      const blob = new Blob([payload], { type: 'application/json' });
+      const beaconOk =
+        typeof navigator !== 'undefined' &&
+        typeof navigator.sendBeacon === 'function' &&
+        navigator.sendBeacon('/api/meta/initiate-checkout', blob);
+
+      if (!beaconOk) {
+        fetch('/api/meta/initiate-checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: payload,
+          keepalive: true,
+        }).catch(() => {});
+      }
+    } catch { /* tracking nunca bloqueia */ }
+
     window.location.href = url;
   }, [buying, data, emailInput]);
 
