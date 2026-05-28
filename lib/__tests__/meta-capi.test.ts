@@ -81,3 +81,36 @@ test('trackPurchase resolves to a result object without throwing (no env)', asyn
 test('deterministicEventId output format is "EventName.key"', () => {
   assert.equal(deterministicEventId('Purchase', 'asaas_123'), 'Purchase.asaas_123');
 });
+
+import { trackAddToCart } from '../meta-capi.ts';
+
+test('trackAddToCart resolves without throwing (no env)', async () => {
+  delete process.env.META_PIXEL_ID;
+  delete process.env.META_ACCESS_TOKEN;
+  const res = await trackAddToCart({
+    email: 'a@b.com',
+    eventId: 'AddToCart.a@b.com',
+  });
+  assert.equal(typeof res.ok, 'boolean');
+  assert.equal(res.ok, false);
+});
+
+test('buildEvent for AddToCart includes content_ids and no value', () => {
+  const ev = buildEvent({
+    eventName: 'AddToCart',
+    eventId: 'AddToCart.test',
+    actionSource: 'website',
+    userData: { email: 'a@b.com' },
+    customData: {
+      currency: 'BRL',
+      content_ids: ['aceleracao', 'panteao_elite', 'black'],
+      content_type: 'product',
+    },
+    eventTime: 1700000000,
+  });
+  assert.equal(ev.event_name, 'AddToCart');
+  assert.equal(ev.custom_data?.currency, 'BRL');
+  assert.deepEqual(ev.custom_data?.content_ids, ['aceleracao', 'panteao_elite', 'black']);
+  assert.equal(ev.custom_data?.content_type, 'product');
+  assert.equal('value' in (ev.custom_data ?? {}), false);
+});

@@ -194,3 +194,25 @@ export function trackOnboardingCompleted(p: BaseMatch & { eventId: string }) {
     eventSourceUrl: p.eventSourceUrl,
   }));
 }
+
+export function trackAddToCart(p: BaseMatch & {
+  eventId: string;
+  actionSource?: ActionSource;
+}) {
+  return sendMetaEvent(buildEvent({
+    eventName: 'AddToCart',
+    eventId: p.eventId,
+    actionSource: p.actionSource ?? 'website',
+    userData: {
+      email: p.email, externalId: p.externalId,
+      clientIpAddress: p.clientIpAddress, clientUserAgent: p.clientUserAgent,
+      fbp: p.fbp, fbc: p.fbc,
+    },
+    customData: {
+      currency: 'BRL',
+      content_ids: ['aceleracao', 'panteao_elite', 'black'],
+      content_type: 'product',
+    },
+    eventSourceUrl: p.eventSourceUrl,
+  }));
+}
