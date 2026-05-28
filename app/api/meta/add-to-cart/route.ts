@@ -10,6 +10,7 @@
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { trackAddToCart } from '@/lib/meta-capi';
+import { recordLeadEvent } from '@/lib/lead-events';
 
 export const runtime = 'nodejs';
 
@@ -46,6 +47,12 @@ export async function POST(req: NextRequest) {
       fbc,
       eventSourceUrl: referer,
     });
+
+    if (email) {
+      try {
+        await recordLeadEvent({ email, eventName: 'AddToCart' });
+      } catch { /* defesa adicional — recordLeadEvent já engole erros */ }
+    }
   } catch (err) {
     console.error('[meta-capi] add-to-cart route erro:', err instanceof Error ? err.message : String(err));
   }
