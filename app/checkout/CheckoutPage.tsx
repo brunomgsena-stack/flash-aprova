@@ -5,6 +5,7 @@ import { motion, useMotionValue, useAnimationFrame } from 'framer-motion';
 import { type SubjectId, SUBJECT_META } from '../onboarding/flashcardData';
 import WhatsAppFloat from '@/components/WhatsAppFloat';
 import { REELS } from '@/lib/reels-data';
+import { deterministicEventId } from '@/lib/meta-event-id';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const GREEN   = '#22c55e';
@@ -481,17 +482,43 @@ export default function CheckoutPage() {
   const [emailError, setEmailError] = useState('');
   // planId pré-selecionado via URL (?plan=aceleracao ou ?plan=panteao_elite)
   const [urlPlan, setUrlPlan] = useState<PlanId | null>(null);
+  const addToCartFiredRef = useRef(false);
 
   useEffect(() => {
+    let parsed: OnboardingData | null = null;
     try {
       const raw = localStorage.getItem('flashAprovaOnboarding');
-      if (raw) setData(JSON.parse(raw) as OnboardingData);
+      if (raw) {
+        parsed = JSON.parse(raw) as OnboardingData;
+        setData(parsed);
+      }
     } catch { /* ignore */ }
 
     // Lê o plano da URL: /checkout?plan=aceleracao
     const params = new URLSearchParams(window.location.search);
     const plan = params.get('plan') as PlanId | null;
     if (plan === 'aceleracao' || plan === 'panteao_elite' || plan === 'black') setUrlPlan(plan);
+
+    // Tracking AddToCart — best-effort, nunca bloqueia.
+    if (addToCartFiredRef.current) return;
+    addToCartFiredRef.current = true;
+
+    const email = parsed?.email?.trim().toLowerCase();
+    const eventId = deterministicEventId('AddToCart', email || `anon-${Date.now()}`);
+
+    if (typeof window !== 'undefined' && typeof window.fbq === 'function') {
+      window.fbq('track', 'AddToCart', {
+        currency: 'BRL',
+        content_ids: ['aceleracao', 'panteao_elite', 'black'],
+        content_type: 'product',
+      }, { eventID: eventId });
+    }
+
+    fetch('/api/meta/add-to-cart', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ eventId, email: email || undefined }),
+    }).catch(() => {});
   }, []);
 
   const handleBuy = useCallback((planId: PlanId) => {
