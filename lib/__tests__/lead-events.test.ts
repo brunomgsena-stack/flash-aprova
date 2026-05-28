@@ -1,7 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { currentStage } from '../lead-events.ts';
-import { recordLeadEvent } from '../lead-events.ts';
+import { currentStage, recordLeadEvent } from '../lead-events.ts';
 
 test('currentStage returns Lead for empty array', () => {
   assert.equal(currentStage([]), 'Lead');
@@ -61,7 +60,7 @@ test('recordLeadEvent ignora email sem @', async () => {
 });
 
 test('recordLeadEvent ignora email > 320 chars', async () => {
-  const longEmail = 'a'.repeat(310) + '@b.com'; // 316 + 6 = 322 chars > 320
+  const longEmail = 'a'.repeat(315) + '@b.com'; // 315 + 6 = 321 chars > 320
   await recordLeadEvent({ email: longEmail, eventName: 'AddToCart' });
   assert.ok(true);
 });
