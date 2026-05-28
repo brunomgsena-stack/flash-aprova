@@ -12,6 +12,7 @@
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { trackInitiateCheckout } from '@/lib/meta-capi';
+import { recordLeadEvent } from '@/lib/lead-events';
 
 export const runtime = 'nodejs';
 
@@ -66,6 +67,16 @@ export async function POST(req: NextRequest) {
       fbc,
       eventSourceUrl: referer,
     });
+
+    if (email) {
+      try {
+        await recordLeadEvent({
+          email,
+          eventName: 'InitiateCheckout',
+          metadata: { planId, value: meta.value, planName: meta.name },
+        });
+      } catch { /* defesa adicional */ }
+    }
   } catch (err) {
     console.error('[meta-capi] initiate-checkout route erro:', err instanceof Error ? err.message : String(err));
   }
