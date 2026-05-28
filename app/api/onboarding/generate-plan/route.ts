@@ -8,6 +8,7 @@
 
 import { NextRequest, NextResponse, after } from 'next/server';
 import { trackOnboardingCompleted, deterministicEventId } from '@/lib/meta-capi';
+import { recordLeadEvent } from '@/lib/lead-events';
 import OpenAI                        from 'openai';
 import { createClient }              from '@/lib/supabase/server';
 import { createClient as adminSupa } from '@supabase/supabase-js';
@@ -305,6 +306,11 @@ async function handlePost(req: NextRequest): Promise<Response> {
       externalId: user.id,
       eventId: deterministicEventId('OnboardingCompleted', user.id),
     });
+    if (user.email) {
+      try {
+        await recordLeadEvent({ email: user.email, eventName: 'OnboardingCompleted' });
+      } catch { /* defesa adicional */ }
+    }
   });
 
   return NextResponse.json({ ok: true, plan });
