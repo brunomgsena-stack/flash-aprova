@@ -114,3 +114,42 @@ test('buildEvent for AddToCart includes content_ids and no value', () => {
   assert.equal(ev.custom_data?.content_type, 'product');
   assert.equal('value' in (ev.custom_data ?? {}), false);
 });
+
+import { trackInitiateCheckout } from '../meta-capi.ts';
+
+test('trackInitiateCheckout resolves without throwing (no env)', async () => {
+  delete process.env.META_PIXEL_ID;
+  delete process.env.META_ACCESS_TOKEN;
+  const res = await trackInitiateCheckout({
+    email: 'a@b.com',
+    eventId: 'InitiateCheckout.aceleracao.a@b.com',
+    value: 257,
+    planId: 'aceleracao',
+    planName: 'Protocolo Aceleração',
+  });
+  assert.equal(typeof res.ok, 'boolean');
+  assert.equal(res.ok, false);
+});
+
+test('buildEvent for InitiateCheckout includes value, content_name and num_items', () => {
+  const ev = buildEvent({
+    eventName: 'InitiateCheckout',
+    eventId: 'InitiateCheckout.panteao_elite.x',
+    actionSource: 'website',
+    userData: { email: 'a@b.com' },
+    customData: {
+      currency: 'BRL',
+      value: 327,
+      content_name: 'Protocolo Pantéon Elite',
+      content_ids: ['panteao_elite'],
+      content_type: 'product',
+      num_items: 1,
+    },
+    eventTime: 1700000000,
+  });
+  assert.equal(ev.event_name, 'InitiateCheckout');
+  assert.equal(ev.custom_data?.value, 327);
+  assert.equal(ev.custom_data?.content_name, 'Protocolo Pantéon Elite');
+  assert.deepEqual(ev.custom_data?.content_ids, ['panteao_elite']);
+  assert.equal(ev.custom_data?.num_items, 1);
+});

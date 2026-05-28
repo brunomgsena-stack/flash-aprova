@@ -216,3 +216,31 @@ export function trackAddToCart(p: BaseMatch & {
     eventSourceUrl: p.eventSourceUrl,
   }));
 }
+
+export function trackInitiateCheckout(p: BaseMatch & {
+  eventId: string;
+  value: number;
+  planId: string;
+  planName: string;
+  actionSource?: ActionSource;
+}) {
+  return sendMetaEvent(buildEvent({
+    eventName: 'InitiateCheckout',
+    eventId: p.eventId,
+    actionSource: p.actionSource ?? 'website',
+    userData: {
+      email: p.email, externalId: p.externalId,
+      clientIpAddress: p.clientIpAddress, clientUserAgent: p.clientUserAgent,
+      fbp: p.fbp, fbc: p.fbc,
+    },
+    customData: {
+      currency: 'BRL',
+      value: p.value,
+      content_name: p.planName,
+      content_ids: [p.planId],
+      content_type: 'product',
+      num_items: 1,
+    },
+    eventSourceUrl: p.eventSourceUrl,
+  }));
+}
