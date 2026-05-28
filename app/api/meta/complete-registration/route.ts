@@ -7,6 +7,7 @@
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { trackCompleteRegistration, deterministicEventId } from '@/lib/meta-capi';
+import { recordLeadEvent } from '@/lib/lead-events';
 
 export const runtime = 'nodejs';
 
@@ -36,6 +37,10 @@ export async function POST(req: NextRequest) {
       fbc,
       eventSourceUrl: referer,
     });
+
+    try {
+      await recordLeadEvent({ email, eventName: 'CompleteRegistration' });
+    } catch { /* defesa adicional */ }
   } catch (err) {
     console.error('[meta-capi] complete-registration route erro:', err instanceof Error ? err.message : String(err));
   }
