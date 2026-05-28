@@ -1,12 +1,17 @@
 import { hasPanelAccess } from '@/lib/admin-panel-auth';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { currentStage, type LeadStage } from '@/lib/lead-events';
 import PanelLogin from './PanelLogin';
-import LeadsDashboard, { type Lead, type PanelData } from './LeadsDashboard';
+import LeadsDashboard, { type Lead, type LeadEvent, type PanelData } from './LeadsDashboard';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Painel de Leads — FlashAprova' };
 
-function buildPanelData(leads: Lead[], totalContas: number, assinaturasPagas: number): PanelData {
+function buildPanelData(
+  leads: Lead[],
+  totalContas: number,
+  assinaturasPagas: number,
+): PanelData {
   const now = new Date();
   const startOfToday = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
   const d7 = now.getTime() - 7 * 864e5;
@@ -18,6 +23,15 @@ function buildPanelData(leads: Lead[], totalContas: number, assinaturasPagas: nu
     const d = new Date(now.getTime() - i * 864e5);
     porDiaMap.set(d.toISOString().slice(0, 10), 0);
   }
+  const stageCounts: Record<LeadStage, number> = {
+    'Pagou': 0,
+    'Iniciou checkout': 0,
+    'Carrinho': 0,
+    'Cadastrou': 0,
+    'Onboarding': 0,
+    'Lead': 0,
+  };
+
   for (const l of leads) {
     const t = new Date(l.created_at).getTime();
     if (t >= startOfToday) hoje++;
@@ -25,6 +39,7 @@ function buildPanelData(leads: Lead[], totalContas: number, assinaturasPagas: nu
     if (t >= d30) ultimos30d++;
     const key = new Date(l.created_at).toISOString().slice(0, 10);
     if (porDiaMap.has(key)) porDiaMap.set(key, (porDiaMap.get(key) ?? 0) + 1);
+    stageCounts[l.stage]++;
   }
 
   return {
@@ -38,6 +53,7 @@ function buildPanelData(leads: Lead[], totalContas: number, assinaturasPagas: nu
     },
     totalContas,
     assinaturasPagas,
+    stageCounts,
   };
 }
 
@@ -54,22 +70,52 @@ export default async function PainelPage() {
     .order('created_at', { ascending: false })
     .limit(5000);
 
+  const { data: eventsRaw } = await supabase
+    .from('lead_events')
+    .select('id, email, event_name, occurred_at, metadata')
+    .order('occurred_at', { ascending: false })
+    .limit(20000);
+
   const { count: totalContas } = await supabase
     .from('profiles')
     .select('id', { count: 'exact', head: true });
 
-  // best-effort: coluna plan pode não existir / divergir do schema
   const { count: pagasCount, error: pagasError } = await supabase
     .from('profiles')
     .select('id', { count: 'exact', head: true })
     .not('plan', 'in', '("flash","aceleracao")');
   const assinaturasPagas = pagasError ? 0 : (pagasCount ?? 0);
 
-  const data = buildPanelData(
-    (leadsRaw ?? []) as Lead[],
-    totalContas ?? 0,
-    assinaturasPagas,
-  );
+  // Agrupa eventos por email lowercased
+  const eventsByEmail = new Map<string, LeadEvent[]>();
+  for (const ev of (eventsRaw ?? [])) {
+    const key = (ev.email as string).trim().toLowerCase();
+    const list = eventsByEmail.get(key) ?? [];
+    list.push({
+      id: ev.id as string,
+      event_name: ev.event_name as string,
+      occurred_at: ev.occurred_at as string,
+      metadata: (ev.metadata as Record<string, unknown> | null) ?? null,
+    });
+    eventsByEmail.set(key, list);
+  }
+
+  // Anexa events + stage em cada lead
+  const leads: Lead[] = (leadsRaw ?? []).map((l) => {
+    const key = (l.email as string).trim().toLowerCase();
+    const events = eventsByEmail.get(key) ?? [];
+    return {
+      id: l.id as string,
+      name: l.name as string,
+      email: l.email as string,
+      whatsapp: l.whatsapp as string,
+      created_at: l.created_at as string,
+      events,
+      stage: currentStage(events),
+    };
+  });
+
+  const data = buildPanelData(leads, totalContas ?? 0, assinaturasPagas);
 
   return <LeadsDashboard data={data} />;
 }
