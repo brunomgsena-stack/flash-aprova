@@ -344,21 +344,21 @@ export async function POST(req: NextRequest) {
             value: paymentValue, currency: 'BRL',
             planName: plan.name, eventId: `asaas_${paymentId ?? existingId}`,
           });
+          try {
+            await recordLeadEvent({
+              email,
+              eventName: 'Purchase',
+              metadata: {
+                planId: plan.slug,
+                planName: plan.name,
+                value: paymentValue,
+                paymentId,
+              },
+            });
+          } catch { /* defesa adicional */ }
         } else {
           console.warn(`[meta-capi] Purchase ignorado — payment.value ausente. paymentId=${paymentId}`);
         }
-        try {
-          await recordLeadEvent({
-            email,
-            eventName: 'Purchase',
-            metadata: {
-              planId: plan.slug,
-              planName: plan.name,
-              value: paymentValue,
-              paymentId,
-            },
-          });
-        } catch { /* defesa adicional */ }
       });
 
       return NextResponse.json({ received: true, action: 'plan_updated', plan: plan.slug, userId: existingId });
@@ -420,6 +420,18 @@ export async function POST(req: NextRequest) {
           value: paymentValue, currency: 'BRL',
           planName: plan.name, eventId: `asaas_${paymentId ?? newUserId}`,
         });
+        try {
+          await recordLeadEvent({
+            email,
+            eventName: 'Purchase',
+            metadata: {
+              planId: plan.slug,
+              planName: plan.name,
+              value: paymentValue,
+              paymentId,
+            },
+          });
+        } catch { /* defesa adicional */ }
       } else {
         console.warn(`[meta-capi] Purchase ignorado — payment.value ausente. paymentId=${paymentId}`);
       }
@@ -430,18 +442,6 @@ export async function POST(req: NextRequest) {
           actionSource: 'system_generated',
         });
       }
-      try {
-        await recordLeadEvent({
-          email,
-          eventName: 'Purchase',
-          metadata: {
-            planId: plan.slug,
-            planName: plan.name,
-            value: paymentValue,
-            paymentId,
-          },
-        });
-      } catch { /* defesa adicional */ }
     });
 
     const action = isRaceConditionFallback ? 'plan_updated_fallback' : 'user_created';
