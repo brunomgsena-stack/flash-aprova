@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { type LeadStage } from '@/lib/lead-events';
 
@@ -48,6 +48,14 @@ const EVENT_LABEL: Record<string, string> = {
   AddToCart:            'Adicionou ao carrinho',
   CompleteRegistration: 'Criou conta',
   OnboardingCompleted:  'Completou onboarding',
+};
+
+const EVENT_STAGE: Record<string, LeadStage> = {
+  Purchase:             'Pagou',
+  InitiateCheckout:     'Iniciou checkout',
+  AddToCart:            'Carrinho',
+  CompleteRegistration: 'Cadastrou',
+  OnboardingCompleted:  'Onboarding',
 };
 
 const VIOLET = '#7C3AED';
@@ -217,9 +225,8 @@ export default function LeadsDashboard({ data }: { data: PanelData }) {
             ) : filtered.map((l) => {
               const isOpen = expandedId === l.id;
               return (
-                <>
+                <Fragment key={l.id}>
                   <tr
-                    key={l.id}
                     onClick={() => setExpandedId(isOpen ? null : l.id)}
                     style={{ borderTop: '1px solid rgba(255,255,255,0.06)', cursor: 'pointer', background: isOpen ? 'rgba(124,58,237,0.06)' : 'transparent' }}>
                     <td style={{ padding: '12px 16px' }}>{l.name}</td>
@@ -253,7 +260,7 @@ export default function LeadsDashboard({ data }: { data: PanelData }) {
                             {l.events.map((ev) => (
                               <li key={ev.id} style={{ padding: '4px 0', color: '#ccc' }}>
                                 <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: 4,
-                                  background: STAGE_COLOR[(EVENT_LABEL[ev.event_name] as LeadStage) ?? 'Lead'] ?? '#6b7280',
+                                  background: STAGE_COLOR[EVENT_STAGE[ev.event_name] ?? 'Lead'] ?? '#6b7280',
                                   marginRight: 10 }} />
                                 <strong style={{ color: '#fff' }}>{EVENT_LABEL[ev.event_name] ?? ev.event_name}</strong>
                                 <span style={{ color: '#888', marginLeft: 8 }}>{fmtDate(ev.occurred_at)}</span>
@@ -269,7 +276,7 @@ export default function LeadsDashboard({ data }: { data: PanelData }) {
                       </td>
                     </tr>
                   )}
-                </>
+                </Fragment>
               );
             })}
           </tbody>
