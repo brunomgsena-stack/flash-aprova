@@ -1717,21 +1717,26 @@ function MultiDeviceComposition({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, delay: 0, ease: [0.16, 1, 0.3, 1] }}
       >
-        <div className="block md:hidden">
-          <MacBookMockup widthPx={340}>
-            <AppScreen termLines={termLines} visibleConcepts={visibleConcepts} />
-          </MacBookMockup>
-        </div>
-        <div className="hidden md:block lg:hidden">
-          <MacBookMockup widthPx={440}>
-            <AppScreen termLines={termLines} visibleConcepts={visibleConcepts} />
-          </MacBookMockup>
-        </div>
-        <div className="hidden lg:block">
-          <MacBookMockup widthPx={560}>
-            <AppScreen termLines={termLines} visibleConcepts={visibleConcepts} />
-          </MacBookMockup>
-        </div>
+        <motion.div
+          animate={{ y: [0, -5, 0] }}
+          transition={{ duration: 5.2, repeat: Infinity, ease: 'easeInOut', delay: 1.0 }}
+        >
+          <div className="block md:hidden">
+            <MacBookMockup widthPx={340}>
+              <AppScreen termLines={termLines} visibleConcepts={visibleConcepts} />
+            </MacBookMockup>
+          </div>
+          <div className="hidden md:block lg:hidden">
+            <MacBookMockup widthPx={440}>
+              <AppScreen termLines={termLines} visibleConcepts={visibleConcepts} />
+            </MacBookMockup>
+          </div>
+          <div className="hidden lg:block">
+            <MacBookMockup widthPx={560}>
+              <AppScreen termLines={termLines} visibleConcepts={visibleConcepts} />
+            </MacBookMockup>
+          </div>
+        </motion.div>
       </motion.div>
 
       {/* iPad inferior-esquerdo, frente, tilt −8° */}
@@ -1747,21 +1752,26 @@ function MultiDeviceComposition({
         animate={{ opacity: 1, y: 0, rotate: -8 }}
         transition={{ duration: 0.7, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
       >
-        <div className="block md:hidden">
-          <IPadMockup widthPx={130}>
-            <CommandCenterScreen termLines={termLines} visibleConcepts={visibleConcepts} />
-          </IPadMockup>
-        </div>
-        <div className="hidden md:block lg:hidden">
-          <IPadMockup widthPx={170}>
-            <CommandCenterScreen termLines={termLines} visibleConcepts={visibleConcepts} />
-          </IPadMockup>
-        </div>
-        <div className="hidden lg:block">
-          <IPadMockup widthPx={210}>
-            <CommandCenterScreen termLines={termLines} visibleConcepts={visibleConcepts} />
-          </IPadMockup>
-        </div>
+        <motion.div
+          animate={{ y: [0, -4, 0] }}
+          transition={{ duration: 4.6, repeat: Infinity, ease: 'easeInOut', delay: 1.4 }}
+        >
+          <div className="block md:hidden">
+            <IPadMockup widthPx={130}>
+              <CommandCenterScreen termLines={termLines} visibleConcepts={visibleConcepts} />
+            </IPadMockup>
+          </div>
+          <div className="hidden md:block lg:hidden">
+            <IPadMockup widthPx={170}>
+              <CommandCenterScreen termLines={termLines} visibleConcepts={visibleConcepts} />
+            </IPadMockup>
+          </div>
+          <div className="hidden lg:block">
+            <IPadMockup widthPx={210}>
+              <CommandCenterScreen termLines={termLines} visibleConcepts={visibleConcepts} />
+            </IPadMockup>
+          </div>
+        </motion.div>
       </motion.div>
 
       {/* iPhone inferior-direito, frente, tilt +8° */}
@@ -1777,21 +1787,26 @@ function MultiDeviceComposition({
         animate={{ opacity: 1, y: 0, rotate: 8 }}
         transition={{ duration: 0.7, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
       >
-        <div className="block md:hidden">
-          <IPhoneMockup widthPx={110}>
-            <PhoneRedacaoScreen />
-          </IPhoneMockup>
-        </div>
-        <div className="hidden md:block lg:hidden">
-          <IPhoneMockup widthPx={130}>
-            <PhoneRedacaoScreen />
-          </IPhoneMockup>
-        </div>
-        <div className="hidden lg:block">
-          <IPhoneMockup widthPx={160}>
-            <PhoneRedacaoScreen />
-          </IPhoneMockup>
-        </div>
+        <motion.div
+          animate={{ y: [0, -4.5, 0] }}
+          transition={{ duration: 4.9, repeat: Infinity, ease: 'easeInOut', delay: 1.2 }}
+        >
+          <div className="block md:hidden">
+            <IPhoneMockup widthPx={110}>
+              <PhoneRedacaoScreen />
+            </IPhoneMockup>
+          </div>
+          <div className="hidden md:block lg:hidden">
+            <IPhoneMockup widthPx={130}>
+              <PhoneRedacaoScreen />
+            </IPhoneMockup>
+          </div>
+          <div className="hidden lg:block">
+            <IPhoneMockup widthPx={160}>
+              <PhoneRedacaoScreen />
+            </IPhoneMockup>
+          </div>
+        </motion.div>
       </motion.div>
     </div>
   );
