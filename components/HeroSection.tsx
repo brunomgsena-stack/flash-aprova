@@ -1507,6 +1507,8 @@ function PhoneAppScreen() {
 }
 
 // ── iPhone frame ──────────────────────────────────────────────────────────────
+const IPHONE_SCREEN_BASE_W = 198;
+const IPHONE_SCREEN_BASE_H = 416;
 function IPhoneMockup({ widthPx = 212, children }: { widthPx?: number; children: React.ReactNode }) {
   const heightPx = Math.round(widthPx * (430 / 212));
   const borderRadius = Math.round(widthPx * (40 / 212));
@@ -1516,6 +1518,7 @@ function IPhoneMockup({ widthPx = 212, children }: { widthPx?: number; children:
   const notchRadius = Math.round(widthPx * (10 / 212));
   const padding = Math.max(4, Math.round(widthPx * (7 / 212)));
   const screenRadius = Math.round(widthPx * (33 / 212));
+  const innerScale = (widthPx - 2 * padding) / IPHONE_SCREEN_BASE_W;
 
   return (
     <div style={{
@@ -1535,13 +1538,22 @@ function IPhoneMockup({ widthPx = 212, children }: { widthPx?: number; children:
         background: '#050b14', border: '1px solid rgba(0,0,0,0.5)',
         boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.04)',
       }}>
-        {children}
+        <div style={{
+          width: IPHONE_SCREEN_BASE_W,
+          height: IPHONE_SCREEN_BASE_H,
+          transform: `scale(${innerScale})`,
+          transformOrigin: 'top left',
+        }}>
+          {children}
+        </div>
       </div>
     </div>
   );
 }
 
 // ── iPad frame ────────────────────────────────────────────────────────────────
+const IPAD_SCREEN_BASE_W = 200;
+const IPAD_SCREEN_BASE_H = 270;
 function IPadMockup({ widthPx = 280, children }: { widthPx?: number; children: React.ReactNode }) {
   // iPad portrait, ratio 3:4
   const heightPx = Math.round(widthPx * (4 / 3));
@@ -1549,6 +1561,7 @@ function IPadMockup({ widthPx = 280, children }: { widthPx?: number; children: R
   const padding = Math.max(6, Math.round(widthPx * (10 / 280)));
   const screenRadius = Math.round(widthPx * (16 / 280));
   const cameraSize = Math.max(3, Math.round(widthPx * (5 / 280)));
+  const innerScale = (widthPx - 2 * padding) / IPAD_SCREEN_BASE_W;
 
   return (
     <div style={{
@@ -1569,7 +1582,14 @@ function IPadMockup({ widthPx = 280, children }: { widthPx?: number; children: R
         background: '#050b14', border: '1px solid rgba(0,0,0,0.5)',
         boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.04)',
       }}>
-        {children}
+        <div style={{
+          width: IPAD_SCREEN_BASE_W,
+          height: IPAD_SCREEN_BASE_H,
+          transform: `scale(${innerScale})`,
+          transformOrigin: 'top left',
+        }}>
+          {children}
+        </div>
       </div>
     </div>
   );
@@ -1681,11 +1701,10 @@ function MultiDeviceComposition({
 }) {
   return (
     <div
-      className="relative mx-auto"
+      className="relative mx-auto aspect-[5/4] md:aspect-[16/10] lg:aspect-[3/2]"
       style={{
         width: '100%',
         maxWidth: 720,
-        aspectRatio: '720 / 480',
       }}
       role="img"
       aria-label="FlashAprova em três dispositivos: MacBook, iPad e iPhone, exibindo dashboard, painel de progresso e correção de redação"
@@ -1699,7 +1718,7 @@ function MultiDeviceComposition({
         transition={{ duration: 0.7, delay: 0, ease: [0.16, 1, 0.3, 1] }}
       >
         <div className="block md:hidden">
-          <MacBookMockup widthPx={280}>
+          <MacBookMockup widthPx={340}>
             <AppScreen termLines={termLines} visibleConcepts={visibleConcepts} />
           </MacBookMockup>
         </div>
@@ -1729,7 +1748,7 @@ function MultiDeviceComposition({
         transition={{ duration: 0.7, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
       >
         <div className="block md:hidden">
-          <IPadMockup widthPx={110}>
+          <IPadMockup widthPx={130}>
             <CommandCenterScreen termLines={termLines} visibleConcepts={visibleConcepts} />
           </IPadMockup>
         </div>
@@ -1759,7 +1778,7 @@ function MultiDeviceComposition({
         transition={{ duration: 0.7, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
       >
         <div className="block md:hidden">
-          <IPhoneMockup widthPx={90}>
+          <IPhoneMockup widthPx={110}>
             <PhoneRedacaoScreen />
           </IPhoneMockup>
         </div>
