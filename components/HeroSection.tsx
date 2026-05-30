@@ -6,9 +6,6 @@ import { useRouter } from 'next/navigation';
 import {
   motion,
   AnimatePresence,
-  useMotionValue,
-  useSpring,
-  useTransform,
 } from 'framer-motion';
 
 // ── Palette ───────────────────────────────────────────────────────────────────
@@ -152,88 +149,6 @@ const PARTICLES = Array.from({ length: 22 }, (_, i) => ({
   delay: -(rng() * 15),
   opacity: rng() * 0.18 + 0.04,
 }));
-
-// ── Glass card ────────────────────────────────────────────────────────────────
-function GlassCard({
-  children, className = '', style = {},
-}: { children: React.ReactNode; className?: string; style?: React.CSSProperties }) {
-  return (
-    <div
-      className={`rounded-2xl p-4 ${className}`}
-      style={{
-        background: 'rgba(12,8,24,0.95)',
-        border: '1px solid rgba(124,58,237,0.28)',
-        boxShadow: '0 8px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)',
-        ...style,
-      }}
-    >
-      {children}
-    </div>
-  );
-}
-
-// ── Float wrapper ─────────────────────────────────────────────────────────────
-function FloatWrapper({ children, delay = 0, intensity = 10 }: {
-  children: React.ReactNode; delay?: number; intensity?: number;
-}) {
-  return (
-    <motion.div
-      animate={{ y: [-intensity / 2, intensity / 2, -intensity / 2] }}
-      transition={{ duration: 4 + delay * 0.5, repeat: Infinity, ease: 'easeInOut', delay }}
-    >
-      {children}
-    </motion.div>
-  );
-}
-
-// ── AI Terminal widget (replaces Métricas de Retenção) ────────────────────────
-function TerminalWidget({ className = 'w-60', lines }: { className?: string; lines: string[] }) {
-
-  return (
-    <GlassCard className={className}>
-      <div className="text-xs font-bold mb-2" style={{ color: PURPLE_L }}>
-        ⚙️ AI Memory Engine
-      </div>
-      <div
-        style={{
-          background: 'rgba(0,0,0,0.6)',
-          borderRadius: 8,
-          padding: '8px 10px',
-          fontFamily: "'JetBrains Mono','Courier New',ui-monospace,monospace",
-          fontSize: '9px',
-          border: '1px solid rgba(124,58,237,0.18)',
-          minHeight: 96,
-        }}
-      >
-        <div style={{ color: `${PURPLE_L}60`, marginBottom: 4 }}>// v3.1 · live</div>
-        {lines.map((line, i) => (
-          <motion.div
-            key={`${i}-${line}`}
-            initial={{ opacity: 0, x: -6 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.3 }}
-            style={{
-              color: line.includes('✅') ? '#34d399'
-                : line.includes('⚡') ? PURPLE_L
-                : 'rgba(255,255,255,0.5)',
-              marginBottom: 2,
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            }}
-          >
-            {line}
-          </motion.div>
-        ))}
-        <motion.span
-          style={{ color: PURPLE_L }}
-          animate={{ opacity: [1, 0, 1] }}
-          transition={{ duration: 1, repeat: Infinity }}
-        >▮</motion.span>
-      </div>
-    </GlassCard>
-  );
-}
 
 // ── Concepts widget ───────────────────────────────────────────────────────────
 function ConceptsWidget({ visible }: { visible: number[] }) {
@@ -1626,205 +1541,6 @@ function IPhoneMockup({ widthPx = 212, children }: { widthPx?: number; children:
   );
 }
 
-// ── 4 satélites em overlap ao redor do iPhone (mobile) ───────────────────────
-function MobileSatellites({ termLines, visibleConcepts }: { termLines: string[]; visibleConcepts: number[] }) {
-  const [active, setActive] = useState(0);
-  useEffect(() => {
-    const iv = setInterval(() => setActive((a) => (a + 1) % 4), 2100);
-    return () => clearInterval(iv);
-  }, []);
-
-  const ARSENAL = (
-    <GlassCard className="!p-3" style={{ width: 142 }}>
-      <div className="flex items-center justify-between mb-2">
-        <div className="text-[10px] font-bold" style={{ color: PURPLE_L }}>📚 Arsenal</div>
-        <motion.span className="text-[7px] font-bold px-1.5 py-0.5 rounded-full"
-          style={{ color: '#fb923c', background: 'rgba(251,146,60,0.12)', border: '1px solid rgba(251,146,60,0.3)' }}
-          animate={{ opacity: [0.5, 1, 0.5] }} transition={{ duration: 1.6, repeat: Infinity }}>
-          revisando
-        </motion.span>
-      </div>
-      {[{ name: 'Biologia', pct: 78, color: '#34d399' }, { name: 'Física', pct: 91, color: PURPLE_L }].map((s, idx) => (
-        <div key={s.name} className="mb-2">
-          <div className="flex justify-between items-center">
-            <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.72)' }}>{s.name}</span>
-            <motion.span className="text-[8px] font-bold" style={{ color: s.color }}
-              animate={{ opacity: [0.55, 1, 0.55] }} transition={{ duration: 2, repeat: Infinity, delay: idx * 0.4 }}>
-              {s.pct}%
-            </motion.span>
-          </div>
-          <div className="relative h-1 rounded-full overflow-hidden mt-1" style={{ background: 'rgba(255,255,255,0.07)' }}>
-            <motion.div className="h-full rounded-full" style={{ background: s.color }}
-              animate={{ width: [`${s.pct - 6}%`, `${s.pct}%`, `${s.pct - 6}%`] }}
-              transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut', delay: idx * 0.5 }} />
-            <motion.div className="absolute inset-y-0" style={{ width: '34%', background: `linear-gradient(90deg, transparent, ${s.color}cc, transparent)` }}
-              animate={{ x: ['-120%', '320%'] }}
-              transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut', delay: idx * 0.6 }} />
-          </div>
-        </div>
-      ))}
-    </GlassCard>
-  );
-
-  const MEMORY = <TerminalWidget className="!w-[142px] !p-3" lines={termLines} />;
-
-  const AGENDA = (
-    <GlassCard className="!p-3" style={{ width: 142 }}>
-      <div className="flex items-center justify-between mb-2">
-        <div className="text-[10px] font-bold" style={{ color: PURPLE_L }}>🤖 Agenda IA</div>
-        <motion.span style={{ width: 5, height: 5, borderRadius: '50%', background: NEON_G, boxShadow: `0 0 6px ${NEON_G}` }}
-          animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1.25, 0.8] }} transition={{ duration: 1.4, repeat: Infinity }} />
-      </div>
-      {[{ time: '14:00', subject: 'Termo', icon: '⚛️' }, { time: '16:30', subject: 'Genética', icon: '🧬' }].map((s, idx) => (
-        <motion.div key={s.time} className="flex items-center gap-2 mb-1.5 p-1.5 rounded-lg"
-          style={{ background: `${PURPLE}12`, border: '1px solid rgba(124,58,237,0.18)' }}
-          animate={idx === 0
-            ? { borderColor: ['rgba(124,58,237,0.18)', 'rgba(124,58,237,0.6)', 'rgba(124,58,237,0.18)'], boxShadow: ['0 0 0px rgba(124,58,237,0)', `0 0 10px ${PURPLE}55`, '0 0 0px rgba(124,58,237,0)'] }
-            : {}}
-          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}>
-          <motion.span className="text-sm" animate={{ rotate: [0, -8, 8, 0] }} transition={{ duration: 2.5, repeat: Infinity, delay: idx * 0.5 }}>{s.icon}</motion.span>
-          <div className="flex-1">
-            <div className="text-[9px] font-semibold" style={{ color: '#fff' }}>{s.subject}</div>
-            <div className="text-[8px]" style={{ color: PURPLE_L }}>{s.time}</div>
-          </div>
-          {idx === 0 && (
-            <motion.span className="text-[6px] font-bold" style={{ color: NEON_G }}
-              animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1.2, repeat: Infinity }}>agora</motion.span>
-          )}
-        </motion.div>
-      ))}
-      <div className="h-0.5 rounded-full overflow-hidden mt-1" style={{ background: 'rgba(255,255,255,0.07)' }}>
-        <motion.div className="h-full rounded-full" style={{ background: PURPLE_L }}
-          animate={{ width: ['10%', '100%'] }} transition={{ duration: 4, repeat: Infinity, ease: 'linear' }} />
-      </div>
-    </GlassCard>
-  );
-
-  const CONCEITOS = (
-    <GlassCard className="!p-3" style={{ width: 142 }}>
-      <div className="text-[10px] font-bold mb-2" style={{ color: PURPLE_L }}>🔒 Conceitos</div>
-      <ConceptsWidget visible={visibleConcepts} />
-    </GlassCard>
-  );
-
-  // 2 linhas simétricas: topo (top:58) e baixo (top:300); esquerda/direita espelhados.
-  const SATS = [
-    { node: ARSENAL,   side: 'left'  as const, top: 58,  floatDelay: 0   },
-    { node: MEMORY,    side: 'right' as const, top: 58,  floatDelay: 0.6 },
-    { node: AGENDA,    side: 'left'  as const, top: 300, floatDelay: 1.2 },
-    { node: CONCEITOS, side: 'right' as const, top: 300, floatDelay: 1.8 },
-  ];
-
-  return (
-    <>
-      {SATS.map((s, i) => {
-        const isActive = i === active;
-        const out = s.side === 'left' ? -30 : 30;
-        const sidePos = s.side === 'left' ? { left: 0 } : { right: 0 };
-        return (
-          <motion.div
-            key={i}
-            className="absolute"
-            style={{ ...sidePos, top: s.top, width: 142, zIndex: isActive ? 20 : 2 }}
-            initial={{ opacity: 0 }}
-            animate={{
-              opacity: isActive ? 1 : 0.3,
-              scale: isActive ? 1 : 0.88,
-              x: isActive ? out : 0,
-            }}
-            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <FloatWrapper delay={s.floatDelay} intensity={5}>
-              {/* key força remount → re-dispara o glitch toda vez que vira ativo */}
-              <div key={isActive ? `on-${active}` : 'off'} className={isActive ? 'sat-glitch-in' : ''}>
-                {s.node}
-              </div>
-            </FloatWrapper>
-          </motion.div>
-        );
-      })}
-    </>
-  );
-}
-
-// ── Linhas de conexão satélite→iPhone (mobile) ───────────────────────────────
-// viewBox 360×500; centro do iPhone ≈ (180,250). Origens nas bordas dos satélites.
-const MCONN_LINES = [
-  { d: 'M 52,100 C 110,150 160,210 180,242',  color: PURPLE_L,  delay: 0,   gradId: 'mcg0', cx: 52,  cy: 100 },  // Arsenal (topo-esq)
-  { d: 'M 308,100 C 250,150 200,210 180,242', color: '#34d399', delay: 0.5, gradId: 'mcg1', cx: 308, cy: 100 },  // AI Memory (topo-dir)
-  { d: 'M 52,330 C 110,310 160,275 180,258',  color: '#fb923c', delay: 1.0, gradId: 'mcg2', cx: 52,  cy: 330 },  // Agenda (baixo-esq)
-  { d: 'M 308,330 C 250,310 200,275 180,258', color: CYAN,      delay: 1.5, gradId: 'mcg3', cx: 308, cy: 330 },  // Conceitos (baixo-dir)
-];
-
-function MobileConnectionLines() {
-  return (
-    <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 0 }}
-      viewBox="0 0 360 500" preserveAspectRatio="xMidYMid meet">
-      <defs>
-        {MCONN_LINES.map((l) => (
-          <linearGradient key={l.gradId} id={l.gradId} x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor={l.color} stopOpacity="0.05" />
-            <stop offset="45%" stopColor={l.color} stopOpacity="0.9" />
-            <stop offset="100%" stopColor={l.color} stopOpacity="0" />
-          </linearGradient>
-        ))}
-        {MCONN_LINES.map((l) => (
-          <filter key={`f-${l.gradId}`} id={`mglow-${l.gradId}`} x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="2" result="blur" />
-            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-          </filter>
-        ))}
-        <filter id="mdot-glow" x="-150%" y="-150%" width="400%" height="400%">
-          <feGaussianBlur stdDeviation="2.5" result="blur" />
-          <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-        </filter>
-        <filter id="mcenter-glow" x="-100%" y="-100%" width="300%" height="300%">
-          <feGaussianBlur stdDeviation="4" result="blur" />
-          <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-        </filter>
-      </defs>
-
-      {MCONN_LINES.map((l, i) => (
-        <g key={i}>
-          <path id={`mpath-${i}`} d={l.d} fill="none" stroke="none" />
-          <path d={l.d} fill="none" stroke={l.color} strokeWidth="0.7" strokeOpacity="0.18" strokeDasharray="3 9" />
-          {PACKETS.map((p) => {
-            const pktDelay = l.delay + p * (PACKET_DUR / PACKETS.length);
-            return (
-              <motion.path key={`pkt-${p}`} d={l.d} fill="none" stroke={`url(#${l.gradId})`} strokeWidth="2"
-                filter={`url(#mglow-${l.gradId})`}
-                initial={{ pathLength: 0, opacity: 0, pathOffset: 0 }}
-                animate={{ pathLength: [0, 0.32, 0], pathOffset: [0, 0.68, 1], opacity: [0, 1, 0] }}
-                transition={{ duration: PACKET_DUR, repeat: Infinity, ease: 'easeInOut', delay: pktDelay }} />
-            );
-          })}
-          {PACKETS.map((p) => {
-            const pktDelay = l.delay + p * (PACKET_DUR / PACKETS.length);
-            return (
-              <circle key={`dot-${p}`} r="2" fill={l.color} filter="url(#mdot-glow)">
-                <animateMotion dur={`${PACKET_DUR}s`} repeatCount="indefinite" begin={`${pktDelay}s`}
-                  calcMode="spline" keySplines="0.4 0 0.6 1" keyTimes="0;1">
-                  <mpath href={`#mpath-${i}`} />
-                </animateMotion>
-                <animate attributeName="opacity" values="0;1;0" dur={`${PACKET_DUR}s`} begin={`${pktDelay}s`}
-                  repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1; 0.4 0 0.6 1" keyTimes="0;0.5;1" />
-              </circle>
-            );
-          })}
-          <motion.circle cx={l.cx} cy={l.cy} r="3.5" fill={l.color} filter="url(#mdot-glow)"
-            animate={{ opacity: [0.25, 0.85, 0.25], r: [2.5, 4.5, 2.5] }}
-            transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut', delay: l.delay }} />
-        </g>
-      ))}
-
-      {/* Glow de chegada no centro do iPhone */}
-      <motion.circle cx="180" cy="250" r="6" fill={PURPLE_L} filter="url(#mcenter-glow)"
-        animate={{ opacity: [0.2, 0.7, 0.2], r: [4, 9, 4] }}
-        transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }} />
-    </svg>
-  );
-}
-
 // ── iPad frame ────────────────────────────────────────────────────────────────
 function IPadMockup({ widthPx = 280, children }: { widthPx?: number; children: React.ReactNode }) {
   // iPad portrait, ratio 3:4
@@ -1955,20 +1671,6 @@ function DesktopOnly({ children }: { children: React.ReactNode }) {
   return show ? <>{children}</> : null;
 }
 
-// ── Mobile-only gate: filhos só montam em telas < lg (1024px). ────────────────
-// No desktop renderiza null (sem hidratar), evitando trabalho de JS desnecessário.
-function MobileOnly({ children }: { children: React.ReactNode }) {
-  const [show, setShow] = useState(false);
-  useEffect(() => {
-    const mq = window.matchMedia('(max-width: 1023px)');
-    setShow(mq.matches);
-    const onChange = (e: MediaQueryListEvent) => setShow(e.matches);
-    mq.addEventListener('change', onChange);
-    return () => mq.removeEventListener('change', onChange);
-  }, []);
-  return show ? <>{children}</> : null;
-}
-
 // ── Composição Multi-Device (MacBook + iPad + iPhone) ────────────────────────
 function MultiDeviceComposition({
   termLines,
@@ -2079,10 +1781,9 @@ function MultiDeviceComposition({
 // ── Main HeroSection ──────────────────────────────────────────────────────────
 export default function HeroSection() {
   const router = useRouter();
-  const containerRef = useRef<HTMLDivElement>(null);
   const [ctaState, setCtaState] = useState<'idle' | 'loading'>('idle');
 
-  // ── Shared terminal state (drives TerminalWidget + CommandCenterScreen) ──────
+  // ── Shared terminal state (drives CommandCenterScreen) ──────────────────────
   const [termLines, setTermLines] = useState<string[]>([TERMINAL_LINES[0]]);
   const termIdxRef = useRef(1);
 
@@ -2119,37 +1820,8 @@ export default function HeroSection() {
     setTimeout(() => router.push('/quizz'), 820);
   }, [ctaState, router]);
 
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-  const smoothX = useSpring(mouseX, { stiffness: 45, damping: 18 });
-  const smoothY = useSpring(mouseY, { stiffness: 45, damping: 18 });
-
-  const tlX = useTransform(smoothX, [-0.5, 0.5], [-20, 20]);
-  const tlY = useTransform(smoothY, [-0.5, 0.5], [-14, 14]);
-  const blX = useTransform(smoothX, [-0.5, 0.5], [14, -14]);
-  const blY = useTransform(smoothY, [-0.5, 0.5], [14, -14]);
-  const trX = useTransform(smoothX, [-0.5, 0.5], [20, -20]);
-  const trY = useTransform(smoothY, [-0.5, 0.5], [-14, 14]);
-  const brX = useTransform(smoothX, [-0.5, 0.5], [-14, 14]);
-  const brY = useTransform(smoothY, [-0.5, 0.5], [14, -14]);
-  const nbX = useTransform(smoothX, [-0.5, 0.5], [-5, 5]);
-  const nbY = useTransform(smoothY, [-0.5, 0.5], [-3, 3]);
-
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    const onMove = (e: MouseEvent) => {
-      const r = el.getBoundingClientRect();
-      mouseX.set((e.clientX - r.left) / r.width - 0.5);
-      mouseY.set((e.clientY - r.top) / r.height - 0.5);
-    };
-    el.addEventListener('mousemove', onMove);
-    return () => el.removeEventListener('mousemove', onMove);
-  }, [mouseX, mouseY]);
-
   return (
     <section
-      ref={containerRef}
       className="relative w-full overflow-hidden sm:min-h-screen"
     >
       <style>{`
