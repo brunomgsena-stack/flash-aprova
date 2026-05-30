@@ -1826,22 +1826,38 @@ function MobileConnectionLines() {
 }
 
 // ── MacBook frame ─────────────────────────────────────────────────────────────
-function MacBookMockup({ termLines, visibleConcepts }: { termLines: string[]; visibleConcepts: number[] }) {
+function MacBookMockup({ widthPx = 560, children }: { widthPx?: number; children: React.ReactNode }) {
+  const lidRadiusTL = Math.round(widthPx * (14 / 560));
+  const lidRadiusBL = Math.round(widthPx * (4 / 560));
+  const lidPadH = Math.max(4, Math.round(widthPx * (10 / 560)));
+  const lidPadB = Math.max(2, Math.round(widthPx * (6 / 560)));
+  const cameraDot = Math.max(3, Math.round(widthPx * (7 / 560)));
+  const cameraMarginB = Math.max(2, Math.round(widthPx * (6 / 560)));
+  const screenRadius = Math.round(widthPx * (8 / 560));
+  const screenHeight = Math.round(widthPx * (320 / 560));
+  const hingeHeight = Math.max(2, Math.round(widthPx * (5 / 560)));
+  const baseHeight = Math.max(12, Math.round(widthPx * (32 / 560)));
+  const baseRadiusBR = Math.round(widthPx * (14 / 560));
+  const baseRadiusTL = Math.round(widthPx * (2 / 560));
+  const trackpadW = Math.round(widthPx * (90 / 560));
+  const trackpadH = Math.max(6, Math.round(widthPx * (18 / 560)));
+  const trackpadRadius = Math.max(2, Math.round(widthPx * (5 / 560)));
+
   return (
-    <div style={{ width: '100%', maxWidth: 560, position: 'relative' }}>
+    <div style={{ width: widthPx, position: 'relative' }}>
       {/* Lid */}
       <div style={{
         background: 'linear-gradient(175deg, #2c2c2e 0%, #1c1c1e 100%)',
-        borderRadius: '14px 14px 4px 4px',
-        padding: '10px 10px 6px',
+        borderRadius: `${lidRadiusTL}px ${lidRadiusTL}px ${lidRadiusBL}px ${lidRadiusBL}px`,
+        padding: `${lidPadH}px ${lidPadH}px ${lidPadB}px`,
         boxShadow: `0 0 80px ${PURPLE}28, 0 -2px 0 rgba(255,255,255,0.06) inset, 0 32px 80px rgba(0,0,0,0.8)`,
         border: '1px solid rgba(255,255,255,0.09)',
         borderBottom: 'none',
       }}>
         {/* Camera notch row */}
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 6 }}>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: cameraMarginB }}>
           <div style={{
-            width: 7, height: 7, borderRadius: '50%',
+            width: cameraDot, height: cameraDot, borderRadius: '50%',
             background: '#1a1a1c',
             boxShadow: 'inset 0 0 3px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.06)',
           }} />
@@ -1850,19 +1866,19 @@ function MacBookMockup({ termLines, visibleConcepts }: { termLines: string[]; vi
         {/* Screen bezel */}
         <div className="macbook-screen" style={{
           background: '#050b14',
-          borderRadius: 8,
+          borderRadius: screenRadius,
           overflow: 'hidden',
-          height: 320,
+          height: screenHeight,
           border: '1px solid rgba(0,0,0,0.5)',
           boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.04)',
         }}>
-          <AppScreen termLines={termLines} visibleConcepts={visibleConcepts} />
+          {children}
         </div>
       </div>
 
       {/* Hinge bar */}
       <div style={{
-        height: 5,
+        height: hingeHeight,
         background: 'linear-gradient(180deg, #3a3a3c 0%, #2c2c2e 100%)',
         borderLeft: '1px solid rgba(255,255,255,0.06)',
         borderRight: '1px solid rgba(255,255,255,0.06)',
@@ -1871,8 +1887,8 @@ function MacBookMockup({ termLines, visibleConcepts }: { termLines: string[]; vi
       {/* Base / keyboard */}
       <div style={{
         background: 'linear-gradient(180deg, #2c2c2e 0%, #1c1c1e 100%)',
-        borderRadius: '2px 2px 14px 14px',
-        height: 32,
+        borderRadius: `${baseRadiusTL}px ${baseRadiusTL}px ${baseRadiusBR}px ${baseRadiusBR}px`,
+        height: baseHeight,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -1882,7 +1898,7 @@ function MacBookMockup({ termLines, visibleConcepts }: { termLines: string[]; vi
       }}>
         {/* Trackpad */}
         <div style={{
-          width: 90, height: 18, borderRadius: 5,
+          width: trackpadW, height: trackpadH, borderRadius: trackpadRadius,
           background: 'rgba(255,255,255,0.04)',
           border: '1px solid rgba(255,255,255,0.07)',
         }} />
@@ -2172,7 +2188,9 @@ export default function HeroSection() {
               className="relative hidden lg:block"
               style={{ zIndex: 10, x: nbX, y: nbY, width: '100%', maxWidth: 560 }}
             >
-              <MacBookMockup termLines={termLines} visibleConcepts={visibleConcepts} />
+              <MacBookMockup>
+                <AppScreen termLines={termLines} visibleConcepts={visibleConcepts} />
+              </MacBookMockup>
             </motion.div>
 
             {/* iPhone + satélites — mobile apenas. Container relativo p/ overlap. */}
