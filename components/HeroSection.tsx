@@ -1825,6 +1825,40 @@ function MobileConnectionLines() {
   );
 }
 
+// ── iPad frame ────────────────────────────────────────────────────────────────
+function IPadMockup({ widthPx = 280, children }: { widthPx?: number; children: React.ReactNode }) {
+  // iPad portrait, ratio 3:4
+  const heightPx = Math.round(widthPx * (4 / 3));
+  const borderRadius = Math.round(widthPx * (24 / 280));
+  const padding = Math.max(6, Math.round(widthPx * (10 / 280)));
+  const screenRadius = Math.round(widthPx * (16 / 280));
+  const cameraSize = Math.max(3, Math.round(widthPx * (5 / 280)));
+
+  return (
+    <div style={{
+      width: widthPx, height: heightPx, borderRadius, position: 'relative',
+      background: 'linear-gradient(160deg, #2c2c2e 0%, #1c1c1e 100%)',
+      padding, border: '1px solid rgba(255,255,255,0.09)',
+      boxShadow: `0 0 60px ${PURPLE}28, inset 0 1px 0 rgba(255,255,255,0.08), 0 24px 60px rgba(0,0,0,0.7)`,
+    }}>
+      {/* Câmera frontal (dot pequeno no topo, centralizado) */}
+      <div style={{
+        position: 'absolute', top: Math.round(padding / 2), left: '50%', transform: 'translateX(-50%)',
+        width: cameraSize, height: cameraSize, borderRadius: '50%',
+        background: '#000', border: '1px solid rgba(255,255,255,0.1)', zIndex: 6,
+      }} />
+      {/* Screen */}
+      <div style={{
+        width: '100%', height: '100%', borderRadius: screenRadius, overflow: 'hidden',
+        background: '#050b14', border: '1px solid rgba(0,0,0,0.5)',
+        boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.04)',
+      }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
 // ── MacBook frame ─────────────────────────────────────────────────────────────
 function MacBookMockup({ widthPx = 560, children }: { widthPx?: number; children: React.ReactNode }) {
   const lidRadiusTL = Math.round(widthPx * (14 / 560));
