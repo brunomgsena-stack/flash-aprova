@@ -1969,6 +1969,113 @@ function MobileOnly({ children }: { children: React.ReactNode }) {
   return show ? <>{children}</> : null;
 }
 
+// ── Composição Multi-Device (MacBook + iPad + iPhone) ────────────────────────
+function MultiDeviceComposition({
+  termLines,
+  visibleConcepts,
+}: {
+  termLines: string[];
+  visibleConcepts: number[];
+}) {
+  return (
+    <div
+      className="relative mx-auto"
+      style={{
+        width: '100%',
+        maxWidth: 720,
+        aspectRatio: '720 / 480',
+      }}
+      role="img"
+      aria-label="FlashAprova em três dispositivos: MacBook, iPad e iPhone, exibindo dashboard, painel de progresso e correção de redação"
+    >
+      {/* MacBook centro/fundo */}
+      <motion.div
+        className="absolute left-1/2 top-0 -translate-x-1/2"
+        style={{ zIndex: 10 }}
+        initial={{ opacity: 0, y: 18 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, delay: 0, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <div className="block md:hidden">
+          <MacBookMockup widthPx={280}>
+            <AppScreen termLines={termLines} visibleConcepts={visibleConcepts} />
+          </MacBookMockup>
+        </div>
+        <div className="hidden md:block lg:hidden">
+          <MacBookMockup widthPx={440}>
+            <AppScreen termLines={termLines} visibleConcepts={visibleConcepts} />
+          </MacBookMockup>
+        </div>
+        <div className="hidden lg:block">
+          <MacBookMockup widthPx={560}>
+            <AppScreen termLines={termLines} visibleConcepts={visibleConcepts} />
+          </MacBookMockup>
+        </div>
+      </motion.div>
+
+      {/* iPad inferior-esquerdo, frente, tilt −8° */}
+      <motion.div
+        className="absolute"
+        style={{
+          left: '4%',
+          bottom: '0%',
+          transformOrigin: 'bottom left',
+          zIndex: 20,
+        }}
+        initial={{ opacity: 0, y: 24, rotate: -8 }}
+        animate={{ opacity: 1, y: 0, rotate: -8 }}
+        transition={{ duration: 0.7, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <div className="block md:hidden">
+          <IPadMockup widthPx={110}>
+            <CommandCenterScreen termLines={termLines} visibleConcepts={visibleConcepts} />
+          </IPadMockup>
+        </div>
+        <div className="hidden md:block lg:hidden">
+          <IPadMockup widthPx={170}>
+            <CommandCenterScreen termLines={termLines} visibleConcepts={visibleConcepts} />
+          </IPadMockup>
+        </div>
+        <div className="hidden lg:block">
+          <IPadMockup widthPx={210}>
+            <CommandCenterScreen termLines={termLines} visibleConcepts={visibleConcepts} />
+          </IPadMockup>
+        </div>
+      </motion.div>
+
+      {/* iPhone inferior-direito, frente, tilt +8° */}
+      <motion.div
+        className="absolute"
+        style={{
+          right: '4%',
+          bottom: '0%',
+          transformOrigin: 'bottom right',
+          zIndex: 30,
+        }}
+        initial={{ opacity: 0, y: 24, rotate: 8 }}
+        animate={{ opacity: 1, y: 0, rotate: 8 }}
+        transition={{ duration: 0.7, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <div className="block md:hidden">
+          <IPhoneMockup widthPx={90}>
+            <PhoneRedacaoScreen />
+          </IPhoneMockup>
+        </div>
+        <div className="hidden md:block lg:hidden">
+          <IPhoneMockup widthPx={130}>
+            <PhoneRedacaoScreen />
+          </IPhoneMockup>
+        </div>
+        <div className="hidden lg:block">
+          <IPhoneMockup widthPx={160}>
+            <PhoneRedacaoScreen />
+          </IPhoneMockup>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
 // ── Main HeroSection ──────────────────────────────────────────────────────────
 export default function HeroSection() {
   const router = useRouter();
