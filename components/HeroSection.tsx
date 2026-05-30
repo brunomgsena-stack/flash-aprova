@@ -1897,7 +1897,7 @@ export default function HeroSection() {
 
         {/* Headline block — renderiza visível no SSR (LCP) */}
         <div
-          className="text-center px-4 sm:px-6 pt-0 sm:pt-14 pb-8 sm:pb-12 mx-auto"
+          className="text-center px-4 sm:px-6 pt-0 sm:pt-14 pb-4 sm:pb-6 mx-auto"
           style={{ maxWidth: 820 }}
         >
           {/* Badge */}
@@ -1951,7 +1951,7 @@ export default function HeroSection() {
         </div>
 
         {/* ── Central scene ── */}
-        <div className="relative mx-auto px-4 pt-4 sm:pt-6 pb-2" style={{ maxWidth: 1160 }}>
+        <div className="relative mx-auto px-4 pt-2 sm:pt-3 pb-2" style={{ maxWidth: 1160 }}>
 
           {/* SVG lines behind everything — desktop apenas */}
           <DesktopOnly>
