@@ -1906,10 +1906,10 @@ export default function HeroSection() {
             style={{ background: 'rgba(0,255,115,0.08)', border: '1px solid rgba(0,255,115,0.28)', color: '#00FF73' }}
           >
             <span className="w-1.5 h-1.5 rounded-full animate-pulse flex-shrink-0" style={{ background: '#00FF73' }} />
-            PAINEL IA <span className="hidden sm:inline">INTELIGENTE</span> • TUTORES IA • <span className="hidden sm:inline">ENGENHARIA DE </span>RETENÇÃO
+            ZERO CONFIGURAÇÃO + <span className="hidden sm:inline">100% AUTOMÁTICO + </span>ACESSO IMEDIATO
           </div>
 
-          {/* Main headline — Extra Bold / Giant */}
+          {/* Main headline — Direct Response */}
           <h1
             className="font-black leading-none"
             style={{
@@ -1918,21 +1918,7 @@ export default function HeroSection() {
               letterSpacing: '-0.03em',
             }}
           >
-            O app de{' '}
-            <motion.span
-              style={{ color: '#7C3AED' }}
-              animate={{
-                textShadow: [
-                  '0 0 10px rgba(124,58,237,0.55), 0 0 28px rgba(124,58,237,0.28)',
-                  '0 0 22px rgba(124,58,237,0.9),  0 0 55px rgba(124,58,237,0.45)',
-                  '0 0 10px rgba(124,58,237,0.55), 0 0 28px rgba(124,58,237,0.28)',
-                ],
-              }}
-              transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
-            >
-              Flashcards+IA
-            </motion.span>
-            {' '}que blinda a sua memória para o{' '}
+            Acelere sua Aprovação em{' '}
             <motion.span
               style={{ color: '#00FF73' }}
               animate={{
@@ -1942,12 +1928,30 @@ export default function HeroSection() {
                   '0 0 12px rgba(0,255,115,0.4),  0 0 32px rgba(0,255,115,0.2)',
                 ],
               }}
-              transition={{ duration: 2.6, repeat: Infinity, ease: 'easeInOut', delay: 0.6 }}
+              transition={{ duration: 2.6, repeat: Infinity, ease: 'easeInOut' }}
             >
-              ENEM
+              Medicina
             </motion.span>
-            .
+            {' '}no ENEM com{' '}
+            <motion.span
+              style={{ color: '#a78bfa' }}
+              animate={{
+                textShadow: [
+                  '0 0 10px rgba(124,58,237,0.55), 0 0 28px rgba(124,58,237,0.28)',
+                  '0 0 22px rgba(124,58,237,0.9),  0 0 55px rgba(124,58,237,0.45)',
+                  '0 0 10px rgba(124,58,237,0.55), 0 0 28px rgba(124,58,237,0.28)',
+                ],
+              }}
+              transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut', delay: 0.6 }}
+            >
+              IA
+            </motion.span>
           </h1>
+
+          {/* Subheadline curta */}
+          <p className="text-base md:text-lg lg:text-xl font-medium leading-relaxed text-gray-300 max-w-3xl mx-auto mt-4 sm:mt-6">
+            Lembre Todo Assunto na Hora da Prova e Corte pela Metade o Tempo de Estudo com o Algoritmo que Planeja Revisões por você.
+          </p>
         </div>
 
         {/* ── Central scene ── */}
@@ -1969,9 +1973,9 @@ export default function HeroSection() {
 
         </div>
 
-        {/* Subheadline + CTA */}
+        {/* Texto de Autoridade + CTA */}
         <motion.div
-          className="text-center px-4 sm:px-6 pt-3 sm:pt-2 pb-8 sm:pb-12 mx-auto"
+          className="text-center px-4 sm:px-6 pt-0 pb-8 sm:pb-12 mx-auto"
           style={{ maxWidth: 720 }}
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
@@ -1981,15 +1985,15 @@ export default function HeroSection() {
             className="text-base sm:text-lg leading-relaxed mx-auto mb-6 sm:mb-10"
             style={{ color: 'rgba(255,255,255,0.5)', maxWidth: 640 }}
           >
-            Substitua horas de estudo passivo por um{' '}
+            Tenha acesso à{' '}
             <span style={{ color: '#ffffff', fontWeight: 600 }}>
-              sistema 100% automático
+              Maior Plataforma de Estudo Ativo do Brasil
             </span>
-            . Acesse +18k Flashcards Táticos, 15 Tutores IA, Corretor de Redação Ilimitado e seja aprovado estudando{' '}
+            {' '}e seja aprovado estudando{' '}
             <span style={{ color: '#ffffff', fontWeight: 600 }}>
               apenas 15 minutos por dia
             </span>
-            .
+            . Acesse +18k Flashcards Táticos, 15 Tutores IA e Corretor de Redação Ilimitado.
           </p>
 
           <div className="flex flex-col items-center gap-3">
@@ -2057,7 +2061,7 @@ export default function HeroSection() {
               >
                 <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
               </svg>
-              {ctaState === 'loading' ? '[ ACESSANDO NÚCLEO... ]' : 'QUERO COMEÇAR AGORA'}
+              {ctaState === 'loading' ? '[ ACESSANDO NÚCLEO... ]' : <>Quero ter acesso ao<br/>ARSENAL FLASHAPROVA</>}
             </button>
 
             {/* micro-copy terminal */}
