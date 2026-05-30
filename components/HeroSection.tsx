@@ -1591,7 +1591,6 @@ function PhoneAppScreen() {
   );
 }
 
-// ── iPhone frame (mobile) ─────────────────────────────────────────────────────
 // ── iPhone frame ──────────────────────────────────────────────────────────────
 function IPhoneMockup({ widthPx = 212, children }: { widthPx?: number; children: React.ReactNode }) {
   const heightPx = Math.round(widthPx * (430 / 212));
@@ -1599,6 +1598,7 @@ function IPhoneMockup({ widthPx = 212, children }: { widthPx?: number; children:
   const notchWidth = Math.round(widthPx * (64 / 212));
   const notchHeight = Math.round(widthPx * (14 / 212));
   const notchTop = Math.round(widthPx * (12 / 212));
+  const notchRadius = Math.round(widthPx * (10 / 212));
   const padding = Math.max(4, Math.round(widthPx * (7 / 212)));
   const screenRadius = Math.round(widthPx * (33 / 212));
 
@@ -1612,7 +1612,7 @@ function IPhoneMockup({ widthPx = 212, children }: { widthPx?: number; children:
       {/* Notch */}
       <div style={{
         position: 'absolute', top: notchTop, left: '50%', transform: 'translateX(-50%)',
-        width: notchWidth, height: notchHeight, borderRadius: 10, background: '#000', zIndex: 6,
+        width: notchWidth, height: notchHeight, borderRadius: notchRadius, background: '#000', zIndex: 6,
       }} />
       {/* Screen */}
       <div style={{
