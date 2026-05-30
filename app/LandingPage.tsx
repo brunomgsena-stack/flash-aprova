@@ -95,7 +95,7 @@ const SUBJECTS = [
     icon: '🧬', name: 'Biologia',  area: 'Ciências da Natureza', count: '1.354',
     color: GREEN,
     topics: ['Ecologia', 'Genética e Evolução', 'Citologia', 'Embriologia', 'Fisiologia Humana'],
-    sysTag: 'BIONEXUS ATIVO',
+    sysTag: 'Trilha de Biologia Liberada',
   },
   {
     icon: '⏳', name: 'História',  area: 'Ciências Humanas',     count: '756',
@@ -437,7 +437,7 @@ function AuthorityBanner() {
 const FAQ_ITEMS = [
   {
     q: 'Vou perder tempo configurando o app ou o material já vem pronto?',
-    a: 'Veredito: Tempo é seu recurso mais escasso. Ao contrário do Anki, onde você gasta meses criando cards, o FlashAprova entrega o Arsenal Pronto. São +5.700 flashcards táticos focados no 80/20 do ENEM. Você entra para evoluir sua nota, não para ser digitador.',
+    a: 'Veredito: Tempo é seu recurso mais escasso. Ao contrário do Anki, onde você gasta meses criando cards, o FlashAprova entrega o Acervo de 18.000 Flashcards. São cards táticos focados no 80/20 do ENEM. Você entra para evoluir sua nota, não para ser digitador.',
   },
   {
     q: 'O método funciona para conteúdos densos como Medicina e Engenharia?',
@@ -448,7 +448,7 @@ const FAQ_ITEMS = [
     a: 'Veredito: O Anki é um martelo; o FlashAprova é uma fábrica automatizada. Além do SRS de elite, você tem o Neural Core com 10 Agentes IA e a Norma IA para auditar suas redações em 30 segundos. Métodos manuais são "terapia de estudo", nós entregamos Engenharia de Retenção.',
   },
   {
-    q: 'Quanto tempo do meu dia a "Blindagem" consome?',
+    q: 'Quanto tempo do meu dia a revisão automática consome?',
     a: 'Veredito: Eficiência é a nossa obsessão. O Radar de Lacunas elimina o estudo às cegas: você foca apenas no que o seu cérebro está prestes a deletar. 30 a 45 minutos diários no app garantem uma retenção de 97%, economizando horas de revisões inúteis em apostilas estáticas.',
   },
   {

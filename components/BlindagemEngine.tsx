@@ -348,7 +348,7 @@ export default function BlindagemEngine() {
   }, []);
 
   const FUNCS = [
-    { name: 'Interceptação Neural', metricKey: 'Retention_Stability', metricVal: m.r, color: NEON   },
+    { name: 'Revisão no Momento Exato', metricKey: 'Retention_Stability', metricVal: m.r, color: NEON   },
     { name: 'Filtro TRI 80/20',     metricKey: 'Process_Latency',     metricVal: m.l, color: CYAN   },
     { name: 'Oráculo da Vaga',      metricKey: 'Convergence_Score',   metricVal: m.c, color: VIOLET },
   ];
@@ -360,7 +360,7 @@ export default function BlindagemEngine() {
       <div className="text-center mb-6">
         <p className="text-xs font-bold tracking-widest uppercase mb-3"
           style={{ color: CYAN, fontFamily: JETBRAINS }}>
-          &gt; Algoritmo de Blindagem
+          &gt; Revisão Automática por IA
         </p>
         <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">
           Sua memória no{' '}
@@ -372,8 +372,8 @@ export default function BlindagemEngine() {
           </span>
         </h2>
         <p className="text-slate-500 text-base max-w-2xl mx-auto">
-          Pare de gerenciar revisões. <strong>Enquanto você descansa</strong>, o Algoritmo de Blindagem calcula
-          o timing exato para <strong>interceptar o esquecimento</strong>.
+          Pare de gerenciar revisões. <strong>Enquanto você descansa</strong>, a Revisão Automática por IA calcula
+          o timing exato para <strong>revisar no momento exato</strong>.
         </p>
       </div>
 
@@ -385,7 +385,7 @@ export default function BlindagemEngine() {
         animate={inView ? 'visible' : 'hidden'}
       >
 
-        {/* ── Card 1 — Processador de Memória (piloto automático) ── */}
+        {/* ── Card 1 — Seu Cronograma Inteligente (piloto automático) ── */}
         <Card color={VIOLET} className="md:col-span-3">
           {/* Header */}
           <div className="flex items-center gap-2 mb-4">
@@ -409,10 +409,10 @@ export default function BlindagemEngine() {
             <div>
               <p className="text-[11px] font-black tracking-widest uppercase"
                 style={{ color: VIOLET, fontFamily: JETBRAINS }}>
-                Processador de Memória
+                Seu Cronograma Inteligente
               </p>
               <p className="text-[10px] text-slate-600 mt-0.5" style={{ fontFamily: JETBRAINS }}>
-                Piloto automático · interceptação sináptica
+                Piloto automático · revisão no momento exato
               </p>
             </div>
             {/* Autopilot badge */}
@@ -449,7 +449,7 @@ export default function BlindagemEngine() {
               transition={{ duration: 0.9, repeat: Infinity }}
               style={{ color: NEON, fontSize: 10, fontFamily: JETBRAINS }}>●</motion.span>
             <p className="text-[11px] font-semibold" style={{ color: VIOLET }}>
-              Algoritmo operando — <span className="font-black" style={{ color: NEON }}>sinapses protegidas em tempo real</span>
+              Sistema operando — <span className="font-black" style={{ color: NEON }}>revisões agendadas em tempo real</span>
             </p>
           </div>
         </Card>

@@ -171,13 +171,13 @@ export default function ArsenalElite() {
         </div>
 
         <h2 className="text-3xl sm:text-4xl font-black text-white mb-4 leading-tight">
-          A{' '}
+          O{' '}
           <span style={{
             background:           `linear-gradient(90deg, ${NEON}, ${CYAN})`,
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor:  'transparent',
           }}>
-            Infraestrutura de Guerra
+            Acervo de 18.000 Flashcards
           </span>
         </h2>
 

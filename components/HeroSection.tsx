@@ -2037,33 +2037,6 @@ export default function HeroSection() {
             PAINEL IA <span className="hidden sm:inline">INTELIGENTE</span> • TUTORES IA • <span className="hidden sm:inline">ENGENHARIA DE </span>RETENÇÃO
           </div>
 
-          {/* Secondary header — Light / elegant */}
-          <p
-            className="font-light"
-            style={{
-              fontSize: 'clamp(1rem, 2vw, 1.45rem)',
-              color: 'rgba(255,255,255,0.65)',
-              letterSpacing: '-0.01em',
-              marginBottom: '0.3em',
-            }}
-          >
-            Pare de estudar para{' '}
-            <motion.span
-              style={{ color: '#7C3AED', fontWeight: 400 }}
-              animate={{
-                textShadow: [
-                  '0 0 10px rgba(124,58,237,0.55), 0 0 28px rgba(124,58,237,0.28)',
-                  '0 0 22px rgba(124,58,237,0.9),  0 0 55px rgba(124,58,237,0.45)',
-                  '0 0 10px rgba(124,58,237,0.55), 0 0 28px rgba(124,58,237,0.28)',
-                ],
-              }}
-              transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
-            >
-              esquecer
-            </motion.span>
-            .
-          </p>
-
           {/* Main headline — Extra Bold / Giant */}
           <h1
             className="font-black leading-none"
@@ -2073,30 +2046,21 @@ export default function HeroSection() {
               letterSpacing: '-0.03em',
             }}
           >
-            Não deixe 12 meses de esforço{' '}
+            O app de{' '}
             <motion.span
-              style={{ color: '#FF8A00' }}
+              style={{ color: '#7C3AED' }}
               animate={{
                 textShadow: [
-                  '0 0 10px rgba(255,138,0,0.7), 0 0 28px rgba(255,138,0,0.35)',
-                  '0 0 2px  rgba(255,138,0,0.2), 0 0 4px  rgba(255,138,0,0.1)',
-                  '0 0 10px rgba(255,138,0,0.7), 0 0 28px rgba(255,138,0,0.35)',
-                  '0 0 2px  rgba(255,138,0,0.1), 0 0 2px  rgba(255,138,0,0.05)',
-                  '0 0 18px rgba(255,138,0,1.0), 0 0 50px rgba(255,138,0,0.55)',
-                  '0 0 10px rgba(255,138,0,0.7), 0 0 28px rgba(255,138,0,0.35)',
+                  '0 0 10px rgba(124,58,237,0.55), 0 0 28px rgba(124,58,237,0.28)',
+                  '0 0 22px rgba(124,58,237,0.9),  0 0 55px rgba(124,58,237,0.45)',
+                  '0 0 10px rgba(124,58,237,0.55), 0 0 28px rgba(124,58,237,0.28)',
                 ],
-                opacity: [1, 0.65, 1, 0.8, 1, 1],
               }}
-              transition={{
-                duration: 3.8,
-                repeat: Infinity,
-                ease: 'linear',
-                times: [0, 0.08, 0.14, 0.2, 0.52, 1],
-              }}
+              transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
             >
-              sumirem
+              Flashcards+IA
             </motion.span>
-            {' '}em 4 horas de{' '}
+            {' '}que blinda a sua memória para o{' '}
             <motion.span
               style={{ color: '#00FF73' }}
               animate={{
@@ -2300,13 +2264,13 @@ export default function HeroSection() {
             className="text-base sm:text-lg leading-relaxed mx-auto mb-6 sm:mb-10"
             style={{ color: 'rgba(255,255,255,0.5)', maxWidth: 640 }}
           >
-            Substitua horas de revisão cansativa por{' '}
+            Substitua horas de estudo passivo por um{' '}
             <span style={{ color: '#ffffff', fontWeight: 600 }}>
-              15 min por dia de prática ativa com IA
+              sistema 100% automático
             </span>
-            . Trave o seu esquecimento, memorize o que realmente cai e{' '}
+            . Acesse +18k Flashcards Táticos, 15 Tutores IA, Corretor de Redação Ilimitado e seja aprovado estudando{' '}
             <span style={{ color: '#ffffff', fontWeight: 600 }}>
-              garanta a sua aprovação
+              apenas 15 minutos por dia
             </span>
             .
           </p>
@@ -2394,29 +2358,48 @@ export default function HeroSection() {
           </div>
         </motion.div>
 
-        {/* Stats row */}
+        {/* Avatar group — aprovados */}
         <div className="relative mx-auto px-4 pb-0 sm:pb-24" style={{ maxWidth: 1160 }}>
           <motion.div
-            className="flex flex-wrap justify-center gap-5 sm:gap-10"
+            className="flex justify-center"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 1.2 }}
           >
-            {[
-              { n: '97%',    label: 'retenção com SRS + IA',   color: PURPLE_L,   hideMobile: false },
-              { n: '5.700+', label: 'flashcards táticos ENEM', color: '#34d399',  hideMobile: false },
-              { n: '24h',    label: 'para sentir a diferença', color: '#fb923c',  hideMobile: true  },
-            ].map(({ n, label, color, hideMobile }) => (
-              <div key={n} className={`text-center${hideMobile ? ' hidden sm:block' : ''}`}>
-                <p className="text-3xl font-black"
-                  style={{ color, textShadow: `0 0 20px ${color}60` }}>
-                  {n}
-                </p>
-                <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                  {label}
-                </p>
+            <div className="flex flex-col items-center gap-2">
+              <div className="flex items-center">
+                {[
+                  '/images/ana.med.ufpe.avif',
+                  '/images/carlos.eng.usp.avif',
+                  '/images/beatriz.dir.avif',
+                  '/images/lucas.eng.ita.avif',
+                  '/images/rafaela.medvet.avif',
+                  '/images/sofia-usp.avif',
+                  '/images/juliomed-ufrj.avif',
+                ].map((src, i) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    key={src}
+                    src={src}
+                    alt=""
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: '50%',
+                      objectFit: 'cover',
+                      border: '2px solid #060a14',
+                      marginLeft: i === 0 ? 0 : -12,
+                      position: 'relative',
+                      zIndex: i,
+                      display: 'block',
+                    }}
+                  />
+                ))}
               </div>
-            ))}
+              <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                +8.000 aprovados no ENEM
+              </p>
+            </div>
           </motion.div>
         </div>
       </div>

@@ -30,7 +30,7 @@ const SUBJECTS: Subject[] = [
     icon: '🧬', name: 'Biologia',          area: 'Ciências da Natureza',
     count: 3329, color: '#22c55e',
     topics:   ['Citologia', 'Genética & Evolução', 'Ecologia'],
-    sysTag:   'BIONEXUS ATIVO',
+    sysTag:   'Trilha de Biologia Liberada',
   },
   {
     icon: '⚛️', name: 'Física',             area: 'Ciências da Natureza',
