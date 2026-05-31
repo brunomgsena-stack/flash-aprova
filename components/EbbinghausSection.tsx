@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { motion, useInView } from 'framer-motion';
+import { useState, useEffect, useRef } from 'react';
+import { motion, useInView, useReducedMotion } from 'framer-motion';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const ORANGE = '#FF8A00';
@@ -75,108 +75,115 @@ function NodeDot({ cx, cy, delay, isInView }: {
   );
 }
 
-// ─── Pilares data ─────────────────────────────────────────────────────────────
-const PILARES = [
+// ─── Momentos data ────────────────────────────────────────────────────────────
+const MOMENTOS = [
   {
-    id: 'ilusao',
-    icon: '↻',
-    label: 'O Ciclo da Ilusão',
-    text: 'Você entende na aula, mas o cérebro trata como lixo e descarta em horas.',
+    id: 'segunda',
+    timestamp: 'SEGUNDA, 23h',
+    narrativa: 'Fecho o último PDF. Sinto que produzi. Na quarta alguém comenta o tema — e dá branco. Releio o resumo. Não é o mesmo.',
+    soco: 'Não é preguiça. É como o cérebro foi feito.',
     color: ORANGE,
   },
   {
-    id: 'obesidade',
-    icon: '≡',
-    label: 'Obesidade Mental',
-    text: 'Resumos e PDFs acumulados são apenas peso morto. Eles não viram memória.',
+    id: 'quinta',
+    timestamp: 'QUINTA, 6h50',
+    narrativa: 'Abro o caderno da semana passada. Os grifos coloridos parecem trabalho de outra pessoa. Tenho que reler do zero.',
+    soco: 'A pilha de PDF cresce. A memória, não.',
     color: RED,
   },
   {
-    id: 'branco',
-    icon: '□',
-    label: 'O Branco Premonitório',
-    text: 'O esquecimento ataca no momento mais caro: as 4 horas de ENEM.',
+    id: 'domingo',
+    timestamp: 'DOMINGO, prova rolando',
+    narrativa: 'A questão é exatamente sobre aquele assunto. Estudei. Revi. Marquei. E agora não vem.',
+    soco: 'Quatro meses inteiros, reféns de um instante de dúvida.',
     color: VIOLET,
   },
 ] as const;
 
-// ─── PilarCard — 3D tilt + cursor glow + icon neon toggle ────────────────────
-function PilarCard({
-  icon, label, text, color, index,
+// ─── Momento — uma estação do stack (nó pulsante + texto) ───────────────────
+function Momento({
+  timestamp, narrativa, soco, color, index,
 }: {
-  icon: string; label: string; text: string; color: string; index: number;
+  timestamp: string; narrativa: string; soco: string; color: string; index: number;
 }) {
-  const [hovered, setHovered] = useState(false);
-  const [mouse,   setMouse]   = useState({ x: 0.5, y: 0.5 });
-  const cardRef = useRef<HTMLDivElement>(null);
-
-  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    const el = cardRef.current;
-    if (!el) return;
-    const r = el.getBoundingClientRect();
-    setMouse({ x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height });
-  }, []);
-
-  const rotateY = hovered ? (mouse.x - 0.5) * 18 : 0;
-  const rotateX = hovered ? -(mouse.y - 0.5) * 14 : 0;
+  const reduceMotion = useReducedMotion();
+  const enter = reduceMotion
+    ? { initial: { opacity: 0 }, whileInView: { opacity: 1 } }
+    : { initial: { opacity: 0, x: -20 }, whileInView: { opacity: 1, x: 0 } };
 
   return (
     <motion.div
-      ref={cardRef}
-      className="relative rounded-2xl p-5 sm:p-6 cursor-default select-none"
-      style={{
-        background: 'rgba(18,18,18,0.92)',
-        border: `1px solid ${color}55`,
-        boxShadow: `0 0 48px ${color}22, 0 0 0 1px ${color}35`,
-        transform: `perspective(900px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`,
-        transition: 'border-color 0.25s ease, box-shadow 0.25s ease, transform 0.1s ease',
-      }}
-      initial={{ opacity: 0, y: 28 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-60px' }}
-      transition={{ duration: 0.5, delay: 0.1 * index, ease: [0.22, 1, 0.36, 1] }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => { setHovered(false); setMouse({ x: 0.5, y: 0.5 }); }}
-      onMouseMove={handleMouseMove}
+      role="listitem"
+      className="relative"
+      {...enter}
+      viewport={{ once: true, margin: '-80px' }}
+      transition={{ duration: 0.5, delay: 0.15 * index, ease: [0.22, 1, 0.36, 1] }}
     >
-      {/* Cursor-tracked radial glow */}
-      <div
-        className="absolute inset-0 rounded-2xl pointer-events-none transition-opacity duration-300"
+      {/* Nó pulsante alinhado à linha vertical */}
+      <span
+        aria-hidden
+        className="absolute -left-[18px] sm:-left-[26px] top-1.5 block rounded-full"
         style={{
-          background: `radial-gradient(circle at ${mouse.x * 100}% ${mouse.y * 100}%, ${color}20 0%, transparent 65%)`,
-          opacity: hovered ? 1 : 0,
+          width: 10,
+          height: 10,
+          background: color,
+          boxShadow: `0 0 0 3px rgba(18,18,18,0.95), 0 0 12px ${color}, 0 0 24px ${color}80`,
         }}
       />
-      {/* Top shimmer */}
-      <div className="absolute inset-x-0 top-0 h-px rounded-t-2xl pointer-events-none"
-        style={{
-          background: `linear-gradient(90deg, transparent, ${color}80, transparent)`,
-          transition: 'opacity 0.25s',
-        }} />
-
-      {/* Icon */}
-      <div
-        className="text-3xl mb-3 leading-none font-black transition-all duration-300"
-        style={{
-          color: color,
-          textShadow: `0 0 18px ${color}, 0 0 36px ${color}80`,
-          fontFamily: 'ui-monospace, monospace',
-        }}
-      >
-        {icon}
-      </div>
-
       <p
-        className="text-xs font-black uppercase tracking-widest mb-2 transition-colors duration-300"
+        className="text-xs font-black uppercase tracking-widest mb-2"
         style={{
           color: color,
+          textShadow: `0 0 12px ${color}, 0 0 24px ${color}80`,
           fontFamily: 'ui-monospace, monospace',
         }}
       >
-        {label}
+        {timestamp}
       </p>
-      <p className="text-sm text-slate-500 leading-relaxed">{text}</p>
+      <p className="text-sm sm:text-base text-slate-300 leading-relaxed">{narrativa}</p>
+      <p className="text-sm sm:text-base text-white font-bold mt-3 leading-relaxed">{soco}</p>
     </motion.div>
+  );
+}
+
+// ─── MomentoStack — container vertical com linha animada conectando momentos ──
+function MomentoStack() {
+  const reduceMotion = useReducedMotion();
+
+  return (
+    <div
+      role="list"
+      aria-label="Três momentos de um estudante real"
+      className="relative pl-7 sm:pl-10"
+    >
+      {/* Linha vertical contínua (gradient laranja → vermelho → violeta) */}
+      <motion.div
+        aria-hidden
+        className="absolute left-2 sm:left-3 top-2 bottom-2 w-px"
+        style={{
+          background: `linear-gradient(180deg, ${ORANGE} 0%, ${RED} 50%, ${VIOLET} 100%)`,
+          transformOrigin: 'top',
+          boxShadow: `0 0 12px ${RED}55`,
+        }}
+        initial={reduceMotion ? { opacity: 0 } : { scaleY: 0 }}
+        whileInView={reduceMotion ? { opacity: 1 } : { scaleY: 1 }}
+        viewport={{ once: true, margin: '-100px' }}
+        transition={{ duration: 1.2, ease: 'easeInOut' }}
+      />
+
+      <div className="space-y-8 sm:space-y-10">
+        {MOMENTOS.map((m, i) => (
+          <Momento
+            key={m.id}
+            timestamp={m.timestamp}
+            narrativa={m.narrativa}
+            soco={m.soco}
+            color={m.color}
+            index={i}
+          />
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -227,9 +234,9 @@ export default function EbbinghausSection() {
           animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.55, delay: 0.22 }}
         >
-          A ciência prova: sem engenharia, você aluga o conhecimento.{' '}
+          Você devora 8 horas de PDF por dia. Em 24h seu cérebro apaga 70% disso.{' '}
           <span className="text-white font-semibold">
-            Em 24h, o proprietário (seu cérebro) deleta 70% do que você pagou com suor para aprender.
+            O problema nunca foi seu esforço — foi te entregarem um método que a ciência já provou que falha.
           </span>
         </motion.p>
       </div>
@@ -423,7 +430,7 @@ export default function EbbinghausSection() {
         </div>
       </motion.div>
 
-      {/* ── Pilares do Desastre ── */}
+      {/* ── Três momentos que você já viveu ── */}
       <div className="mb-4 sm:mb-14 relative z-10">
         <motion.p
           className="text-center text-xs font-bold tracking-widest uppercase mb-7"
@@ -433,13 +440,9 @@ export default function EbbinghausSection() {
           viewport={{ once: true, margin: '-40px' }}
           transition={{ duration: 0.4 }}
         >
-          &gt; PILARES DO DESASTRE
+          &gt; TRÊS MOMENTOS QUE VOCÊ JÁ VIVEU
         </motion.p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {PILARES.map((p, i) => (
-            <PilarCard key={p.id} {...p} index={i} />
-          ))}
-        </div>
+        <MomentoStack />
       </div>
 
     </section>
