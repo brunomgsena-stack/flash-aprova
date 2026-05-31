@@ -35,6 +35,7 @@ const BlindagemEngine    = dynamic(() => import('@/components/BlindagemEngine'),
 const TacticalRecovery   = dynamic(() => import('@/components/TacticalRecovery'),   { ssr: false, loading: () => <SkeletonBlock h={400} /> });
 const ArsenalElite       = dynamic(() => import('@/components/ArsenalElite'),       { ssr: false, loading: () => <SkeletonBlock h={420} /> });
 const ReelsTestimonials  = dynamic(() => import('@/components/ReelsTestimonials'),  { ssr: false, loading: () => <SkeletonBlock h={340} /> });
+const ComoFuncionaSteps  = dynamic(() => import('@/components/ComoFuncionaSteps'),  { ssr: false, loading: () => <SkeletonBlock h={720} /> });
 
 // ─── Lazy section wrapper ──────────────────────────────────────────────────────
 // Defers rendering (and therefore chunk download) until the section is ~300px
@@ -654,6 +655,11 @@ export default function LandingPage() {
         <HeroSection />
 
         <AuthorityBanner />
+
+        {/* ════════════════════════════ COMO FUNCIONA · 4 PASSOS ══ */}
+        <LazySection minHeight={720}>
+          <ComoFuncionaSteps />
+        </LazySection>
 
         {/* ════════════════════════════ METHODS COMPARISON ══ */}
         <section className="max-w-5xl mx-auto px-4 sm:px-10 pb-12 sm:pb-24">
