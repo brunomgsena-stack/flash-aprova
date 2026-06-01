@@ -33,6 +33,7 @@ const ReelsTestimonials  = dynamic(() => import('@/components/ReelsTestimonials'
 const ComoFuncionaSteps  = dynamic(() => import('@/components/ComoFuncionaSteps'),  { ssr: false, loading: () => <SkeletonBlock h={2400} /> });
 const PrecoEPlanos       = dynamic(() => import('@/components/PrecoEPlanos'),       { ssr: false, loading: () => <SkeletonBlock h={1400} /> });
 const StickyMobileCTA    = dynamic(() => import('@/components/StickyMobileCTA'),    { ssr: false });
+const AppDemo            = dynamic(() => import('@/components/AppDemo'),            { ssr: false, loading: () => <SkeletonBlock h={900} /> });
 
 // ─── Lazy section wrapper ──────────────────────────────────────────────────────
 // Defers rendering (and therefore chunk download) until the section is ~300px
@@ -669,6 +670,11 @@ export default function LandingPage() {
         <HeroSection />
 
         <AuthorityBanner />
+
+        {/* ════════════════════════════ APP DEMO · vídeo real ══ */}
+        <LazySection minHeight={900}>
+          <AppDemo />
+        </LazySection>
 
         {/* ════════════════════════════ COMO FUNCIONA · 4 PASSOS ══ */}
         <LazySection minHeight={2400}>
