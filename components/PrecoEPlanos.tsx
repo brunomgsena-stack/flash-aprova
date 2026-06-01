@@ -20,8 +20,35 @@ interface Feature {
 
 // ─── Componente principal ─────────────────────────────────────────────────────
 export default function PrecoEPlanos() {
+  // ENEM 2026: first weekend of November (8/Nov/2026)
+  const enemDate = new Date('2026-11-08T00:00:00');
+  const today    = new Date();
+  const daysLeft = Math.max(0, Math.ceil((enemDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)));
+
   return (
     <section id="preco-e-planos" className="max-w-6xl mx-auto px-4 sm:px-10 pb-12 sm:pb-24">
+      {/* Countdown ENEM 2026 */}
+      <div
+        className="max-w-md mx-auto mb-8 px-5 py-3 rounded-xl flex items-center justify-center gap-3 text-center"
+        style={{
+          background: 'rgba(217,119,6,0.08)',
+          border: '1px solid rgba(217,119,6,0.25)',
+        }}
+      >
+        <span className="text-xl leading-none" aria-hidden>⏳</span>
+        <div className="flex flex-col">
+          <span className="text-[10px] font-bold tracking-widest uppercase" style={{ color: '#fbbf24' }}>
+            Faltam
+          </span>
+          <span className="text-2xl font-black leading-tight" style={{ color: '#fef3c7' }}>
+            {daysLeft} dias
+          </span>
+          <span className="text-[10px] font-semibold text-slate-400">
+            para o ENEM 2026
+          </span>
+        </div>
+      </div>
+
       {/* Cabeçalho da seção */}
       <div className="text-center mb-10">
         <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: VIOLET }}>
@@ -209,7 +236,7 @@ export default function PrecoEPlanos() {
                 { text: 'Radar de Lacunas', color: NEON },
                 { text: 'Simulados e treinos TRI', color: CYAN },
                 { text: 'Dashboard + heatmap de progresso', color: CYAN },
-                { text: '2 anos de acesso incluídos', color: NEON },
+                { text: 'Acesso até jul/2027 · ENEM 2026 + FUVEST, UNICAMP e USP', color: NEON },
                 { text: 'Garantia incondicional de 7 dias', color: NEON },
               ] as Feature[]
             ).map(({ text, color }) => (
@@ -308,7 +335,7 @@ export default function PrecoEPlanos() {
           <div className="flex flex-col gap-2.5 mb-6 text-sm">
             {[
               'Tudo do Protocolo Neural',
-              'Mentoria de estudos mensal 1x1 com especialista',
+              'Mentoria mensal 1x1 com especialista pedagógico',
               'Plano intensivo reta final',
               'Suporte prioritário',
             ].map((f) => (

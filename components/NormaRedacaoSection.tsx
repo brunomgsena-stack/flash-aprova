@@ -34,10 +34,10 @@ const NEXT_STAGE: Record<Stage, Stage> = {
 };
 
 const STAGE_LABELS: Record<Stage, string> = {
-  WRITING:    '01 · SÍNTESE',
+  WRITING:    '01 · ESCRITA',
   UPLOAD:     '02 · ANÁLISE IA',
-  PROCESSING: '03 · AUDITORIA COMPLETA',
-  VEREDITO:   '03 · AUDITORIA COMPLETA',
+  PROCESSING: '03 · ANÁLISE COMPLETA',
+  VEREDITO:   '03 · ANÁLISE COMPLETA',
 };
 
 // ─── Data ──────────────────────────────────────────────────────────────────────
@@ -582,7 +582,7 @@ function ProcessingStage() {
             {[RED, AMBER, EMERALD].map(c => <div key={c} className="w-2.5 h-2.5 rounded-full" style={{ background: c }} />)}
           </div>
           <span className="text-[10px] text-slate-600 hidden sm:block" style={{ fontFamily: MONO }}>
-            PROCESSADOR CENTRAL · MOTOR TRI v4.2
+            MOTOR DE ANÁLISE TRI v4.2
           </span>
         </div>
         <motion.span className="text-[10px] font-bold" style={{ color: ORANGE, fontFamily: MONO }}
@@ -748,7 +748,7 @@ function ScannerPanel() {
             {[RED, AMBER, EMERALD].map(c => <div key={c} className="w-2.5 h-2.5 rounded-full" style={{ background: c }} />)}
           </div>
           <span className="text-[10px] text-slate-600 hidden sm:block" style={{ fontFamily: MONO }}>
-            banca.examinadora · redacao_alfab_002.txt
+            corretor.ia · redacao_alfab_002.txt
           </span>
         </div>
         <div className="flex items-center gap-3">
@@ -760,7 +760,7 @@ function ScannerPanel() {
           </div>
           <motion.span className="text-[10px] font-bold" style={{ color: PURPLE, fontFamily: MONO }}
             animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1.4, repeat: Infinity }}>
-            ● ESCANEANDO
+            ● ANALISANDO
           </motion.span>
         </div>
       </div>
@@ -860,7 +860,7 @@ function ScannerPanel() {
       {/* Status bar */}
       <div className="px-5 py-3 shrink-0 flex items-center justify-between" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
         <span className="text-[10px] text-slate-700" style={{ fontFamily: MONO }}>340 PALAVRAS · 4 PARÁGRAFOS</span>
-        <span className="text-[10px] font-bold" style={{ color: PURPLE, fontFamily: MONO }}>SCAN ATIVO</span>
+        <span className="text-[10px] font-bold" style={{ color: PURPLE, fontFamily: MONO }}>ANÁLISE ATIVA</span>
       </div>
     </div>
   );
@@ -884,7 +884,7 @@ function DossierScoreCard() {
       <div className="flex items-center justify-between px-5 pt-5 pb-4 relative z-10">
         <div>
           <p className="text-[10px] font-bold tracking-[0.25em] text-slate-500 mb-1" style={{ fontFamily: MONO }}>
-            DOSSIÊ TRI · TOTAL SCORE
+            RELATÓRIO TRI · NOTA TOTAL
           </p>
           <div className="flex items-baseline gap-1">
             <CountUp target={TOTAL_SCORE} color={NEON} size="xl" />
@@ -955,7 +955,7 @@ function DossierNormaTerminal() {
           </div>
           <div className="flex flex-col">
             <span className="text-[10px] font-black tracking-widest" style={{ color: GOLD, fontFamily: MONO }}>
-              VEREDITO IA
+              ANÁLISE NORMA
             </span>
             <span className="text-[10px] font-medium" style={{ color: `${GOLD}70`, fontFamily: MONO }}>
               Prof(a) Norma
@@ -965,7 +965,7 @@ function DossierNormaTerminal() {
         <motion.span className="text-[10px] font-bold px-2 py-0.5 rounded" style={{
           color: GOLD, background: `${GOLD}18`, border: `1px solid ${GOLD}35`, fontFamily: MONO,
         }} animate={{ opacity: [1, 0.4, 1] }} transition={{ duration: 2.2, repeat: Infinity }}>
-          ● VEREDITO
+          ● ANÁLISE
         </motion.span>
       </div>
 

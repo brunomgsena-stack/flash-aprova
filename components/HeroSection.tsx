@@ -1298,7 +1298,7 @@ function PhoneRedacaoScreen() {
       {/* header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
         <span style={{ fontSize: 9, fontWeight: 800, color: '#fff' }}>✍️ Redação · Norma IA</span>
-        <span style={{ fontSize: 6, color: '#a855f7', letterSpacing: '0.18em', fontWeight: 700 }}>AUDITORIA TRI</span>
+        <span style={{ fontSize: 6, color: '#a855f7', letterSpacing: '0.18em', fontWeight: 700 }}>ANÁLISE TRI</span>
       </div>
 
       {/* terminal feed — fills */}

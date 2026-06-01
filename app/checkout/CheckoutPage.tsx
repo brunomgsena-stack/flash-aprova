@@ -178,7 +178,7 @@ function NarrativeReport({
 
       <p className="text-slate-500 text-sm leading-relaxed mb-4">
         IA detectou:{' '}
-        <strong className="text-red-400">Falha no Protocolo de Resgate</strong> —{' '}
+        <strong className="text-red-400">Pagamento não processado</strong> —{' '}
         você reconhece o conceito superficialmente, mas não consegue recuperá-lo sob pressão de tempo.
         Exatamente o cenário de uma prova do{' '}
         <span style={{ color: GREEN, fontWeight: 700, textShadow: `0 0 10px ${GREEN}60` }}>ENEM</span>.{' '}
@@ -191,7 +191,7 @@ function NarrativeReport({
         {[
           { label: `${hardCount} Lacuna${hardCount !== 1 ? 's' : ''} Crítica${hardCount !== 1 ? 's' : ''}`, color: RED },
           { label: `${subjectMeta.name} — Risco ${risk}`, color: subjectMeta.color },
-          { label: 'Falha no Protocolo de Resgate', color: VIOLET },
+          { label: 'Pagamento não processado', color: VIOLET },
         ].map(({ label, color }) => (
           <span key={label} className="text-xs font-semibold px-3 py-1 rounded-full"
             style={{ background: `${color}18`, border: `1px solid ${color}35`, color }}>

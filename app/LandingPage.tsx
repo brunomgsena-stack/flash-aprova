@@ -745,7 +745,7 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* ════════════════════ AUDITORIA DE MERCADO ══ */}
+        {/* ════════════════════ COMPARATIVO DE MERCADO ══ */}
         <section className="max-w-4xl mx-auto px-4 sm:px-10 pb-8 sm:pb-16">
           <div
             className="relative rounded-2xl overflow-hidden p-4 sm:p-8 md:p-12"
