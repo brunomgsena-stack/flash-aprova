@@ -253,7 +253,7 @@ function NucleusCore({ inView }: { inView: boolean }) {
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-0.5">
             <span className="text-[6px] tracking-[0.2em] uppercase"
               style={{ fontFamily: JETBRAINS, color: `${NEON}50` }}>
-              BLINDAGEM
+              PROTEÇÃO DA MEMÓRIA
             </span>
             <span className="text-[7px] font-black tracking-[0.15em] uppercase"
               style={{ fontFamily: JETBRAINS, color: 'rgba(255,255,255,0.75)',
@@ -334,22 +334,22 @@ export default function TacticalRecovery() {
           className="text-xs font-bold tracking-widest uppercase mb-3"
           style={{ color: NEON, fontFamily: JETBRAINS }}
         >
-          &gt; RECUPERAÇÃO TÁTICA
+          &gt; HORA DA VERDADE
         </p>
         <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">
-          Lembre{' '}
+          Quando bater o branco,{' '}
           <span style={{
             background:            `linear-gradient(90deg, ${NEON}, ${CYAN})`,
             WebkitBackgroundClip:  'text',
             WebkitTextFillColor:   'transparent',
           }}>
-            97%
+            a resposta volta.
           </span>
-          {' '}na hora do ENEM.
         </h2>
         <p className="text-slate-500 text-base max-w-2xl mx-auto">
-          Esqueça apenas a concorrência. Nossa tecnologia garante que a resposta correta salte na sua mente no momento de maior pressão:{' '}
-          <span className="text-white font-semibold">na hora da prova</span>.
+          Cada card que você revisou aqui foi treinado <strong>sob pressão simulada</strong>
+          — contagem regressiva, sem consulta. Quando chega a prova, o cérebro já passou
+          por aquele momento dezenas de vezes. <span className="text-white font-semibold">O resto da sala trava. Você dispara.</span>
         </p>
       </div>
 

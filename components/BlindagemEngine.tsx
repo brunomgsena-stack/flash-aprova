@@ -299,8 +299,8 @@ function AutopilotCanvas() {
       ctx.fillText('◉ AUTOPILOT: ATIVO', 9, 8);
 
       const statusLabel = inter.mode === 'restoring'
-        ? '⚡ REFORÇO SINÁPTICO'
-        : '⟳ VARREDURA NEURAL';
+        ? '⚡ REVISÃO REFORÇADA'
+        : '⟳ ANÁLISE DA MEMÓRIA';
       ctx.font         = "9px 'JetBrains Mono', monospace";
       ctx.textBaseline = 'bottom';
       ctx.fillStyle    = (inter.mode === 'restoring' ? NEON : CYAN) + '80';
@@ -350,7 +350,7 @@ export default function BlindagemEngine() {
   const FUNCS = [
     { name: 'Revisão no Momento Exato', metricKey: 'Retention_Stability', metricVal: m.r, color: NEON   },
     { name: 'Filtro TRI 80/20',     metricKey: 'Process_Latency',     metricVal: m.l, color: CYAN   },
-    { name: 'Oráculo da Vaga',      metricKey: 'Convergence_Score',   metricVal: m.c, color: VIOLET },
+    { name: 'Previsão de Aprovação', metricKey: 'Convergence_Score',   metricVal: m.c, color: VIOLET },
   ];
 
   return (
@@ -360,20 +360,21 @@ export default function BlindagemEngine() {
       <div className="text-center mb-6">
         <p className="text-xs font-bold tracking-widest uppercase mb-3"
           style={{ color: CYAN, fontFamily: JETBRAINS }}>
-          &gt; Revisão Automática por IA
+          &gt; REVISÃO AUTOMÁTICA POR IA
         </p>
         <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">
-          Sua memória no{' '}
+          O card volta{' '}
           <span style={{
             background: `linear-gradient(90deg, ${NEON}, ${CYAN})`,
             WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
           }}>
-            piloto automático.
+            1 dia antes de você esquecer.
           </span>
         </h2>
         <p className="text-slate-500 text-base max-w-2xl mx-auto">
-          Pare de gerenciar revisões. <strong>Enquanto você descansa</strong>, a Revisão Automática por IA calcula
-          o timing exato para <strong>revisar no momento exato</strong>.
+          Anki te obriga a montar deck. Aqui, a IA olha seus <strong>últimos 72h de erros</strong> e
+          empurra os <strong>12 cards</strong> que seu cérebro vai apagar amanhã. Você abre,
+          responde, fecha. <strong>15 minutos</strong>.
         </p>
       </div>
 

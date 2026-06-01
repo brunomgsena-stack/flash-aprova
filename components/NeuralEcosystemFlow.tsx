@@ -43,7 +43,7 @@ const RINGS: Ring[] = [
   {
     id:       'blindagem',
     number:   '02',
-    label:    'ALGORITMO DE BLINDAGEM',
+    label:    'REVISÃO AUTOMÁTICA POR IA',
     sublabel: 'Fixação matemática de dados',
     color:    NEON,
     size:     295,
@@ -483,23 +483,22 @@ export default function NeuralEcosystemFlow() {
             marginBottom:  14,
           }}
         >
-          &gt;_ NEURAL CORE
+          &gt;_ MOTOR IA · 3 SISTEMAS ATIVOS
         </p>
 
         <h2
           className="text-4xl sm:text-5xl lg:text-6xl font-black text-white mb-5"
           style={{ letterSpacing: '-0.025em', lineHeight: 1.05 }}
         >
-          A Engenharia da{' '}
-          <span style={{ color: NEON, textShadow: `0 0 20px ${NEON}80, 0 0 40px ${NEON}40` }}>Memória.</span>
+          A IA estuda você.{' '}
+          <span style={{ color: NEON, textShadow: `0 0 20px ${NEON}80, 0 0 40px ${NEON}40` }}>Enquanto você estuda a matéria.</span>
         </h2>
 
         <p className="text-slate-400 text-base sm:text-lg max-w-xl mx-auto leading-relaxed">
-          Conheça o{' '}
-          <span className="text-white font-semibold">Neural Core</span>
-          : a tecnologia do FlashAprova que garante que você{' '}
-          <span style={{ color: V_LIGHT }}>nunca mais perca</span>{' '}
-          o que estudou.
+          Um sistema <span className="text-white font-semibold">mapeia o que você ainda não sabe</span>.{' '}
+          Outro marca o <span className="text-white font-semibold">dia exato de cada revisão</span>.{' '}
+          O terceiro responde sua dúvida em <span style={{ color: V_LIGHT }}>4 segundos</span>.{' '}
+          Juntos, fazem o trabalho do cursinho — com 5% do esforço.
         </p>
       </motion.div>
 
