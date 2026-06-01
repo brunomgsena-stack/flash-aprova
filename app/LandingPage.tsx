@@ -434,28 +434,36 @@ function AuthorityBanner() {
 // ─── FAQ data ─────────────────────────────────────────────────────────────────
 const FAQ_ITEMS = [
   {
-    q: 'Vou perder tempo configurando o app ou o material já vem pronto?',
-    a: 'Tempo é seu recurso mais escasso. Ao contrário do Anki, onde você gasta meses criando cards, o FlashAprova entrega o Acervo de 18.000 Flashcards. São cards táticos focados no 80/20 do ENEM. Você entra para evoluir sua nota, não para ser digitador.',
+    q: 'Quanto custa o FlashAprova? Tem parcelamento?',
+    a: 'A partir de R$ 21,41/mês (Plano Essencial) ou R$ 27,25/mês no Protocolo Neural (completo, com 15 Tutores IA e Norma IA de redação) — pagamento em 12x sem juros, ou à vista a partir de R$ 257. O plano mais escolhido sai por menos de R$ 0,90 por dia.',
   },
   {
-    q: 'O método funciona para conteúdos densos como Medicina e Engenharia?',
-    a: 'O algoritmo foi desenhado especificamente para alta complexidade. O SRS garante que, sob a pressão máxima do ENEM, a resposta correta venha à sua mente antes do branco. É a diferença entre "achar que sabe" e ter o conteúdo fixado de verdade.',
+    q: 'Tem garantia? Como pedir reembolso?',
+    a: 'Sim. 7 dias de garantia incondicional. Testou e não se encaixou na sua rotina? Mande um email para contato@flashaprova.com.br e devolvemos 100% do valor. Sem perguntas, sem burocracia, sem letra miúda.',
   },
   {
-    q: 'Por que o FlashAprova é superior ao Anki ou métodos manuais?',
-    a: 'O Anki é um martelo; o FlashAprova é uma fábrica automatizada. Além do SRS de elite, você tem o Neural Core com 10 Agentes IA e a Norma IA para auditar suas redações em 30 segundos. Métodos manuais são "terapia de estudo"; aqui o algoritmo decide quando você revisa cada card.',
+    q: 'Funciona para Medicina, Engenharia ou concursos?',
+    a: 'O método de SRS + IA funciona para qualquer conteúdo que exija memorização precisa. Hoje o foco é ENEM com cards desenhados para Medicina e Engenharia, mas o algoritmo é matéria-agnóstico.',
   },
   {
-    q: 'Quanto tempo do meu dia a revisão automática consome?',
-    a: 'Eficiência é a nossa obsessão. O Radar de Lacunas elimina o estudo às cegas: você foca apenas no que o seu cérebro está prestes a deletar. 30 a 45 minutos diários no app permitem uma retenção alvo de até 97% segundo o modelo de Ebbinghaus aplicado pelo SRS, economizando horas de revisões em apostilas estáticas.',
+    q: 'Quanto tempo por dia preciso estudar?',
+    a: '15 a 30 minutos por dia. O Radar de Lacunas elimina o estudo às cegas: você foca apenas no que o seu cérebro está prestes a esquecer. Menos que rolar o feed do Instagram.',
   },
   {
-    q: 'E se eu sentir que o método não é para mim?',
-    a: 'Operamos sem risco. Você tem 7 dias de Garantia Incondicional. Se não sentir uma melhora brutal na sua velocidade de resgate e segurança no conteúdo, devolvemos 100% do seu investimento. Sem perguntas, sem burocracia.',
+    q: 'Por que pagar se o Anki é grátis?',
+    a: 'Anki te obriga a montar deck do zero (2-3 meses antes de estudar 1 card). Aqui você abre o app e em 3 minutos já tem revisão personalizada, com biblioteca pronta de milhares de cards alinhados ao ENEM.',
   },
   {
-    q: 'Posso confiar na correção de redação da IA?',
-    a: 'A Norma IA não "dá uma nota". Ela faz uma correção detalhada baseada no padrão oficial do INEP. Enquanto um corretor humano leva 10 dias, a Norma disseca sua estrutura em segundos, revelando falhas invisíveis que custam sua aprovação.',
+    q: 'Posso confiar na correção de redação por IA?',
+    a: 'A Norma IA segue o padrão oficial do INEP. Em segundos você recebe um parecer detalhado das cinco competências, identifica falhas estruturais que custariam pontos e melhora a próxima redação imediatamente.',
+  },
+  {
+    q: 'Funciona no celular?',
+    a: 'Sim. Plataforma 100% responsiva, abre direto no navegador do celular. Sem download obrigatório.',
+  },
+  {
+    q: 'Quem é a empresa? Como entro em contato?',
+    a: 'FlashAprova é um produto brasileiro com CNPJ, política de privacidade e termos de uso publicados. Suporte por email respondido em até 24h úteis: contato@flashaprova.com.br.',
   },
 ] as const;
 
