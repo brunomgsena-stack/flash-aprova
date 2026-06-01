@@ -36,12 +36,12 @@ export default function PrecoEPlanos() {
         </p>
       </div>
 
-      {/* Grade de cards: mobile → coluna, desktop → 3 colunas */}
-      <div className="flex flex-col lg:grid lg:grid-cols-3 gap-5 items-start mb-8">
+      {/* Grade de cards: mobile → coluna, desktop → 3 colunas com altura igual */}
+      <div className="flex flex-col lg:grid lg:grid-cols-3 gap-5 items-stretch mb-8">
 
         {/* ── ESSENCIAL ─────────────────────────────────────────────────────────── */}
         <div
-          className="relative rounded-2xl p-8 overflow-hidden"
+          className="relative rounded-2xl p-8 overflow-hidden flex flex-col h-full"
           style={{ background: CARD_BG, border: '1px solid rgba(124,58,237,0.18)' }}
         >
           <div
@@ -97,7 +97,7 @@ export default function PrecoEPlanos() {
           </div>
 
           <p
-            className="text-xs text-slate-600 italic mb-5 leading-relaxed border-l-2 pl-3"
+            className="text-xs text-slate-600 italic mb-5 leading-relaxed border-l-2 pl-3 mt-auto"
             style={{ borderColor: 'rgba(124,58,237,0.25)' }}
           >
             Ideal para quem já tem estratégia própria.
@@ -119,7 +119,7 @@ export default function PrecoEPlanos() {
 
         {/* ── PROTOCOLO NEURAL — DESTAQUE ───────────────────────────────────────── */}
         <div
-          className="relative rounded-2xl p-8 overflow-hidden"
+          className="relative rounded-2xl p-8 overflow-hidden flex flex-col h-full"
           style={{ background: 'rgba(4,10,8,0.97)' }}
         >
           {/* Gradient border */}
@@ -199,7 +199,7 @@ export default function PrecoEPlanos() {
           />
 
           {/* Features */}
-          <div className="flex flex-col gap-2.5 mb-6 text-sm">
+          <div className="flex flex-col gap-2.5 mb-6 text-sm mt-auto">
             {(
               [
                 { text: 'SRS adaptativo de retenção espaçada', color: NEON },
@@ -242,7 +242,7 @@ export default function PrecoEPlanos() {
 
         {/* ── PROTOCOLO BLACK ───────────────────────────────────────────────────── */}
         <div
-          className="relative rounded-2xl p-7 overflow-hidden"
+          className="relative rounded-2xl p-8 overflow-hidden flex flex-col h-full"
           style={{ background: 'rgba(18,14,6,0.96)', border: `1px solid rgba(217,119,6,0.22)` }}
         >
           <div
@@ -297,7 +297,7 @@ export default function PrecoEPlanos() {
           </div>
 
           <p
-            className="text-xs text-slate-600 italic mb-5 leading-relaxed border-l-2 pl-3"
+            className="text-xs text-slate-600 italic mb-5 leading-relaxed border-l-2 pl-3 mt-auto"
             style={{ borderColor: 'rgba(217,119,6,0.25)' }}
           >
             Indicado para quem quer máxima personalização.
