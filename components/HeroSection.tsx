@@ -1960,29 +1960,14 @@ export default function HeroSection() {
 
         </div>
 
-        {/* Texto de Autoridade + CTA */}
+        {/* CTA */}
         <motion.div
-          className="text-center px-4 sm:px-6 pt-4 pb-8 sm:pt-0 sm:pb-12 mx-auto order-1 sm:order-none"
+          className="text-center px-4 sm:px-6 pt-4 pb-8 sm:pt-6 sm:pb-12 mx-auto order-1 sm:order-none"
           style={{ maxWidth: 720 }}
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.85, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
         >
-          <p
-            className="text-base sm:text-lg leading-relaxed mx-auto mb-6 sm:mb-10"
-            style={{ color: 'rgba(255,255,255,0.5)', maxWidth: 640 }}
-          >
-            Tenha acesso à{' '}
-            <span style={{ color: '#ffffff', fontWeight: 600 }}>
-              Maior Plataforma de Estudo Ativo do Brasil
-            </span>
-            {' '}e seja aprovado estudando{' '}
-            <span style={{ color: '#ffffff', fontWeight: 600 }}>
-              apenas 15 minutos por dia
-            </span>
-            . Acesse +18k Flashcards Táticos, 15 Tutores IA e Corretor de Redação Ilimitado.
-          </p>
-
           <div className="flex flex-col items-center gap-3">
             {/* ── Industrial High-Ticket CTA ── */}
             <style>{`
