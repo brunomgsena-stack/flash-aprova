@@ -1,6 +1,65 @@
 // ─── Shared reel/testimonial data ────────────────────────────────────────────
 // Imported by both ReelsTestimonials (landing page) and EvidenceCarousel
 // (checkout page). Edit here → both components update automatically.
+//
+// ═══════════════════════════════════════════════════════════════════════════
+// 🚨 TODO PARA O DONO: SUBSTITUIR POR DEPOIMENTOS REAIS (B.4 do PLANO)
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// Os depoimentos abaixo são PLACEHOLDERS conscientes:
+//   • Fotos foram geradas por IA (visualmente realistas)
+//   • Nomes são primeiros nomes + inicial ("ANA M.")
+//   • Cursos estão como "Meta: X" (não "Aprovado em X")
+//   • Bullets falam de método/rotina, NUNCA de aprovação confirmada
+//
+// Isso é proposital: produto ainda não vendeu, então qualquer claim de
+// aprovação real seria propaganda enganosa (risco PROCON/Reclame Aqui).
+//
+// COMO SUBSTITUIR (quando tiver primeiras aprovações confirmadas):
+//
+// 1. Capture, com autorização escrita do aluno:
+//    • Foto real (não IA) — preferência selfie ou close-up natural
+//    • Nome completo OU primeiro nome + inicial (decisão do aluno)
+//    • Curso + universidade + ano de aprovação
+//    • Nota TRI ou nota da redação (se quiser destacar)
+//    • Print do SISU/Fies/PROUNI com nota — guarde fora do repo, sem expor CPF
+//    • 3 frases em primeira pessoa sobre o que mudou com o app
+//    • @ do Instagram (pra reforçar autenticidade — opcional)
+//
+// 2. Coloque a foto em /public/images/<primeiro-nome>-<curso>-<univ>.avif
+//    (otimize com squoosh.app pra ~30-50KB cada)
+//
+// 3. Substitua cada objeto deste array pelo dado real. Padrão:
+//
+//    {
+//      img:      '/images/ana-medicina-ufpe.avif',
+//      tag:      'APROVADA',          tagColor: NEON,
+//      score:    'TRI 920',           course:   'Medicina · UFPE · 2026',
+//      handle:   '@ana.med2026',      // opcional, pra clicar
+//      bullets:  [
+//        '🧠 "Tirei 580 na primeira simulada. Em 90 dias fui pra 740."',
+//        '🎯 "Larguei o Anki, aqui já vem pronto com cards de Medicina."',
+//        '💊 "15 min/dia. Funcionou."',
+//      ],
+//      gradA:    '#0d2a14',           gradB:    '#000810',
+//      floatY:   6,  floatRot: 0.4,   floatDur: 5.2, floatDelay: 0.00,
+//      stories:  [1, 0, 0, 0],
+//    }
+//
+// 4. Não precisa mexer no componente ReelsTestimonials.tsx — ele renderiza
+//    automaticamente. Só vai precisar atualizar:
+//      • O label do header em ReelsTestimonials.tsx
+//        (hoje: "[ PILOTO AUTOMÁTICO ]" — trocar pra "[ APROVADOS 2026 ]")
+//      • O title h2 (hoje: "Histórias de quem está no piloto automático...")
+//        → "Aprovados que estudaram com o FlashAprova"
+//
+// 5. Atualizar /metodo (app/metodo/page.tsx) — seção "Sobre os números":
+//    Remover/atualizar o parágrafo que avisa "depoimentos atuais são de
+//    estudantes em jornada" assim que houver aprovações reais aqui.
+//
+// ⚠️ NUNCA misture depoimentos reais com fictícios na mesma lista —
+//    confunde o leitor e enfraquece os reais.
+// ═══════════════════════════════════════════════════════════════════════════
 
 export interface Reel {
   img:        string;
