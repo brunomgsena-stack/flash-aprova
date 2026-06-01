@@ -450,7 +450,7 @@ export default function FocusSection() {
       <div className="relative text-center mb-12" style={{ zIndex: 1 }}>
         <p className="text-xs font-bold tracking-widest uppercase mb-3"
           style={{ color: NEON, fontFamily: JETBRAINS, textShadow: `0 0 16px ${NEON}80` }}>
-          &gt; Mapeamento de Ameaças
+          &gt; Você está estudando às cegas?
         </p>
         <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">
           Radar de{' '}
@@ -463,7 +463,7 @@ export default function FocusSection() {
           </span>
         </h2>
         <p className="text-slate-400 text-base max-w-2xl mx-auto">
-          O fim do estudo às cegas. O Radar combina seu histórico de revisão com o algoritmo SRS para encontrar as falhas invisíveis que a TRI do ENEM não perdoa — antes que elas te reprovem.
+          O Radar localiza exatamente o que seu cérebro está prestes a esquecer — e te manda revisar só isso. Sem chute. Sem estudo na escuridão.
         </p>
       </div>
 
@@ -498,75 +498,7 @@ export default function FocusSection() {
         animate={inView ? 'visible' : 'hidden'}
       >
 
-        {/* ── Card 1: Heatmap de Fragilidades ── */}
-        <Card color={ORANGE} tooltip="IA detectou falha em Estequiometria.">
-          <div className="flex items-center gap-2 mb-4">
-            <span className="text-lg">🎯</span>
-            <div>
-              <p className="text-[11px] font-black tracking-widest uppercase"
-                style={{ color: ORANGE, fontFamily: JETBRAINS }}>
-                Visão de Raio-X
-              </p>
-              <p className="text-[10px] text-slate-400 mt-0.5" style={{ fontFamily: JETBRAINS }}>Radar de competências ENEM</p>
-            </div>
-            {/* Live dot */}
-            <motion.span className="ml-auto w-2 h-2 rounded-full shrink-0"
-              style={{ background: ORANGE }}
-              animate={{ opacity: [1, 0.2, 1] }}
-              transition={{ duration: 1.4, repeat: Infinity }} />
-          </div>
-
-          <HeatmapRadar inView={inView} />
-
-          <div className="mt-3 grid grid-cols-5 gap-1">
-            {FRAG_AXES.map(a => (
-              <div key={a.label} className="flex flex-col items-center gap-0.5">
-                <div className="hidden sm:block w-1.5 h-1.5 rounded-full" style={{ background: a.color }} />
-                <span className="hidden sm:inline text-[8px] text-slate-700" style={{ fontFamily: JETBRAINS }}>
-                  {Math.round(a.v * 100)}%
-                </span>
-              </div>
-            ))}
-          </div>
-        </Card>
-
-        {/* ── Card 2: Nivelamento Inteligente ── */}
-        <Card color={CYAN} tooltip="Conteúdo adaptado para nível Intermediário.">
-          <div className="flex items-center gap-2 mb-4">
-            <span className="text-lg">📈</span>
-            <div>
-              <p className="text-[11px] font-black tracking-widest uppercase"
-                style={{ color: CYAN, fontFamily: JETBRAINS }}>
-                Domínio do Edital
-              </p>
-              <p className="text-[10px] text-slate-400 mt-0.5" style={{ fontFamily: JETBRAINS }}>Progresso por área ENEM</p>
-            </div>
-            <motion.span className="ml-auto w-2 h-2 rounded-full shrink-0"
-              style={{ background: CYAN }}
-              animate={{ opacity: [1, 0.2, 1] }}
-              transition={{ duration: 1.6, repeat: Infinity, delay: 0.6 }} />
-          </div>
-
-          <div className="flex flex-col gap-4">
-            {LEVELS.map((lvl, i) => (
-              <ProgressBar
-                key={lvl.label}
-                {...lvl}
-                index={i}
-                inView={inView}
-              />
-            ))}
-          </div>
-
-          <div className="mt-4 px-3 py-2.5 rounded-xl"
-            style={{ background: `${CYAN}14`, border: `1px solid ${CYAN}40` }}>
-            <p className="text-[11px] font-semibold" style={{ color: CYAN }}>
-              🧬 Nível geral: <span className="font-black">Intermediário+</span> — subindo
-            </p>
-          </div>
-        </Card>
-
-        {/* ── Card 3: Cronograma Preditivo ── */}
+        {/* ── Card 1: Cronograma Preditivo (Plano da Semana) ── */}
         <Card color={NEON}>
           <div className="flex items-center gap-2 mb-4">
             <span className="text-lg">📅</span>
@@ -589,6 +521,78 @@ export default function FocusSection() {
             style={{ background: `${NEON}14`, border: `1px solid ${NEON}40` }}>
             <p className="text-[11px] font-semibold" style={{ color: NEON }}>
               ⏱ Próxima revisão: <span className="font-black">Química</span> — hoje 19h
+            </p>
+          </div>
+        </Card>
+
+        {/* ── Card 2: Heatmap de Fragilidades (Mapa de Fragilidades) ── */}
+        <Card color={ORANGE} tooltip="IA detectou falha em Estequiometria.">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-lg">🎯</span>
+            <div>
+              <p className="text-[11px] font-black tracking-widest uppercase"
+                style={{ color: ORANGE, fontFamily: JETBRAINS }}>
+                Mapa de Fragilidades
+              </p>
+              <p className="text-[10px] text-slate-400 mt-0.5" style={{ fontFamily: JETBRAINS }}>Onde você está perdendo pontos agora</p>
+            </div>
+            {/* Live dot */}
+            <motion.span className="ml-auto w-2 h-2 rounded-full shrink-0"
+              style={{ background: ORANGE }}
+              animate={{ opacity: [1, 0.2, 1] }}
+              transition={{ duration: 1.4, repeat: Infinity }} />
+          </div>
+
+          <HeatmapRadar inView={inView} />
+
+          <p className="text-[10px] mt-2" style={{ color: 'rgba(255,255,255,0.30)', fontFamily: JETBRAINS }}>
+            Alimentado pelo seu histórico de revisão SRS
+          </p>
+
+          <div className="mt-3 grid grid-cols-5 gap-1">
+            {FRAG_AXES.map(a => (
+              <div key={a.label} className="flex flex-col items-center gap-0.5">
+                <div className="hidden sm:block w-1.5 h-1.5 rounded-full" style={{ background: a.color }} />
+                <span className="hidden sm:inline text-[8px] text-slate-700" style={{ fontFamily: JETBRAINS }}>
+                  {Math.round(a.v * 100)}%
+                </span>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        {/* ── Card 3: Nivelamento Inteligente (Domínio do Edital) ── */}
+        <Card color={CYAN} tooltip="Conteúdo adaptado para nível Intermediário.">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-lg">📈</span>
+            <div>
+              <p className="text-[11px] font-black tracking-widest uppercase"
+                style={{ color: CYAN, fontFamily: JETBRAINS }}>
+                Domínio do Edital
+              </p>
+              <p className="text-[10px] text-slate-400 mt-0.5" style={{ fontFamily: JETBRAINS }}>Quanto falta pra dominar cada área</p>
+            </div>
+            <motion.span className="ml-auto w-2 h-2 rounded-full shrink-0"
+              style={{ background: CYAN }}
+              animate={{ opacity: [1, 0.2, 1] }}
+              transition={{ duration: 1.6, repeat: Infinity, delay: 0.6 }} />
+          </div>
+
+          <div className="flex flex-col gap-4">
+            {LEVELS.map((lvl, i) => (
+              <ProgressBar
+                key={lvl.label}
+                {...lvl}
+                index={i}
+                inView={inView}
+              />
+            ))}
+          </div>
+
+          <div className="mt-4 px-3 py-2.5 rounded-xl"
+            style={{ background: `${CYAN}14`, border: `1px solid ${CYAN}40` }}>
+            <p className="text-[11px] font-semibold" style={{ color: CYAN }}>
+              🧬 Nível geral: <span className="font-black">Intermediário+</span> — subindo
             </p>
           </div>
         </Card>
