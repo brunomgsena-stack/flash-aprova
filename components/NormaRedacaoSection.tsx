@@ -1113,6 +1113,27 @@ export default function NormaRedacaoSection() {
           {stage === 'VEREDITO'   && <VeredityStage   key="veredito"   />}
         </AnimatePresence>
       </div>
+
+      {/* Anti-objeção: IA pode errar a correção? */}
+      <div
+        className="max-w-2xl mx-auto mt-8 p-5 rounded-xl text-sm leading-relaxed"
+        style={{
+          background: `${PURPLE}0f`,
+          border: `1px solid ${PURPLE}33`,
+        }}
+      >
+        <p className="font-bold mb-2" style={{ color: PURPLE, fontFamily: MONO }}>
+          🛡️ Mas a IA pode errar a correção?
+        </p>
+        <p style={{ color: 'rgba(255,255,255,0.65)' }}>
+          A Norma IA segue o{' '}
+          <strong className="text-white">gabarito oficial das 5 competências do INEP</strong> —
+          a mesma régua que o avaliador humano usa. Não é &ldquo;opinião de IA&rdquo;. Se a Norma identifica falha em
+          Competência 2, o avaliador humano também vai penalizar. A diferença está na{' '}
+          <strong className="text-white">velocidade</strong>:
+          você recebe parecer em segundos, não em 10 dias.
+        </p>
+      </div>
     </section>
   );
 }
