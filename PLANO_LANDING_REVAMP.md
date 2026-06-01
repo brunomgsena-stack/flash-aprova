@@ -468,12 +468,16 @@ Variantes hoje a substituir:
 - [x] A.7 Fix CLS skeletons — commit af1e678 (minHeights realistas)
 - [x] A.8 Review Opus + PAUSA validação usuário — aprovado
 
-### Tier B (executável agora)
+### Tier B
 - [x] B.1 Página /metodo — commit f9ad215 (`app/metodo/page.tsx` com Ebbinghaus, SRS, transparência)
-- [ ] B.2 Vídeo demo — **BLOQUEADO** (app não está em estado gravável)
+- [x] B.2 Vídeo demo — commit 87a883c — **ESQUELETO PRONTO** (`components/AppDemo.tsx` + `public/videos/README.md` com specs ffmpeg). Falta: gravar e colocar `app-demo.{mp4,webm}` + poster em `public/videos/`. O placeholder some sozinho quando os arquivos existirem.
 - [x] B.3 Trust signals — commit c878b12 (`components/TrustBadges.tsx` + SSL no footer)
-- [ ] B.4 Depoimentos reais — **BLOQUEADO** (depende de primeiras vendas/aprovações)
-- [ ] B.5 Sistema de referral — **NÃO IMPLEMENTADO** (requer backend Supabase + tabela `referrals`)
+- [x] B.4 Depoimentos reais — commit 9f4d3a5 — **TODO INLINE PRONTO** em `lib/reels-data.ts` (schema, instruções de captura, onde otimizar foto, o que atualizar em `/metodo`). Falta: ter primeiras aprovações confirmadas → trocar os 8 objetos do array `REELS`.
+- [x] B.5 Sistema de referral — commit 55467e3 — **ESQUELETO COMPLETO** (4 arquivos novos):
+    - `supabase/migrations/20260601_referrals_skeleton.sql` (tabela + RLS + RPC) — não aplicado, rodar manualmente
+    - `app/api/referrals/route.ts` (GET stats + POST click) — retorna 501 até implementar auth
+    - `components/ReferralProgram.tsx` (bloco público na landing) — funcional visualmente, lógica real depende de dashboard
+    - Falta: aplicar migration, implementar auth nas routes, criar `/app/dashboard/indique/page.tsx`, middleware pra `?ref=CODE`, webhook do gateway de pagamento, email transacional, anti-fraude
 - [x] B.6 Polish final + verificação tipo — feito em 2026-06-01
 
 ## 🟢 Estado final desta sessão
