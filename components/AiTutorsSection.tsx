@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import Image from 'next/image';
 
 // ─── Design tokens ─────────────────────────────────────────────────────────
@@ -9,7 +9,7 @@ const NEON   = '#00FF73';
 const VIOLET = '#7C3AED';
 
 // ─── Timing ────────────────────────────────────────────────────────────────
-const CYCLE_DELAY_MS  = 5_000;
+const CYCLE_DELAY_MS  = 9_000;
 const MANUAL_PAUSE_MS = 30_000;
 
 // ─── Avatar helper ───────────────────────────────────────────────────────────
@@ -345,7 +345,7 @@ function AgentCard({ agent, isActive, ringActive, ringKey, onClick }: {
           {agent.codename}
         </p>
         <span
-          className="text-[8px] font-bold px-1.5 py-0.5 rounded-sm leading-none"
+          className="text-[10px] font-bold px-1.5 py-0.5 rounded-sm leading-none"
           style={{
             ...MONO,
             background: isActive ? `${agent.color}22` : 'rgba(255,255,255,0.04)',
@@ -364,13 +364,13 @@ function AgentCard({ agent, isActive, ringActive, ringKey, onClick }: {
         style={{ height: 34, transition: 'opacity 0.22s ease', opacity: isActive ? 1 : 0 }}
       >
         <p
-          className="text-[9px] leading-snug truncate"
+          className="text-[10px] leading-snug truncate"
           style={{ ...MONO, color: agent.color + 'cc' }}
         >
           {agent.specialty}
         </p>
         <p
-          className="text-[8px] leading-snug mt-0.5"
+          className="text-[10px] leading-snug mt-0.5"
           style={{ ...MONO, color: 'rgba(255,255,255,0.32)', whiteSpace: 'normal' }}
         >
           {agent.focus}
@@ -437,11 +437,11 @@ function CommandRail({ agents, activeId, onSelect, ringActive, ringKey }: {
       {/* Rail label */}
       <div className="flex items-center gap-2 mb-3 relative" style={{ zIndex: 1 }}>
         <div className="w-1 h-1 rounded-full animate-pulse" style={{ background: activeAgent.color }} />
-        <p className="text-[9px] font-bold tracking-[0.2em] uppercase" style={{ ...MONO, color: 'rgba(255,255,255,0.25)' }}>
+        <p className="text-[10px] font-bold tracking-[0.2em] uppercase" style={{ ...MONO, color: 'rgba(255,255,255,0.25)' }}>
           · Selecione o Agente
         </p>
         <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.04)' }} />
-        <p className="text-[9px]" style={{ ...MONO, color: activeAgent.color + '99' }}>
+        <p className="text-[10px]" style={{ ...MONO, color: activeAgent.color + '99' }}>
           [ONLINE]
         </p>
       </div>
@@ -473,6 +473,7 @@ export default function AiTutorsSection() {
   const [phase,       setPhase]       = useState(0);
   const [autoCycling, setAutoCycling] = useState(true);
   const [ringKey,     setRingKey]     = useState(0);
+  const reduceMotion = useReducedMotion();
 
   const pauseRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -493,12 +494,12 @@ export default function AiTutorsSection() {
 
   // ── Auto-cycle ─────────────────────────────────────────────────────────────
   useEffect(() => {
-    if (!autoCycling || phase < 4) return;
+    if (!autoCycling || phase < 4 || reduceMotion) return;
     const idx  = AGENTS.findIndex(a => a.id === activeId);
     const next = AGENTS[(idx + 1) % AGENTS.length];
     const t    = setTimeout(() => setActiveId(next.id), CYCLE_DELAY_MS);
     return () => clearTimeout(t);
-  }, [phase, autoCycling, activeId]);
+  }, [phase, autoCycling, activeId, reduceMotion]);
 
   // ── Manual selection ───────────────────────────────────────────────────────
   function selectAgent(id: string) {
@@ -518,20 +519,16 @@ export default function AiTutorsSection() {
       {/* ── Header ──────────────────────────────────────────────── */}
       <div className="text-center mb-8">
         <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: VIOLET }}>
-          NÚCLEO ORÁCULO
+          NÚCLEO ORÁCULO · COMANDO TÁTICO 24/7
         </p>
-        <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">
-          <span className="sm:hidden">
-            <span style={{ color: '#00FF73' }}>Comando Tático</span>{' '}24/7
-          </span>
-          <span className="hidden sm:inline">O seu Comando Tático 24/7</span>
+        <h2 className="text-3xl sm:text-4xl font-black text-white mb-3 leading-tight">
+          Tira dúvida em <span style={{ color: '#00FF73' }}>qualquer matéria</span>,
+          <br className="hidden sm:block" /> 24 horas por dia.
         </h2>
-        <p className="text-slate-500 text-base max-w-xl mx-auto">
-          Tire dúvidas com os{' '}
-          <span className="font-bold text-white">'Mestres do ENEM'</span>.{' '}
-          Nossa{' '}
-          <span className="font-bold text-white">Rede Neural de 15 agentes especializados</span>{' '}
-          com banco de dados focado no ENEM.
+        <p className="text-slate-400 text-base max-w-xl mx-auto leading-relaxed">
+          15 especialistas IA cobrindo o{' '}
+          <span className="font-bold text-white">conteúdo programático oficial do ENEM</span>.{' '}
+          Resposta em segundos. Sem fila, sem espera, sem dia ruim.
         </p>
       </div>
 
@@ -738,6 +735,24 @@ export default function AiTutorsSection() {
           </div>
         </div>
       </motion.div>
+
+      {/* CTA */}
+      <div className="mt-10 text-center">
+        <a
+          href="/checkout?from=landing-oraculo&plan=neural"
+          className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl font-black text-sm tracking-wider transition-all hover:-translate-y-0.5"
+          style={{
+            background: `linear-gradient(135deg, ${VIOLET} 0%, ${NEON} 100%)`,
+            color: '#fff',
+            boxShadow: `0 0 32px ${VIOLET}55`,
+          }}
+        >
+          CONVERSAR COM UM ESPECIALISTA AGORA →
+        </a>
+        <p className="text-xs text-slate-500 mt-3" style={MONO}>
+          7 dias grátis · cancele quando quiser
+        </p>
+      </div>
     </section>
   );
 }

@@ -205,10 +205,10 @@ export default function AnkiComparison() {
                 💀
               </div>
               <div>
-                <p className="font-black text-base tracking-tight" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                <p className="font-black text-base tracking-tight" style={{ color: 'rgba(255,255,255,0.82)' }}>
                   Videoaula Passiva
                 </p>
-                <p className="text-xs" style={{ color: 'rgba(255,255,255,0.22)' }}>
+                <p className="text-xs" style={{ color: 'rgba(255,255,255,0.55)' }}>
                   Stoodi · Descomplica · Cursinho online
                 </p>
               </div>
@@ -246,12 +246,12 @@ export default function AnkiComparison() {
                 className="flex items-start gap-3 p-3 rounded-xl"
                 style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.04)' }}
               >
-                <span className="text-lg shrink-0 mt-0.5 grayscale opacity-40">{icon}</span>
+                <span className="text-lg shrink-0 mt-0.5 opacity-80">{icon}</span>
                 <div>
-                  <p className="text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                  <p className="text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.78)' }}>
                     {label}
                   </p>
-                  <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.18)' }}>{sub}</p>
+                  <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.50)' }}>{sub}</p>
                 </div>
                 <span className="ml-auto shrink-0 text-xs font-bold mt-0.5" style={{ color: `${RED}70` }}>✕</span>
               </motion.div>
@@ -260,11 +260,11 @@ export default function AnkiComparison() {
 
           {/* Bottom score */}
           <div className="relative mt-5 pt-4" style={{ zIndex: 4, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-            <p className="text-[10px] uppercase tracking-widest mb-1" style={{ color: 'rgba(255,255,255,0.22)' }}>
+            <p className="text-[10px] uppercase tracking-widest mb-1" style={{ color: 'rgba(255,255,255,0.50)' }}>
               Retenção real
             </p>
-            <p className="text-3xl font-black tabular-nums" style={{ color: `${RED}80` }}>~35%</p>
-            <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.18)' }}>após 1 semana sem revisão</p>
+            <p className="text-3xl font-black tabular-nums" style={{ color: RED, textShadow: `0 0 24px ${RED}40` }}>~35%</p>
+            <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.55)' }}>após 1 semana sem revisão</p>
           </div>
         </motion.div>
 
@@ -423,7 +423,7 @@ export default function AnkiComparison() {
 
         <Link
           href="/quizz"
-          className="cta-pulse relative flex sm:inline-flex w-full sm:w-auto justify-center items-center gap-3 rounded-2xl font-black text-black overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.99] px-8 py-5 text-lg"
+          className="cta-pulse relative flex sm:inline-flex w-full sm:w-auto justify-center items-center gap-3 rounded-2xl font-black text-black overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.99] px-6 py-4 text-sm"
           style={{
             background:    `linear-gradient(135deg, ${NEON} 0%, #00cc5a 100%)`,
             letterSpacing: '-0.01em',
@@ -437,7 +437,7 @@ export default function AnkiComparison() {
               animation: 'shimmer 2.4s infinite',
             }}
           />
-          <svg width={22} height={22} viewBox="0 0 24 24" fill="none"
+          <svg width={18} height={18} viewBox="0 0 24 24" fill="none"
             stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
             className="relative">
             <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>

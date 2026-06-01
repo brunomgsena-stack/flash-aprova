@@ -21,7 +21,7 @@ interface Feature {
 // ─── Componente principal ─────────────────────────────────────────────────────
 export default function PrecoEPlanos() {
   return (
-    <section className="max-w-6xl mx-auto px-4 sm:px-10 pb-12 sm:pb-24">
+    <section id="preco-e-planos" className="max-w-6xl mx-auto px-4 sm:px-10 pb-12 sm:pb-24">
       {/* Cabeçalho da seção */}
       <div className="text-center mb-10">
         <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: VIOLET }}>
@@ -41,7 +41,7 @@ export default function PrecoEPlanos() {
 
         {/* ── ESSENCIAL ─────────────────────────────────────────────────────────── */}
         <div
-          className="relative rounded-2xl p-8 overflow-hidden flex flex-col h-full"
+          className="relative rounded-2xl p-8 overflow-hidden flex flex-col h-full order-2 lg:order-1"
           style={{ background: CARD_BG, border: '1px solid rgba(124,58,237,0.18)' }}
         >
           <div
@@ -119,7 +119,7 @@ export default function PrecoEPlanos() {
 
         {/* ── PROTOCOLO NEURAL — DESTAQUE ───────────────────────────────────────── */}
         <div
-          className="relative rounded-2xl p-8 overflow-hidden flex flex-col h-full"
+          className="relative rounded-2xl p-8 overflow-hidden flex flex-col h-full order-1 lg:order-2"
           style={{ background: 'rgba(4,10,8,0.97)' }}
         >
           {/* Gradient border */}
@@ -231,11 +231,11 @@ export default function PrecoEPlanos() {
               Se você contratasse tudo separado:
             </p>
             <div className="flex flex-col gap-1.5" style={{ color: 'rgba(255,255,255,0.55)' }}>
-              <div className="flex justify-between"><span>Tutor humano de Física/Mat</span><span>R$ 150/mês</span></div>
-              <div className="flex justify-between"><span>Corretor de redação</span><span>R$ 450/mês</span></div>
-              <div className="flex justify-between"><span>Material SRS premium</span><span>R$ 200/mês</span></div>
+              <div className="flex justify-between"><span>Aula particular (1x/sem · R$ 80/h)</span><span>R$ 320/mês</span></div>
+              <div className="flex justify-between"><span>Correção de redação (4x · R$ 50)</span><span>R$ 200/mês</span></div>
+              <div className="flex justify-between"><span>Material SRS premium</span><span>R$ 50/mês</span></div>
               <div className="flex justify-between font-bold pt-1.5 mt-1.5" style={{ borderTop: '1px dashed rgba(255,255,255,0.10)', color: 'rgba(255,255,255,0.85)' }}>
-                <span>Total mensal</span><span>R$ 800/mês</span>
+                <span>Total mensal</span><span>R$ 570/mês</span>
               </div>
               <div className="flex justify-between font-black pt-1.5" style={{ color: NEON }}>
                 <span>Protocolo Neural</span><span>R$ 27,25/mês</span>
@@ -252,7 +252,7 @@ export default function PrecoEPlanos() {
               boxShadow: `0 0 40px ${NEON}55, 0 4px 20px rgba(0,0,0,0.50)`,
             }}
           >
-            GARANTIR MINHA VAGA
+            COMEÇAR 7 DIAS GRÁTIS
           </Link>
 
           <p
@@ -265,7 +265,7 @@ export default function PrecoEPlanos() {
 
         {/* ── PROTOCOLO BLACK ───────────────────────────────────────────────────── */}
         <div
-          className="relative rounded-2xl p-8 overflow-hidden flex flex-col h-full"
+          className="relative rounded-2xl p-8 overflow-hidden flex flex-col h-full order-3 lg:order-3"
           style={{ background: 'rgba(18,14,6,0.96)', border: `1px solid rgba(217,119,6,0.22)` }}
         >
           <div

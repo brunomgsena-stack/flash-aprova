@@ -32,7 +32,7 @@ const FocusSection       = dynamic(() => import('@/components/FocusSection'),   
 const ReelsTestimonials  = dynamic(() => import('@/components/ReelsTestimonials'),  { ssr: false, loading: () => <SkeletonBlock h={600} /> });
 const ComoFuncionaSteps  = dynamic(() => import('@/components/ComoFuncionaSteps'),  { ssr: false, loading: () => <SkeletonBlock h={2400} /> });
 const PrecoEPlanos       = dynamic(() => import('@/components/PrecoEPlanos'),       { ssr: false, loading: () => <SkeletonBlock h={1400} /> });
-const StickyMobileCTA    = dynamic(() => import('@/components/StickyMobileCTA'),    { ssr: false });
+const StickyMobileCta    = dynamic(() => import('@/components/StickyMobileCta'),    { ssr: false });
 const AppDemo            = dynamic(() => import('@/components/AppDemo'),            { ssr: false, loading: () => <SkeletonBlock h={900} /> });
 const ParaQuemE          = dynamic(() => import('@/components/ParaQuemE'),          { ssr: false, loading: () => <SkeletonBlock h={700} /> });
 
@@ -989,7 +989,7 @@ export default function LandingPage() {
       </div>
 
       {/* Sticky CTA mobile — aparece após scroll > 400px */}
-      <StickyMobileCTA />
+      <StickyMobileCta />
 
     </main>
 
