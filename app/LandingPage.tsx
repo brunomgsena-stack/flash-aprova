@@ -23,16 +23,16 @@ const SkeletonBlock = ({ h = 400 }: { h?: number }) => (
   />
 );
 
-const AnkiComparison     = dynamic(() => import('@/components/AnkiComparison'),     { ssr: false, loading: () => <SkeletonBlock h={400} /> });
-const EbbinghausSection  = dynamic(() => import('@/components/EbbinghausSection'), { ssr: false, loading: () => <SkeletonBlock h={340} /> });
-const NeuralBrainMap     = dynamic(() => import('@/components/NeuralBrainMap'),     { ssr: false, loading: () => <SkeletonBlock h={380} /> });
-const CardVaultSection   = dynamic(() => import('@/components/CardVaultSection'),   { ssr: false, loading: () => <SkeletonBlock h={480} /> });
-const NormaRedacaoSection= dynamic(() => import('@/components/NormaRedacaoSection'),{ ssr: false, loading: () => <SkeletonBlock h={520} /> });
-const AiTutorsSection    = dynamic(() => import('@/components/AiTutorsSection'),    { ssr: false, loading: () => <SkeletonBlock h={480} /> });
-const FocusSection          = dynamic(() => import('@/components/FocusSection'),          { ssr: false, loading: () => <SkeletonBlock h={480} /> });
-const ReelsTestimonials  = dynamic(() => import('@/components/ReelsTestimonials'),  { ssr: false, loading: () => <SkeletonBlock h={340} /> });
-const ComoFuncionaSteps  = dynamic(() => import('@/components/ComoFuncionaSteps'),  { ssr: false, loading: () => <SkeletonBlock h={720} /> });
-const PrecoEPlanos       = dynamic(() => import('@/components/PrecoEPlanos'),       { ssr: false, loading: () => <SkeletonBlock h={800} /> });
+const AnkiComparison     = dynamic(() => import('@/components/AnkiComparison'),     { ssr: false, loading: () => <SkeletonBlock h={900} /> });
+const EbbinghausSection  = dynamic(() => import('@/components/EbbinghausSection'), { ssr: false, loading: () => <SkeletonBlock h={700} /> });
+const CardVaultSection   = dynamic(() => import('@/components/CardVaultSection'),   { ssr: false, loading: () => <SkeletonBlock h={900} /> });
+const NormaRedacaoSection= dynamic(() => import('@/components/NormaRedacaoSection'),{ ssr: false, loading: () => <SkeletonBlock h={1500} /> });
+const AiTutorsSection    = dynamic(() => import('@/components/AiTutorsSection'),    { ssr: false, loading: () => <SkeletonBlock h={1100} /> });
+const FocusSection       = dynamic(() => import('@/components/FocusSection'),       { ssr: false, loading: () => <SkeletonBlock h={900} /> });
+const ReelsTestimonials  = dynamic(() => import('@/components/ReelsTestimonials'),  { ssr: false, loading: () => <SkeletonBlock h={600} /> });
+const ComoFuncionaSteps  = dynamic(() => import('@/components/ComoFuncionaSteps'),  { ssr: false, loading: () => <SkeletonBlock h={2400} /> });
+const PrecoEPlanos       = dynamic(() => import('@/components/PrecoEPlanos'),       { ssr: false, loading: () => <SkeletonBlock h={1400} /> });
+const StickyMobileCTA    = dynamic(() => import('@/components/StickyMobileCTA'),    { ssr: false });
 
 // ─── Lazy section wrapper ──────────────────────────────────────────────────────
 // Defers rendering (and therefore chunk download) until the section is ~300px
@@ -662,18 +662,18 @@ export default function LandingPage() {
         <AuthorityBanner />
 
         {/* ════════════════════════════ COMO FUNCIONA · 4 PASSOS ══ */}
-        <LazySection minHeight={720}>
+        <LazySection minHeight={2400}>
           <ComoFuncionaSteps />
         </LazySection>
 
         {/* ════════════════════════════ METHODS COMPARISON ══ */}
         <section className="max-w-5xl mx-auto px-4 sm:px-10 pb-12 sm:pb-24">
 
-          <LazySection minHeight={340}>
+          <LazySection minHeight={700}>
             <EbbinghausSection />
           </LazySection>
 
-          <LazySection minHeight={400}>
+          <LazySection minHeight={900}>
             <AnkiComparison />
           </LazySection>
 
@@ -682,7 +682,7 @@ export default function LandingPage() {
 
 
         {/* ════════════════════ FOCO — Mapeamento de Fragilidades ══ */}
-        <LazySection minHeight={480}>
+        <LazySection minHeight={900}>
           <FocusSection />
         </LazySection>
 
@@ -694,17 +694,17 @@ export default function LandingPage() {
         </div>
 
         {/* ═══════════════════════════ BIBLIOTECA ══ */}
-        <LazySection minHeight={480}>
+        <LazySection minHeight={900}>
           <CardVaultSection />
         </LazySection>
 
         {/* ════════════════════════════ TUTOR IA ══ */}
-        <LazySection minHeight={480}>
+        <LazySection minHeight={1100}>
           <AiTutorsSection />
         </LazySection>
 
         {/* ═══════════════════════ NORMA · REDAÇÃO ══ */}
-        <LazySection minHeight={520}>
+        <LazySection minHeight={1500}>
           <NormaRedacaoSection />
         </LazySection>
 
@@ -895,11 +895,11 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <LazySection minHeight={340}>
+        <LazySection minHeight={600}>
           <ReelsTestimonials />
         </LazySection>
 
-        <LazySection minHeight={800}>
+        <LazySection minHeight={1400}>
           <PrecoEPlanos />
         </LazySection>
 
@@ -927,6 +927,9 @@ export default function LandingPage() {
         </footer>
 
       </div>
+
+      {/* Sticky CTA mobile — aparece após scroll > 400px */}
+      <StickyMobileCTA />
 
     </main>
 
