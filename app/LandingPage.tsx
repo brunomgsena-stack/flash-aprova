@@ -915,7 +915,16 @@ export default function LandingPage() {
                   WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
                 }}>Aprova</span>
               </p>
-              <p className="text-slate-700 text-xs">© 2026 · Tecnologia de aprovação com IA</p>
+              <p className="text-slate-700 text-xs flex items-center gap-2 flex-wrap">
+                © 2026 · Tecnologia de aprovação com IA
+                <span className="inline-flex items-center gap-1" style={{ color: 'rgba(255,255,255,0.30)' }}>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  </svg>
+                  <span className="text-[10px]">SSL</span>
+                </span>
+              </p>
             </div>
             <nav className="flex flex-wrap gap-x-5 gap-y-2 text-xs text-slate-500">
               <Link href="/privacidade" className="hover:text-slate-300 transition-colors">Política de Privacidade</Link>

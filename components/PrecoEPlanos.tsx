@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import TrustBadges from './TrustBadges';
 
 // ─── Design tokens (espelho da landing) ───────────────────────────────────────
 const NEON   = '#00FF73';
@@ -314,6 +315,9 @@ export default function PrecoEPlanos() {
         </div>
 
       </div>
+
+      {/* Trust Badges — métodos de pagamento e segurança */}
+      <TrustBadges />
 
       {/* Selo de garantia */}
       <div className="flex justify-center">
