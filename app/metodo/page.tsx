@@ -289,6 +289,68 @@ export default function MetodoPage() {
           </p>
         </section>
 
+        {/* ─── Seção: Quem está por trás ─── */}
+        <section className="max-w-3xl mx-auto px-6 py-12" id="fundador">
+          <div className="text-center mb-8">
+            <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: '#a78bfa' }}>
+              Quem está por trás
+            </p>
+            <h2 className="text-2xl sm:text-3xl font-black text-white mb-4 leading-tight">
+              O FlashAprova não nasceu numa sala de marketing.
+            </h2>
+          </div>
+
+          <div
+            className="rounded-2xl p-6 sm:p-8"
+            style={{
+              background: 'rgba(255,255,255,0.03)',
+              border: '1px solid rgba(255,255,255,0.07)',
+            }}
+          >
+            {/* TODO PARA O DONO: substituir nome, foto e história por dados reais.
+                - Adicionar foto em /public/images/fundador.avif (otimizada ~30KB)
+                - Trocar nome/curso/história abaixo */}
+            <div className="flex flex-col sm:flex-row gap-6 items-start">
+              <div
+                className="w-24 h-24 sm:w-28 sm:h-28 shrink-0 rounded-2xl flex items-center justify-center text-3xl"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(124,58,237,0.20), rgba(0,255,115,0.10))',
+                  border: '1px solid rgba(124,58,237,0.30)',
+                }}
+              >
+                👤
+              </div>
+              <div className="flex-1">
+                <p className="text-lg font-black text-white mb-1">
+                  Bruno Sena — Fundador
+                </p>
+                <p className="text-xs uppercase tracking-widest mb-4" style={{ color: 'rgba(0,255,115,0.65)' }}>
+                  Eng. de Software · Estudante de Medicina · Brasília
+                </p>
+                <p className="text-slate-300 text-sm leading-relaxed mb-3">
+                  Estudei pra dois ENEMs. No primeiro, reprovei em Medicina por 14 pontos. Olhei pra trás
+                  e vi 800 horas de PDF e videoaula que sumiram da minha cabeça em semanas.
+                </p>
+                <p className="text-slate-300 text-sm leading-relaxed mb-3">
+                  Foi aí que descobri o Spaced Repetition System usado por estudantes de medicina nos EUA
+                  (Anki + UWorld). Funcionou — mas era doloroso: 3 meses montando deck antes de revisar o
+                  primeiro card. Em 2024, junto com uma equipe de devs e professores ENEM, decidimos construir
+                  a plataforma que eu queria ter usado: deck pronto, IA que decide quando revisar, correção
+                  de redação em segundos.
+                </p>
+                <p className="text-slate-300 text-sm leading-relaxed">
+                  <strong className="text-white">O Protocolo Neural é exatamente o método que me fez ser
+                  aprovado na segunda tentativa.</strong> Hoje compartilho ele com você.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <p className="text-center text-xs italic mt-6" style={{ color: 'rgba(255,255,255,0.40)' }}>
+            Quer falar comigo? <a href="mailto:contato@flashaprova.com.br" className="underline hover:text-white">contato@flashaprova.com.br</a>
+          </p>
+        </section>
+
         {/* ══ CTA FINAL ═══════════════════════════════════════════════════════ */}
         <section className="text-center py-10">
           <h2 className="text-2xl sm:text-3xl font-black mb-3" style={{ color: '#ffffff' }}>
