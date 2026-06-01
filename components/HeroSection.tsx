@@ -1935,10 +1935,6 @@ export default function HeroSection() {
             {' '}sem esquecer o que você estudou ontem.
           </h1>
 
-          {/* Subheadline curta */}
-          <p className="text-base md:text-lg lg:text-xl font-medium leading-relaxed text-gray-300 max-w-3xl mx-auto mt-4 sm:mt-6">
-            A única plataforma com IA que prevê o dia exato em que você vai esquecer cada conteúdo — e te entrega o card 1 dia antes. Em 15 minutos por dia.
-          </p>
         </div>
 
         {/* ── Central scene ── */}
@@ -1969,18 +1965,9 @@ export default function HeroSection() {
           transition={{ duration: 0.85, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
         >
           <p
-            className="text-base sm:text-lg leading-relaxed mx-auto mb-6 sm:mb-10"
-            style={{ color: 'rgba(255,255,255,0.5)', maxWidth: 640 }}
+            className="text-base md:text-lg lg:text-xl font-medium leading-relaxed text-gray-300 max-w-3xl mx-auto mb-6 sm:mb-10"
           >
-            Tenha acesso à{' '}
-            <span style={{ color: '#ffffff', fontWeight: 600 }}>
-              Maior Plataforma de Estudo Ativo do Brasil
-            </span>
-            {' '}e seja aprovado estudando{' '}
-            <span style={{ color: '#ffffff', fontWeight: 600 }}>
-              apenas 15 minutos por dia
-            </span>
-            . Acesse +18k Flashcards Táticos, 15 Tutores IA e Corretor de Redação Ilimitado.
+            A única plataforma com IA que prevê o dia exato em que você vai esquecer cada conteúdo do ENEM — e te entrega o card 1 dia antes. Em 15 minutos por dia.
           </p>
 
           <div className="flex flex-col items-center gap-3">
