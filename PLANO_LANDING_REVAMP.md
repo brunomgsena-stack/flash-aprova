@@ -439,42 +439,62 @@ Variantes hoje a substituir:
 
 ---
 
-## 📊 Status / Checklist (marque conforme avança)
+## 📊 Status / Checklist (atualizado 2026-06-01)
 
 ### Setup
-- [ ] 0.1 — Resolver arquivos não-commitados na main
-- [ ] 0.2 — Criar branch `landing-revamp`
-- [ ] 0.3 — Confirmar dev rodando + baseline visual
+- [x] 0.1 — Modificações pendentes mantidas no working tree (não interferiram)
+- [x] 0.2 — Branch `landing-revamp` criada (16 commits acima da main)
+- [x] 0.3 — Baseline visual confirmado pelo usuário
 
-### Tier S
-- [ ] S.1 Substituir vocabulário militar
-- [ ] S.2 Remover "Engenharia de Persuasão"
-- [ ] S.3 Reescrever Hero
-- [ ] S.4 Padronizar CTAs
-- [ ] S.5 Mover CTA acima do mockup
-- [ ] S.6 Suavizar claims numéricos
-- [ ] S.7 Remover "Veredito:" do FAQ
-- [ ] S.8 Remover badges agressivas
-- [ ] S.9 Footer compliance
-- [ ] S.10 Review Opus + PAUSA validação usuário
+### Tier S ✅ COMPLETO
+- [x] S.1 Substituir vocabulário militar — commits d0a5a15, bd162d2
+- [x] S.2 Remover "Engenharia de Persuasão" — commit d0a5a15
+- [x] S.3 Reescrever Hero — commits 17d3780, 7531be1, 82812fd (passou por re-iteração)
+- [x] S.4 Padronizar CTAs — commit bd162d2 ("GERAR MEU DIAGNÓSTICO GRÁTIS")
+- [x] S.5 Mover CTA acima do mockup — revertido em 7531be1 a pedido do usuário (mockup quebrou)
+- [x] S.6 Suavizar claims numéricos — commits 0bedf9b, d0a5a15
+- [x] S.7 Remover "Veredito:" do FAQ — commit 0bedf9b
+- [x] S.8 Remover badges agressivas — commit 0bedf9b
+- [x] S.9 Footer compliance — commit 0bedf9b (Política, Termos, Suporte mailto)
+- [x] S.10 Review Opus + PAUSA validação usuário — aprovado
 
-### Tier A
-- [ ] A.1 Deletar 4 seções cortadas
-- [ ] A.2 Bloco de Preço e Planos
-- [ ] A.3 Reescrever Auditoria de Mercado
-- [ ] A.4 Reescrever FAQ
-- [ ] A.5 Reescrever ReelsTestimonials
-- [ ] A.6 Sticky CTA mobile
-- [ ] A.7 Fix CLS skeletons
-- [ ] A.8 Review Opus + PAUSA validação usuário
+### Tier A ✅ COMPLETO
+- [x] A.1 Deletar 4 seções cortadas — commit 9761295 (-1.900 linhas)
+- [x] A.2 Bloco de Preço e Planos — commit 470531d (`components/PrecoEPlanos.tsx`)
+- [x] A.3 Reescrever Auditoria de Mercado — commit 1fae836 (vs Stoodi/Descomplica)
+- [x] A.4 Reescrever FAQ — commit 666e0b5 (8 perguntas, preço #1, garantia #2)
+- [x] A.5 Reescrever ReelsTestimonials — commit 10a564d ("Meta:" em vez de "Aprovado em")
+- [x] A.6 Sticky CTA mobile — commit af1e678 (`components/StickyMobileCTA.tsx`)
+- [x] A.7 Fix CLS skeletons — commit af1e678 (minHeights realistas)
+- [x] A.8 Review Opus + PAUSA validação usuário — aprovado
 
-### Tier B
-- [ ] B.1 Página /metodo
-- [ ] B.2 Vídeo demo
-- [ ] B.3 Trust signals
-- [ ] B.4 Depoimentos reais
-- [ ] B.5 Referral
-- [ ] B.6 Polish final + merge
+### Tier B (executável agora)
+- [x] B.1 Página /metodo — commit f9ad215 (`app/metodo/page.tsx` com Ebbinghaus, SRS, transparência)
+- [ ] B.2 Vídeo demo — **BLOQUEADO** (app não está em estado gravável)
+- [x] B.3 Trust signals — commit c878b12 (`components/TrustBadges.tsx` + SSL no footer)
+- [ ] B.4 Depoimentos reais — **BLOQUEADO** (depende de primeiras vendas/aprovações)
+- [ ] B.5 Sistema de referral — **NÃO IMPLEMENTADO** (requer backend Supabase + tabela `referrals`)
+- [x] B.6 Polish final + verificação tipo — feito em 2026-06-01
+
+## 🟢 Estado final desta sessão
+
+**Branch:** `landing-revamp` · 16 commits acima de `main` · **+1.527 / -2.131 linhas** (página líquido menor — gordura cortada)
+
+**Verificações:**
+- `tsc --noEmit`: zero erros novos (apenas erro pré-existente em `lib/__tests__` não relacionado)
+- Imports mortos removidos (NeuralBrainMap)
+- 4 componentes deletados sem referências quebradas
+
+**Pronto pra merge?** Sim, após:
+1. Usuário rodar `pnpm dev` e confirmar visual mobile + desktop
+2. Lighthouse mobile passar com CLS < 0.1 (estimado dado o ajuste de minHeights)
+3. Verificar que `/checkout?from=landing-pricing&plan=X` é tracking adequado (ou ajustar)
+
+**Pendências pra próximas sessões:**
+- B.2 (vídeo demo) — quando o app estiver gravável, criar `components/AppDemo.tsx`
+- B.4 (depoimentos reais) — quando houver aprovação confirmada via SISU, substituir o `lib/reels-data.ts`
+- B.5 (referral) — feature de growth pra escalar via indicação
+- Revisar conteúdo de `/privacidade` e `/termos` com advogado
 
 ---
 
