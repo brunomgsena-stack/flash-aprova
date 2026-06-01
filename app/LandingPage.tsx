@@ -34,6 +34,7 @@ const ComoFuncionaSteps  = dynamic(() => import('@/components/ComoFuncionaSteps'
 const PrecoEPlanos       = dynamic(() => import('@/components/PrecoEPlanos'),       { ssr: false, loading: () => <SkeletonBlock h={1400} /> });
 const StickyMobileCTA    = dynamic(() => import('@/components/StickyMobileCTA'),    { ssr: false });
 const AppDemo            = dynamic(() => import('@/components/AppDemo'),            { ssr: false, loading: () => <SkeletonBlock h={900} /> });
+const ReferralProgram    = dynamic(() => import('@/components/ReferralProgram'),    { ssr: false, loading: () => <SkeletonBlock h={650} /> });
 
 // ─── Lazy section wrapper ──────────────────────────────────────────────────────
 // Defers rendering (and therefore chunk download) until the section is ~300px
@@ -921,6 +922,11 @@ export default function LandingPage() {
 
         <LazySection minHeight={1400}>
           <PrecoEPlanos />
+        </LazySection>
+
+        {/* ════════════════════════ PROGRAMA DE INDICAÇÃO (B.5 esqueleto) ══ */}
+        <LazySection minHeight={650}>
+          <ReferralProgram />
         </LazySection>
 
         <FAQAccordion />
