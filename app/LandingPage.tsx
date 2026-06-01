@@ -34,6 +34,7 @@ const ComoFuncionaSteps  = dynamic(() => import('@/components/ComoFuncionaSteps'
 const PrecoEPlanos       = dynamic(() => import('@/components/PrecoEPlanos'),       { ssr: false, loading: () => <SkeletonBlock h={1400} /> });
 const StickyMobileCTA    = dynamic(() => import('@/components/StickyMobileCTA'),    { ssr: false });
 const AppDemo            = dynamic(() => import('@/components/AppDemo'),            { ssr: false, loading: () => <SkeletonBlock h={900} /> });
+const ParaQuemE          = dynamic(() => import('@/components/ParaQuemE'),          { ssr: false, loading: () => <SkeletonBlock h={700} /> });
 
 // ─── Lazy section wrapper ──────────────────────────────────────────────────────
 // Defers rendering (and therefore chunk download) until the section is ~300px
@@ -459,6 +460,10 @@ const FAQ_ITEMS: { q: string; a: React.ReactNode }[] = [
     a: 'Anki te obriga a montar deck do zero (2-3 meses antes de estudar 1 card). Aqui você abre o app e em 3 minutos já tem revisão personalizada, com biblioteca pronta de milhares de cards alinhados ao ENEM.',
   },
   {
+    q: 'E se eu não conseguir manter o ritmo de 15 min por dia?',
+    a: 'O sistema foi feito pra quem para. Se você ficar 5 dias sem abrir, o Radar de Lacunas recalibra do ponto onde você parou — nenhum progresso se perde, nenhum card desaparece. A garantia de 7 dias existe exatamente pra você testar a rotina sem risco: se não encaixar no seu dia, devolvemos 100%.',
+  },
+  {
     q: 'Posso confiar na correção de redação por IA?',
     a: (
       <>
@@ -692,6 +697,11 @@ export default function LandingPage() {
             <EbbinghausSection />
           </LazySection>
 
+          {/* ════════════════════ PARA QUEM É — identificação por dor ══ */}
+          <LazySection minHeight={700}>
+            <ParaQuemE />
+          </LazySection>
+
           <LazySection minHeight={900}>
             <AnkiComparison />
           </LazySection>
@@ -903,6 +913,23 @@ export default function LandingPage() {
               <span style={{ color: NEON }}>R$ 327/ano</span>{' '}
               te dá tudo isso — com garantia.
             </p>
+
+            {/* ROI / custo de oportunidade */}
+            <div
+              className="max-w-2xl mx-auto rounded-xl px-5 py-4 mb-4 mt-5 text-center"
+              style={{
+                background: 'rgba(255,138,0,0.06)',
+                border: '1px solid rgba(255,138,0,0.25)',
+              }}
+            >
+              <p className="text-xs font-bold tracking-widest uppercase mb-2" style={{ color: ORANGE, fontFamily: "'JetBrains Mono', monospace" }}>
+                Conta brutal
+              </p>
+              <p className="text-sm sm:text-base font-bold leading-snug" style={{ color: 'rgba(255,255,255,0.85)' }}>
+                Reprovar significa <span style={{ color: ORANGE }}>+1 ano de cursinho a ~R$ 1.500/mês = R$ 18.000</span> jogados fora.<br className="hidden sm:block" />
+                {' '}O Protocolo Neural custa <span style={{ color: NEON }}>R$ 327</span>. Qual é o risco real aqui?
+              </p>
+            </div>
             <p className="text-center text-xs mb-8" style={{ color: 'rgba(255,255,255,0.35)' }}>
               <Link href="/metodo" className="underline underline-offset-2 hover:opacity-70 transition-opacity" style={{ color: 'rgba(255,255,255,0.4)' }}>
                 Por que o método funciona? Veja a fundamentação científica.
