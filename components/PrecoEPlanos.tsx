@@ -75,7 +75,7 @@ export default function PrecoEPlanos() {
           </div>
           <p className="text-slate-500 text-xs mb-1">ou R$ 257 à vista</p>
           <p className="text-slate-500 text-xs italic mb-6">
-            Para quem quer apenas revisar com flashcards.
+            Sem Radar de Lacunas, sem Tutores IA, sem Norma. Começo de jornada.
           </p>
 
           <div className="h-px mb-4" style={{ background: 'rgba(255,255,255,0.05)' }} />
@@ -218,6 +218,29 @@ export default function PrecoEPlanos() {
                 <span className="text-slate-200 leading-snug">{text}</span>
               </div>
             ))}
+          </div>
+
+          <div
+            className="rounded-xl p-4 mb-5 text-xs leading-relaxed"
+            style={{
+              background: 'rgba(0,0,0,0.30)',
+              border: `1px solid ${NEON}25`,
+            }}
+          >
+            <p className="font-bold mb-2" style={{ color: NEON }}>
+              Se você contratasse tudo separado:
+            </p>
+            <div className="flex flex-col gap-1.5" style={{ color: 'rgba(255,255,255,0.55)' }}>
+              <div className="flex justify-between"><span>Tutor humano de Física/Mat</span><span>R$ 150/mês</span></div>
+              <div className="flex justify-between"><span>Corretor de redação</span><span>R$ 450/mês</span></div>
+              <div className="flex justify-between"><span>Material SRS premium</span><span>R$ 200/mês</span></div>
+              <div className="flex justify-between font-bold pt-1.5 mt-1.5" style={{ borderTop: '1px dashed rgba(255,255,255,0.10)', color: 'rgba(255,255,255,0.85)' }}>
+                <span>Total mensal</span><span>R$ 800/mês</span>
+              </div>
+              <div className="flex justify-between font-black pt-1.5" style={{ color: NEON }}>
+                <span>Protocolo Neural</span><span>R$ 27,25/mês</span>
+              </div>
+            </div>
           </div>
 
           {/* CTA */}
