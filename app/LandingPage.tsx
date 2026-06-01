@@ -397,10 +397,10 @@ function AuthorityBanner() {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-6 px-8 py-7">
           <div className="text-center sm:text-left flex-shrink-0">
             <p className="text-white font-black text-xl sm:text-2xl leading-snug">
-              +<span style={{ color: NEON }}>3.800</span> estudantes já blindaram<br className="hidden sm:block" /> sua memória com o FlashAprova
+              Plataforma desenhada para <span style={{ color: NEON }}>milhares</span> de estudantes<br className="hidden sm:block" /> do ENEM
             </p>
             <p className="text-slate-600 text-xs mt-1 tracking-widest uppercase">
-              Aprovados nas top universidades do país
+              Padrão alinhado às exigências das top universidades do país
             </p>
           </div>
 
@@ -438,27 +438,27 @@ function AuthorityBanner() {
 const FAQ_ITEMS = [
   {
     q: 'Vou perder tempo configurando o app ou o material já vem pronto?',
-    a: 'Veredito: Tempo é seu recurso mais escasso. Ao contrário do Anki, onde você gasta meses criando cards, o FlashAprova entrega o Acervo de 18.000 Flashcards. São cards táticos focados no 80/20 do ENEM. Você entra para evoluir sua nota, não para ser digitador.',
+    a: 'Tempo é seu recurso mais escasso. Ao contrário do Anki, onde você gasta meses criando cards, o FlashAprova entrega o Acervo de 18.000 Flashcards. São cards táticos focados no 80/20 do ENEM. Você entra para evoluir sua nota, não para ser digitador.',
   },
   {
     q: 'O método funciona para conteúdos densos como Medicina e Engenharia?',
-    a: 'Veredito: O algoritmo foi desenhado especificamente para alta complexidade. Nossa tecnologia de Acesso em Latência Zero garante que, sob a pressão máxima do ENEM, a resposta correta salte na sua mente. É a diferença entre "achar que sabe" e ter a Propriedade do Conhecimento.',
+    a: 'O algoritmo foi desenhado especificamente para alta complexidade. O SRS garante que, sob a pressão máxima do ENEM, a resposta correta venha à sua mente antes do branco. É a diferença entre "achar que sabe" e ter o conteúdo fixado de verdade.',
   },
   {
     q: 'Por que o FlashAprova é superior ao Anki ou métodos manuais?',
-    a: 'Veredito: O Anki é um martelo; o FlashAprova é uma fábrica automatizada. Além do SRS de elite, você tem o Neural Core com 10 Agentes IA e a Norma IA para auditar suas redações em 30 segundos. Métodos manuais são "terapia de estudo", nós entregamos Engenharia de Retenção.',
+    a: 'O Anki é um martelo; o FlashAprova é uma fábrica automatizada. Além do SRS de elite, você tem o Neural Core com 10 Agentes IA e a Norma IA para auditar suas redações em 30 segundos. Métodos manuais são "terapia de estudo"; aqui o algoritmo decide quando você revisa cada card.',
   },
   {
     q: 'Quanto tempo do meu dia a revisão automática consome?',
-    a: 'Veredito: Eficiência é a nossa obsessão. O Radar de Lacunas elimina o estudo às cegas: você foca apenas no que o seu cérebro está prestes a deletar. 30 a 45 minutos diários no app garantem uma retenção de 97%, economizando horas de revisões inúteis em apostilas estáticas.',
+    a: 'Eficiência é a nossa obsessão. O Radar de Lacunas elimina o estudo às cegas: você foca apenas no que o seu cérebro está prestes a deletar. 30 a 45 minutos diários no app permitem uma retenção alvo de até 97% segundo o modelo de Ebbinghaus aplicado pelo SRS, economizando horas de revisões em apostilas estáticas.',
   },
   {
-    q: 'E se eu sentir que a Engenharia de Retenção não é para mim?',
-    a: 'Veredito: Operamos com Risco Zero. Você tem 7 dias de Garantia Incondicional. Se não sentir uma melhora brutal na sua velocidade de resgate e segurança no conteúdo, devolvemos 100% do seu investimento. Sem perguntas, sem burocracia.',
+    q: 'E se eu sentir que o método não é para mim?',
+    a: 'Operamos sem risco. Você tem 7 dias de Garantia Incondicional. Se não sentir uma melhora brutal na sua velocidade de resgate e segurança no conteúdo, devolvemos 100% do seu investimento. Sem perguntas, sem burocracia.',
   },
   {
     q: 'Posso confiar na correção de redação da IA?',
-    a: 'Veredito: A Norma IA não "dá uma nota". Ela faz uma Auditoria Forense baseada no padrão oficial do INEP. Enquanto um corretor humano leva 10 dias, a Norma disseca sua estrutura em segundos, revelando falhas invisíveis que custam sua aprovação.',
+    a: 'A Norma IA não "dá uma nota". Ela faz uma correção detalhada baseada no padrão oficial do INEP. Enquanto um corretor humano leva 10 dias, a Norma disseca sua estrutura em segundos, revelando falhas invisíveis que custam sua aprovação.',
   },
 ] as const;
 
@@ -751,15 +751,8 @@ export default function LandingPage() {
 
             {/* header badge */}
             <div className="relative mb-8 flex flex-col items-center text-center">
-              <div
-                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-sm text-base font-bold tracking-widest uppercase mb-2"
-                style={{ background: 'rgba(255,40,40,0.08)', border: '1px solid rgba(255,40,40,0.35)', color: '#f87171' }}
-              >
-                <span className="inline-block w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#f87171' }} />
-                [NOTA FISCAL: REPROVADO]
-              </div>
               <p className="text-base font-bold tracking-widest uppercase mb-6" style={{ color: '#f87171' }}>
-                O CUSTO TRADICIONAL
+                O VERDADEIRO CUSTO DA APROVAÇÃO
               </p>
 
               <p className="text-slate-400 text-sm sm:text-base leading-relaxed max-w-2xl">
@@ -856,8 +849,8 @@ export default function LandingPage() {
                 },
                 {
                   attr: 'Retenção Real',
-                  trad: 'Aluguel (Esquece em 24h)',
-                  flash: 'Propriedade (97% Blindado)',
+                  trad: 'Esquece 70% em 24h',
+                  flash: 'Fixação ativa via SRS',
                   flashColor: NEON,
                 },
                 {
@@ -925,17 +918,24 @@ export default function LandingPage() {
         <FAQAccordion />
 
         {/* ════════════════════════════════ FOOTER ══ */}
-        <footer className="border-t border-white/5 py-8 px-6 sm:px-10 text-center">
-          <p className="text-white font-black mb-2">
-            Flash<span style={{
-              background: `linear-gradient(90deg, ${NEON}, ${VIOLET})`,
-              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-            }}>Aprova</span>
-          </p>
-          <p className="text-slate-700 text-xs">
-            © 2026 · Tecnologia de aprovação com IA ·{' '}
-            <Link href="/login" className="hover:text-slate-400 transition-colors">Entrar</Link>
-          </p>
+        <footer className="border-t border-white/5 py-10 px-6 sm:px-10">
+          <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+            <div>
+              <p className="text-white font-black mb-2">
+                Flash<span style={{
+                  background: `linear-gradient(90deg, ${NEON}, ${VIOLET})`,
+                  WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                }}>Aprova</span>
+              </p>
+              <p className="text-slate-700 text-xs">© 2026 · Tecnologia de aprovação com IA</p>
+            </div>
+            <nav className="flex flex-wrap gap-x-5 gap-y-2 text-xs text-slate-500">
+              <Link href="/privacidade" className="hover:text-slate-300 transition-colors">Política de Privacidade</Link>
+              <Link href="/termos" className="hover:text-slate-300 transition-colors">Termos de Uso</Link>
+              <Link href="/login" className="hover:text-slate-300 transition-colors">Entrar</Link>
+              <a href="mailto:contato@flashaprova.com.br" className="hover:text-slate-300 transition-colors">Suporte</a>
+            </nav>
+          </div>
         </footer>
 
       </div>
