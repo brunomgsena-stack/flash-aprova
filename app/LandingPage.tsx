@@ -30,10 +30,6 @@ const CardVaultSection   = dynamic(() => import('@/components/CardVaultSection')
 const NormaRedacaoSection= dynamic(() => import('@/components/NormaRedacaoSection'),{ ssr: false, loading: () => <SkeletonBlock h={520} /> });
 const AiTutorsSection    = dynamic(() => import('@/components/AiTutorsSection'),    { ssr: false, loading: () => <SkeletonBlock h={480} /> });
 const FocusSection          = dynamic(() => import('@/components/FocusSection'),          { ssr: false, loading: () => <SkeletonBlock h={480} /> });
-const NeuralEcosystemFlow= dynamic(() => import('@/components/NeuralEcosystemFlow'),{ ssr: false, loading: () => <SkeletonBlock h={360} /> });
-const BlindagemEngine    = dynamic(() => import('@/components/BlindagemEngine'),    { ssr: false, loading: () => <SkeletonBlock h={400} /> });
-const TacticalRecovery   = dynamic(() => import('@/components/TacticalRecovery'),   { ssr: false, loading: () => <SkeletonBlock h={400} /> });
-const ArsenalElite       = dynamic(() => import('@/components/ArsenalElite'),       { ssr: false, loading: () => <SkeletonBlock h={420} /> });
 const ReelsTestimonials  = dynamic(() => import('@/components/ReelsTestimonials'),  { ssr: false, loading: () => <SkeletonBlock h={340} /> });
 const ComoFuncionaSteps  = dynamic(() => import('@/components/ComoFuncionaSteps'),  { ssr: false, loading: () => <SkeletonBlock h={720} /> });
 
@@ -676,24 +672,9 @@ export default function LandingPage() {
 
 
 
-        {/* ════════════════════════ ECOSSISTEMA — Neural Ciclo FlashAprova ══ */}
-        <LazySection minHeight={360}>
-          <NeuralEcosystemFlow />
-        </LazySection>
-
         {/* ════════════════════ FOCO — Mapeamento de Fragilidades ══ */}
         <LazySection minHeight={480}>
           <FocusSection />
-        </LazySection>
-
-        {/* ════════════════════════ CENTRAL DE OPERAÇÕES ══ */}
-        <LazySection minHeight={400}>
-          <BlindagemEngine />
-        </LazySection>
-
-        {/* ════════════════════ RECUPERAÇÃO TÁTICA ══ */}
-        <LazySection minHeight={400}>
-          <TacticalRecovery />
         </LazySection>
 
         <div className="flex justify-center pb-16 px-4 -mt-8">
@@ -702,11 +683,6 @@ export default function LandingPage() {
             <p className="text-center text-xs mt-3" style={{ color: 'rgba(255,255,255,0.35)' }}>Diagnóstico grátis · 3 min</p>
           </div>
         </div>
-
-        {/* ══════════════════════════ ARSENAL DE ELITE ══ */}
-        <LazySection minHeight={420}>
-          <ArsenalElite />
-        </LazySection>
 
         {/* ═══════════════════════════ BIBLIOTECA ══ */}
         <LazySection minHeight={480}>
