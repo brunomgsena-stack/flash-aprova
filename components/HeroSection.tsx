@@ -1893,7 +1893,7 @@ export default function HeroSection() {
       </div>
 
       {/* ── Main content ── */}
-      <div className="relative flex flex-col" style={{ zIndex: 2 }}>
+      <div className="relative" style={{ zIndex: 2 }}>
 
         {/* Headline block — renderiza visível no SSR (LCP) */}
         <div
@@ -1942,7 +1942,7 @@ export default function HeroSection() {
         </div>
 
         {/* ── Central scene ── */}
-        <div className="relative mx-auto px-4 pt-2 sm:pt-3 pb-2 order-2 sm:order-none" style={{ maxWidth: 1160 }}>
+        <div className="relative mx-auto px-4 pt-2 sm:pt-3 pb-2" style={{ maxWidth: 1160 }}>
 
           {/* SVG lines behind everything — desktop apenas */}
           <DesktopOnly>
@@ -1960,14 +1960,29 @@ export default function HeroSection() {
 
         </div>
 
-        {/* CTA */}
+        {/* Texto de Autoridade + CTA */}
         <motion.div
-          className="text-center px-4 sm:px-6 pt-4 pb-8 sm:pt-6 sm:pb-12 mx-auto order-1 sm:order-none"
+          className="text-center px-4 sm:px-6 pt-0 pb-8 sm:pb-12 mx-auto"
           style={{ maxWidth: 720 }}
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.85, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
         >
+          <p
+            className="text-base sm:text-lg leading-relaxed mx-auto mb-6 sm:mb-10"
+            style={{ color: 'rgba(255,255,255,0.5)', maxWidth: 640 }}
+          >
+            Tenha acesso à{' '}
+            <span style={{ color: '#ffffff', fontWeight: 600 }}>
+              Maior Plataforma de Estudo Ativo do Brasil
+            </span>
+            {' '}e seja aprovado estudando{' '}
+            <span style={{ color: '#ffffff', fontWeight: 600 }}>
+              apenas 15 minutos por dia
+            </span>
+            . Acesse +18k Flashcards Táticos, 15 Tutores IA e Corretor de Redação Ilimitado.
+          </p>
+
           <div className="flex flex-col items-center gap-3">
             {/* ── Industrial High-Ticket CTA ── */}
             <style>{`
@@ -2033,7 +2048,7 @@ export default function HeroSection() {
               >
                 <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
               </svg>
-              {ctaState === 'loading' ? '[ ACESSANDO NÚCLEO... ]' : 'GERAR MEU DIAGNÓSTICO GRÁTIS'}
+              {ctaState === 'loading' ? '[ ACESSANDO... ]' : 'GERAR MEU DIAGNÓSTICO GRÁTIS'}
             </button>
 
             {/* micro-copy terminal */}
@@ -2048,60 +2063,24 @@ export default function HeroSection() {
             >
               Grátis · 3 min · sem cadastro · sem cartão
             </p>
-
-            {/* Selo de garantia */}
-            <div className="flex items-center justify-center gap-2 mt-1 text-xs" style={{ color: 'rgba(0,255,115,0.85)' }}>
+            <p
+              className="inline-flex items-center gap-1.5 mt-2"
+              style={{
+                fontFamily: "'JetBrains Mono', 'Fira Code', 'Courier New', monospace",
+                fontSize: '10px',
+                letterSpacing: '0.04em',
+                color: 'rgba(0,255,115,0.75)',
+                lineHeight: 1.5,
+              }}
+            >
               <span>🛡️</span>
-              <span className="font-semibold">Garantia 7 dias · 100% de reembolso</span>
-            </div>
+              <span>Garantia 7 dias · 100% de reembolso</span>
+            </p>
           </div>
-
-          {/* Avatar group — prova social mínima (mobile: acima do mockup) */}
-          <motion.div
-            className="flex justify-center mt-4 sm:hidden"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1.2 }}
-          >
-            <div className="flex flex-col items-center gap-2">
-              <div className="flex items-center">
-                {[
-                  '/images/ana.med.ufpe.avif',
-                  '/images/carlos.eng.usp.avif',
-                  '/images/beatriz.dir.avif',
-                  '/images/lucas.eng.ita.avif',
-                  '/images/rafaela.medvet.avif',
-                  '/images/sofia-usp.avif',
-                  '/images/juliomed-ufrj.avif',
-                ].map((src, i) => (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    key={src}
-                    src={src}
-                    alt=""
-                    style={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: '50%',
-                      objectFit: 'cover',
-                      border: '2px solid #060a14',
-                      marginLeft: i === 0 ? 0 : -10,
-                      position: 'relative',
-                      zIndex: i,
-                      display: 'block',
-                    }}
-                  />
-                ))}
-              </div>
-              <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                Estudantes que estão no piloto automático com o FlashAprova
-              </p>
-            </div>
-          </motion.div>
         </motion.div>
 
-        {/* Avatar group — aprovados (desktop: abaixo do mockup) */}
-        <div className="hidden sm:block relative mx-auto px-4 pb-0 sm:pb-24 order-3 sm:order-none" style={{ maxWidth: 1160 }}>
+        {/* Avatar group — aprovados */}
+        <div className="relative mx-auto px-4 pb-0 sm:pb-24" style={{ maxWidth: 1160 }}>
           <motion.div
             className="flex justify-center"
             initial={{ opacity: 0, y: 20 }}
