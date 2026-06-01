@@ -1893,7 +1893,7 @@ export default function HeroSection() {
       </div>
 
       {/* ── Main content ── */}
-      <div className="relative" style={{ zIndex: 2 }}>
+      <div className="relative flex flex-col" style={{ zIndex: 2 }}>
 
         {/* Headline block — renderiza visível no SSR (LCP) */}
         <div
@@ -1918,7 +1918,7 @@ export default function HeroSection() {
               letterSpacing: '-0.03em',
             }}
           >
-            Acelere sua Aprovação em{' '}
+            Aprovação em{' '}
             <motion.span
               style={{ color: '#00FF73' }}
               animate={{
@@ -1932,30 +1932,17 @@ export default function HeroSection() {
             >
               Medicina
             </motion.span>
-            {' '}no ENEM com{' '}
-            <motion.span
-              style={{ color: '#a78bfa' }}
-              animate={{
-                textShadow: [
-                  '0 0 10px rgba(124,58,237,0.55), 0 0 28px rgba(124,58,237,0.28)',
-                  '0 0 22px rgba(124,58,237,0.9),  0 0 55px rgba(124,58,237,0.45)',
-                  '0 0 10px rgba(124,58,237,0.55), 0 0 28px rgba(124,58,237,0.28)',
-                ],
-              }}
-              transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut', delay: 0.6 }}
-            >
-              IA
-            </motion.span>
+            {' '}sem esquecer o que você estudou ontem.
           </h1>
 
           {/* Subheadline curta */}
           <p className="text-base md:text-lg lg:text-xl font-medium leading-relaxed text-gray-300 max-w-3xl mx-auto mt-4 sm:mt-6">
-            Lembre Todo Assunto na Hora da Prova e Corte pela Metade o Tempo de Estudo com o Algoritmo que Planeja Revisões por você.
+            A única plataforma com IA que prevê o dia exato em que você vai esquecer cada conteúdo — e te entrega o card 1 dia antes. Em 15 minutos por dia.
           </p>
         </div>
 
         {/* ── Central scene ── */}
-        <div className="relative mx-auto px-4 pt-2 sm:pt-3 pb-2" style={{ maxWidth: 1160 }}>
+        <div className="relative mx-auto px-4 pt-2 sm:pt-3 pb-2 order-2 sm:order-none" style={{ maxWidth: 1160 }}>
 
           {/* SVG lines behind everything — desktop apenas */}
           <DesktopOnly>
@@ -1975,7 +1962,7 @@ export default function HeroSection() {
 
         {/* Texto de Autoridade + CTA */}
         <motion.div
-          className="text-center px-4 sm:px-6 pt-0 pb-8 sm:pb-12 mx-auto"
+          className="text-center px-4 sm:px-6 pt-4 pb-8 sm:pt-0 sm:pb-12 mx-auto order-1 sm:order-none"
           style={{ maxWidth: 720 }}
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
@@ -2061,7 +2048,7 @@ export default function HeroSection() {
               >
                 <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
               </svg>
-              {ctaState === 'loading' ? '[ ACESSANDO NÚCLEO... ]' : <>Quero ter acesso ao<br/>ARSENAL FLASHAPROVA</>}
+              {ctaState === 'loading' ? '[ ACESSANDO NÚCLEO... ]' : 'GERAR MEU DIAGNÓSTICO GRÁTIS'}
             </button>
 
             {/* micro-copy terminal */}
@@ -2074,13 +2061,62 @@ export default function HeroSection() {
                 lineHeight: 1.5,
               }}
             >
-              Diagnóstico 100% grátis | Raio-X de Memória IA em 3 min
+              Grátis · 3 min · sem cadastro · sem cartão
             </p>
+
+            {/* Selo de garantia */}
+            <div className="flex items-center justify-center gap-2 mt-1 text-xs" style={{ color: 'rgba(0,255,115,0.85)' }}>
+              <span>🛡️</span>
+              <span className="font-semibold">Garantia 7 dias · 100% de reembolso</span>
+            </div>
           </div>
+
+          {/* Avatar group — prova social mínima (mobile: acima do mockup) */}
+          <motion.div
+            className="flex justify-center mt-4 sm:hidden"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 1.2 }}
+          >
+            <div className="flex flex-col items-center gap-2">
+              <div className="flex items-center">
+                {[
+                  '/images/ana.med.ufpe.avif',
+                  '/images/carlos.eng.usp.avif',
+                  '/images/beatriz.dir.avif',
+                  '/images/lucas.eng.ita.avif',
+                  '/images/rafaela.medvet.avif',
+                  '/images/sofia-usp.avif',
+                  '/images/juliomed-ufrj.avif',
+                ].map((src, i) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    key={src}
+                    src={src}
+                    alt=""
+                    style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: '50%',
+                      objectFit: 'cover',
+                      border: '2px solid #060a14',
+                      marginLeft: i === 0 ? 0 : -10,
+                      position: 'relative',
+                      zIndex: i,
+                      display: 'block',
+                    }}
+                  />
+                ))}
+              </div>
+              <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                Estudantes que estão no piloto automático com o FlashAprova
+              </p>
+            </div>
+          </motion.div>
         </motion.div>
 
-        {/* Avatar group — aprovados */}
-        <div className="relative mx-auto px-4 pb-0 sm:pb-24" style={{ maxWidth: 1160 }}>
+        {/* Avatar group — aprovados (desktop: abaixo do mockup) */}
+        <div className="hidden sm:block relative mx-auto px-4 pb-0 sm:pb-24 order-3 sm:order-none" style={{ maxWidth: 1160 }}>
           <motion.div
             className="flex justify-center"
             initial={{ opacity: 0, y: 20 }}
@@ -2118,7 +2154,7 @@ export default function HeroSection() {
                 ))}
               </div>
               <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                +8.000 aprovados no ENEM
+                Estudantes que estão no piloto automático com o FlashAprova
               </p>
             </div>
           </motion.div>
