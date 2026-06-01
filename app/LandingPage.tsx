@@ -432,7 +432,7 @@ function AuthorityBanner() {
 
 
 // ─── FAQ data ─────────────────────────────────────────────────────────────────
-const FAQ_ITEMS = [
+const FAQ_ITEMS: { q: string; a: React.ReactNode }[] = [
   {
     q: 'Quanto custa o FlashAprova? Tem parcelamento?',
     a: 'A partir de R$ 21,41/mês (Plano Essencial) ou R$ 27,25/mês no Protocolo Neural (completo, com 15 Tutores IA e Norma IA de redação) — pagamento em 12x sem juros, ou à vista a partir de R$ 257. O plano mais escolhido sai por menos de R$ 0,90 por dia.',
@@ -455,7 +455,16 @@ const FAQ_ITEMS = [
   },
   {
     q: 'Posso confiar na correção de redação por IA?',
-    a: 'A Norma IA segue o padrão oficial do INEP. Em segundos você recebe um parecer detalhado das cinco competências, identifica falhas estruturais que custariam pontos e melhora a próxima redação imediatamente.',
+    a: (
+      <>
+        A Norma IA segue o padrão oficial do INEP. Em segundos você recebe um parecer detalhado das cinco
+        competências, identifica falhas estruturais que custariam pontos e melhora a próxima redação
+        imediatamente.{' '}
+        <Link href="/metodo" className="underline underline-offset-2 hover:opacity-80 transition-opacity" style={{ color: NEON }}>
+          Veja a fundamentação científica completa em /metodo.
+        </Link>
+      </>
+    ),
   },
   {
     q: 'Funciona no celular?',
@@ -465,7 +474,7 @@ const FAQ_ITEMS = [
     q: 'Quem é a empresa? Como entro em contato?',
     a: 'FlashAprova é um produto brasileiro com CNPJ, política de privacidade e termos de uso publicados. Suporte por email respondido em até 24h úteis: contato@flashaprova.com.br.',
   },
-] as const;
+];
 
 // ─── ENEM Countdown ────────────────────────────────────────────────────────────
 function ENEMCountdown() {
@@ -877,12 +886,17 @@ export default function LandingPage() {
 
             {/* frase de fechamento */}
             <p
-              className="text-center text-sm sm:text-base font-bold mb-8 leading-snug"
+              className="text-center text-sm sm:text-base font-bold mb-2 leading-snug"
               style={{ color: '#f1f5f9' }}
             >
               Pagar mais por menos retenção é o erro mais caro do seu ano de cursinho.{' '}
               <span style={{ color: NEON }}>R$ 327/ano</span>{' '}
               te dá tudo isso — com garantia.
+            </p>
+            <p className="text-center text-xs mb-8" style={{ color: 'rgba(255,255,255,0.35)' }}>
+              <Link href="/metodo" className="underline underline-offset-2 hover:opacity-70 transition-opacity" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                Por que o método funciona? Veja a fundamentação científica.
+              </Link>
             </p>
 
             {/* CTA */}
