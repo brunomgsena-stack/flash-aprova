@@ -389,7 +389,7 @@ function SRSIntervalMockup() {
 }
 
 // ─── CTA button (replica do que existe na LandingPage) ────────────────────────
-function CTAButton({ label = 'GERAR MEU DIAGNÓSTICO IA' }: { label?: string }) {
+function CTAButton({ label = 'GERAR MEU DIAGNÓSTICO GRÁTIS' }: { label?: string }) {
   return (
     <Link
       href="/quizz"

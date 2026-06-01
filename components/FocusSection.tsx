@@ -463,7 +463,7 @@ export default function FocusSection() {
           </span>
         </h2>
         <p className="text-slate-400 text-base max-w-2xl mx-auto">
-          O fim do estudo às cegas. O Radar utiliza a nossa Engenharia de Retenção para encontrar as falhas invisíveis que a TRI do ENEM não perdoa — antes que elas te reprovem.
+          O fim do estudo às cegas. O Radar combina seu histórico de revisão com o algoritmo SRS para encontrar as falhas invisíveis que a TRI do ENEM não perdoa — antes que elas te reprovem.
         </p>
       </div>
 

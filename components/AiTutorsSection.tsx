@@ -32,13 +32,13 @@ interface AgentDef {
   tip:       string;
 }
 
-// ─── Agent roster — Engenharia de Aprovação ──────────────────────────────────
+// ─── Agent roster ────────────────────────────────────────────────────────────
 const AGENTS: AgentDef[] = [
   {
     id:        'norma',
     codename:  'NORMA',
     specialty: 'Argumentação dissertativa',
-    focus:     'Dissecação de teses e blindagem textual.',
+    focus:     'Dissecação de teses e estruturação textual.',
     color:     VIOLET,
     avatar:    '/images/tutor-redacao.avif',
     userMsg:   'Como subo minha nota de Redação de 600 para 1000?',

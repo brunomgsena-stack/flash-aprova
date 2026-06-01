@@ -498,7 +498,7 @@ export default function AnkiComparison() {
             <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
             <polyline points="16 7 22 7 22 13"/>
           </svg>
-          <span className="relative">COMEÇAR AGORA</span>
+          <span className="relative">GERAR MEU DIAGNÓSTICO GRÁTIS</span>
         </Link>
       </motion.div>
 

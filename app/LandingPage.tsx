@@ -582,7 +582,7 @@ function FAQAccordion() {
       </div>
 
       <div className="text-center mt-10">
-        <CTAButton size="sm" label="COMECE AGORA" />
+        <CTAButton size="sm" label="GERAR MEU DIAGNÓSTICO GRÁTIS" />
         <p className="text-center text-xs mt-3" style={{ color: 'rgba(255,255,255,0.35)' }}>Diagnóstico grátis · 3 min</p>
       </div>
     </section>
@@ -698,7 +698,7 @@ export default function LandingPage() {
 
         <div className="flex justify-center pb-16 px-4 -mt-8">
           <div className="flex flex-col items-center">
-            <CTAButton size="sm" label="COMEÇAR AGORA" />
+            <CTAButton size="sm" label="GERAR MEU DIAGNÓSTICO GRÁTIS" />
             <p className="text-center text-xs mt-3" style={{ color: 'rgba(255,255,255,0.35)' }}>Diagnóstico grátis · 3 min</p>
           </div>
         </div>
@@ -726,7 +726,7 @@ export default function LandingPage() {
         {/* ═══════════════════ CTA mid-page ══ */}
         <div className="flex justify-center pb-16 -mt-10 px-5 sm:px-0">
           <div className="flex flex-col items-center">
-            <CTAButton size="sm" label="COMECE AGORA" />
+            <CTAButton size="sm" label="GERAR MEU DIAGNÓSTICO GRÁTIS" />
             <p className="text-center text-xs mt-3" style={{ color: 'rgba(255,255,255,0.35)' }}>Diagnóstico grátis · 3 min</p>
           </div>
         </div>
@@ -904,7 +904,7 @@ export default function LandingPage() {
             {/* CTA */}
             <div className="flex justify-center">
               <div className="flex flex-col items-center">
-                <CTAButton size="sm" label="QUERO COMEÇAR AGORA" />
+                <CTAButton size="sm" label="GERAR MEU DIAGNÓSTICO GRÁTIS" />
                 <p className="text-center text-xs mt-3" style={{ color: 'rgba(255,255,255,0.35)' }}>Diagnóstico grátis · 3 min</p>
               </div>
             </div>

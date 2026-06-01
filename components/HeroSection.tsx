@@ -1090,10 +1090,10 @@ function CommandCenterScreen({ termLines, visibleConcepts }: { termLines: string
       background: '#060a14',
     }}>
 
-      {/* TL — Arsenal de Revisão */}
+      {/* TL — Biblioteca de Revisão */}
       <div style={cell('none')}>
         <div style={{ ...hdr, borderBottom: '0.5px solid rgba(255,255,255,0.08)', paddingBottom: 4, marginBottom: 6 }}>
-          📚 Arsenal
+          📚 Biblioteca
         </div>
         {[
           { name: 'Bio',  pct: 78, color: '#34d399' },
