@@ -32,6 +32,7 @@ const AiTutorsSection    = dynamic(() => import('@/components/AiTutorsSection'),
 const FocusSection          = dynamic(() => import('@/components/FocusSection'),          { ssr: false, loading: () => <SkeletonBlock h={480} /> });
 const ReelsTestimonials  = dynamic(() => import('@/components/ReelsTestimonials'),  { ssr: false, loading: () => <SkeletonBlock h={340} /> });
 const ComoFuncionaSteps  = dynamic(() => import('@/components/ComoFuncionaSteps'),  { ssr: false, loading: () => <SkeletonBlock h={720} /> });
+const PrecoEPlanos       = dynamic(() => import('@/components/PrecoEPlanos'),       { ssr: false, loading: () => <SkeletonBlock h={800} /> });
 
 // ─── Lazy section wrapper ──────────────────────────────────────────────────────
 // Defers rendering (and therefore chunk download) until the section is ~300px
@@ -889,6 +890,10 @@ export default function LandingPage() {
 
         <LazySection minHeight={340}>
           <ReelsTestimonials />
+        </LazySection>
+
+        <LazySection minHeight={800}>
+          <PrecoEPlanos />
         </LazySection>
 
         <FAQAccordion />
