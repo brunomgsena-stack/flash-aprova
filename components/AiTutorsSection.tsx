@@ -37,7 +37,7 @@ const AGENTS: AgentDef[] = [
   {
     id:        'norma',
     codename:  'NORMA',
-    specialty: 'Engenharia de Persuasão',
+    specialty: 'Argumentação dissertativa',
     focus:     'Dissecação de teses e blindagem textual.',
     color:     VIOLET,
     avatar:    '/images/tutor-redacao.avif',

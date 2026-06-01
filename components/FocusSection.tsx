@@ -573,7 +573,7 @@ export default function FocusSection() {
             <div>
               <p className="text-[11px] font-black tracking-widest uppercase"
                 style={{ color: NEON, fontFamily: JETBRAINS }}>
-                Diretriz de Ataque
+                Plano da semana
               </p>
               <p className="text-[10px] text-slate-400 mt-0.5" style={{ fontFamily: JETBRAINS }}>Agendamento tático pela IA</p>
             </div>

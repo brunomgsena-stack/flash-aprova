@@ -396,7 +396,7 @@ export default function EbbinghausSection() {
               fill="rgba(255,138,0,0.10)" stroke={`${ORANGE}35`} strokeWidth="0.8" />
             <text x="297" y="161" textAnchor="middle"
               fill={ORANGE} fontSize="7.5" fontFamily="ui-monospace, monospace" fontWeight="700">
-              ZONA DE ELIMINAÇÃO: 25% de retenção
+              Zona de esquecimento: 25% de retenção
             </text>
           </motion.g>
 
