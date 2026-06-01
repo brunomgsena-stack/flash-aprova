@@ -1900,6 +1900,19 @@ export default function HeroSection() {
           className="text-center px-4 sm:px-6 pt-0 sm:pt-14 pb-4 sm:pb-6 mx-auto"
           style={{ maxWidth: 820 }}
         >
+          {/* Badge Protocolo Neural */}
+          <div
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-3 sm:mb-4 text-[10px] sm:text-xs font-black tracking-widest uppercase"
+            style={{
+              background: 'linear-gradient(135deg, rgba(124,58,237,0.12), rgba(0,255,115,0.08))',
+              border: '1px solid rgba(124,58,237,0.40)',
+              color: '#a78bfa',
+            }}
+          >
+            <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#a78bfa', boxShadow: '0 0 8px #a78bfa' }} />
+            PROTOCOLO NEURAL · O método anti-esquecimento
+          </div>
+
           {/* Badge */}
           <div
             className="inline-flex flex-wrap justify-center items-center gap-2 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full mb-4 sm:mb-8 text-[9px] sm:text-xs font-bold tracking-widest uppercase"

@@ -34,7 +34,6 @@ const ComoFuncionaSteps  = dynamic(() => import('@/components/ComoFuncionaSteps'
 const PrecoEPlanos       = dynamic(() => import('@/components/PrecoEPlanos'),       { ssr: false, loading: () => <SkeletonBlock h={1400} /> });
 const StickyMobileCTA    = dynamic(() => import('@/components/StickyMobileCTA'),    { ssr: false });
 const AppDemo            = dynamic(() => import('@/components/AppDemo'),            { ssr: false, loading: () => <SkeletonBlock h={900} /> });
-const ReferralProgram    = dynamic(() => import('@/components/ReferralProgram'),    { ssr: false, loading: () => <SkeletonBlock h={650} /> });
 
 // ─── Lazy section wrapper ──────────────────────────────────────────────────────
 // Defers rendering (and therefore chunk download) until the section is ~300px
@@ -442,6 +441,10 @@ const FAQ_ITEMS: { q: string; a: React.ReactNode }[] = [
   {
     q: 'Tem garantia? Como pedir reembolso?',
     a: 'Sim. 7 dias de garantia incondicional. Testou e não se encaixou na sua rotina? Mande um email para contato@flashaprova.com.br e devolvemos 100% do valor. Sem perguntas, sem burocracia, sem letra miúda.',
+  },
+  {
+    q: 'O que é o Protocolo Neural?',
+    a: 'É o método em 4 fases que combina a Curva de Ebbinghaus com IA. Você responde um diagnóstico, a IA monta seu Radar de Lacunas, te entrega o card certo no dia certo (15 min/dia) e fixa o conteúdo na memória de longo prazo. Detalhes em /metodo.',
   },
   {
     q: 'Funciona para Medicina, Engenharia ou concursos?',
@@ -916,17 +919,12 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <LazySection minHeight={600}>
-          <ReelsTestimonials />
-        </LazySection>
-
         <LazySection minHeight={1400}>
           <PrecoEPlanos />
         </LazySection>
 
-        {/* ════════════════════════ PROGRAMA DE INDICAÇÃO (B.5 esqueleto) ══ */}
-        <LazySection minHeight={650}>
-          <ReferralProgram />
+        <LazySection minHeight={600}>
+          <ReelsTestimonials />
         </LazySection>
 
         <FAQAccordion />

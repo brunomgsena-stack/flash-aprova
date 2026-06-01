@@ -57,6 +57,48 @@ export default function MetodoPage() {
 
         <hr style={{ borderColor: 'rgba(255,255,255,0.06)', marginBottom: '3.5rem' }} />
 
+        {/* ─── Seção: O Protocolo Neural ─── */}
+        <section className="max-w-3xl mx-auto px-6 py-12">
+          <div
+            className="rounded-2xl p-6 sm:p-8"
+            style={{
+              background: 'linear-gradient(135deg, rgba(124,58,237,0.08), rgba(0,255,115,0.04))',
+              border: '1px solid rgba(124,58,237,0.25)',
+            }}
+          >
+            <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: '#a78bfa' }}>
+              O método
+            </p>
+            <h2 className="text-2xl sm:text-3xl font-black text-white mb-4 leading-tight">
+              Protocolo Neural
+            </h2>
+            <p className="text-slate-300 text-sm sm:text-base leading-relaxed mb-6">
+              Método em 4 fases que combina a Curva de Ebbinghaus (1885) com algoritmo SRS adaptativo por IA. O sistema decide quando você revisa cada conteúdo — você só precisa abrir o app 15 minutos por dia.
+            </p>
+            <ol className="space-y-3 mb-6">
+              {[
+                { num: '01', name: 'Diagnóstico', desc: 'Quiz mapeia suas lacunas em 3 minutos.' },
+                { num: '02', name: 'Radar', desc: 'Algoritmo identifica o que você está prestes a esquecer.' },
+                { num: '03', name: 'Revisão', desc: 'Card certo no dia certo, 15 min/dia.' },
+                { num: '04', name: 'Retenção', desc: 'Conteúdo fixado, blindado pro dia da prova.' },
+              ].map((p) => (
+                <li key={p.num} className="flex gap-3">
+                  <span className="font-mono text-xs font-black tracking-widest shrink-0" style={{ color: '#00FF73' }}>
+                    {p.num}
+                  </span>
+                  <div>
+                    <p className="font-bold text-white text-sm">{p.name}</p>
+                    <p className="text-slate-400 text-sm">{p.desc}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+            <p className="text-xs italic" style={{ color: 'rgba(255,255,255,0.45)' }}>
+              Inimigo do Protocolo: o estudo às cegas — estudar muito e esquecer tudo na hora da prova.
+            </p>
+          </div>
+        </section>
+
         {/* ══ SEÇÃO 1 — Curva do Esquecimento ════════════════════════════════ */}
         <section className="mb-14">
           <p className="text-xs font-black uppercase tracking-widest mb-3" style={{ color: VIOLET }}>
