@@ -733,12 +733,11 @@ export default function LandingPage() {
               </p>
 
               <p className="text-slate-400 text-sm sm:text-base leading-relaxed max-w-2xl">
-                Manter uma estrutura de aprovação de elite no modelo tradicional exige um investimento pesado.
-                Se você fosse contratar cada módulo da nossa infraestrutura separadamente, este seria o seu custo mensal:
+                Você não precisa pagar R$ 30 mil por ano de cursinho — nem aceitar videoaula passiva de R$ 100/mês. Veja o que o mercado oferece hoje:
               </p>
             </div>
 
-            {/* receipt items */}
+            {/* receipt items — âncora visual do cursinho */}
             <div
               className="relative rounded-sm mb-8 overflow-hidden"
               style={{ border: '1px solid #222', background: '#0A0A0A' }}
@@ -790,92 +789,92 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* insight text */}
+            {/* frase de transição */}
             <p className="text-slate-400 text-sm sm:text-base mb-8 leading-relaxed">
-              A pergunta não é quanto custa o FlashAprova, mas quanto custa continuar operando em um sistema que{' '}
-              <span style={{ color: ORANGE, fontWeight: 700 }}>cobra o preço de um carro popular por ano</span>
-              {' '}para te entregar 30% de retenção.
+              A pergunta não é quanto custa o FlashAprova. É quanto você está pagando hoje pra{' '}
+              <span style={{ color: ORANGE, fontWeight: 700 }}>esquecer 70% do conteúdo em 24h.</span>
             </p>
 
-            {/* comparison table */}
-            <div
-              className="relative rounded-sm overflow-hidden mb-8"
-              style={{ border: '1px solid #222' }}
-            >
-              {/* table header */}
+            {/* tabela comparativa Stoodi / Descomplica / FlashAprova */}
+            <div className="overflow-x-auto mb-8">
               <div
-                className="grid text-xs font-bold tracking-widest uppercase py-3"
-                style={{
-                  gridTemplateColumns: '1.8fr 1fr 1fr',
-                  background: '#111',
-                  borderBottom: '1px solid #222',
-                  color: '#475569',
-                }}
+                className="relative rounded-sm overflow-hidden"
+                style={{ border: '1px solid #222', minWidth: 480 }}
               >
-                <div className="px-2 sm:px-5">Atributo</div>
-                <div className="px-1 sm:px-3" style={{ color: ORANGE }}>Cursinho</div>
-                <div className="px-1 sm:px-3" style={{ color: NEON }}>FlashAprova</div>
-              </div>
-
-              {[
-                {
-                  attr: 'Investimento Anual',
-                  trad: '~ 30 mil reais',
-                  flash: '< 4% deste valor',
-                  flashColor: NEON,
-                },
-                {
-                  attr: 'Retenção Real',
-                  trad: 'Esquece 70% em 24h',
-                  flash: 'Fixação ativa via SRS',
-                  flashColor: NEON,
-                },
-                {
-                  attr: 'Disponibilidade',
-                  trad: 'Horário Comercial',
-                  flash: '24h por dia/ 7 dias por semana',
-                  flashColor: NEON,
-                },
-              ].map((row, i) => (
+                {/* cabeçalho */}
                 <div
-                  key={i}
-                  className="grid text-xs sm:text-sm py-3 items-center"
+                  className="grid text-xs font-bold tracking-widest uppercase py-3"
                   style={{
-                    gridTemplateColumns: '1.8fr 1fr 1fr',
-                    borderBottom: i < 2 ? '1px dashed #1a1a1a' : undefined,
-                    background: i % 2 === 0 ? 'rgba(255,255,255,0.01)' : 'transparent',
+                    gridTemplateColumns: '1.8fr 1fr 1fr 1fr',
+                    background: '#111',
+                    borderBottom: '1px solid #222',
+                    color: '#475569',
                   }}
                 >
-                  <div className="px-2 sm:px-5" style={{ color: '#94a3b8', overflowWrap: 'break-word' }}>{row.attr}</div>
-                  <div className="px-1 sm:px-3" style={{ color: ORANGE, opacity: 0.85, overflowWrap: 'break-word' }}>{row.trad}</div>
-                  <div className="px-1 sm:px-3 font-bold" style={{ color: row.flashColor, overflowWrap: 'break-word' }}>{row.flash}</div>
+                  <div className="px-2 sm:px-5">Atributo</div>
+                  <div className="px-1 sm:px-3" style={{ color: ORANGE }}>Stoodi</div>
+                  <div className="px-1 sm:px-3" style={{ color: ORANGE }}>Descomplica</div>
+                  <div className="px-1 sm:px-3" style={{ color: NEON }}>FlashAprova</div>
                 </div>
-              ))}
+
+                {[
+                  {
+                    attr: 'Investimento anual',
+                    stoodi: 'R$ 708',
+                    descomplica: 'R$ 1.188',
+                    flash: 'R$ 327',
+                  },
+                  {
+                    attr: 'Modelo de aprendizado',
+                    stoodi: 'Videoaula passiva',
+                    descomplica: 'Videoaula + simulado',
+                    flash: 'SRS adaptativo + IA',
+                  },
+                  {
+                    attr: 'Correção de redação',
+                    stoodi: 'Limitada',
+                    descomplica: 'Limitada',
+                    flash: 'Norma IA ilimitada',
+                  },
+                  {
+                    attr: 'Tempo diário',
+                    stoodi: '1-2h passivo',
+                    descomplica: '1-2h passivo',
+                    flash: '15min ativo',
+                  },
+                  {
+                    attr: 'Garantia',
+                    stoodi: '7 dias',
+                    descomplica: '7 dias',
+                    flash: '7 dias',
+                  },
+                ].map((row, i) => (
+                  <div
+                    key={i}
+                    className="grid text-xs sm:text-sm py-3 items-center"
+                    style={{
+                      gridTemplateColumns: '1.8fr 1fr 1fr 1fr',
+                      borderBottom: i < 4 ? '1px dashed #1a1a1a' : undefined,
+                      background: i % 2 === 0 ? 'rgba(255,255,255,0.01)' : 'transparent',
+                    }}
+                  >
+                    <div className="px-2 sm:px-5" style={{ color: '#94a3b8', overflowWrap: 'break-word' }}>{row.attr}</div>
+                    <div className="px-1 sm:px-3" style={{ color: ORANGE, opacity: 0.85, overflowWrap: 'break-word' }}>{row.stoodi}</div>
+                    <div className="px-1 sm:px-3" style={{ color: ORANGE, opacity: 0.85, overflowWrap: 'break-word' }}>{row.descomplica}</div>
+                    <div className="px-1 sm:px-3 font-bold" style={{ color: NEON, overflowWrap: 'break-word' }}>{row.flash}</div>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            {/* yellow alert */}
-            <div
-              className="flex items-center gap-3 rounded-sm px-5 py-3 mb-8 text-xs sm:text-sm font-bold tracking-wide"
-              style={{
-                background: 'rgba(234,179,8,0.08)',
-                border: '1px solid rgba(234,179,8,0.35)',
-                color: '#fbbf24',
-              }}
-            >
-              <span style={{ fontSize: '1.1em' }}>⚠</span>
-              <span className="hidden sm:inline">[ CONCLUSÃO: O SISTEMA TRADICIONAL É FINANCEIRAMENTE INEFICIENTE ]</span>
-              <span className="sm:hidden">SISTEMA TRADICIONAL: FINANCEIRAMENTE INEFICIENTE</span>
-            </div>
-
-            {/* transition line */}
+            {/* frase de fechamento */}
             <p
               className="text-center text-sm sm:text-base font-bold mb-8 leading-snug"
               style={{ color: '#f1f5f9' }}
             >
-              Um ano a mais de cursinho custa{' '}
-              <span style={{ color: ORANGE }}>R$ 30 mil reais</span>.{' '}
-              Nosso sistema custa{' '}
-              <span style={{ color: NEON }}>menos que um jantar.</span>
+              Pagar mais por menos retenção é o erro mais caro do seu ano de cursinho.{' '}
+              <span style={{ color: NEON }}>R$ 327/ano</span>{' '}
+              te dá tudo isso — com garantia.
             </p>
 
             {/* CTA */}
