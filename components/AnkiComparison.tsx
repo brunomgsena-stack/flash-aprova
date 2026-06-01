@@ -206,10 +206,10 @@ export default function AnkiComparison() {
               </div>
               <div>
                 <p className="font-black text-base tracking-tight" style={{ color: 'rgba(255,255,255,0.55)' }}>
-                  Estudo Amador
+                  Videoaula Passiva
                 </p>
                 <p className="text-xs" style={{ color: 'rgba(255,255,255,0.22)' }}>
-                  Resumos · Apostilas · Intuição
+                  Stoodi · Descomplica · Cursinho online
                 </p>
               </div>
             </div>
@@ -236,9 +236,9 @@ export default function AnkiComparison() {
             animate={isInView ? 'visible' : 'hidden'}
           >
             {[
-              { icon: '✏️', label: 'Resumos Manuais',     sub: 'Você escreve. Você esquece. Repete.' },
-              { icon: '📖', label: 'Apostilas Estáticas',  sub: 'Conteúdo morto, sem adaptação ao seu nível.' },
-              { icon: '🎲', label: 'Revisão por Intuição', sub: 'Sem dados. Sem plano. Sem resultado.' },
+              { icon: '▶️', label: 'Videoaula Passiva',     sub: 'Você assiste 3h. Esquece em 24h.' },
+              { icon: '📊', label: 'Simulado sem Revisão',  sub: 'Erra e vai pro próximo. Sem aprendizado.' },
+              { icon: '👥', label: 'Mesmo Conteúdo pra Todos', sub: 'Não importa onde VOCÊ está fraco.' },
             ].map(({ icon, label, sub }) => (
               <motion.div
                 key={label}
@@ -324,7 +324,7 @@ export default function AnkiComparison() {
               </div>
               <div>
                 <p className="font-black text-base tracking-tight text-white">
-                  Engenharia FlashAprova
+                  ⚡ Protocolo Neural
                 </p>
                 <p className="text-xs" style={{ color: `${PURPLE}cc` }}>
                   IA + SRS + Tutoria Adaptativa
@@ -344,7 +344,7 @@ export default function AnkiComparison() {
                 boxShadow: `0 0 8px ${GREEN}`,
               }} />
               <span className="text-[10px] font-black tracking-widest" style={{ color: GREEN }}>
-                STATUS: MEMÓRIA BLINDADA
+                STATUS: RETENÇÃO CONSOLIDADA
               </span>
             </div>
           </div>
@@ -392,7 +392,12 @@ export default function AnkiComparison() {
               style={{ color: GREEN, textShadow: `0 0 24px ${GREEN}80` }}>
               97%
             </p>
-            <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>com revisões espaçadas por IA</p>
+            <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>
+              com revisões espaçadas por IA ·{' '}
+              <a href="/metodo" className="underline hover:text-white transition-colors">
+                ver método
+              </a>
+            </p>
           </div>
 
           {/* Bottom accent */}
@@ -400,66 +405,6 @@ export default function AnkiComparison() {
             style={{ background: `linear-gradient(90deg, transparent, ${GREEN}40, ${PURPLE}50, transparent)` }} />
         </motion.div>
       </div>
-
-      {/* ════════════ ENEMY CARDS ════════════ */}
-      <motion.div
-        className="grid grid-cols-1 md:grid-cols-3 gap-4"
-        variants={listWrap}
-        initial="hidden"
-        animate={isInView ? 'visible' : 'hidden'}
-      >
-        {[
-          {
-            icon: '✏️',
-            kill: 'Resumos Manuais',
-            quote: '"Resumos são terapia, não memória."',
-          },
-          {
-            icon: '📖',
-            kill: 'Apostilas Estáticas',
-            quote: '"Apostilas são depósitos de esquecimento."',
-          },
-          {
-            icon: '⚙️',
-            kill: 'Configuração Manual',
-            quote: '"Se você precisa configurar, você está perdendo tempo."',
-          },
-        ].map(({ icon, kill, quote }) => (
-          <motion.div
-            key={kill}
-            variants={cardPop}
-            className="group relative flex items-start gap-4 p-4 rounded-2xl cursor-default overflow-hidden"
-            style={{
-              background: 'rgba(255,45,85,0.04)',
-              border: '1px solid rgba(255,45,85,0.12)',
-              transition: 'background 0.3s ease, border-color 0.3s ease',
-            }}
-            whileHover={{
-              backgroundColor: 'rgba(255,45,85,0.08)',
-              borderColor: 'rgba(255,45,85,0.28)',
-              transition: { duration: 0.2 },
-            }}
-          >
-            {/* Crossed-out icon */}
-            <div className="relative shrink-0">
-              <span className="text-2xl grayscale opacity-35">{icon}</span>
-              <span className="absolute inset-0 flex items-center justify-center text-lg font-black"
-                style={{ color: RED, textShadow: `0 0 6px ${RED}` }}>
-                ✕
-              </span>
-            </div>
-            <div>
-              <p className="text-xs font-black uppercase tracking-widest mb-1"
-                style={{ color: `${RED}80` }}>
-                {kill} — eliminado
-              </p>
-              <p className="text-sm leading-snug" style={{ color: 'rgba(255,255,255,0.55)' }}>
-                {quote}
-              </p>
-            </div>
-          </motion.div>
-        ))}
-      </motion.div>
 
       {/* ════════════ CTA FINAL ════════════ */}
       <motion.div
