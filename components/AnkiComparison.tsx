@@ -205,11 +205,11 @@ export default function AnkiComparison() {
                 💀
               </div>
               <div>
-                <p className="font-black text-base tracking-tight" style={{ color: 'rgba(255,255,255,0.55)' }}>
-                  Estudo Amador
+                <p className="font-black text-base tracking-tight" style={{ color: 'rgba(255,255,255,0.82)' }}>
+                  Videoaula Passiva
                 </p>
-                <p className="text-xs" style={{ color: 'rgba(255,255,255,0.22)' }}>
-                  Resumos · Apostilas · Intuição
+                <p className="text-xs" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                  Stoodi · Descomplica · Cursinho online
                 </p>
               </div>
             </div>
@@ -236,9 +236,9 @@ export default function AnkiComparison() {
             animate={isInView ? 'visible' : 'hidden'}
           >
             {[
-              { icon: '✏️', label: 'Resumos Manuais',     sub: 'Você escreve. Você esquece. Repete.' },
-              { icon: '📖', label: 'Apostilas Estáticas',  sub: 'Conteúdo morto, sem adaptação ao seu nível.' },
-              { icon: '🎲', label: 'Revisão por Intuição', sub: 'Sem dados. Sem plano. Sem resultado.' },
+              { icon: '▶️', label: 'Videoaula Passiva',     sub: 'Você assiste 3h. Esquece em 24h.' },
+              { icon: '📊', label: 'Simulado sem Revisão',  sub: 'Erra e vai pro próximo. Sem aprendizado.' },
+              { icon: '👥', label: 'Mesmo Conteúdo pra Todos', sub: 'Não importa onde VOCÊ está fraco.' },
             ].map(({ icon, label, sub }) => (
               <motion.div
                 key={label}
@@ -246,12 +246,12 @@ export default function AnkiComparison() {
                 className="flex items-start gap-3 p-3 rounded-xl"
                 style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.04)' }}
               >
-                <span className="text-lg shrink-0 mt-0.5 grayscale opacity-40">{icon}</span>
+                <span className="text-lg shrink-0 mt-0.5 opacity-80">{icon}</span>
                 <div>
-                  <p className="text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                  <p className="text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.78)' }}>
                     {label}
                   </p>
-                  <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.18)' }}>{sub}</p>
+                  <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.50)' }}>{sub}</p>
                 </div>
                 <span className="ml-auto shrink-0 text-xs font-bold mt-0.5" style={{ color: `${RED}70` }}>✕</span>
               </motion.div>
@@ -260,11 +260,11 @@ export default function AnkiComparison() {
 
           {/* Bottom score */}
           <div className="relative mt-5 pt-4" style={{ zIndex: 4, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-            <p className="text-[10px] uppercase tracking-widest mb-1" style={{ color: 'rgba(255,255,255,0.22)' }}>
+            <p className="text-[10px] uppercase tracking-widest mb-1" style={{ color: 'rgba(255,255,255,0.50)' }}>
               Retenção real
             </p>
-            <p className="text-3xl font-black tabular-nums" style={{ color: `${RED}80` }}>~35%</p>
-            <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.18)' }}>após 1 semana sem revisão</p>
+            <p className="text-3xl font-black tabular-nums" style={{ color: RED, textShadow: `0 0 24px ${RED}40` }}>~35%</p>
+            <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.55)' }}>após 1 semana sem revisão</p>
           </div>
         </motion.div>
 
@@ -324,7 +324,7 @@ export default function AnkiComparison() {
               </div>
               <div>
                 <p className="font-black text-base tracking-tight text-white">
-                  Engenharia FlashAprova
+                  ⚡ Protocolo Neural
                 </p>
                 <p className="text-xs" style={{ color: `${PURPLE}cc` }}>
                   IA + SRS + Tutoria Adaptativa
@@ -344,7 +344,7 @@ export default function AnkiComparison() {
                 boxShadow: `0 0 8px ${GREEN}`,
               }} />
               <span className="text-[10px] font-black tracking-widest" style={{ color: GREEN }}>
-                STATUS: MEMÓRIA BLINDADA
+                STATUS: RETENÇÃO CONSOLIDADA
               </span>
             </div>
           </div>
@@ -392,7 +392,9 @@ export default function AnkiComparison() {
               style={{ color: GREEN, textShadow: `0 0 24px ${GREEN}80` }}>
               97%
             </p>
-            <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>com revisões espaçadas por IA</p>
+            <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>
+              com revisões espaçadas por IA
+            </p>
           </div>
 
           {/* Bottom accent */}
@@ -400,66 +402,6 @@ export default function AnkiComparison() {
             style={{ background: `linear-gradient(90deg, transparent, ${GREEN}40, ${PURPLE}50, transparent)` }} />
         </motion.div>
       </div>
-
-      {/* ════════════ ENEMY CARDS ════════════ */}
-      <motion.div
-        className="grid grid-cols-1 md:grid-cols-3 gap-4"
-        variants={listWrap}
-        initial="hidden"
-        animate={isInView ? 'visible' : 'hidden'}
-      >
-        {[
-          {
-            icon: '✏️',
-            kill: 'Resumos Manuais',
-            quote: '"Resumos são terapia, não memória."',
-          },
-          {
-            icon: '📖',
-            kill: 'Apostilas Estáticas',
-            quote: '"Apostilas são depósitos de esquecimento."',
-          },
-          {
-            icon: '⚙️',
-            kill: 'Configuração Manual',
-            quote: '"Se você precisa configurar, você está perdendo tempo."',
-          },
-        ].map(({ icon, kill, quote }) => (
-          <motion.div
-            key={kill}
-            variants={cardPop}
-            className="group relative flex items-start gap-4 p-4 rounded-2xl cursor-default overflow-hidden"
-            style={{
-              background: 'rgba(255,45,85,0.04)',
-              border: '1px solid rgba(255,45,85,0.12)',
-              transition: 'background 0.3s ease, border-color 0.3s ease',
-            }}
-            whileHover={{
-              backgroundColor: 'rgba(255,45,85,0.08)',
-              borderColor: 'rgba(255,45,85,0.28)',
-              transition: { duration: 0.2 },
-            }}
-          >
-            {/* Crossed-out icon */}
-            <div className="relative shrink-0">
-              <span className="text-2xl grayscale opacity-35">{icon}</span>
-              <span className="absolute inset-0 flex items-center justify-center text-lg font-black"
-                style={{ color: RED, textShadow: `0 0 6px ${RED}` }}>
-                ✕
-              </span>
-            </div>
-            <div>
-              <p className="text-xs font-black uppercase tracking-widest mb-1"
-                style={{ color: `${RED}80` }}>
-                {kill} — eliminado
-              </p>
-              <p className="text-sm leading-snug" style={{ color: 'rgba(255,255,255,0.55)' }}>
-                {quote}
-              </p>
-            </div>
-          </motion.div>
-        ))}
-      </motion.div>
 
       {/* ════════════ CTA FINAL ════════════ */}
       <motion.div
@@ -478,7 +420,7 @@ export default function AnkiComparison() {
 
         <Link
           href="/quizz"
-          className="cta-pulse relative flex sm:inline-flex w-full sm:w-auto justify-center items-center gap-3 rounded-2xl font-black text-black overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.99] px-8 py-5 text-lg"
+          className="cta-pulse relative flex sm:inline-flex w-full sm:w-auto justify-center items-center gap-3 rounded-2xl font-black text-black overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.99] px-6 py-4 text-sm"
           style={{
             background:    `linear-gradient(135deg, ${NEON} 0%, #00cc5a 100%)`,
             letterSpacing: '-0.01em',
@@ -492,13 +434,13 @@ export default function AnkiComparison() {
               animation: 'shimmer 2.4s infinite',
             }}
           />
-          <svg width={22} height={22} viewBox="0 0 24 24" fill="none"
+          <svg width={18} height={18} viewBox="0 0 24 24" fill="none"
             stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
             className="relative">
             <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
             <polyline points="16 7 22 7 22 13"/>
           </svg>
-          <span className="relative">COMEÇAR AGORA</span>
+          <span className="relative">GERAR MEU DIAGNÓSTICO GRÁTIS</span>
         </Link>
       </motion.div>
 

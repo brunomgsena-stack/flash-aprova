@@ -23,19 +23,18 @@ const SkeletonBlock = ({ h = 400 }: { h?: number }) => (
   />
 );
 
-const AnkiComparison     = dynamic(() => import('@/components/AnkiComparison'),     { ssr: false, loading: () => <SkeletonBlock h={400} /> });
-const EbbinghausSection  = dynamic(() => import('@/components/EbbinghausSection'), { ssr: false, loading: () => <SkeletonBlock h={340} /> });
-const NeuralBrainMap     = dynamic(() => import('@/components/NeuralBrainMap'),     { ssr: false, loading: () => <SkeletonBlock h={380} /> });
-const CardVaultSection   = dynamic(() => import('@/components/CardVaultSection'),   { ssr: false, loading: () => <SkeletonBlock h={480} /> });
-const NormaRedacaoSection= dynamic(() => import('@/components/NormaRedacaoSection'),{ ssr: false, loading: () => <SkeletonBlock h={520} /> });
-const AiTutorsSection    = dynamic(() => import('@/components/AiTutorsSection'),    { ssr: false, loading: () => <SkeletonBlock h={480} /> });
-const FocusSection          = dynamic(() => import('@/components/FocusSection'),          { ssr: false, loading: () => <SkeletonBlock h={480} /> });
-const NeuralEcosystemFlow= dynamic(() => import('@/components/NeuralEcosystemFlow'),{ ssr: false, loading: () => <SkeletonBlock h={360} /> });
-const BlindagemEngine    = dynamic(() => import('@/components/BlindagemEngine'),    { ssr: false, loading: () => <SkeletonBlock h={400} /> });
-const TacticalRecovery   = dynamic(() => import('@/components/TacticalRecovery'),   { ssr: false, loading: () => <SkeletonBlock h={400} /> });
-const ArsenalElite       = dynamic(() => import('@/components/ArsenalElite'),       { ssr: false, loading: () => <SkeletonBlock h={420} /> });
-const ReelsTestimonials  = dynamic(() => import('@/components/ReelsTestimonials'),  { ssr: false, loading: () => <SkeletonBlock h={340} /> });
-const ComoFuncionaSteps  = dynamic(() => import('@/components/ComoFuncionaSteps'),  { ssr: false, loading: () => <SkeletonBlock h={720} /> });
+const AnkiComparison     = dynamic(() => import('@/components/AnkiComparison'),     { ssr: false, loading: () => <SkeletonBlock h={900} /> });
+const EbbinghausSection  = dynamic(() => import('@/components/EbbinghausSection'), { ssr: false, loading: () => <SkeletonBlock h={700} /> });
+const CardVaultSection   = dynamic(() => import('@/components/CardVaultSection'),   { ssr: false, loading: () => <SkeletonBlock h={900} /> });
+const NormaRedacaoSection= dynamic(() => import('@/components/NormaRedacaoSection'),{ ssr: false, loading: () => <SkeletonBlock h={1500} /> });
+const AiTutorsSection    = dynamic(() => import('@/components/AiTutorsSection'),    { ssr: false, loading: () => <SkeletonBlock h={1100} /> });
+const FocusSection       = dynamic(() => import('@/components/FocusSection'),       { ssr: false, loading: () => <SkeletonBlock h={900} /> });
+const ReelsTestimonials  = dynamic(() => import('@/components/ReelsTestimonials'),  { ssr: false, loading: () => <SkeletonBlock h={600} /> });
+const ComoFuncionaSteps  = dynamic(() => import('@/components/ComoFuncionaSteps'),  { ssr: false, loading: () => <SkeletonBlock h={2400} /> });
+const PrecoEPlanos       = dynamic(() => import('@/components/PrecoEPlanos'),       { ssr: false, loading: () => <SkeletonBlock h={1400} /> });
+const StickyMobileCta    = dynamic(() => import('@/components/StickyMobileCta'),    { ssr: false });
+const AppDemo            = dynamic(() => import('@/components/AppDemo'),            { ssr: false, loading: () => <SkeletonBlock h={900} /> });
+const ParaQuemE          = dynamic(() => import('@/components/ParaQuemE'),          { ssr: false, loading: () => <SkeletonBlock h={700} /> });
 
 // ─── Lazy section wrapper ──────────────────────────────────────────────────────
 // Defers rendering (and therefore chunk download) until the section is ~300px
@@ -397,10 +396,10 @@ function AuthorityBanner() {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-6 px-8 py-7">
           <div className="text-center sm:text-left flex-shrink-0">
             <p className="text-white font-black text-xl sm:text-2xl leading-snug">
-              +<span style={{ color: NEON }}>3.800</span> estudantes já blindaram<br className="hidden sm:block" /> sua memória com o FlashAprova
+              Milhares de estudantes aprovados no ENEM
             </p>
             <p className="text-slate-600 text-xs mt-1 tracking-widest uppercase">
-              Aprovados nas top universidades do país
+              Padrão alinhado às exigências das top universidades do país
             </p>
           </div>
 
@@ -435,32 +434,57 @@ function AuthorityBanner() {
 
 
 // ─── FAQ data ─────────────────────────────────────────────────────────────────
-const FAQ_ITEMS = [
+const FAQ_ITEMS: { q: string; a: React.ReactNode }[] = [
   {
-    q: 'Vou perder tempo configurando o app ou o material já vem pronto?',
-    a: 'Veredito: Tempo é seu recurso mais escasso. Ao contrário do Anki, onde você gasta meses criando cards, o FlashAprova entrega o Acervo de 18.000 Flashcards. São cards táticos focados no 80/20 do ENEM. Você entra para evoluir sua nota, não para ser digitador.',
+    q: 'Quanto custa o FlashAprova? Tem parcelamento?',
+    a: 'A partir de R$ 21,41/mês (Plano Essencial) ou R$ 27,25/mês no Protocolo Neural (completo, com 15 Tutores IA e Norma IA de redação) — pagamento em 12x sem juros, ou à vista a partir de R$ 257. O plano mais escolhido sai por menos de R$ 0,90 por dia.',
   },
   {
-    q: 'O método funciona para conteúdos densos como Medicina e Engenharia?',
-    a: 'Veredito: O algoritmo foi desenhado especificamente para alta complexidade. Nossa tecnologia de Acesso em Latência Zero garante que, sob a pressão máxima do ENEM, a resposta correta salte na sua mente. É a diferença entre "achar que sabe" e ter a Propriedade do Conhecimento.',
+    q: 'Tem garantia? Como pedir reembolso?',
+    a: 'Sim. 7 dias de garantia incondicional. Testou e não se encaixou na sua rotina? Mande um email para contato@flashaprova.com.br e devolvemos 100% do valor. Sem perguntas, sem burocracia, sem letra miúda.',
   },
   {
-    q: 'Por que o FlashAprova é superior ao Anki ou métodos manuais?',
-    a: 'Veredito: O Anki é um martelo; o FlashAprova é uma fábrica automatizada. Além do SRS de elite, você tem o Neural Core com 10 Agentes IA e a Norma IA para auditar suas redações em 30 segundos. Métodos manuais são "terapia de estudo", nós entregamos Engenharia de Retenção.',
+    q: 'O que é o Protocolo Neural?',
+    a: 'É o método em 4 fases que combina a Curva de Ebbinghaus com IA. Você responde um diagnóstico, a IA monta seu Radar de Lacunas, te entrega o card certo no dia certo (15 min/dia) e fixa o conteúdo na memória de longo prazo. Detalhes em /metodo.',
   },
   {
-    q: 'Quanto tempo do meu dia a revisão automática consome?',
-    a: 'Veredito: Eficiência é a nossa obsessão. O Radar de Lacunas elimina o estudo às cegas: você foca apenas no que o seu cérebro está prestes a deletar. 30 a 45 minutos diários no app garantem uma retenção de 97%, economizando horas de revisões inúteis em apostilas estáticas.',
+    q: 'Funciona para Medicina, Engenharia ou concursos?',
+    a: 'O método de SRS + IA funciona para qualquer conteúdo que exija memorização precisa. Hoje o foco é ENEM com cards desenhados para Medicina e Engenharia, mas o algoritmo é matéria-agnóstico.',
   },
   {
-    q: 'E se eu sentir que a Engenharia de Retenção não é para mim?',
-    a: 'Veredito: Operamos com Risco Zero. Você tem 7 dias de Garantia Incondicional. Se não sentir uma melhora brutal na sua velocidade de resgate e segurança no conteúdo, devolvemos 100% do seu investimento. Sem perguntas, sem burocracia.',
+    q: 'Quanto tempo por dia preciso estudar?',
+    a: '15 a 30 minutos por dia. O Radar de Lacunas elimina o estudo às cegas: você foca apenas no que o seu cérebro está prestes a esquecer. Menos que rolar o feed do Instagram.',
   },
   {
-    q: 'Posso confiar na correção de redação da IA?',
-    a: 'Veredito: A Norma IA não "dá uma nota". Ela faz uma Auditoria Forense baseada no padrão oficial do INEP. Enquanto um corretor humano leva 10 dias, a Norma disseca sua estrutura em segundos, revelando falhas invisíveis que custam sua aprovação.',
+    q: 'Por que pagar se o Anki é grátis?',
+    a: 'Anki te obriga a montar deck do zero (2-3 meses antes de estudar 1 card). Aqui você abre o app e em 3 minutos já tem revisão personalizada, com biblioteca pronta de milhares de cards alinhados ao ENEM.',
   },
-] as const;
+  {
+    q: 'E se eu não conseguir manter o ritmo de 15 min por dia?',
+    a: 'O sistema foi feito pra quem para. Se você ficar 5 dias sem abrir, o Radar de Lacunas recalibra do ponto onde você parou — nenhum progresso se perde, nenhum card desaparece. A garantia de 7 dias existe exatamente pra você testar a rotina sem risco: se não encaixar no seu dia, devolvemos 100%.',
+  },
+  {
+    q: 'Posso confiar na correção de redação por IA?',
+    a: (
+      <>
+        A Norma IA segue o padrão oficial do INEP. Em segundos você recebe um parecer detalhado das cinco
+        competências, identifica falhas estruturais que custariam pontos e melhora a próxima redação
+        imediatamente.{' '}
+        <Link href="/metodo" className="underline underline-offset-2 hover:opacity-80 transition-opacity" style={{ color: NEON }}>
+          Veja a fundamentação científica completa em /metodo.
+        </Link>
+      </>
+    ),
+  },
+  {
+    q: 'Funciona no celular?',
+    a: 'Sim. Plataforma 100% responsiva, abre direto no navegador do celular. Sem download obrigatório.',
+  },
+  {
+    q: 'Quem é a empresa? Como entro em contato?',
+    a: 'FlashAprova é um produto brasileiro com CNPJ, política de privacidade e termos de uso publicados. Suporte por email respondido em até 24h úteis: contato@flashaprova.com.br.',
+  },
+];
 
 // ─── ENEM Countdown ────────────────────────────────────────────────────────────
 function ENEMCountdown() {
@@ -582,7 +606,7 @@ function FAQAccordion() {
       </div>
 
       <div className="text-center mt-10">
-        <CTAButton size="sm" label="COMECE AGORA" />
+        <CTAButton size="sm" label="GERAR MEU DIAGNÓSTICO GRÁTIS" />
         <p className="text-center text-xs mt-3" style={{ color: 'rgba(255,255,255,0.35)' }}>Diagnóstico grátis · 3 min</p>
       </div>
     </section>
@@ -656,19 +680,29 @@ export default function LandingPage() {
 
         <AuthorityBanner />
 
+        {/* ════════════════════════════ APP DEMO · vídeo real ══ */}
+        <LazySection minHeight={900}>
+          <AppDemo />
+        </LazySection>
+
         {/* ════════════════════════════ COMO FUNCIONA · 4 PASSOS ══ */}
-        <LazySection minHeight={720}>
+        <LazySection minHeight={2400}>
           <ComoFuncionaSteps />
         </LazySection>
 
         {/* ════════════════════════════ METHODS COMPARISON ══ */}
         <section className="max-w-5xl mx-auto px-4 sm:px-10 pb-12 sm:pb-24">
 
-          <LazySection minHeight={340}>
+          <LazySection minHeight={700}>
             <EbbinghausSection />
           </LazySection>
 
-          <LazySection minHeight={400}>
+          {/* ════════════════════ PARA QUEM É — identificação por dor ══ */}
+          <LazySection minHeight={700}>
+            <ParaQuemE />
+          </LazySection>
+
+          <LazySection minHeight={900}>
             <AnkiComparison />
           </LazySection>
 
@@ -676,62 +710,42 @@ export default function LandingPage() {
 
 
 
-        {/* ════════════════════════ ECOSSISTEMA — Neural Ciclo FlashAprova ══ */}
-        <LazySection minHeight={360}>
-          <NeuralEcosystemFlow />
-        </LazySection>
-
         {/* ════════════════════ FOCO — Mapeamento de Fragilidades ══ */}
-        <LazySection minHeight={480}>
+        <LazySection minHeight={900}>
           <FocusSection />
-        </LazySection>
-
-        {/* ════════════════════════ CENTRAL DE OPERAÇÕES ══ */}
-        <LazySection minHeight={400}>
-          <BlindagemEngine />
-        </LazySection>
-
-        {/* ════════════════════ RECUPERAÇÃO TÁTICA ══ */}
-        <LazySection minHeight={400}>
-          <TacticalRecovery />
         </LazySection>
 
         <div className="flex justify-center pb-16 px-4 -mt-8">
           <div className="flex flex-col items-center">
-            <CTAButton size="sm" label="COMEÇAR AGORA" />
+            <CTAButton size="sm" label="GERAR MEU DIAGNÓSTICO GRÁTIS" />
             <p className="text-center text-xs mt-3" style={{ color: 'rgba(255,255,255,0.35)' }}>Diagnóstico grátis · 3 min</p>
           </div>
         </div>
 
-        {/* ══════════════════════════ ARSENAL DE ELITE ══ */}
-        <LazySection minHeight={420}>
-          <ArsenalElite />
-        </LazySection>
-
         {/* ═══════════════════════════ BIBLIOTECA ══ */}
-        <LazySection minHeight={480}>
+        <LazySection minHeight={900}>
           <CardVaultSection />
         </LazySection>
 
         {/* ════════════════════════════ TUTOR IA ══ */}
-        <LazySection minHeight={480}>
+        <LazySection minHeight={1100}>
           <AiTutorsSection />
         </LazySection>
 
         {/* ═══════════════════════ NORMA · REDAÇÃO ══ */}
-        <LazySection minHeight={520}>
+        <LazySection minHeight={1500}>
           <NormaRedacaoSection />
         </LazySection>
 
         {/* ═══════════════════ CTA mid-page ══ */}
         <div className="flex justify-center pb-16 -mt-10 px-5 sm:px-0">
           <div className="flex flex-col items-center">
-            <CTAButton size="sm" label="COMECE AGORA" />
+            <CTAButton size="sm" label="GERAR MEU DIAGNÓSTICO GRÁTIS" />
             <p className="text-center text-xs mt-3" style={{ color: 'rgba(255,255,255,0.35)' }}>Diagnóstico grátis · 3 min</p>
           </div>
         </div>
 
-        {/* ════════════════════ AUDITORIA DE MERCADO ══ */}
+        {/* ════════════════════ COMPARATIVO DE MERCADO ══ */}
         <section className="max-w-4xl mx-auto px-4 sm:px-10 pb-8 sm:pb-16">
           <div
             className="relative rounded-2xl overflow-hidden p-4 sm:p-8 md:p-12"
@@ -751,24 +765,16 @@ export default function LandingPage() {
 
             {/* header badge */}
             <div className="relative mb-8 flex flex-col items-center text-center">
-              <div
-                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-sm text-base font-bold tracking-widest uppercase mb-2"
-                style={{ background: 'rgba(255,40,40,0.08)', border: '1px solid rgba(255,40,40,0.35)', color: '#f87171' }}
-              >
-                <span className="inline-block w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#f87171' }} />
-                [NOTA FISCAL: REPROVADO]
-              </div>
               <p className="text-base font-bold tracking-widest uppercase mb-6" style={{ color: '#f87171' }}>
-                O CUSTO TRADICIONAL
+                O VERDADEIRO CUSTO DA APROVAÇÃO
               </p>
 
               <p className="text-slate-400 text-sm sm:text-base leading-relaxed max-w-2xl">
-                Manter uma estrutura de aprovação de elite no modelo tradicional exige um investimento pesado.
-                Se você fosse contratar cada módulo da nossa infraestrutura separadamente, este seria o seu custo mensal:
+                Você não precisa pagar R$ 30 mil por ano de cursinho — nem aceitar videoaula passiva de R$ 100/mês. Veja o que o mercado oferece hoje:
               </p>
             </div>
 
-            {/* receipt items */}
+            {/* receipt items — âncora visual do cursinho */}
             <div
               className="relative rounded-sm mb-8 overflow-hidden"
               style={{ border: '1px solid #222', background: '#0A0A0A' }}
@@ -820,125 +826,164 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* insight text */}
+            {/* frase de transição */}
             <p className="text-slate-400 text-sm sm:text-base mb-8 leading-relaxed">
-              A pergunta não é quanto custa o FlashAprova, mas quanto custa continuar operando em um sistema que{' '}
-              <span style={{ color: ORANGE, fontWeight: 700 }}>cobra o preço de um carro popular por ano</span>
-              {' '}para te entregar 30% de retenção.
+              A pergunta não é quanto custa o FlashAprova. É quanto você está pagando hoje pra{' '}
+              <span style={{ color: ORANGE, fontWeight: 700 }}>esquecer 70% do conteúdo em 24h.</span>
             </p>
 
-            {/* comparison table */}
-            <div
-              className="relative rounded-sm overflow-hidden mb-8"
-              style={{ border: '1px solid #222' }}
-            >
-              {/* table header */}
+            {/* tabela comparativa Stoodi / Descomplica / FlashAprova */}
+            <div className="overflow-x-auto mb-8">
               <div
-                className="grid text-xs font-bold tracking-widest uppercase py-3"
-                style={{
-                  gridTemplateColumns: '1.8fr 1fr 1fr',
-                  background: '#111',
-                  borderBottom: '1px solid #222',
-                  color: '#475569',
-                }}
+                className="relative rounded-sm overflow-hidden"
+                style={{ border: '1px solid #222', minWidth: 480 }}
               >
-                <div className="px-2 sm:px-5">Atributo</div>
-                <div className="px-1 sm:px-3" style={{ color: ORANGE }}>Cursinho</div>
-                <div className="px-1 sm:px-3" style={{ color: NEON }}>FlashAprova</div>
-              </div>
-
-              {[
-                {
-                  attr: 'Investimento Anual',
-                  trad: '~ 30 mil reais',
-                  flash: '< 4% deste valor',
-                  flashColor: NEON,
-                },
-                {
-                  attr: 'Retenção Real',
-                  trad: 'Aluguel (Esquece em 24h)',
-                  flash: 'Propriedade (97% Blindado)',
-                  flashColor: NEON,
-                },
-                {
-                  attr: 'Disponibilidade',
-                  trad: 'Horário Comercial',
-                  flash: '24h por dia/ 7 dias por semana',
-                  flashColor: NEON,
-                },
-              ].map((row, i) => (
+                {/* cabeçalho */}
                 <div
-                  key={i}
-                  className="grid text-xs sm:text-sm py-3 items-center"
+                  className="grid text-xs font-bold tracking-widest uppercase py-3"
                   style={{
-                    gridTemplateColumns: '1.8fr 1fr 1fr',
-                    borderBottom: i < 2 ? '1px dashed #1a1a1a' : undefined,
-                    background: i % 2 === 0 ? 'rgba(255,255,255,0.01)' : 'transparent',
+                    gridTemplateColumns: '1.8fr 1fr 1fr 1fr',
+                    background: '#111',
+                    borderBottom: '1px solid #222',
+                    color: '#475569',
                   }}
                 >
-                  <div className="px-2 sm:px-5" style={{ color: '#94a3b8', overflowWrap: 'break-word' }}>{row.attr}</div>
-                  <div className="px-1 sm:px-3" style={{ color: ORANGE, opacity: 0.85, overflowWrap: 'break-word' }}>{row.trad}</div>
-                  <div className="px-1 sm:px-3 font-bold" style={{ color: row.flashColor, overflowWrap: 'break-word' }}>{row.flash}</div>
+                  <div className="px-2 sm:px-5">Atributo</div>
+                  <div className="px-1 sm:px-3" style={{ color: ORANGE }}>Stoodi</div>
+                  <div className="px-1 sm:px-3" style={{ color: ORANGE }}>Descomplica</div>
+                  <div className="px-1 sm:px-3" style={{ color: NEON }}>FlashAprova</div>
                 </div>
-              ))}
+
+                {[
+                  {
+                    attr: 'Investimento anual',
+                    stoodi: 'R$ 708',
+                    descomplica: 'R$ 1.188',
+                    flash: 'R$ 327',
+                  },
+                  {
+                    attr: 'Modelo de aprendizado',
+                    stoodi: 'Videoaula passiva',
+                    descomplica: 'Videoaula + simulado',
+                    flash: 'SRS adaptativo + IA',
+                  },
+                  {
+                    attr: 'Correção de redação',
+                    stoodi: 'Limitada',
+                    descomplica: 'Limitada',
+                    flash: 'Norma IA ilimitada',
+                  },
+                  {
+                    attr: 'Tempo diário',
+                    stoodi: '1-2h passivo',
+                    descomplica: '1-2h passivo',
+                    flash: '15min ativo',
+                  },
+                  {
+                    attr: 'Garantia',
+                    stoodi: '7 dias',
+                    descomplica: '7 dias',
+                    flash: '7 dias',
+                  },
+                ].map((row, i) => (
+                  <div
+                    key={i}
+                    className="grid text-xs sm:text-sm py-3 items-center"
+                    style={{
+                      gridTemplateColumns: '1.8fr 1fr 1fr 1fr',
+                      borderBottom: i < 4 ? '1px dashed #1a1a1a' : undefined,
+                      background: i % 2 === 0 ? 'rgba(255,255,255,0.01)' : 'transparent',
+                    }}
+                  >
+                    <div className="px-2 sm:px-5" style={{ color: '#94a3b8', overflowWrap: 'break-word' }}>{row.attr}</div>
+                    <div className="px-1 sm:px-3" style={{ color: ORANGE, opacity: 0.85, overflowWrap: 'break-word' }}>{row.stoodi}</div>
+                    <div className="px-1 sm:px-3" style={{ color: ORANGE, opacity: 0.85, overflowWrap: 'break-word' }}>{row.descomplica}</div>
+                    <div className="px-1 sm:px-3 font-bold" style={{ color: NEON, overflowWrap: 'break-word' }}>{row.flash}</div>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            {/* yellow alert */}
-            <div
-              className="flex items-center gap-3 rounded-sm px-5 py-3 mb-8 text-xs sm:text-sm font-bold tracking-wide"
-              style={{
-                background: 'rgba(234,179,8,0.08)',
-                border: '1px solid rgba(234,179,8,0.35)',
-                color: '#fbbf24',
-              }}
-            >
-              <span style={{ fontSize: '1.1em' }}>⚠</span>
-              <span className="hidden sm:inline">[ CONCLUSÃO: O SISTEMA TRADICIONAL É FINANCEIRAMENTE INEFICIENTE ]</span>
-              <span className="sm:hidden">SISTEMA TRADICIONAL: FINANCEIRAMENTE INEFICIENTE</span>
-            </div>
-
-            {/* transition line */}
+            {/* frase de fechamento */}
             <p
-              className="text-center text-sm sm:text-base font-bold mb-8 leading-snug"
+              className="text-center text-sm sm:text-base font-bold mb-2 leading-snug"
               style={{ color: '#f1f5f9' }}
             >
-              Um ano a mais de cursinho custa{' '}
-              <span style={{ color: ORANGE }}>R$ 30 mil reais</span>.{' '}
-              Nosso sistema custa{' '}
-              <span style={{ color: NEON }}>menos que um jantar.</span>
+              Pagar mais por menos retenção é o erro mais caro do seu ano de cursinho.{' '}
+              <span style={{ color: NEON }}>R$0,90/dia</span>{' '}
+              te dá tudo isso — com garantia.
             </p>
 
+            {/* ROI / custo de oportunidade */}
+            <div
+              className="max-w-2xl mx-auto rounded-xl px-5 py-4 mb-4 mt-5 text-center"
+              style={{
+                background: 'rgba(255,138,0,0.06)',
+                border: '1px solid rgba(255,138,0,0.25)',
+              }}
+            >
+              <p className="text-xs font-bold tracking-widest uppercase mb-2" style={{ color: ORANGE, fontFamily: "'JetBrains Mono', monospace" }}>
+                Conta brutal
+              </p>
+              <p className="text-sm sm:text-base font-bold leading-snug" style={{ color: 'rgba(255,255,255,0.85)' }}>
+                Reprovar significa <span style={{ color: ORANGE }}>+1 ano de cursinho a ~R$ 1.500/mês = R$ 18.000</span> jogados fora.<br className="hidden sm:block" />
+                {' '}O Protocolo Neural custa <span style={{ color: NEON }}>R$0,90/dia</span>. Qual é o risco real aqui?
+              </p>
+            </div>
             {/* CTA */}
             <div className="flex justify-center">
               <div className="flex flex-col items-center">
-                <CTAButton size="sm" label="QUERO COMEÇAR AGORA" />
+                <CTAButton size="sm" label="GERAR MEU DIAGNÓSTICO GRÁTIS" />
                 <p className="text-center text-xs mt-3" style={{ color: 'rgba(255,255,255,0.35)' }}>Diagnóstico grátis · 3 min</p>
               </div>
             </div>
           </div>
         </section>
 
-        <LazySection minHeight={340}>
+        <LazySection minHeight={1400}>
+          <PrecoEPlanos />
+        </LazySection>
+
+        <LazySection minHeight={600}>
           <ReelsTestimonials />
         </LazySection>
 
         <FAQAccordion />
 
         {/* ════════════════════════════════ FOOTER ══ */}
-        <footer className="border-t border-white/5 py-8 px-6 sm:px-10 text-center">
-          <p className="text-white font-black mb-2">
-            Flash<span style={{
-              background: `linear-gradient(90deg, ${NEON}, ${VIOLET})`,
-              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-            }}>Aprova</span>
-          </p>
-          <p className="text-slate-700 text-xs">
-            © 2026 · Tecnologia de aprovação com IA ·{' '}
-            <Link href="/login" className="hover:text-slate-400 transition-colors">Entrar</Link>
-          </p>
+        <footer className="border-t border-white/5 py-10 px-6 sm:px-10">
+          <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+            <div>
+              <p className="text-white font-black mb-2">
+                Flash<span style={{
+                  background: `linear-gradient(90deg, ${NEON}, ${VIOLET})`,
+                  WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                }}>Aprova</span>
+              </p>
+              <p className="text-slate-700 text-xs flex items-center gap-2 flex-wrap">
+                © 2026 · Tecnologia de aprovação com IA
+                <span className="inline-flex items-center gap-1" style={{ color: 'rgba(255,255,255,0.30)' }}>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  </svg>
+                  <span className="text-[10px]">SSL</span>
+                </span>
+              </p>
+            </div>
+            <nav className="flex flex-wrap gap-x-5 gap-y-2 text-xs text-slate-500">
+              <Link href="/privacidade" className="hover:text-slate-300 transition-colors">Política de Privacidade</Link>
+              <Link href="/termos" className="hover:text-slate-300 transition-colors">Termos de Uso</Link>
+              <Link href="/login" className="hover:text-slate-300 transition-colors">Entrar</Link>
+              <a href="mailto:contato@flashaprova.com.br" className="hover:text-slate-300 transition-colors">Suporte</a>
+            </nav>
+          </div>
         </footer>
 
       </div>
+
+      {/* Sticky CTA mobile — aparece após scroll > 400px */}
+      <StickyMobileCta />
 
     </main>
 

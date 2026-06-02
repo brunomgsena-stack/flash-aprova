@@ -13,33 +13,33 @@ const ORANGE = '#FF8A00';
 const STEPS = [
   {
     id:     '01',
-    title:  'DIAGNÓSTICO IA',
+    title:  'DIAGNÓSTICO',
     time:   '3 min',
-    copy:   'Responda 12 perguntas rápidas. A IA mapeia em quais tópicos do edital você está vulnerável.',
+    copy:   'Quiz de 3 min mapeia suas lacunas. A IA identifica em quais tópicos do edital você está vulnerável.',
     badge:  'SEM CADASTRO · COMEÇA NA HORA',
     color:  NEON,
   },
   {
     id:     '02',
-    title:  'PLANO PERSONALIZADO',
+    title:  'RADAR',
     time:   'auto',
-    copy:   'Em segundos você recebe seu mapa de lacunas e um plano focado nos 20% que valem 80% da nota.',
+    copy:   'A IA identifica o que você está prestes a esquecer. Você recebe seu mapa de lacunas focado nos 20% que valem 80% da nota.',
     badge:  'GERADO PELA IA · SEM CONFIGURAR NADA',
     color:  ORANGE,
   },
   {
     id:     '03',
-    title:  'REVISÃO DIÁRIA',
+    title:  'REVISÃO',
     time:   '15 min/dia',
-    copy:   'Todo dia o app entrega só os flashcards que você está prestes a esquecer. Responde, marca a dificuldade, pronto.',
+    copy:   'Card certo no dia certo, 15 min/dia. O app entrega só os flashcards que você está prestes a esquecer — responde, marca a dificuldade, pronto.',
     badge:  'SÓ O QUE IMPORTA HOJE · ZERO PLANEJAMENTO',
     color:  NEON,
   },
   {
     id:     '04',
-    title:  'ALGORITMO SRS BLINDA',
+    title:  'RETENÇÃO',
     time:   'automático, 24/7',
-    copy:   'Acertou fácil? Volta daqui a 7 dias. Errou? Volta amanhã. O algoritmo calcula sozinho o intervalo perfeito pra cada card.',
+    copy:   'Conteúdo fixado, blindado pro dia da prova. Acertou fácil? Volta daqui a 7 dias. Errou? Volta amanhã.',
     badge:  'BASEADO EM EBBINGHAUS · AJUSTE CONTÍNUO',
     color:  VIOLET,
   },
@@ -389,11 +389,11 @@ function SRSIntervalMockup() {
 }
 
 // ─── CTA button (replica do que existe na LandingPage) ────────────────────────
-function CTAButton({ label = 'GERAR MEU DIAGNÓSTICO IA' }: { label?: string }) {
+function CTAButton({ label = 'GERAR MEU DIAGNÓSTICO GRÁTIS' }: { label?: string }) {
   return (
     <Link
       href="/quizz"
-      className="cta-pulse relative flex sm:inline-flex w-full sm:w-auto justify-center items-center gap-3 rounded-2xl font-black text-black overflow-hidden whitespace-nowrap transition-all duration-200 hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.99] px-8 py-5 text-lg"
+      className="cta-pulse relative flex sm:inline-flex w-full sm:w-auto justify-center items-center gap-3 rounded-2xl font-black text-black overflow-hidden whitespace-nowrap transition-all duration-200 hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.99] px-6 py-4 text-sm"
       style={{
         background:    `linear-gradient(135deg, ${NEON} 0%, #00cc5a 100%)`,
         letterSpacing: '-0.01em',
@@ -407,7 +407,7 @@ function CTAButton({ label = 'GERAR MEU DIAGNÓSTICO IA' }: { label?: string }) 
           animation:  'shimmer 2.4s infinite',
         }}
       />
-      <svg width={22} height={22} viewBox="0 0 24 24" fill="none"
+      <svg width={18} height={18} viewBox="0 0 24 24" fill="none"
         stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
         className="relative">
         <path d="M5 12h14" />
@@ -513,14 +513,14 @@ export default function ComoFuncionaSteps() {
     <section className="max-w-5xl mx-auto px-4 sm:px-10 pt-12 sm:pt-24 pb-12 sm:pb-24">
       {/* Header */}
       <div className="text-center mb-12 sm:mb-16">
-        <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: NEON, fontFamily: "'JetBrains Mono', ui-monospace, monospace" }}>
-          [ COMO FUNCIONA ]
+        <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: VIOLET, fontFamily: "'JetBrains Mono', ui-monospace, monospace" }}>
+          [ PROTOCOLO NEURAL ]
         </p>
         <h2 className="text-3xl sm:text-4xl font-black text-white mb-3 leading-tight">
-          Do zero ao primeiro flashcard em <Neon>3 minutos</Neon>.
+          As 4 fases do Protocolo Neural em <Neon>3 minutos</Neon>.
         </h2>
         <p className="text-slate-400 text-sm sm:text-base">
-          Sem deck, sem configuração, sem mentor.
+          Ebbinghaus + IA. Sem deck, sem configuração.
         </p>
       </div>
 

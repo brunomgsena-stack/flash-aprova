@@ -1090,10 +1090,10 @@ function CommandCenterScreen({ termLines, visibleConcepts }: { termLines: string
       background: '#060a14',
     }}>
 
-      {/* TL — Arsenal de Revisão */}
+      {/* TL — Biblioteca de Revisão */}
       <div style={cell('none')}>
         <div style={{ ...hdr, borderBottom: '0.5px solid rgba(255,255,255,0.08)', paddingBottom: 4, marginBottom: 6 }}>
-          📚 Arsenal
+          📚 Biblioteca
         </div>
         {[
           { name: 'Bio',  pct: 78, color: '#34d399' },
@@ -1298,7 +1298,7 @@ function PhoneRedacaoScreen() {
       {/* header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
         <span style={{ fontSize: 9, fontWeight: 800, color: '#fff' }}>✍️ Redação · Norma IA</span>
-        <span style={{ fontSize: 6, color: '#a855f7', letterSpacing: '0.18em', fontWeight: 700 }}>AUDITORIA TRI</span>
+        <span style={{ fontSize: 6, color: '#a855f7', letterSpacing: '0.18em', fontWeight: 700 }}>ANÁLISE TRI</span>
       </div>
 
       {/* terminal feed — fills */}
@@ -1900,6 +1900,19 @@ export default function HeroSection() {
           className="text-center px-4 sm:px-6 pt-0 sm:pt-14 pb-4 sm:pb-6 mx-auto"
           style={{ maxWidth: 820 }}
         >
+          {/* Badge Protocolo Neural */}
+          <div
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-3 sm:mb-4 text-[10px] sm:text-xs font-black tracking-widest uppercase"
+            style={{
+              background: 'linear-gradient(135deg, rgba(124,58,237,0.12), rgba(0,255,115,0.08))',
+              border: '1px solid rgba(124,58,237,0.40)',
+              color: '#a78bfa',
+            }}
+          >
+            <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#a78bfa', boxShadow: '0 0 8px #a78bfa' }} />
+            PROTOCOLO NEURAL · O método anti-esquecimento
+          </div>
+
           {/* Badge */}
           <div
             className="inline-flex flex-wrap justify-center items-center gap-2 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full mb-4 sm:mb-8 text-[9px] sm:text-xs font-bold tracking-widest uppercase"
@@ -1918,7 +1931,7 @@ export default function HeroSection() {
               letterSpacing: '-0.03em',
             }}
           >
-            Acelere sua Aprovação em{' '}
+            Aprovação em{' '}
             <motion.span
               style={{ color: '#00FF73' }}
               animate={{
@@ -1932,26 +1945,9 @@ export default function HeroSection() {
             >
               Medicina
             </motion.span>
-            {' '}no ENEM com{' '}
-            <motion.span
-              style={{ color: '#a78bfa' }}
-              animate={{
-                textShadow: [
-                  '0 0 10px rgba(124,58,237,0.55), 0 0 28px rgba(124,58,237,0.28)',
-                  '0 0 22px rgba(124,58,237,0.9),  0 0 55px rgba(124,58,237,0.45)',
-                  '0 0 10px rgba(124,58,237,0.55), 0 0 28px rgba(124,58,237,0.28)',
-                ],
-              }}
-              transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut', delay: 0.6 }}
-            >
-              IA
-            </motion.span>
+            {' '}sem esquecer o que você estudou ontem.
           </h1>
 
-          {/* Subheadline curta */}
-          <p className="text-base md:text-lg lg:text-xl font-medium leading-relaxed text-gray-300 max-w-3xl mx-auto mt-4 sm:mt-6">
-            Lembre Todo Assunto na Hora da Prova e Corte pela Metade o Tempo de Estudo com o Algoritmo que Planeja Revisões por você.
-          </p>
         </div>
 
         {/* ── Central scene ── */}
@@ -1982,18 +1978,9 @@ export default function HeroSection() {
           transition={{ duration: 0.85, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
         >
           <p
-            className="text-base sm:text-lg leading-relaxed mx-auto mb-6 sm:mb-10"
-            style={{ color: 'rgba(255,255,255,0.5)', maxWidth: 640 }}
+            className="text-base md:text-lg lg:text-xl font-medium leading-relaxed text-gray-300 max-w-3xl mx-auto mb-6 sm:mb-10"
           >
-            Tenha acesso à{' '}
-            <span style={{ color: '#ffffff', fontWeight: 600 }}>
-              Maior Plataforma de Estudo Ativo do Brasil
-            </span>
-            {' '}e seja aprovado estudando{' '}
-            <span style={{ color: '#ffffff', fontWeight: 600 }}>
-              apenas 15 minutos por dia
-            </span>
-            . Acesse +18k Flashcards Táticos, 15 Tutores IA e Corretor de Redação Ilimitado.
+            A única plataforma com IA que prevê o dia exato em que você vai esquecer cada conteúdo do ENEM — e te entrega o card 1 dia antes. Em 15 minutos por dia.
           </p>
 
           <div className="flex flex-col items-center gap-3">
@@ -2061,7 +2048,7 @@ export default function HeroSection() {
               >
                 <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
               </svg>
-              {ctaState === 'loading' ? '[ ACESSANDO NÚCLEO... ]' : <>Quero ter acesso ao<br/>ARSENAL FLASHAPROVA</>}
+              {ctaState === 'loading' ? '[ ACESSANDO... ]' : 'GERAR MEU DIAGNÓSTICO GRÁTIS'}
             </button>
 
             {/* micro-copy terminal */}
@@ -2074,7 +2061,20 @@ export default function HeroSection() {
                 lineHeight: 1.5,
               }}
             >
-              Diagnóstico 100% grátis | Raio-X de Memória IA em 3 min
+              Grátis · 3 min · sem cadastro · sem cartão
+            </p>
+            <p
+              className="inline-flex items-center gap-1.5 mt-2"
+              style={{
+                fontFamily: "'JetBrains Mono', 'Fira Code', 'Courier New', monospace",
+                fontSize: '10px',
+                letterSpacing: '0.04em',
+                color: 'rgba(0,255,115,0.75)',
+                lineHeight: 1.5,
+              }}
+            >
+              <span>🛡️</span>
+              <span>Garantia 7 dias · 100% de reembolso</span>
             </p>
           </div>
         </motion.div>
@@ -2118,7 +2118,7 @@ export default function HeroSection() {
                 ))}
               </div>
               <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                +8.000 aprovados no ENEM
+                Estudantes que estão no piloto automático com o FlashAprova
               </p>
             </div>
           </motion.div>

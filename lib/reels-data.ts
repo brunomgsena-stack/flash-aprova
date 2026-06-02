@@ -1,6 +1,65 @@
 // ─── Shared reel/testimonial data ────────────────────────────────────────────
 // Imported by both ReelsTestimonials (landing page) and EvidenceCarousel
 // (checkout page). Edit here → both components update automatically.
+//
+// ═══════════════════════════════════════════════════════════════════════════
+// 🚨 TODO PARA O DONO: SUBSTITUIR POR DEPOIMENTOS REAIS (B.4 do PLANO)
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// Os depoimentos abaixo são PLACEHOLDERS conscientes:
+//   • Fotos foram geradas por IA (visualmente realistas)
+//   • Nomes são primeiros nomes + inicial ("ANA M.")
+//   • Cursos estão como "Meta: X" (não "Aprovado em X")
+//   • Bullets falam de método/rotina, NUNCA de aprovação confirmada
+//
+// Isso é proposital: produto ainda não vendeu, então qualquer claim de
+// aprovação real seria propaganda enganosa (risco PROCON/Reclame Aqui).
+//
+// COMO SUBSTITUIR (quando tiver primeiras aprovações confirmadas):
+//
+// 1. Capture, com autorização escrita do aluno:
+//    • Foto real (não IA) — preferência selfie ou close-up natural
+//    • Nome completo OU primeiro nome + inicial (decisão do aluno)
+//    • Curso + universidade + ano de aprovação
+//    • Nota TRI ou nota da redação (se quiser destacar)
+//    • Print do SISU/Fies/PROUNI com nota — guarde fora do repo, sem expor CPF
+//    • 3 frases em primeira pessoa sobre o que mudou com o app
+//    • @ do Instagram (pra reforçar autenticidade — opcional)
+//
+// 2. Coloque a foto em /public/images/<primeiro-nome>-<curso>-<univ>.avif
+//    (otimize com squoosh.app pra ~30-50KB cada)
+//
+// 3. Substitua cada objeto deste array pelo dado real. Padrão:
+//
+//    {
+//      img:      '/images/ana-medicina-ufpe.avif',
+//      tag:      'APROVADA',          tagColor: NEON,
+//      score:    'TRI 920',           course:   'Medicina · UFPE · 2026',
+//      handle:   '@ana.med2026',      // opcional, pra clicar
+//      bullets:  [
+//        '🧠 "Tirei 580 na primeira simulada. Em 90 dias fui pra 740."',
+//        '🎯 "Larguei o Anki, aqui já vem pronto com cards de Medicina."',
+//        '💊 "15 min/dia. Funcionou."',
+//      ],
+//      gradA:    '#0d2a14',           gradB:    '#000810',
+//      floatY:   6,  floatRot: 0.4,   floatDur: 5.2, floatDelay: 0.00,
+//      stories:  [1, 0, 0, 0],
+//    }
+//
+// 4. Não precisa mexer no componente ReelsTestimonials.tsx — ele renderiza
+//    automaticamente. Só vai precisar atualizar:
+//      • O label do header em ReelsTestimonials.tsx
+//        (hoje: "[ PILOTO AUTOMÁTICO ]" — trocar pra "[ APROVADOS 2026 ]")
+//      • O title h2 (hoje: "Histórias de quem está no piloto automático...")
+//        → "Aprovados que estudaram com o FlashAprova"
+//
+// 5. Atualizar /metodo (app/metodo/page.tsx) — seção "Sobre os números":
+//    Remover/atualizar o parágrafo que avisa "depoimentos atuais são de
+//    estudantes em jornada" assim que houver aprovações reais aqui.
+//
+// ⚠️ NUNCA misture depoimentos reais com fictícios na mesma lista —
+//    confunde o leitor e enfraquece os reais.
+// ═══════════════════════════════════════════════════════════════════════════
 
 export interface Reel {
   img:        string;
@@ -28,50 +87,50 @@ const CYAN    = '#06b6d4';
 export const REELS: Reel[] = [
   {
     img:       '/images/ana.med.ufpe.avif',
-    tag:       'MAPEADO',    tagColor: NEON,
-    score:     '940/1000',   course:   'MEDICINA · UFPE',
-    handle:    '@ana.med.ufpe',
-    bullets:   ['🧠 TRI domada. Bio imbatível.', '🎯 4ª tentativa → 1ª aprovação.', '💊 Sistema foi cirúrgico.'],
+    tag:       'EM JORNADA',  tagColor: NEON,
+    score:     '15 min/dia',  course:   'Meta: Medicina · UFPE',
+    handle:    '@ana.m',
+    bullets:   ['🧠 Biologia finalmente colando na memória.', '🎯 Larguei o Anki — aqui já vem pronto.', '💊 Em 15 min/dia estou retendo de verdade.'],
     gradA:     '#0d2a14',    gradB:    '#000810',
     floatY:    6,  floatRot:  0.4, floatDur: 5.2, floatDelay: 0.00,
     stories:   [1, 0, 0, 0],
   },
   {
     img:       '/images/carlos.eng.usp.avif',
-    tag:       'SINCRONIZADO', tagColor: CYAN,
-    score:     '920/1000',   course:   'ENG. MECATRÔNICA · USP',
-    handle:    '@carlos.eng.usp',
-    bullets:   ['📡 Radar ENEM = GPS das falhas.', '📐 Mat+Fís: 40%→89% em 60d.', '⚡ 4h de estudo, não 8.'],
+    tag:       'NO MÉTODO',   tagColor: CYAN,
+    score:     '15 min/dia',  course:   'Meta: Eng. Mecatrônica · USP',
+    handle:    '@carlos.e',
+    bullets:   ['📡 O radar de lacunas vira GPS dos meus erros.', '📐 Mat+Física: consigo revisar sem stress.', '⚡ Estudo menos horas, retenho muito mais.'],
     gradA:     '#0a1830',    gradB:    '#000810',
     floatY:    8,  floatRot: -0.3, floatDur: 5.8, floatDelay: 0.35,
     stories:   [1, 1, 0, 0],
   },
   {
     img:       '/images/beatriz.dir.avif',
-    tag:       'BLINDADO',   tagColor: VIOLET,
-    score:     '920/1000',   course:   'DIREITO · UNICAMP',
-    handle:    '@beatriz.dir',
-    bullets:   ['✍️ 30 feedbacks de IA na Red.', '🛡️ Redação blindada com IA.', '⚖️ 1ª tentativa. Unicamp.'],
+    tag:       'NO MÉTODO',   tagColor: VIOLET,
+    score:     '15 min/dia',  course:   'Meta: Direito · Unicamp',
+    handle:    '@beatriz.d',
+    bullets:   ['✍️ Recebi 30 feedbacks da Norma IA na redação.', '📝 Minha escrita melhorou a cada versão.', '⚖️ Finalmente entendo o que o INEP cobra.'],
     gradA:     '#180e38',    gradB:    '#000810',
     floatY:    5,  floatRot:  0.5, floatDur: 6.2, floatDelay: 0.70,
     stories:   [1, 1, 1, 0],
   },
   {
     img:       '/images/rafaela.medvet.avif',
-    tag:       'DOMINADO',   tagColor: EMERALD,
-    score:     '940/1000',   course:   'MED. VETERINÁRIA · USP',
-    handle:    '@rafaela.medvet',
-    bullets:   ['🔬 Bio+Quím zeradas na TRI.', '🧬 Memória neural blindada.', '🏆 Top 1% SISU — confirmado.'],
+    tag:       'EM JORNADA',  tagColor: EMERALD,
+    score:     '15 min/dia',  course:   'Meta: Med. Veterinária · USP',
+    handle:    '@rafaela.m',
+    bullets:   ['🔬 Bio+Química: primeira vez que não esqueço no dia seguinte.', '🧬 Minha memória de longo prazo melhorou muito.', '🏆 Rotina de estudo finalmente consistente.'],
     gradA:     '#0a2818',    gradB:    '#000810',
     floatY:    7,  floatRot: -0.4, floatDur: 5.5, floatDelay: 1.05,
     stories:   [1, 1, 1, 1],
   },
   {
     img:       '/images/juliomed-ufrj.avif',
-    tag:       'DOMINADO',   tagColor: '#fbbf24',
-    score:     '960/1000',   course:   'MEDICINA · UFRJ',
-    handle:    '@juliomed.ufrj',
-    bullets:   ['💪 Táticos: covardia com a concorrência.', '🔬 UFRJ Medicina. 960/1000.', '🎯 Sistema que não perdoa lacunas.'],
+    tag:       'NO MÉTODO',   tagColor: '#fbbf24',
+    score:     '15 min/dia',  course:   'Meta: Medicina · UFRJ',
+    handle:    '@julio.m',
+    bullets:   ['💪 Parei de estudar às cegas — o sistema mostra o que importa.', '🔬 Consigo revisar todo o conteúdo sem entrar em pânico.', '🎯 Minha rotina antes era caótica. Agora não.'],
     gradA:     '#2a1a0a',    gradB:    '#000810',
     floatY:    6,  floatRot:  0.3, floatDur: 5.9, floatDelay: 0.20,
     stories:   [1, 1, 1, 0],
@@ -79,30 +138,30 @@ export const REELS: Reel[] = [
   },
   {
     img:       '/images/lucas.eng.ita.avif',
-    tag:       'SINCRONIZADO', tagColor: '#00FF73',
-    score:     '920/1000',   course:   'ENG. AEROESPACIAL · ITA',
-    handle:    '@lucas.eng.ita',
-    bullets:   ['⚛️ Prof. Vektor: física cirúrgica.', '🚀 Radar de lacunas me salvou.', '🛸 ENG. AEROESPACIAL · ITA.'],
+    tag:       'NO MÉTODO',   tagColor: '#00FF73',
+    score:     '15 min/dia',  course:   'Meta: Eng. Aeroespacial · ITA',
+    handle:    '@lucas.e',
+    bullets:   ['⚛️ Física: o Tutor IA explica até eu entender.', '🚀 O radar de lacunas me mostrou buracos que eu nem sabia que tinha.', '🛸 Em 15 min/dia eu consigo revisar o dia inteiro.'],
     gradA:     '#0a1a10',    gradB:    '#000810',
     floatY:    9,  floatRot: -0.5, floatDur: 6.4, floatDelay: 0.50,
     stories:   [1, 1, 0, 0],
   },
   {
     img:       '/images/sofia-usp.avif',
-    tag:       'BLINDADO',   tagColor: VIOLET,
-    score:     '940/1000',   course:   'DIREITO · USP',
-    handle:    '@sofia.dir.usp',
-    bullets:   ['✍️ Redação: feedback de IA em cada versão.', '⚖️ 1ª tentativa. Direito USP.', '🛡️ Sistema blindou minha nota final.'],
+    tag:       'EM JORNADA',  tagColor: VIOLET,
+    score:     '15 min/dia',  course:   'Meta: Direito · USP',
+    handle:    '@sofia.d',
+    bullets:   ['✍️ Redação: feedback da IA em cada versão que escrevi.', '⚖️ Consegui identificar os padrões que o INEP penaliza.', '📋 Minha nota de simulado melhorou a cada semana.'],
     gradA:     '#180e38',    gradB:    '#000810',
     floatY:    5,  floatRot:  0.4, floatDur: 5.3, floatDelay: 0.85,
     stories:   [1, 1, 1, 1],
   },
   {
     img:       '/images/vitormed.ufba.avif',
-    tag:       'BLENDADO',   tagColor: '#a78bfa',
-    score:     '940/1000',   course:   'MEDICINA · UFBA',
-    handle:    '@vitormed.ufba',
-    bullets:   ['✍️ Prof. Norma: GPS da redação.', '🧬 900+ na Redação. Garantido.', '🏥 MEDICINA · UFBA. Alcançado.'],
+    tag:       'NO MÉTODO',   tagColor: '#a78bfa',
+    score:     '15 min/dia',  course:   'Meta: Medicina · UFBA',
+    handle:    '@vitor.m',
+    bullets:   ['✍️ A Norma IA virou meu GPS de redação.', '🧬 Minha redação evoluiu mês a mês — consigo ver a diferença.', '🏥 Finalmente estudar não parece mais impossível.'],
     gradA:     '#16092e',    gradB:    '#000810',
     floatY:    7,  floatRot: -0.3, floatDur: 6.0, floatDelay: 1.20,
     stories:   [1, 1, 1, 0],

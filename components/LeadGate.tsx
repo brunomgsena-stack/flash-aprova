@@ -234,9 +234,10 @@ interface TerminalFieldProps {
   onChange: (v: string) => void;
   autoComplete?: string;
   hasValue: boolean;
+  optional?: boolean;
 }
 
-function TerminalField({ label, prefix, type = 'text', placeholder, value, onChange, autoComplete, hasValue }: TerminalFieldProps) {
+function TerminalField({ label, prefix, type = 'text', placeholder, value, onChange, autoComplete, hasValue, optional = false }: TerminalFieldProps) {
   const [focused, setFocused] = useState(false);
   const active = focused || hasValue;
 
@@ -269,7 +270,7 @@ function TerminalField({ label, prefix, type = 'text', placeholder, value, onCha
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           autoComplete={autoComplete}
-          required
+          required={!optional}
           className="w-full rounded-xl py-4 text-sm text-white outline-none transition-all duration-300 placeholder-slate-700"
           style={{
             fontFamily:    MONO,
@@ -314,7 +315,9 @@ export default function LeadGate({ health, subjectName, onSubmit }: LeadGateProp
     const errs: Record<string, string> = {};
     if (!name.trim())                                   errs.name  = '[ERR] Campo obrigatório';
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))     errs.email = '[ERR] E-mail inválido';
-    if (phone.replace(/\D/g,'').length < 10)            errs.phone = '[ERR] Número inválido';
+    // Phone is optional, but if provided must be valid
+    const digits = phone.replace(/\D/g,'');
+    if (digits.length > 0 && digits.length < 10)        errs.phone = '[ERR] Número inválido';
     return errs;
   }
 
@@ -471,17 +474,18 @@ export default function LeadGate({ health, subjectName, onSubmit }: LeadGateProp
                 )}
               </div>
 
-              {/* WhatsApp */}
+              {/* WhatsApp (opcional) */}
               <div>
                 <TerminalField
-                  label="DISPARO_DO_RELATÓRIO"
+                  label="DISPARO_DO_RELATÓRIO_(OPCIONAL)"
                   prefix="📲"
                   type="tel"
-                  placeholder="(00) 00000-0000"
+                  placeholder="(00) 00000-0000  ·  opcional"
                   value={phone}
                   onChange={handlePhone}
                   autoComplete="tel"
                   hasValue={phone.length > 0}
+                  optional={true}
                 />
                 {errors.phone && (
                   <p className="text-xs mt-1" style={{ fontFamily:MONO, color:RED }}>{errors.phone}</p>

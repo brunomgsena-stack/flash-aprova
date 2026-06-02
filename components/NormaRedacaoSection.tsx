@@ -34,10 +34,10 @@ const NEXT_STAGE: Record<Stage, Stage> = {
 };
 
 const STAGE_LABELS: Record<Stage, string> = {
-  WRITING:    '01 · SÍNTESE',
+  WRITING:    '01 · ESCRITA',
   UPLOAD:     '02 · ANÁLISE IA',
-  PROCESSING: '03 · AUDITORIA COMPLETA',
-  VEREDITO:   '03 · AUDITORIA COMPLETA',
+  PROCESSING: '03 · ANÁLISE COMPLETA',
+  VEREDITO:   '03 · ANÁLISE COMPLETA',
 };
 
 // ─── Data ──────────────────────────────────────────────────────────────────────
@@ -144,7 +144,7 @@ function StatusModule({ c, staggerDelay }: { c: typeof COMPETENCIAS[number]; sta
       transition={{ delay: staggerDelay, duration: 0.45, ease: [0.22, 0.61, 0.36, 1] }}
     >
       <span
-        className="text-[8px] font-black shrink-0 px-1.5 py-0.5 rounded w-8 text-center"
+        className="text-[10px] font-black shrink-0 px-1.5 py-0.5 rounded w-8 text-center"
         style={{ color: c.color, background: `${c.color}18`, border: `1px solid ${c.color}35`, fontFamily: MONO }}
       >
         {c.id}
@@ -169,13 +169,13 @@ function StatusModule({ c, staggerDelay }: { c: typeof COMPETENCIAS[number]; sta
 
       <div className="shrink-0 flex items-baseline gap-0.5">
         <CountUp target={c.score} color={c.color} size="sm" />
-        <span className="text-[7px] text-slate-700" style={{ fontFamily: MONO }}>/200</span>
+        <span className="text-[10px] text-slate-700" style={{ fontFamily: MONO }}>/200</span>
       </div>
 
       <div className="shrink-0 w-24 text-right">
         {needsOpt ? (
           <motion.span
-            className="text-[7px] font-black"
+            className="text-[10px] font-black"
             style={{ color: ORANGE, fontFamily: MONO }}
             animate={{ opacity: [1, 0.3, 1] }}
             transition={{ duration: 1.2, repeat: Infinity }}
@@ -183,7 +183,7 @@ function StatusModule({ c, staggerDelay }: { c: typeof COMPETENCIAS[number]; sta
             [!] OPT. REQUIRED
           </motion.span>
         ) : (
-          <span className="text-[7px] font-bold" style={{ color: `${c.color}80`, fontFamily: MONO }}>
+          <span className="text-[10px] font-bold" style={{ color: `${c.color}80`, fontFamily: MONO }}>
             ✓ NOMINAL
           </span>
         )}
@@ -263,7 +263,7 @@ function StageIndicator({ stage }: { stage: Stage }) {
                 />
               )}
               <span
-                className="text-[7px] sm:text-[8px] font-black tracking-wider"
+                className="text-[10px] sm:text-[10px] font-black tracking-wider"
                 style={{
                   fontFamily: MONO,
                   color: isActive ? PURPLE : isPast ? `${NEON}70` : 'rgba(255,255,255,0.18)',
@@ -289,14 +289,16 @@ function WritingStage() {
   useEffect(() => {
     idxRef.current = 0;
     setDisplayed('');
+    // Fast reveal: jump in chunks of ~25 chars per tick, ~3ms tick — finishes in ~1.8s
+    const CHUNK = 25;
     const id = setInterval(() => {
       if (idxRef.current < ESSAY_TEXT.length) {
-        setDisplayed(ESSAY_TEXT.slice(0, idxRef.current + 1));
-        idxRef.current++;
+        idxRef.current = Math.min(idxRef.current + CHUNK, ESSAY_TEXT.length);
+        setDisplayed(ESSAY_TEXT.slice(0, idxRef.current));
       } else {
         clearInterval(id);
       }
-    }, 10);
+    }, 3);
     return () => clearInterval(id);
   }, []);
 
@@ -324,12 +326,12 @@ function WritingStage() {
           <div className="flex gap-1.5">
             {[RED, AMBER, EMERALD].map(c => <div key={c} className="w-2.5 h-2.5 rounded-full" style={{ background: c }} />)}
           </div>
-          <span className="text-[9px] text-slate-600 hidden sm:block" style={{ fontFamily: MONO }}>
+          <span className="text-[10px] text-slate-600 hidden sm:block" style={{ fontFamily: MONO }}>
             redacao_draft.txt — nova redação
           </span>
         </div>
         <motion.span
-          className="text-[9px] font-bold"
+          className="text-[10px] font-bold"
           style={{ color: PURPLE, fontFamily: MONO }}
           animate={{ opacity: [1, 0.3, 1] }}
           transition={{ duration: 1, repeat: Infinity }}
@@ -362,8 +364,8 @@ function WritingStage() {
 
       {/* Status bar */}
       <div className="px-5 py-3 shrink-0 flex items-center justify-between" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
-        <span className="text-[9px] text-slate-700" style={{ fontFamily: MONO }}>{wordCount} PALAVRAS</span>
-        <motion.span className="text-[9px] font-bold" style={{ color: PURPLE, fontFamily: MONO }}
+        <span className="text-[10px] text-slate-700" style={{ fontFamily: MONO }}>{wordCount} PALAVRAS</span>
+        <motion.span className="text-[10px] font-bold" style={{ color: PURPLE, fontFamily: MONO }}
           animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1.4, repeat: Infinity }}>
           INSERINDO...
         </motion.span>
@@ -579,11 +581,11 @@ function ProcessingStage() {
           <div className="flex gap-1.5">
             {[RED, AMBER, EMERALD].map(c => <div key={c} className="w-2.5 h-2.5 rounded-full" style={{ background: c }} />)}
           </div>
-          <span className="text-[9px] text-slate-600 hidden sm:block" style={{ fontFamily: MONO }}>
-            PROCESSADOR CENTRAL · MOTOR TRI v4.2
+          <span className="text-[10px] text-slate-600 hidden sm:block" style={{ fontFamily: MONO }}>
+            MOTOR DE ANÁLISE TRI v4.2
           </span>
         </div>
-        <motion.span className="text-[9px] font-bold" style={{ color: ORANGE, fontFamily: MONO }}
+        <motion.span className="text-[10px] font-bold" style={{ color: ORANGE, fontFamily: MONO }}
           animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 0.75, repeat: Infinity }}>
           ● PROCESSANDO
         </motion.span>
@@ -745,8 +747,8 @@ function ScannerPanel() {
           <div className="flex gap-1.5">
             {[RED, AMBER, EMERALD].map(c => <div key={c} className="w-2.5 h-2.5 rounded-full" style={{ background: c }} />)}
           </div>
-          <span className="text-[9px] text-slate-600 hidden sm:block" style={{ fontFamily: MONO }}>
-            banca.examinadora · redacao_alfab_002.txt
+          <span className="text-[10px] text-slate-600 hidden sm:block" style={{ fontFamily: MONO }}>
+            corretor.ia · redacao_alfab_002.txt
           </span>
         </div>
         <div className="flex items-center gap-3">
@@ -756,9 +758,9 @@ function ScannerPanel() {
               background: `linear-gradient(90deg, ${PURPLE}80, ${PURPLE})`,
             }} />
           </div>
-          <motion.span className="text-[9px] font-bold" style={{ color: PURPLE, fontFamily: MONO }}
+          <motion.span className="text-[10px] font-bold" style={{ color: PURPLE, fontFamily: MONO }}
             animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1.4, repeat: Infinity }}>
-            ● ESCANEANDO
+            ● ANALISANDO
           </motion.span>
         </div>
       </div>
@@ -800,13 +802,13 @@ function ScannerPanel() {
                 <motion.div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: err.color }}
                   animate={err.severity === 'CRITICAL' ? { opacity: [1, 0.15, 1] } : { opacity: 1 }}
                   transition={{ duration: 0.8, repeat: Infinity }} />
-                <span className="text-[8px] font-black tracking-wider" style={{ color: err.color, fontFamily: MONO }}>
+                <span className="text-[10px] font-black tracking-wider" style={{ color: err.color, fontFamily: MONO }}>
                   [{err.severity}]
                 </span>
-                <span className="text-[7px] text-slate-600 ml-auto" style={{ fontFamily: MONO }}>{err.code}</span>
+                <span className="text-[10px] text-slate-600 ml-auto" style={{ fontFamily: MONO }}>{err.code}</span>
               </div>
-              <p className="text-[9px] font-bold text-white leading-tight mb-0.5">{err.label}</p>
-              <p className="text-[7px] text-slate-500" style={{ fontFamily: MONO }}>{err.detail}</p>
+              <p className="text-[10px] font-bold text-white leading-tight mb-0.5">{err.label}</p>
+              <p className="text-[10px] text-slate-500" style={{ fontFamily: MONO }}>{err.detail}</p>
             </div>
           </motion.div>
         ))}
@@ -857,8 +859,8 @@ function ScannerPanel() {
 
       {/* Status bar */}
       <div className="px-5 py-3 shrink-0 flex items-center justify-between" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
-        <span className="text-[9px] text-slate-700" style={{ fontFamily: MONO }}>340 PALAVRAS · 4 PARÁGRAFOS</span>
-        <span className="text-[9px] font-bold" style={{ color: PURPLE, fontFamily: MONO }}>SCAN ATIVO</span>
+        <span className="text-[10px] text-slate-700" style={{ fontFamily: MONO }}>340 PALAVRAS · 4 PARÁGRAFOS</span>
+        <span className="text-[10px] font-bold" style={{ color: PURPLE, fontFamily: MONO }}>ANÁLISE ATIVA</span>
       </div>
     </div>
   );
@@ -881,8 +883,8 @@ function DossierScoreCard() {
 
       <div className="flex items-center justify-between px-5 pt-5 pb-4 relative z-10">
         <div>
-          <p className="text-[8px] font-bold tracking-[0.25em] text-slate-500 mb-1" style={{ fontFamily: MONO }}>
-            DOSSIÊ TRI · TOTAL SCORE
+          <p className="text-[10px] font-bold tracking-[0.25em] text-slate-500 mb-1" style={{ fontFamily: MONO }}>
+            RELATÓRIO TRI · NOTA TOTAL
           </p>
           <div className="flex items-baseline gap-1">
             <CountUp target={TOTAL_SCORE} color={NEON} size="xl" />
@@ -893,10 +895,10 @@ function DossierScoreCard() {
           <motion.div className="flex items-center gap-1.5"
             animate={{ opacity: [1, 0.4, 1] }} transition={{ duration: 1.8, repeat: Infinity }}>
             <motion.div className="w-1.5 h-1.5 rounded-full" style={{ background: NEON }} />
-            <span className="text-[8px] font-bold tracking-widest" style={{ color: NEON, fontFamily: MONO }}>ANÁLISE OK</span>
+            <span className="text-[10px] font-bold tracking-widest" style={{ color: NEON, fontFamily: MONO }}>ANÁLISE OK</span>
           </motion.div>
           <div className="px-2.5 py-1 rounded-lg" style={{ background: `${NEON}10`, border: `1px solid ${NEON}25` }}>
-            <span className="text-[8px] font-black" style={{ color: NEON, fontFamily: MONO }}>TOP 5%</span>
+            <span className="text-[10px] font-black" style={{ color: NEON, fontFamily: MONO }}>TOP 5%</span>
           </div>
         </div>
       </div>
@@ -905,15 +907,15 @@ function DossierScoreCard() {
 
       <div className="px-5 py-3 relative z-10">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-[7px] font-bold tracking-[0.2em] text-slate-600 uppercase" style={{ fontFamily: MONO }}>
+          <span className="text-[10px] font-bold tracking-[0.2em] text-slate-600 uppercase" style={{ fontFamily: MONO }}>
             Performance Log · 8 redações
           </span>
-          <span className="text-[8px] font-black" style={{ color: NEON, fontFamily: MONO }}>↑ +380 pts</span>
+          <span className="text-[10px] font-black" style={{ color: NEON, fontFamily: MONO }}>↑ +380 pts</span>
         </div>
         <EvolutionSparkline />
         <div className="flex items-center justify-between mt-1">
-          <span className="text-[7px] text-slate-700" style={{ fontFamily: MONO }}>RED. #1 · 580</span>
-          <span className="text-[7px] text-slate-700" style={{ fontFamily: MONO }}>ATUAL · 960</span>
+          <span className="text-[10px] text-slate-700" style={{ fontFamily: MONO }}>RED. #1 · 580</span>
+          <span className="text-[10px] text-slate-700" style={{ fontFamily: MONO }}>ATUAL · 960</span>
         </div>
       </div>
     </div>
@@ -924,7 +926,7 @@ function DossierScoreCard() {
 function DossierCompetencies() {
   return (
     <div>
-      <p className="text-[8px] font-bold tracking-[0.22em] text-slate-600 mb-3 uppercase" style={{ fontFamily: MONO }}>
+      <p className="text-[10px] font-bold tracking-[0.22em] text-slate-600 mb-3 uppercase" style={{ fontFamily: MONO }}>
         Módulos de Competência
       </p>
       <div className="flex flex-col gap-2">
@@ -952,23 +954,23 @@ function DossierNormaTerminal() {
             <Image src={NORMA_AVATAR} alt="Prof.ª Norma" width={32} height={32} className="w-full h-full object-cover" unoptimized />
           </div>
           <div className="flex flex-col">
-            <span className="text-[9px] font-black tracking-widest" style={{ color: GOLD, fontFamily: MONO }}>
-              VEREDITO IA
+            <span className="text-[10px] font-black tracking-widest" style={{ color: GOLD, fontFamily: MONO }}>
+              ANÁLISE NORMA
             </span>
-            <span className="text-[7px] font-medium" style={{ color: `${GOLD}70`, fontFamily: MONO }}>
+            <span className="text-[10px] font-medium" style={{ color: `${GOLD}70`, fontFamily: MONO }}>
               Prof(a) Norma
             </span>
           </div>
         </div>
-        <motion.span className="text-[8px] font-bold px-2 py-0.5 rounded" style={{
+        <motion.span className="text-[10px] font-bold px-2 py-0.5 rounded" style={{
           color: GOLD, background: `${GOLD}18`, border: `1px solid ${GOLD}35`, fontFamily: MONO,
         }} animate={{ opacity: [1, 0.4, 1] }} transition={{ duration: 2.2, repeat: Infinity }}>
-          ● VEREDITO
+          ● ANÁLISE
         </motion.span>
       </div>
 
       <div className="px-4 py-3">
-        <p className="text-[9px] mb-2" style={{ color: `${GOLD}60`, fontFamily: MONO }}>
+        <p className="text-[10px] mb-2" style={{ color: `${GOLD}60`, fontFamily: MONO }}>
           $ analyze --student=alfab_002 --deep=true
         </p>
         <div style={{ fontFamily: MONO, fontSize: '0.70rem', lineHeight: '1.75', color: 'rgba(226,232,240,0.88)' }}>
@@ -1083,21 +1085,21 @@ export default function NormaRedacaoSection() {
         </p>
 
         <h2 className="text-3xl sm:text-4xl font-black text-white mb-4 leading-tight tracking-tight">
-          Seja Aprovado com{' '}
+          Sua redação{' '}
           <span style={{
             background: `linear-gradient(90deg, ${PURPLE}, #00FF73)`,
             WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
           }}>
-            +900
+            acima de 900
           </span>{' '}
-          na Redação
+          — corrigida em 30 segundos.
         </h2>
 
         <p className="text-slate-500 text-base max-w-2xl mx-auto">
           Descubra <span className="text-white font-bold">falhas invisíveis</span> da sua redação em{' '}
-          <span className="text-white font-bold">30 segundos</span>. Tenha um mentor especialista nas{' '}
-          <span className="text-white font-bold">5 competências do INEP</span> e a inteligência de um banco de dados de{' '}
-          <span className="text-white font-bold">+8.000 redações</span>.
+          <span className="text-white font-bold">30 segundos</span>. Um corretor IA aplicando as{' '}
+          <span className="text-white font-bold">5 competências oficiais do INEP</span> — a mesma régua do avaliador humano,{' '}
+          <span className="text-white font-bold">sem viés, sem dia ruim</span>.
         </p>
       </div>
 
@@ -1113,6 +1115,28 @@ export default function NormaRedacaoSection() {
           {stage === 'VEREDITO'   && <VeredityStage   key="veredito"   />}
         </AnimatePresence>
       </div>
+
+      {/* Anti-objeção: IA pode errar a correção? */}
+      <div
+        className="max-w-2xl mx-auto mt-8 p-5 rounded-xl text-sm leading-relaxed"
+        style={{
+          background: `${PURPLE}0f`,
+          border: `1px solid ${PURPLE}33`,
+        }}
+      >
+        <p className="font-bold mb-2" style={{ color: PURPLE, fontFamily: MONO }}>
+          🛡️ Mas a IA pode errar a correção?
+        </p>
+        <p style={{ color: 'rgba(255,255,255,0.65)' }}>
+          A Norma IA segue o{' '}
+          <strong className="text-white">gabarito oficial das 5 competências do INEP</strong> —
+          a mesma régua que o avaliador humano usa. Não é &ldquo;opinião de IA&rdquo;. Se a Norma identifica falha em
+          Competência 2, o avaliador humano também vai penalizar. A diferença está na{' '}
+          <strong className="text-white">velocidade</strong>:
+          você recebe parecer em segundos, não em 10 dias.
+        </p>
+      </div>
+
     </section>
   );
 }

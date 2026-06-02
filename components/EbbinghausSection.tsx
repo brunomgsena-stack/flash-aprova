@@ -217,7 +217,8 @@ export default function EbbinghausSection() {
       {/* ── Header ── */}
       <div className="text-center mb-6 sm:mb-12 relative z-10">
         <motion.h2
-          className="text-3xl sm:text-4xl md:text-5xl font-black text-white leading-tight mb-5"
+          className="sm:text-4xl md:text-5xl font-black text-white leading-tight mb-5"
+          style={{ fontSize: '28px' }}
           initial={{ opacity: 0, y: 16 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.55, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
@@ -249,7 +250,7 @@ export default function EbbinghausSection() {
         animate={isInView ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.4 }}
       >
-        &gt; DIAGNÓSTICO DO SISTEMA
+        &gt; A CURVA DO ESQUECIMENTO
       </motion.p>
 
       {/* ── Chart card ── */}
@@ -307,8 +308,15 @@ export default function EbbinghausSection() {
             <text key={l} x="34" y={y + 4} textAnchor="end"
               fill="rgba(255,255,255,0.18)" fontSize="9" fontFamily="ui-monospace, monospace">{l}</text>
           ))}
+          {/* Y-axis title (vertical) */}
+          <text x="12" y="90" textAnchor="middle"
+            fill="rgba(255,255,255,0.30)" fontSize="8" fontFamily="ui-monospace, monospace"
+            fontWeight="700" letterSpacing="0.15em"
+            transform="rotate(-90 12 90)">
+            RETENÇÃO
+          </text>
           {/* X-axis */}
-          {([[40,'Hoje'],[105,'1d'],[170,'3d'],[260,'1 sem'],[380,'1 mês']] as const).map(([x, l]) => (
+          {([[40,'Hoje'],[105,'24h'],[170,'3d'],[260,'1 sem'],[380,'1 mês']] as const).map(([x, l]) => (
             <text key={l} x={x} y="190" textAnchor="middle"
               fill="rgba(255,255,255,0.18)" fontSize="9" fontFamily="ui-monospace, monospace">{l}</text>
           ))}
@@ -396,7 +404,7 @@ export default function EbbinghausSection() {
               fill="rgba(255,138,0,0.10)" stroke={`${ORANGE}35`} strokeWidth="0.8" />
             <text x="297" y="161" textAnchor="middle"
               fill={ORANGE} fontSize="7.5" fontFamily="ui-monospace, monospace" fontWeight="700">
-              ZONA DE ELIMINAÇÃO: 25% de retenção
+              Zona de esquecimento: 25% de retenção
             </text>
           </motion.g>
 
@@ -428,6 +436,9 @@ export default function EbbinghausSection() {
             <span className="text-slate-500 text-xs">FlashAprova (retenção ativa)</span>
           </div>
         </div>
+        <p className="text-[10px] text-slate-600 mt-4 leading-relaxed" style={{ fontFamily: 'ui-monospace, monospace' }}>
+          Curva original: Ebbinghaus, H. (1885). Replicação moderna: Murre &amp; Dros, PLOS ONE, 2015.
+        </p>
       </motion.div>
 
       {/* ── Três momentos que você já viveu ── */}
@@ -444,6 +455,19 @@ export default function EbbinghausSection() {
         </motion.p>
         <MomentoStack />
       </div>
+
+      {/* ── Bridge to solution ── */}
+      <motion.p
+        className="text-center text-base sm:text-lg text-white font-semibold leading-relaxed max-w-2xl mx-auto px-2"
+        initial={{ opacity: 0, y: 12 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-60px' }}
+        transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+      >
+        Por isso construímos o{' '}
+        <span style={{ color: NEON, textShadow: `0 0 14px ${NEON}80` }}>Radar de Lacunas</span>
+        {' '}— revisa só o que seu cérebro está prestes a esquecer.
+      </motion.p>
 
     </section>
   );

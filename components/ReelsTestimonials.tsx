@@ -10,26 +10,26 @@ const EMERALD = '#10b981';
 
 // ─── Ticker items (20) ────────────────────────────────────────────────────────
 const TICKER_ITEMS = [
-  'BRUNO • MEDICINA • UFPE',
-  'VICTOR • DIREITO • USP',
-  'CECÍLIA • BIOMEDICINA • UNICAMP',
-  'LÍVIA • PSICOLOGIA • UFRJ',
-  'GABRIEL • MEDICINA • UNIFESP',
-  'FERNANDA • DIREITO • PUC-SP',
-  'PEDRO • ENGENHARIA • IME',
-  'ISABELA • ODONTOLOGIA • UNESP',
-  'THIAGO • FÍSICA • ITA',
-  'AMANDA • ENFERMAGEM • UNIFESP',
-  'BRENO • MEDICINA • UFMG',
-  'LETÍCIA • FARMÁCIA • USP',
-  'MARIANA • MEDICINA VET. • UNESP',
-  'CAIO • ENG. AEROESPACIAL • ITA',
-  'LUÍSA • NUTRIÇÃO • UNIFESP',
-  'LUCAS • ENG. MECATRÔNICA • USP',
-  'ANA • MEDICINA • UFPE',
-  'RAFAEL • MEDICINA • FUVEST',
-  'BEATRIZ • DIREITO • UNICAMP',
-  'HENRIQUE • BIOMÉDICAS • USP',
+  'BRUNO • META: MEDICINA • UFPE',
+  'VICTOR • META: DIREITO • USP',
+  'CECÍLIA • META: BIOMEDICINA • UNICAMP',
+  'LÍVIA • META: PSICOLOGIA • UFRJ',
+  'GABRIEL • META: MEDICINA • UNIFESP',
+  'FERNANDA • META: DIREITO • PUC-SP',
+  'PEDRO • META: ENGENHARIA • IME',
+  'ISABELA • META: ODONTOLOGIA • UNESP',
+  'THIAGO • META: FÍSICA • ITA',
+  'AMANDA • META: ENFERMAGEM • UNIFESP',
+  'BRENO • META: MEDICINA • UFMG',
+  'LETÍCIA • META: FARMÁCIA • USP',
+  'MARIANA • META: MEDICINA VET. • UNESP',
+  'CAIO • META: ENG. AEROESPACIAL • ITA',
+  'LUÍSA • META: NUTRIÇÃO • UNIFESP',
+  'LUCAS • META: ENG. MECATRÔNICA • USP',
+  'ANA • META: MEDICINA • UFPE',
+  'RAFAEL • META: MEDICINA • FUVEST',
+  'BEATRIZ • META: DIREITO • UNICAMP',
+  'HENRIQUE • META: BIOMÉDICAS • USP',
 ] as const;
 
 // ─── Mask style (applied to both scroll containers) ───────────────────────────
@@ -275,18 +275,21 @@ export default function ReelsTestimonials() {
           className="text-xs font-bold tracking-widest uppercase mb-3"
           style={{ color: NEON, fontFamily: 'ui-monospace, monospace' }}
         >
-          [ VEREDITO DOS APROVADOS ]
+          [ PILOTO AUTOMÁTICO ]
         </p>
         <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">
-          Aprovação não é sorte.<br />
+          Histórias de quem está no piloto automático<br />
           <span style={{
             background:           `linear-gradient(90deg, ${EMERALD}, ${NEON})`,
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor:  'transparent',
           }}>
-            É algoritmo.
+            com o FlashAprova.
           </span>
         </h2>
+        <p className="text-sm text-slate-400 mt-1">
+          Estudantes em jornada de aprovação — usando o método 15 min/dia.
+        </p>
       </motion.div>
 
       {/* Infinite reel carousel */}
@@ -317,10 +320,10 @@ export default function ReelsTestimonials() {
           }}
         >
           {[
-            { value: '+8.000', label: 'alunos ativos'     },
-            { value: '94%',    label: 'taxa de retenção'  },
-            { value: '4.9★',   label: 'avaliação média'   },
-            { value: '3x',     label: 'mais acertos TRI'  },
+            { value: 'Milhares',  label: 'de estudantes na plataforma' },
+            { value: 'Até 97%',   label: 'de retenção (método SRS)'    },
+            { value: '15 min',    label: 'por dia — sem estudar às cegas' },
+            { value: 'Treino',    label: 'direcionado pelo TRI'         },
           ].map(({ value, label }) => (
             <div key={label} className="text-center">
               <p

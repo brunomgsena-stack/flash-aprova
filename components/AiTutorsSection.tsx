@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import Image from 'next/image';
 
 // ─── Design tokens ─────────────────────────────────────────────────────────
@@ -9,7 +9,7 @@ const NEON   = '#00FF73';
 const VIOLET = '#7C3AED';
 
 // ─── Timing ────────────────────────────────────────────────────────────────
-const CYCLE_DELAY_MS  = 5_000;
+const CYCLE_DELAY_MS  = 9_000;
 const MANUAL_PAUSE_MS = 30_000;
 
 // ─── Avatar helper ───────────────────────────────────────────────────────────
@@ -23,6 +23,7 @@ const RING_C = 2 * Math.PI * RING_R;
 interface AgentDef {
   id:        string;
   codename:  string;
+  subject:   string;
   specialty: string;
   focus:     string;
   color:     string;
@@ -32,13 +33,14 @@ interface AgentDef {
   tip:       string;
 }
 
-// ─── Agent roster — Engenharia de Aprovação ──────────────────────────────────
+// ─── Agent roster ────────────────────────────────────────────────────────────
 const AGENTS: AgentDef[] = [
   {
     id:        'norma',
     codename:  'NORMA',
-    specialty: 'Engenharia de Persuasão',
-    focus:     'Dissecação de teses e blindagem textual.',
+    subject:   'Redação',
+    specialty: 'Argumentação dissertativa',
+    focus:     'Dissecação de teses e estruturação textual.',
     color:     VIOLET,
     avatar:    '/images/tutor-redacao.avif',
     userMsg:   'Como subo minha nota de Redação de 600 para 1000?',
@@ -48,6 +50,7 @@ const AGENTS: AgentDef[] = [
   {
     id:        'vektor',
     codename:  'VEKTOR',
+    subject:   'Física',
     specialty: 'Otimização de Sistemas Físicos',
     focus:     'Vetores de impacto e termodinâmica aplicada.',
     color:     '#f97316',
@@ -59,6 +62,7 @@ const AGENTS: AgentDef[] = [
   {
     id:        'chronos',
     codename:  'CHRONOS',
+    subject:   'História',
     specialty: 'Mapeamento de Ciclos de Poder',
     focus:     'Análise de causalidade e rupturas sócio-políticas.',
     color:     '#a78bfa',
@@ -70,6 +74,7 @@ const AGENTS: AgentDef[] = [
   {
     id:        'atlas',
     codename:  'ATLAS',
+    subject:   'Geografia',
     specialty: 'Dinâmicas de Espaço e Geopolítica',
     focus:     'Análise sistêmica de biomas e fluxos globais de poder.',
     color:     '#34d399',
@@ -81,6 +86,7 @@ const AGENTS: AgentDef[] = [
   {
     id:        'atomo',
     codename:  'ÁTOMO',
+    subject:   'Química',
     specialty: 'Reatividade e Equilíbrio',
     focus:     'Estequiometria avançada e engenharia molecular.',
     color:     '#06b6d4',
@@ -92,6 +98,7 @@ const AGENTS: AgentDef[] = [
   {
     id:        'pi',
     codename:  'PI',
+    subject:   'Matemática',
     specialty: 'Lógica Analítica',
     focus:     'Geometria de precisão e padrões estatísticos.',
     color:     NEON,
@@ -103,6 +110,7 @@ const AGENTS: AgentDef[] = [
   {
     id:        'bio',
     codename:  'BIO',
+    subject:   'Biologia',
     specialty: 'Sistemas Vivos e Evolução',
     focus:     'Genética molecular e ecossistemas complexos.',
     color:     '#22c55e',
@@ -114,6 +122,7 @@ const AGENTS: AgentDef[] = [
   {
     id:        'sintaxe',
     codename:  'SINTAXE',
+    subject:   'Português',
     specialty: 'Decodificação Textual',
     focus:     'Argumentação, interpretação e semiótica.',
     color:     '#f59e0b',
@@ -125,6 +134,7 @@ const AGENTS: AgentDef[] = [
   {
     id:        'praxis',
     codename:  'PRÁXIS',
+    subject:   'Filosofia',
     specialty: 'Sistemas de Pensamento Crítico',
     focus:     'Filosofia aplicada e ética como argumento.',
     color:     '#e879f9',
@@ -136,6 +146,7 @@ const AGENTS: AgentDef[] = [
   {
     id:        'nexus',
     codename:  'NEXUS',
+    subject:   'Sociologia',
     specialty: 'Dinâmicas de Estratificação Social',
     focus:     'Movimentos sociais e estruturas de poder.',
     color:     '#60a5fa',
@@ -147,6 +158,7 @@ const AGENTS: AgentDef[] = [
   {
     id:        'vanguarda',
     codename:  'VANGUARDA',
+    subject:   'Artes',
     specialty: 'Linguagem Visual e Cultura',
     focus:     'Leitura de imagem e manifestos artísticos.',
     color:     '#fb7185',
@@ -158,6 +170,7 @@ const AGENTS: AgentDef[] = [
   {
     id:        'soneto',
     codename:  'SONETO',
+    subject:   'Literatura',
     specialty: 'Literatura e Intertextualidade',
     focus:     'Análise de obras e escolas literárias.',
     color:     '#818cf8',
@@ -169,6 +182,7 @@ const AGENTS: AgentDef[] = [
   {
     id:        'link',
     codename:  'LINK',
+    subject:   'Inglês',
     specialty: 'Decodificação de Texto em Inglês',
     focus:     'Leitura estratégica e falsos cognatos.',
     color:     '#38bdf8',
@@ -180,6 +194,7 @@ const AGENTS: AgentDef[] = [
   {
     id:        'sol',
     codename:  'SOL',
+    subject:   'Espanhol',
     specialty: 'Decodificação de Texto em Espanhol',
     focus:     'Contexto, falsos amigos e leitura.',
     color:     '#fbbf24',
@@ -191,6 +206,7 @@ const AGENTS: AgentDef[] = [
   {
     id:        'mundi',
     codename:  'MUNDI',
+    subject:   'Atualidades',
     specialty: 'Análise do Mundo Contemporâneo',
     focus:     'Geopolítica, fatos e contexto ENEM.',
     color:     '#a3e635',
@@ -333,44 +349,56 @@ function AgentCard({ agent, isActive, ringActive, ringKey, onClick }: {
         </motion.div>
       </div>
 
-      {/* Codename + READY badge */}
-      <div className="flex items-center gap-1.5 mt-2.5 flex-wrap justify-center">
+      {/* Subject (dominant) + codename (subtle) */}
+      <div className="flex flex-col items-center mt-2.5 gap-0.5">
         <p
-          className="text-[11px] font-bold tracking-widest leading-none"
+          className="text-[13px] font-black leading-none tracking-tight"
           style={{
-            ...MONO,
-            color: isActive ? '#fff' : 'rgba(255,255,255,0.38)',
+            color: isActive ? '#fff' : 'rgba(255,255,255,0.50)',
+            letterSpacing: '-0.01em',
           }}
         >
-          {agent.codename}
+          {agent.subject}
         </p>
-        <span
-          className="text-[8px] font-bold px-1.5 py-0.5 rounded-sm leading-none"
-          style={{
-            ...MONO,
-            background: isActive ? `${agent.color}22` : 'rgba(255,255,255,0.04)',
-            color:      isActive ? agent.color : 'rgba(255,255,255,0.22)',
-            border:     `0.5px solid ${isActive ? agent.color + '55' : 'rgba(255,255,255,0.08)'}`,
-            letterSpacing: '0.04em',
-          }}
-        >
-          ONLINE
-        </span>
+        <div className="flex items-center gap-1.5 mt-1">
+          <span
+            className="text-[9px] font-bold leading-none"
+            style={{
+              ...MONO,
+              color: isActive ? agent.color : 'rgba(255,255,255,0.28)',
+              letterSpacing: '0.08em',
+            }}
+          >
+            {agent.codename}
+          </span>
+          <span
+            className="text-[8px] font-bold px-1 py-0.5 rounded-sm leading-none"
+            style={{
+              ...MONO,
+              background: isActive ? `${agent.color}22` : 'rgba(255,255,255,0.04)',
+              color:      isActive ? agent.color : 'rgba(255,255,255,0.22)',
+              border:     `0.5px solid ${isActive ? agent.color + '55' : 'rgba(255,255,255,0.08)'}`,
+              letterSpacing: '0.04em',
+            }}
+          >
+            ONLINE
+          </span>
+        </div>
       </div>
 
       {/* Specs — fixed height, only opacity changes */}
       <div
-        className="w-full mt-2 text-center"
+        className="w-full mt-2.5 text-center"
         style={{ height: 34, transition: 'opacity 0.22s ease', opacity: isActive ? 1 : 0 }}
       >
         <p
-          className="text-[9px] leading-snug truncate"
+          className="text-[10px] leading-snug truncate"
           style={{ ...MONO, color: agent.color + 'cc' }}
         >
           {agent.specialty}
         </p>
         <p
-          className="text-[8px] leading-snug mt-0.5"
+          className="text-[10px] leading-snug mt-0.5"
           style={{ ...MONO, color: 'rgba(255,255,255,0.32)', whiteSpace: 'normal' }}
         >
           {agent.focus}
@@ -437,11 +465,11 @@ function CommandRail({ agents, activeId, onSelect, ringActive, ringKey }: {
       {/* Rail label */}
       <div className="flex items-center gap-2 mb-3 relative" style={{ zIndex: 1 }}>
         <div className="w-1 h-1 rounded-full animate-pulse" style={{ background: activeAgent.color }} />
-        <p className="text-[9px] font-bold tracking-[0.2em] uppercase" style={{ ...MONO, color: 'rgba(255,255,255,0.25)' }}>
-          · Selecione o Agente
+        <p className="text-[10px] font-bold tracking-[0.2em] uppercase" style={{ ...MONO, color: 'rgba(255,255,255,0.25)' }}>
+          · Escolha a matéria
         </p>
         <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.04)' }} />
-        <p className="text-[9px]" style={{ ...MONO, color: activeAgent.color + '99' }}>
+        <p className="text-[10px]" style={{ ...MONO, color: activeAgent.color + '99' }}>
           [ONLINE]
         </p>
       </div>
@@ -473,6 +501,7 @@ export default function AiTutorsSection() {
   const [phase,       setPhase]       = useState(0);
   const [autoCycling, setAutoCycling] = useState(true);
   const [ringKey,     setRingKey]     = useState(0);
+  const reduceMotion = useReducedMotion();
 
   const pauseRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -493,12 +522,12 @@ export default function AiTutorsSection() {
 
   // ── Auto-cycle ─────────────────────────────────────────────────────────────
   useEffect(() => {
-    if (!autoCycling || phase < 4) return;
+    if (!autoCycling || phase < 4 || reduceMotion) return;
     const idx  = AGENTS.findIndex(a => a.id === activeId);
     const next = AGENTS[(idx + 1) % AGENTS.length];
     const t    = setTimeout(() => setActiveId(next.id), CYCLE_DELAY_MS);
     return () => clearTimeout(t);
-  }, [phase, autoCycling, activeId]);
+  }, [phase, autoCycling, activeId, reduceMotion]);
 
   // ── Manual selection ───────────────────────────────────────────────────────
   function selectAgent(id: string) {
@@ -518,21 +547,30 @@ export default function AiTutorsSection() {
       {/* ── Header ──────────────────────────────────────────────── */}
       <div className="text-center mb-8">
         <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: VIOLET }}>
-          NÚCLEO ORÁCULO
+          ESPECIALISTAS IA · PLANTÃO 24H
         </p>
-        <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">
-          <span className="sm:hidden">
-            <span style={{ color: '#00FF73' }}>Comando Tático</span>{' '}24/7
-          </span>
-          <span className="hidden sm:inline">O seu Comando Tático 24/7</span>
+        <h2 className="text-3xl sm:text-4xl font-black text-white mb-3 leading-tight">
+          Tira dúvida em <span style={{ color: '#00FF73' }}>qualquer matéria</span>,
+          <br className="hidden sm:block" /> 24 horas por dia.
         </h2>
-        <p className="text-slate-500 text-base max-w-xl mx-auto">
-          Tire dúvidas com os{' '}
-          <span className="font-bold text-white">'Mestres do ENEM'</span>.{' '}
-          Nossa{' '}
-          <span className="font-bold text-white">Rede Neural de 15 agentes especializados</span>{' '}
-          com banco de dados focado no ENEM.
+        <p className="text-slate-400 text-base max-w-xl mx-auto leading-relaxed">
+          15 especialistas IA cobrindo o{' '}
+          <span className="font-bold text-white">conteúdo programático oficial do ENEM</span>.{' '}
+          Resposta em segundos. Sem fila, sem espera, sem dia ruim.
         </p>
+      </div>
+
+      {/* Explainer: dispel "is this just renamed ChatGPT?" */}
+      <div
+        className="max-w-2xl mx-auto mb-6 px-5 py-4 rounded-xl text-sm leading-relaxed"
+        style={{
+          background: 'rgba(124,58,237,0.06)',
+          border: '1px solid rgba(124,58,237,0.18)',
+          color: 'rgba(255,255,255,0.68)',
+        }}
+      >
+        <span className="font-bold text-white">Não é um chatbot genérico.</span>{' '}
+        Cada especialista é uma IA configurada com material e padrões de questão específicos de uma matéria do ENEM. Você pergunta pelo nome da matéria — o especialista certo responde, sem &ldquo;não sei essa parte&rdquo;.
       </div>
 
       {/* ── Command Rail ─────────────────────────────────────────── */}
@@ -574,19 +612,18 @@ export default function AiTutorsSection() {
             <Image src={agent.avatar} alt={agent.codename} width={40} height={40} className="w-full h-full object-cover" unoptimized />
           </div>
           <div>
-            <p className="text-white font-bold text-sm">
-              <span style={MONO}>{agent.codename}</span>
-              <span className="text-slate-500 font-normal mx-1.5">·</span>
-              <span className="text-slate-400 font-normal text-xs" style={MONO}>{agent.specialty}</span>
+            <p className="text-white font-black text-base leading-none">
+              {agent.subject}
+              <span className="text-slate-500 font-normal text-xs ml-2" style={MONO}>· {agent.codename}</span>
             </p>
-            <div className="flex items-center gap-1.5 mt-0.5">
+            <div className="flex items-center gap-1.5 mt-1.5">
               <motion.div
                 className="w-1.5 h-1.5 rounded-full"
                 style={{ background: agent.color }}
                 animate={{ opacity: [1, 0.25, 1] }}
                 transition={{ duration: 1.8, repeat: Infinity }}
               />
-              <span className="text-slate-600 text-xs" style={MONO}>{agent.focus}</span>
+              <span className="text-slate-500 text-xs" style={MONO}>{agent.specialty}</span>
             </div>
           </div>
 
@@ -701,7 +738,7 @@ export default function AiTutorsSection() {
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.35, ease: 'easeOut' }}
                       >
-                        <span className="font-bold" style={{ color: agent.color }}>⚡ Operação ENEM:</span>
+                        <span className="font-bold" style={{ color: agent.color }}>⚡ Atalho ENEM:</span>
                         <span className="text-slate-400 ml-1">{agent.tip}</span>
                       </motion.div>
                     )}
@@ -738,6 +775,24 @@ export default function AiTutorsSection() {
           </div>
         </div>
       </motion.div>
+
+      {/* CTA */}
+      <div className="mt-10 text-center">
+        <a
+          href="/checkout?from=landing-oraculo&plan=neural"
+          className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl font-black text-sm tracking-wider transition-all hover:-translate-y-0.5"
+          style={{
+            background: `linear-gradient(135deg, ${VIOLET} 0%, ${NEON} 100%)`,
+            color: '#fff',
+            boxShadow: `0 0 32px ${VIOLET}55`,
+          }}
+        >
+          CONVERSAR COM UM ESPECIALISTA AGORA →
+        </a>
+        <p className="text-xs text-slate-500 mt-3" style={MONO}>
+          7 dias grátis · cancele quando quiser
+        </p>
+      </div>
     </section>
   );
 }

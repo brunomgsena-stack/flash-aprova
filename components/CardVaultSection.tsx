@@ -344,7 +344,7 @@ export default function CardVaultSection() {
           >
             18.232
           </span>
-          {' '}Flashcards Táticos
+          {' '}Flashcards Direcionados
         </h2>
 
         <p className="text-slate-500 text-base max-w-xl mx-auto mb-5">

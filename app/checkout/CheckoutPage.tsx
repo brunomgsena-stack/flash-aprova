@@ -155,7 +155,7 @@ function NarrativeReport({
         style={{ background: `linear-gradient(90deg, transparent, ${VIOLET}60, transparent)` }} />
 
       <p className="text-xs font-bold tracking-widest uppercase mb-4" style={{ color: VIOLET }}>
-        // LATÊNCIA DE RESGATE DETECTADA · TUTOR IA
+        // ANÁLISE DO TUTOR IA
       </p>
 
       <p className="text-slate-300 leading-relaxed text-sm mb-4">
@@ -178,7 +178,7 @@ function NarrativeReport({
 
       <p className="text-slate-500 text-sm leading-relaxed mb-4">
         IA detectou:{' '}
-        <strong className="text-red-400">Falha no Protocolo de Resgate</strong> —{' '}
+        <strong className="text-red-400">Falha na Recuperação de Memória</strong> —{' '}
         você reconhece o conceito superficialmente, mas não consegue recuperá-lo sob pressão de tempo.
         Exatamente o cenário de uma prova do{' '}
         <span style={{ color: GREEN, fontWeight: 700, textShadow: `0 0 10px ${GREEN}60` }}>ENEM</span>.{' '}
@@ -191,7 +191,7 @@ function NarrativeReport({
         {[
           { label: `${hardCount} Lacuna${hardCount !== 1 ? 's' : ''} Crítica${hardCount !== 1 ? 's' : ''}`, color: RED },
           { label: `${subjectMeta.name} — Risco ${risk}`, color: subjectMeta.color },
-          { label: 'Falha no Protocolo de Resgate', color: VIOLET },
+          { label: 'Recall sob estresse', color: VIOLET },
         ].map(({ label, color }) => (
           <span key={label} className="text-xs font-semibold px-3 py-1 rounded-full"
             style={{ background: `${color}18`, border: `1px solid ${color}35`, color }}>
@@ -218,7 +218,7 @@ function InsightsPanel({ health }: { health: number }) {
         <p className="text-xs font-bold tracking-widest uppercase mb-1" style={{ color: RED }}>
           Curva de Perda de Conhecimento
         </p>
-        <p className="text-slate-600 text-xs mb-4">Sem revisão espaçada — Ebbinghaus (1885)</p>
+        <p className="text-slate-600 text-xs mb-4">Curva original Ebbinghaus (1885), replicada em Murre &amp; Dros, PLOS ONE, 2015</p>
 
         <svg viewBox="0 0 260 110" className="w-full" style={{ maxHeight: 110 }}>
           <defs>
@@ -312,16 +312,18 @@ function InsightsPanel({ health }: { health: number }) {
             </div>
           </div>
           <div className="mt-1 px-4 py-4 rounded-xl text-center"
-            style={{ background: 'rgba(127,29,29,0.18)', border: '1px solid rgba(239,68,68,0.30)' }}>
-            <p className="text-xs font-black tracking-widest uppercase mb-0.5" style={{ color: RED }}>
-              [ DÉFICIT DE COMPETITIVIDADE ]
+            style={{ background: 'rgba(6,95,70,0.18)', border: `1px solid ${GREEN}40` }}>
+            <p className="text-xs font-black tracking-widest uppercase mb-0.5" style={{ color: GREEN }}>
+              [ POTENCIAL DE GANHO ]
             </p>
-            <p className="text-xl font-black mt-1" style={{ color: '#fca5a5' }}>
-              DÉFICIT PROJETADO: -{deficitPts} PONTOS NA MÉDIA
+            <p className="text-xl font-black mt-1" style={{ color: '#6ee7b7' }}>
+              GANHO POTENCIAL: +{deficitPts} PONTOS NA MÉDIA TRI
             </p>
             <p className="text-xs text-slate-500 mt-2 leading-relaxed">
-              Este é o volume de nota que você está perdendo agora por não usar Engenharia de Retenção.
-              Cada dia sem o protocolo é uma vaga que se afasta.
+              Este é o volume de nota que você pode recuperar usando Engenharia de Retenção.
+            </p>
+            <p className="text-[10px] text-slate-600 mt-2 leading-relaxed" style={{ fontFamily: 'ui-monospace, monospace' }}>
+              * Estimativa baseada em curva de Ebbinghaus + revisão espaçada (Cepeda et al. 2008).
             </p>
           </div>
         </div>
@@ -363,7 +365,7 @@ function EvidenceCarousel() {
           🏅 MURAL DOS APROVADOS
         </p>
         <h3 className="text-white font-black text-lg">
-          Quem já está no Panteão conta a história
+          Quem já passou conta a história
         </h3>
       </div>
 
@@ -466,7 +468,7 @@ type PlanId = 'aceleracao' | 'panteao_elite' | 'black';
 const ASAAS_LINKS: Record<PlanId, string> = {
   aceleracao:    'https://www.asaas.com/c/5eavmb23sffhvvni',
   panteao_elite: 'https://www.asaas.com/c/cahneqkzx0cn05yh',
-  black:         'https://www.asaas.com/c/REPLACE_ME_BLACK', // TODO: substituir pelo link real do Asaas do Protocolo Black
+  black:         'https://www.asaas.com/c/cahneqkzx0cn05yh', // TEMPORÁRIO: aponta pro Neural enquanto link Black do Asaas não está pronto. Risco: usuário paga R$ 327 ao invés de R$ 997.
 };
 
 const PLAN_META: Record<PlanId, { value: number; name: string }> = {
@@ -483,6 +485,11 @@ const cardStyle = {
 
 export default function CheckoutPage() {
   const [data, setData] = useState<OnboardingData | null>(null);
+
+  // ENEM 2026: first weekend of November (8/Nov/2026)
+  const enemDate = new Date('2026-11-08T00:00:00');
+  const daysLeft = Math.max(0, Math.ceil((enemDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)));
+
   const [buying, setBuying] = useState<PlanId | null>(null);
   const [emailInput, setEmailInput] = useState('');
   const [emailError, setEmailError] = useState('');
@@ -621,6 +628,9 @@ export default function CheckoutPage() {
         94%  { opacity: 1;   transform: translate(0); clip-path: none; }
       }
       .glitch-num { animation: glitch 3.5s ease-in-out infinite; display: inline-block; }
+      @media (prefers-reduced-motion: reduce) {
+        .elite-card, .glitch-num { animation: none !important; }
+      }
     `}</style>
     <div className="min-h-screen px-4 py-10 sm:px-8 relative overflow-hidden"
       style={{ background: 'radial-gradient(ellipse at 30% 0%, #0a0514 0%, #050505 65%)' }}>
@@ -642,6 +652,28 @@ export default function CheckoutPage() {
       </div>
 
       <div className="relative max-w-3xl mx-auto" style={{ zIndex: 1 }}>
+
+        {/* Countdown ENEM 2026 */}
+        <div
+          className="max-w-md mx-auto mb-6 px-5 py-3 rounded-xl flex items-center justify-center gap-3 text-center"
+          style={{
+            background: 'rgba(217,119,6,0.08)',
+            border: '1px solid rgba(217,119,6,0.25)',
+          }}
+        >
+          <span className="text-xl leading-none" aria-hidden>⏳</span>
+          <div className="flex flex-col">
+            <span className="text-[10px] font-bold tracking-widest uppercase" style={{ color: '#fbbf24' }}>
+              Faltam
+            </span>
+            <span className="text-2xl font-black leading-tight" style={{ color: '#fef3c7' }}>
+              {daysLeft} dias
+            </span>
+            <span className="text-[10px] font-semibold text-slate-400">
+              para o ENEM 2026
+            </span>
+          </div>
+        </div>
 
         {/* ── Status header ── */}
         <div className="relative rounded-3xl p-6 sm:p-8 mb-6 overflow-hidden"
@@ -726,7 +758,7 @@ export default function CheckoutPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-8 items-start lg:w-[min(64rem,92vw)] lg:relative lg:left-1/2 lg:-translate-x-1/2">
 
           {/* ── ESSENCIAL ── */}
-          <div className="relative rounded-2xl p-7 overflow-hidden order-1 lg:order-1"
+          <div className="relative rounded-2xl p-7 overflow-hidden order-2 lg:order-1"
             style={{ ...cardStyle, border: '1px solid rgba(124,58,237,0.18)' }}>
             <div className="absolute inset-x-0 top-0 h-px"
               style={{ background: `linear-gradient(90deg, transparent, rgba(124,58,237,0.30), transparent)` }} />
@@ -801,7 +833,7 @@ export default function CheckoutPage() {
           </div>
 
           {/* ── PROTOCOLO NEURAL (principal) ── */}
-          <div className="elite-card relative rounded-2xl p-8 overflow-hidden order-2 lg:order-2"
+          <div className="elite-card relative rounded-2xl p-8 overflow-hidden order-1 lg:order-2"
             style={{ background: 'rgba(4,10,8,0.97)' }}>
             {/* Gradient border */}
             <div className="absolute inset-0 rounded-2xl pointer-events-none"
@@ -862,7 +894,7 @@ export default function CheckoutPage() {
                 { t: 'Tutor IA 24/7',                            c: GREEN },
                 { t: 'Correção de Redação com IA',               c: GREEN },
                 { t: 'Treinos e simulados direcionados',         c: GREEN },
-                { t: 'COMBO 2 ANOS de acesso',                    c: GREEN },
+                { t: 'Acesso até jul/2027 · ENEM 2026 + FUVEST, UNICAMP e USP', c: GREEN },
               ] as { t: string; c: string }[]).map(({ t, c }) => (
                 <div key={t} className="flex items-start gap-2">
                   <span className="shrink-0 mt-0.5" style={{ color: c }}>✓</span>
@@ -884,7 +916,7 @@ export default function CheckoutPage() {
                 <span className="absolute inset-0"
                   style={{ background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.12) 50%, transparent 70%)' }} />
               </span>
-              {buying === 'panteao_elite' ? '[ AGUARDE... ]' : '[ GARANTIR MINHA VAGA ]'}
+              {buying === 'panteao_elite' ? '[ AGUARDE... ]' : '[ COMEÇAR 7 DIAS GRÁTIS ]'}
             </button>
 
             <p className="text-center text-sm font-black mt-4 relative" style={{ color: GREEN, textShadow: `0 0 12px ${GREEN}60` }}>
@@ -923,7 +955,7 @@ export default function CheckoutPage() {
             <div className="flex flex-col gap-2.5 mb-6 text-sm">
               {[
                 'Tudo do Protocolo Neural',
-                'Mentoria de estudos mensal 1x1 com especialista',
+                'Mentoria mensal 1x1 com especialista pedagógico',
                 'Plano intensivo reta final',
                 'Suporte prioritário',
               ].map(f => (
