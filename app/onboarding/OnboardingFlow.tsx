@@ -193,6 +193,11 @@ const INSIGHTS: Record<number, Insight> = {
     title: 'Onde o app entra',
     body: 'O FlashAprova calcula a hora exata de te mostrar cada card de novo — bem antes de você esquecer. Cada aluno tem o próprio ritmo.',
   },
+  5: {
+    tag: 'BOM SINAL',
+    title: 'Você está no caminho certo',
+    body: 'Cada vez que você marca "difícil" agora, você está poupando 30 minutos de estudo desorientado depois. A IA vai priorizar exatamente esses cards na sua próxima revisão.',
+  },
   7: {
     tag: 'POR QUE FUNCIONA',
     title: 'Caderno x flashcard',
@@ -201,10 +206,10 @@ const INSIGHTS: Record<number, Insight> = {
 };
 
 function buildAlertMsg(health: number, rating: Rating, subject: SubjectId, secs: number): string | null {
-  if (rating === 'dificil') return `❌ Lacuna detectada em ${SUBJECT_META[subject].name} — IA registrando falha`;
-  if (secs > 12)            return `⚠ Instabilidade Sináptica em ENEM — tempo de processamento crítico`;
+  if (rating === 'dificil') return `❌ Lacuna detectada em ${SUBJECT_META[subject].name} — IA registrando lacuna`;
+  if (secs > 12)            return `⚠ Tempo de resposta acima do ideal — atenção ao ritmo`;
   if (health < 35)          return `🔴 Alerta máximo: múltiplas lacunas críticas identificadas`;
-  if (health < 55)          return `⚠ Instabilidade Sináptica em ENEM — reforço necessário`;
+  if (health < 55)          return `⚠ Queda de foco detectada — reforço necessário`;
   return null;
 }
 
@@ -269,16 +274,22 @@ function InsightPanel({ insight, onContinue }: { insight: Insight; onContinue: (
       <h3 className="text-white font-black text-xl leading-snug mb-3">{insight.title}</h3>
       <p className="text-slate-300 text-base leading-relaxed">{insight.body}</p>
       {insight.curve && <ForgettingCurve />}
-      <button onClick={onContinue}
-        className="mt-6 w-full py-4 rounded-xl font-bold text-sm transition-all duration-200 hover:-translate-y-0.5 active:scale-95"
-        style={{
-          background: 'rgba(124,58,237,0.15)',
-          border: `1px solid rgba(124,58,237,0.40)`,
-          color: '#c4b5fd',
-          boxShadow: '0 0 20px rgba(124,58,237,0.10)',
-        }}>
-        Continuar →
-      </button>
+      <div className="mt-6 flex flex-col gap-2">
+        <button onClick={onContinue}
+          className="w-full py-4 rounded-xl font-bold text-sm transition-all duration-200 hover:-translate-y-0.5 active:scale-95"
+          style={{
+            background: 'rgba(124,58,237,0.15)',
+            border: `1px solid rgba(124,58,237,0.40)`,
+            color: '#c4b5fd',
+            boxShadow: '0 0 20px rgba(124,58,237,0.10)',
+          }}>
+          Continuar →
+        </button>
+        <button onClick={onContinue}
+          className="text-xs text-slate-600 hover:text-slate-400 py-1 transition-colors">
+          Pular →
+        </button>
+      </div>
     </div>
   );
 }
@@ -303,7 +314,8 @@ export default function OnboardingFlow() {
   const alertTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Step 3 — lead (shown after loading animation)
-  const [analyzing,  setAnalyzing]  = useState(false); // loading screen
+  // Step 3 has 3 phases: 'analyzing' (loader) → 'preview' (partial diagnosis) → 'lead' (full LeadGate)
+  const [step3Phase, setStep3Phase] = useState<'analyzing' | 'preview' | 'lead'>('analyzing');
   const [finalData,  setFinalData]  = useState<{ results: CardResult[]; health: number } | null>(null);
 
   // Navigation
@@ -375,11 +387,11 @@ export default function OnboardingFlow() {
         setElapsed(0);
       }
     } else {
-      // Quiz done → show loading animation then lead form
+      // Quiz done → loader → preview (partial diagnosis) → lead form
       setFinalData({ results: newResults, health: newHealth });
-      setAnalyzing(true);
+      setStep3Phase('analyzing');
       setStep(3);
-      setTimeout(() => setAnalyzing(false), 1500);
+      setTimeout(() => setStep3Phase('preview'), 1500);
     }
   }
 
@@ -611,14 +623,60 @@ export default function OnboardingFlow() {
             </div>
           )}
 
-          {/* ══ STEP 3: Loading ══ */}
-          {step === 3 && analyzing && <AnalysisLoader />}
+          {/* ══ STEP 3a: Loading ══ */}
+          {step === 3 && step3Phase === 'analyzing' && <AnalysisLoader />}
+
+          {/* ══ STEP 3b: Partial diagnosis preview ══ */}
+          {step === 3 && step3Phase === 'preview' && finalData && subject && (
+            <div className="fade-up">
+              <div className="text-center mb-8">
+                <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: VIOLET }}>
+                  // DIAGNÓSTICO INICIAL PRONTO
+                </p>
+                <h1 className="text-white font-black text-2xl sm:text-3xl leading-tight mb-4">
+                  Identificamos suas{' '}
+                  <span style={{ color: finalData.health < 55 ? RED : ORANGE }}>
+                    {finalData.results.filter(r => r.rating === 'dificil').length} lacuna(s) crítica(s)
+                  </span>{' '}
+                  em {SUBJECT_META[subject].name}
+                </h1>
+              </div>
+
+              <HealthBar health={finalData.health} />
+
+              <div className="relative rounded-3xl p-7 sm:p-9 mb-6 fade-up" style={cardStyle}>
+                {topShimmer}
+                <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: CYAN }}>
+                  📊 PRÉVIA
+                </p>
+                <p className="text-slate-300 leading-relaxed">
+                  Sua Saúde da Memória está em <span className="text-white font-bold">{finalData.health}%</span>.
+                  {' '}A análise completa inclui o radar de fragilidades por matéria, curva de retenção e plano personalizado de revisão.
+                </p>
+              </div>
+
+              <button onClick={() => setStep3Phase('lead')}
+                className="w-full py-5 rounded-xl font-black text-sm tracking-widest uppercase transition-all duration-200 hover:-translate-y-0.5 active:scale-95"
+                style={{
+                  background: `linear-gradient(135deg, ${VIOLET} 0%, ${CYAN} 100%)`,
+                  color: '#fff',
+                  boxShadow: `0 0 32px ${VIOLET}55`,
+                  letterSpacing: '0.12em',
+                }}>
+                Ver análise completa →
+              </button>
+
+              <p className="text-center text-xs text-slate-600 mt-4">
+                Sem cartão. Sem pagamento. Análise grátis.
+              </p>
+            </div>
+          )}
 
         </div>{/* end key={step} fade wrapper */}
       </div>
 
-      {/* ══ STEP 3: LeadGate — full screen, rendered outside the centered container ══ */}
-      {step === 3 && !analyzing && finalData && (
+      {/* ══ STEP 3c: LeadGate — full screen, rendered outside the centered container ══ */}
+      {step === 3 && step3Phase === 'lead' && finalData && (
         <LeadGate
           health={finalData.health}
           subjectName={subject ? SUBJECT_META[subject].name : 'ENEM'}
@@ -630,6 +688,9 @@ export default function OnboardingFlow() {
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes progress-fill { from { width: 0; } to { width: 100%; } }
+        @media (prefers-reduced-motion: reduce) {
+          .orb-a, .orb-b, .cursor-blink, .lacuna-alert { animation: none !important; }
+        }
       `}</style>
     </div>
   );
