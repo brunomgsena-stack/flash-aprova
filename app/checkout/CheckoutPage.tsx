@@ -468,7 +468,7 @@ type PlanId = 'aceleracao' | 'panteao_elite' | 'black';
 const ASAAS_LINKS: Record<PlanId, string> = {
   aceleracao:    'https://www.asaas.com/c/5eavmb23sffhvvni',
   panteao_elite: 'https://www.asaas.com/c/cahneqkzx0cn05yh',
-  black:         'https://www.asaas.com/c/cahneqkzx0cn05yh', // TEMPORÁRIO: aponta pro Neural enquanto link Black do Asaas não está pronto. Risco: usuário paga R$ 327 ao invés de R$ 997.
+  black:         'https://wa.me/5581998365346?text=Quero%20aplicar%20para%20o%20Black', // Black redireciona pra WhatsApp (aplicação manual, sem checkout direto).
 };
 
 const PLAN_META: Record<PlanId, { value: number; name: string }> = {
@@ -541,7 +541,8 @@ export default function CheckoutPage() {
 
     const email = (data?.email || emailInput.trim().toLowerCase()).trim();
     const hasEmail = !!email && email.includes('@');
-    const url = hasEmail
+    // Black aponta pra WhatsApp (já tem ?text=...), não pode receber ?email= sobreposto.
+    const url = (hasEmail && planId !== 'black')
       ? `${ASAAS_LINKS[planId]}?email=${encodeURIComponent(email)}`
       : ASAAS_LINKS[planId];
 
