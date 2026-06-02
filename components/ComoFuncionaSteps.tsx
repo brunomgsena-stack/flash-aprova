@@ -520,7 +520,7 @@ export default function ComoFuncionaSteps() {
           As 4 fases do Protocolo Neural em <Neon>3 minutos</Neon>.
         </h2>
         <p className="text-slate-400 text-sm sm:text-base">
-          Ebbinghaus + IA. Sem deck, sem configuração, sem mentor.
+          Ebbinghaus + IA. Sem deck, sem configuração.
         </p>
       </div>
 

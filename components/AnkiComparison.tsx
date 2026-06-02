@@ -393,10 +393,7 @@ export default function AnkiComparison() {
               97%
             </p>
             <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>
-              com revisões espaçadas por IA ·{' '}
-              <a href="/metodo" className="underline hover:text-white transition-colors">
-                ver método
-              </a>
+              com revisões espaçadas por IA
             </p>
           </div>
 

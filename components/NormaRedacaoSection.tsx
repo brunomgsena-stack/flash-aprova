@@ -1137,25 +1137,6 @@ export default function NormaRedacaoSection() {
         </p>
       </div>
 
-      {/* CTA + disclaimer */}
-      <div className="max-w-2xl mx-auto mt-8 text-center">
-        <a
-          href="/checkout?from=landing-norma&plan=neural"
-          className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl font-black text-sm tracking-wider transition-all hover:-translate-y-0.5"
-          style={{
-            background: `linear-gradient(135deg, ${PURPLE} 0%, #00FF73 100%)`,
-            color: '#fff',
-            boxShadow: `0 0 32px ${PURPLE}55`,
-          }}
-        >
-          CORRIGIR MINHA PRIMEIRA REDAÇÃO →
-        </a>
-        <p className="text-xs text-slate-600 mt-4 leading-relaxed" style={{ fontFamily: MONO }}>
-          * Score 960/1000 é caso ilustrativo. Sua nota depende do seu esforço —
-          <br className="hidden sm:block" />
-          {' '}a Norma te diz exatamente onde melhorar.
-        </p>
-      </div>
     </section>
   );
 }

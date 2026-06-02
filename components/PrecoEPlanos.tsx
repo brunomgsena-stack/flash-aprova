@@ -55,8 +55,8 @@ export default function PrecoEPlanos() {
           Planos e Preços
         </p>
         <h2 className="text-3xl sm:text-4xl font-black text-white mb-4 leading-tight">
-          R$ 0,90 por dia.{' '}
-          <span style={{ color: NEON }}>Risco zero por 7 dias.</span>
+          R$ 0,90 por dia. <span style={{ color: NEON }}>Risco</span><br />
+          <span style={{ color: NEON }}>zero por 7 dias.</span>
         </h2>
         <p className="text-slate-400 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
           Escolha o plano que cabe no seu ano de estudo. Cancele a qualquer momento dentro de 7 dias e receba 100% de volta.
@@ -68,7 +68,7 @@ export default function PrecoEPlanos() {
 
         {/* ── ESSENCIAL ─────────────────────────────────────────────────────────── */}
         <div
-          className="relative rounded-2xl p-8 overflow-hidden flex flex-col h-full order-2 lg:order-1"
+          className="relative rounded-2xl p-8 overflow-hidden flex flex-col h-full order-1 lg:order-1"
           style={{ background: CARD_BG, border: '1px solid rgba(124,58,237,0.18)' }}
         >
           <div
@@ -146,7 +146,7 @@ export default function PrecoEPlanos() {
 
         {/* ── PROTOCOLO NEURAL — DESTAQUE ───────────────────────────────────────── */}
         <div
-          className="relative rounded-2xl p-8 overflow-hidden flex flex-col h-full order-1 lg:order-2"
+          className="relative rounded-2xl p-8 overflow-hidden flex flex-col h-full order-2 lg:order-2"
           style={{ background: 'rgba(4,10,8,0.97)' }}
         >
           {/* Gradient border */}

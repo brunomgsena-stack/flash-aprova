@@ -396,7 +396,7 @@ function AuthorityBanner() {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-6 px-8 py-7">
           <div className="text-center sm:text-left flex-shrink-0">
             <p className="text-white font-black text-xl sm:text-2xl leading-snug">
-              Plataforma desenhada para <span style={{ color: NEON }}>milhares</span> de estudantes<br className="hidden sm:block" /> do ENEM
+              Milhares de estudantes aprovados no ENEM
             </p>
             <p className="text-slate-600 text-xs mt-1 tracking-widest uppercase">
               Padrão alinhado às exigências das top universidades do país
@@ -910,7 +910,7 @@ export default function LandingPage() {
               style={{ color: '#f1f5f9' }}
             >
               Pagar mais por menos retenção é o erro mais caro do seu ano de cursinho.{' '}
-              <span style={{ color: NEON }}>R$ 327/ano</span>{' '}
+              <span style={{ color: NEON }}>R$0,90/dia</span>{' '}
               te dá tudo isso — com garantia.
             </p>
 
@@ -927,15 +927,9 @@ export default function LandingPage() {
               </p>
               <p className="text-sm sm:text-base font-bold leading-snug" style={{ color: 'rgba(255,255,255,0.85)' }}>
                 Reprovar significa <span style={{ color: ORANGE }}>+1 ano de cursinho a ~R$ 1.500/mês = R$ 18.000</span> jogados fora.<br className="hidden sm:block" />
-                {' '}O Protocolo Neural custa <span style={{ color: NEON }}>R$ 327</span>. Qual é o risco real aqui?
+                {' '}O Protocolo Neural custa <span style={{ color: NEON }}>R$0,90/dia</span>. Qual é o risco real aqui?
               </p>
             </div>
-            <p className="text-center text-xs mb-8" style={{ color: 'rgba(255,255,255,0.35)' }}>
-              <Link href="/metodo" className="underline underline-offset-2 hover:opacity-70 transition-opacity" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                Por que o método funciona? Veja a fundamentação científica.
-              </Link>
-            </p>
-
             {/* CTA */}
             <div className="flex justify-center">
               <div className="flex flex-col items-center">

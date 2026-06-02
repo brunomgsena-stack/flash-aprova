@@ -217,7 +217,8 @@ export default function EbbinghausSection() {
       {/* ── Header ── */}
       <div className="text-center mb-6 sm:mb-12 relative z-10">
         <motion.h2
-          className="text-3xl sm:text-4xl md:text-5xl font-black text-white leading-tight mb-5"
+          className="sm:text-4xl md:text-5xl font-black text-white leading-tight mb-5"
+          style={{ fontSize: '28px' }}
           initial={{ opacity: 0, y: 16 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.55, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
